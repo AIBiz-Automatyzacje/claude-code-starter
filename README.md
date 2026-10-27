@@ -13,120 +13,81 @@ projekt od pomysłu do działającej aplikacji.
 
 Sami na tym budujemy własne aplikacje w Akademii Automatyzacji. Po skopiowaniu folderu `.claude/` Twój Claude:
 
-- **Pomaga doprecyzować, CO budujesz** - zanim powstanie linijka kodu, przepyta Cię
-  o wymagania i rozpisze plan techniczny.
-- **Implementuje fazami i sam sprawdza swoją robotę** - każdą fazę przegląda **do 7** niezależnych
-  agentów-reviewerów (bezpieczeństwo, wydajność, jakość kodu, poprawność wykonania, zgodność ze
-  specyfikacją, testy, E2E). Faza bez ani jednego pliku kodu nie płaci za reviewerów kodu, a faza
-  bez scenariusza `[E2E]` nie budzi testera przeglądarki. Błędy naprawia.
-- **Zapamiętuje wnioski** - rozwiązane problemy trafiają do `docs/solutions/`, więc
-  w kolejnych zadaniach nie wpada na te same miny.
+- **Pomaga doprecyzować, CO budujesz** - zanim powstanie linijka kodu, przepyta Cię o wymagania i rozpisze plan techniczny.
+- **Implementuje fazami i sam sprawdza swoją robotę** - każdą fazę przegląda do 7 niezależnych agentów-reviewerów
+  (bezpieczeństwo, wydajność, jakość kodu, poprawność, zgodność ze specyfikacją, testy, E2E w prawdziwej przeglądarce),
+  a poważne znaleziska przechodzą przez agenta-sceptyka, który próbuje je obalić. Błędy naprawia.
+- **Zapamiętuje wnioski** - rozwiązane problemy trafiają do `docs/solutions/`, a reguły z nich dostają agenci pracujący
+  nad tymi samymi plikami. Im dłużej pracujesz w projekcie, tym mniej błędów Claude powtarza.
 
-Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + Tailwind v4**.
-Budujesz na czymś innym? Rdzeń systemu (pipeline, review, baza wiedzy) zadziała, tylko
-skille techniczne będą do podmiany.
+Sterowanie trzyma kod, nie model: kolejność faz, bramki jakości i limity napraw są w deterministycznych workflowach JS.
+Claude wykonuje zadania, ale nie decyduje, czy może pominąć review.
+
+Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + Tailwind v4**. Na innym stacku rdzeń
+(pipeline, review, baza wiedzy) zadziała, tylko skille techniczne będą do podmiany.
 
 ## Jak to działa
 
-Zaczynasz od pomysłu, kończysz na działającej, sprawdzonej aplikacji. Po drodze wygląda to tak:
+```
+/dev-brainstorm → /dev-prep → /dev-plan → dev-autopilot-wf → /dev-pr → merge
+  co budować     co dostarcza   jak budować   fazy: kod, review,   PR, recenzja bota,
+                 człowiek       + zadanie     naprawy, wnioski     tury poprawek
+```
 
-1. **Opisujesz pomysł** - `/dev-brainstorm` przepytuje Cię pytanie po pytaniu, aż będzie jasne,
-   co dokładnie ma powstać. Efekt: dokument wymagań.
-2. **Claude rozpisuje plan i przygotowuje zadanie** - `/dev-plan` skanuje repo, dzieli robotę na fazy
-   z konkretnymi krokami i rozmiarem każdego pliku, a na końcu sam tworzy branch `feature/[nazwa]`
-   i 3 pliki robocze (plan, kontekst, lista zadań) generowane skryptem z planu. Ty tylko zatwierdzasz.
-3. **Odpalasz autopilot** - `dev-autopilot-wf` wykonuje fazy jedna po drugiej: implementacja,
-   review, naprawa błędów. Wracasz do gotowej zmiany z raportem, co i dlaczego zostało zrobione.
+1. **`/dev-brainstorm`** *(opcjonalny)* - przepytuje Cię pytanie po pytaniu, aż będzie jasne, co ma powstać. Efekt: dokument wymagań.
+2. **`/dev-prep`** *(opcjonalny)* - lista tego, co musisz dostarczyć Ty: decyzje, konta i sekrety, treści, makiety.
+3. **`/dev-plan`** - plan techniczny w fazach, branch `feature/<nazwa>`, zadanie w `docs/active/` i bramka gotowości.
+   Na końcu dostajesz gotowe polecenie autopilota.
+4. **`dev-autopilot-wf`** - wykonuje fazy jedna po drugiej: implementacja, review, naprawa. Na koniec zapisuje wnioski,
+   archiwizuje zadanie i zostawia Ci listę rzeczy do ręcznego sprawdzenia (`docs/operator/<data>-<zadanie>-smoke.md`).
+5. **`/dev-pr`** - tworzy PR, czeka na recenzję bota, prowadzi tury poprawek i zapisuje, czego nasze review nie złapało.
 
-### Klucze do tego rozwiązania
+Szczegóły każdego kroku są w plikach skilli (`.claude/skills/<nazwa>/SKILL.md`) i workflowów (`.claude/workflows/`).
 
-- **Spec-Driven + Test-Driven Development** - najpierw powstaje specyfikacja i plan, dopiero
-  potem kod. Każda jednostka planu ma swoje scenariusze testowe, każda nowa funkcja publiczna dostaje test
-  ścieżki poprawnej i test błędu, a review fazy ma osobną oś testów.
-- **Pełna dokumentacja techniczna w dwóch miejscach** - plan techniczny z `/dev-plan` (`docs/plans/`)
-  i zadanie w `docs/active/` (plan, kontekst, lista zadań — generowane z planu skryptem),
-  aktualizowane na bieżąco w trakcie implementacji.
-- **Review robi do 7 niezależnych agentów naraz** (bezpieczeństwo, wydajność, jakość kodu — jedna
-  persona z trzema osiami: granice i struktura, YAGNI, bezpieczeństwo typów — poprawność wykonania,
-  zgodność ze specyfikacją, testy, E2E) - **skład zależy od domeny fazy**, więc reviewer bez
-  materiału do pracy się nie odpala. Każde poważne znalezisko przechodzi jeszcze przez
-  agenta-sceptyka, który próbuje je obalić. Zostają tylko prawdziwe błędy.
-- **Sterowanie trzyma kod, nie model** - kolejność faz, bramki jakości i limity napraw są
-  zapisane w deterministycznych workflowach JS. Claude wykonuje zadania, ale nie decyduje,
-  czy może pominąć review.
-- **Reguły kodu i bramki domknięcia** (`.claude/rules/coding-rules.md`, `.claude/scripts/bramki/`) pilnują jakości
-  od pierwszej linijki - m.in. zakaz osłabiania testów, wyłączania reguł i obniżania progów, żeby "przeszło".
+## Instalacja
 
-### Czego system uczy się w trakcie projektu
+Wszystko instalujesz **w projekcie**, nie globalnie na koncie, więc inne Twoje projekty nie płacą za to kontekstem.
 
-- Każdy rozwiązany problem ląduje w `docs/solutions/` - następnym razem Claude sięga
-  po gotowe rozwiązanie zamiast kombinować od zera.
-- Każdy wpis dostaje pola wiedzy (klasa błędu, reguła, wzorce plików, szczebel). Reguły trafiają do indeksu
-  `docs/learned-patterns.md`, a builder i reviewer dostają wycinek reguł dla plików, nad którymi pracują. Builder dostaje
-  w tym samym bloku zdania „co robić zamiast” dla klas błędów, które review najczęściej znajduje w takich plikach.
-  Lekcje, które da się wymusić typem albo lintem, wracają do Ciebie jako propozycje bramek.
-- Pojęcia z Twojej domeny trafiają do słownika `docs/CONCEPTS.md` - dzięki temu Claude
-  nie "naprawia" rzeczy, które celowo działają nietypowo.
-
-Im dłużej pracujesz w projekcie, tym mniej błędów Claude powtarza.
-
-## Instalacja (wszystko per projekt)
-
-Wszystko, czego szablon potrzebuje, instalujesz **w projekcie**, nie globalnie na koncie: skille, agenci, reguły i hooki
-przychodzą z folderem `.claude/`, a pluginy instalujesz w zakresie projektu (`--scope project`). Inne Twoje projekty
-nie płacą za nie kontekstem.
-
-1. Sklonuj repo: `git clone https://github.com/AIBiz-Automatyzacje/claude-code-starter.git`
-2. Skopiuj folder `.claude/` do swojego projektu i zacommituj go. `.claude/settings.json` jest wspólny dla projektu,
-   `.claude/settings.local.json` zostaje tylko Twój.
-3. **Pluginy projektu.** Profil `.claude/settings.json` włącza dwa pluginy i zna marketplace dev-browser. Claude Code sam dodaje
-   marketplace'y, ale pluginów **nie instaluje i nie proponuje** (sprawdzone na czystym koncie, Claude Code 2.1.286) - bez
-   tych komend sesja ich nie ładuje. W terminalu, w katalogu projektu:
+1. Sklonuj repo i skopiuj folder `.claude/` do swojego projektu. Zacommituj go (`.claude/settings.local.json` zostaje tylko Twój).
+2. Zainstaluj pluginy projektu (Claude Code sam ich nie instaluje). W katalogu projektu:
    ```bash
    claude plugin marketplace add sawyerhood/dev-browser
    claude plugin install dev-browser@dev-browser-marketplace --scope project
    claude plugin install figma@claude-plugins-official --scope project
    ```
-   - `figma` — czytanie makiet Figma przez `/dev-plan` i buildery UI. Bez makiet niepotrzebny.
-   - `dev-browser` — przeglądarka do Twojej ręcznej pracy z Claude. Pipeline go nie woła (E2E idzie przez `agent-browser`).
-
-   Instalacja nie zmienia `.claude/settings.json` (profil ma klucze w kolejności, w jakiej zapisuje je Claude Code), więc drzewo
-   zostaje czyste. Nie chcesz któregoś? Wyłącz go tylko u siebie: `"<id pluginu>": false` w `enabledPlugins` w `.claude/settings.local.json`.
-4. **Narzędzia systemowe** — lista w [Wymagania](#wymagania); doctor (krok 6) powie, czego brakuje w Twoim projekcie.
-   Nowy projekt: od pierwszego commita dołóż też [bramki domknięcia](#bramki-domknięcia).
-5. **Dynamic Workflows** — wpisz `/config` i ustaw **Dynamic workflows** na `true`. To ustawienie Twojego konta: projekt może je
-   tylko wyłączyć, nie włączyć. Bez tego `dev-autopilot-wf` nie istnieje - a to on prowadzi całą implementację. Objaw: pliki
-   `*-wf.js` leżą w projekcie, ale Claude twierdzi, że nie zna workflow o tej nazwie, albo komenda nic nie robi.
-6. **Sprawdzian — doctor:**
+   `figma` czyta makiety (bez makiet niepotrzebny), `dev-browser` to przeglądarka do Twojej ręcznej pracy z Claude.
+3. Włącz **Dynamic Workflows**: `/config` → *Dynamic workflows* = `true`. To ustawienie konta, projekt nie włączy go za Ciebie.
+   Bez tego `dev-autopilot-wf` nie istnieje.
+4. Sprawdź projekt doctorem:
    ```bash
    bash .claude/scripts/doctor/doctor.sh
    ```
-   `WYNIK: OK` = można startować. `BRAK` = zainstaluj z kolumny „Instalacja” i uruchom doctor ponownie. Doctor uruchamia się
-   też sam przy pierwszym `/sync-template` i w `/dev-prep`.
-   Projekt z vitest albo jest: runner nie może zbierać testów maszynerii z `.claude/**` (113 plików `node:test`) — wiersz
-   „runner testów” podaje gotowy wpis, np. w `vitest.config.ts`:
-   `test: { exclude: [...configDefaults.exclude, '.claude/**'] }` (`configDefaults` z `vitest/config`).
-7. Otwórz **nową** sesję Claude Code (skille i ustawienia wczytują się na starcie sesji) i wpisz `/dev-brainstorm` - opisz,
-   co chcesz zbudować. Resztą pokieruje pipeline.
+   `WYNIK: OK` = można startować. `BRAK` = doinstaluj to, co pokazuje kolumna „Instalacja”, i uruchom ponownie.
+   Projekt z vitest/jest nie może zbierać testów z `.claude/**` - doctor poda gotowy wpis `exclude`.
+5. Otwórz **nową** sesję Claude Code i wpisz `/dev-brainstorm` albo `/dev-plan`.
 
-### Konektory i pluginy z konta claude.ai
+Aktualizacja szablonu w projekcie: `/sync-template` (zaciąga zmiany z tego repo, nadpisywane pliki trafiają do `.claude/.backups/`).
+Po niej zacznij nową sesję - skille i instrukcje wczytują się na starcie.
 
-Profil ma `"disableClaudeAiConnectors": true`: konektory z Twojego konta claude.ai (Gmail, Drive, Supabase…) nie wchodzą
-do sesji projektu i nie zjadają kontekstu. **Działa to tylko w terminalowym `claude`.** Aplikacja desktop omija ten klucz:
+## Wymagania
 
-- **konektory** wyłączasz w aplikacji: sesja zakładki Code → menu konektorów → odznacz. Wyłączenie zostaje na kolejne sesje.
-- **pluginy z claude.ai** (Claude Code widzi je jako `<nazwa>@inline`; nazwę zdradza prefiks ich skilli, np. `design:`)
-  wyłącza wpis `"<nazwa>@inline": false` w `enabledPlugins` w `~/.claude/settings.json`. To Twoja decyzja: wyłączasz je
-  w Claude Code, na claude.ai zostają. W terminalowym `claude` te same pluginy mają sufiks `@synced` — tam wpis `@inline: false`
-  nie zadziała, a wyłącznik `"<nazwa>@synced": false` nie był przez nas sprawdzony.
+Doctor sprawdza listę pod Twój projekt: narzędzie warunkowe tylko wtedy, gdy projekt go używa. **BRAK** blokuje start
+autopilota, **UWAGA** nie blokuje.
 
-### Bramki domknięcia
+| Element | Kiedy | Instalacja (macOS) |
+|---|---|---|
+| git, node ≥ 22, gh (zalogowany) | zawsze | `brew install git node gh && gh auth login` |
+| menedżer pakietów z lockfile | jest lockfile | np. `npm install -g pnpm` |
+| supabase CLI | jest katalog `supabase/` | `brew install supabase/tap/supabase` |
+| agent-browser (globalnie) | plan ma scenariusze `[E2E]` | `npm install -g agent-browser && agent-browser install` |
+| jq | hook projektu go woła | `brew install jq` |
+| Dynamic Workflows | zawsze | `/config` → Dynamic workflows: `true` |
 
-Domknięcie każdej fazy uruchamia skrypt `.claude/scripts/bramki/bramki.mjs` zamiast agenta, który „gra lintera”: tsc, ESLint,
-`vitest --typecheck`, knip, size-limit, niezmienność migracji i `supabase/migrations.sum`, testy usunięte
-w fazie i Stryker na liniach zmienionych w fazie. Porażki domknięcie naprawia przed commitem. Ostrzeżenia ESLint i przeżyte
-mutanty idą do review fazy. Bramka bez narzędzia w projekcie daje status `brak` i nie blokuje, więc działa tylko to,
-co zainstalujesz. W nowym projekcie, od pierwszego commita:
+## Bramki domknięcia
+
+Każda faza kończy się skryptem bramek zamiast agenta, który „gra lintera”: tsc, ESLint, knip, size-limit, niezmienność
+migracji, testy usunięte w fazie i Stryker na zmienionych liniach. Bramka bez narzędzia w projekcie nie blokuje, więc
+działa tylko to, co zainstalujesz. W nowym projekcie, od pierwszego commita:
 
 ```bash
 cp .claude/templates/bramki/eslint.config.szablon.ts eslint.config.ts
@@ -135,456 +96,50 @@ pnpm add -D -E $(node -p "Object.entries(require('./.claude/templates/bramki/pac
 echo '.stryker-tmp/' >> .gitignore
 ```
 
-- **TypeScript < 6.1.** Reguły typowane ESLint (typescript-eslint) i Stryker potrzebują API JS TypeScriptu, którego TS 7 nie ma.
-  Lista instaluje 5.9.3.
-- **size-limit** mierzy `dist/assets/*.js` (wyjście Vite). Bramka sama odpala `npm run build` przed pomiarem. Limit 250 kB
-  w `.size-limit.json` dopasuj do projektu.
-- **advisors** (lint bazy Supabase przez Management API: RLS, `search_path`, indeksy) nie jest bramką domknięcia: przy
-  domknięciu migracji fazy nie ma jeszcze w żadnej bazie. Biegnie w kroku db-sync, po wgraniu migracji fazy na bazę e2e
-  (`e2e.mjs advisors`), a wynik dostaje reviewer security — błąd (ERROR) wprowadzony w fazie to P1, ostrzeżenie (WARN) P2.
-  Wymaga `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens) w `.env.e2e` albo w środowisku; ref projektu e2e
-  bierze z `VITE_SUPABASE_URL` w `.env.e2e` (albo `SUPABASE_E2E_PROJECT_REF`). Token daje dostęp do całego konta Supabase.
-  Brak tokenu zgłaszają doctor (wiersz „advisors (baza e2e)”) i bramka gotowości `/dev-plan` przy zadaniu z migracjami.
-  Token w `~/.zshrc` nie wystarcza: czyta go tylko powłoka interaktywna, a agenci workflowu jej nie mają (vibersi, etap 1).
-  Advisors biegnie tylko po udanym `db push` (baza bez migracji fazy dałaby fałszywe „ok”) i także w zadaniu bez scenariuszy
-  `[E2E]`, gdy `.env.e2e` przechodzi guard tożsamości bazy. Ograniczenia: migracje dodane przez fix ostatniej fazy nie trafiają
-  do bazy e2e ani do lintu; Stryker wyłącza typy we wszystkich plikach TS, więc fixture `.ts` czytany przez test jako tekst dostanie `// @ts-nocheck`.
-- **Stryker** z szablonu wyłącza sprawdzanie typów tylko w plikach TS (`disableTypeChecks`): bez tego Stryker dopisuje
-  `// @ts-nocheck` do każdego pliku JS w sandboksie, a test czytający fixture `.js` pada w pierwszym przebiegu.
-- **Istniejący projekt:** ESLint wprowadzasz osobnym zadaniem sprzątającym (każda reguła razem z poprawą starych miejsc).
-  Dopóki projekt nie ma `eslint.config.*` z szablonu, działa hook `error-handling-reminder.sh`.
-- Doctor sprawdza, czy paczki z listy są zainstalowane (wiersz „bramki domknięcia”).
+TypeScript musi być < 6.1 (lista instaluje 5.9.3), bo reguły typowane ESLint i Stryker nie działają z TS 7. W istniejącym
+projekcie ESLint wprowadzaj osobnym zadaniem sprzątającym.
 
-## Wymagania
+## Testy E2E (opcjonalne)
 
-Doctor wylicza listę z Twojego projektu — narzędzie warunkowe sprawdza tylko wtedy, gdy projekt go używa. **BRAK** blokuje
-(run by się na tym zatrzymał; `/dev-prep` oznacza pozycję `[blokuje: faza 1]`), **UWAGA** nie blokuje.
+Zadanie bez scenariuszy `[E2E]` i bez makiet nie uruchamia przeglądarki. Gdy chcesz testów w prawdziwej przeglądarce:
 
-| Element | Kiedy sprawdzany | Przy braku | Instalacja (macOS) |
-|---|---|---|---|
-| git | zawsze | BRAK | `brew install git` |
-| gh + zalogowanie | zawsze (`/dev-pr`) | BRAK | `brew install gh && gh auth login` |
-| node ≥ 22 | zawsze | BRAK | `brew install node` |
-| menedżer pakietów z lockfile (pnpm / yarn / bun / npm) | jest lockfile | BRAK | np. `npm install -g pnpm` |
-| supabase CLI | jest katalog `supabase/` | BRAK | `brew install supabase/tap/supabase` |
-| agent-browser | checkbox `[E2E]` w `docs/` | BRAK | `npm install -g agent-browser && agent-browser install` |
-| jq | hook projektu woła `jq` | BRAK | `brew install jq` |
-| Dynamic Workflows | zawsze | BRAK | `/config` → Dynamic workflows: `true` |
-| coolify CLI | Coolify w `CLAUDE.md`, `.env.example` albo `.github/workflows/` | UWAGA | `bash .claude/skills/coolify-manager/scripts/install_coolify_cli.sh` |
-| docker | jest `Dockerfile` | UWAGA | `brew install --cask docker` |
-| pluginy projektu (figma, dev-browser) | włączone w `.claude/settings.json` | UWAGA | komendy z kroku 3 |
-| devDependencies bramek, typescript < 6.1 | jest `eslint.config.*` z szablonu | UWAGA | komenda z [Bramki domknięcia](#bramki-domknięcia) |
-| warstwa stała ról (liczba poleceń, zasady pisania) | są pliki `.claude/agents/*.md` z blokiem `## Polecenia` | UWAGA | `/sync-template` przywraca pliki ról z szablonu |
-| telemetria | zawsze | UWAGA | nic — gdy brak zapisu z ostatniej doby, doctor sam nadrabia skanem |
+1. `.env.e2e` według [`.claude/templates/e2e-env/`](.claude/templates/e2e-env/README.md) - osobny projekt Supabase e2e
+   (nigdy dev ani prod), adres i komenda startu aplikacji (domyślnie `localhost:5174`).
+2. `/weryfikacja-setup` - skill weryfikacji projektu: jak uruchomić aplikację, zalogować się i gdzie są funkcje.
 
-Jedyny wyjątek od „per projekt”: **agent-browser instalujesz globalnie** — skill `agent-browser` i tester E2E wołają go z `PATH`,
-więc lokalna devDependency projektu nie wystarczy (doctor pokaże ją jako BRAK). Na Linuksie zamiast `brew` użyj menedżera
-pakietów dystrybucji.
+Autopilot sam stawia serwer, wgrywa migracje i seedy na bazę e2e, a tester odgrywa scenariusze. Scenariusz, którego
+nie da się wykonać w trakcie runu, trafia do Twojej listy ręcznego sprawdzenia.
 
-Chcesz zrozumieć, jak to działa pod maską? Niżej masz pełną dokumentację: pipeline `dev-*`,
-workflowy, wszystkich agentów i pułapki, na które sami wpadliśmy.
+## Co jest w środku
+
+| Katalog | Zawartość |
+|---|---|
+| `.claude/skills/` | pipeline `dev-*`, skille stacku (React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry) i narzędziowe (`agent-browser`, `makieta`, `coderabbit-setup`, `sync-template`, `weryfikacja-setup`, `zroastuj-mnie`, `coolify-manager`) |
+| `.claude/agents/` | buildery warstw (z wariantami Figma), reviewerzy osi, tester E2E, research i klasy ról pipeline'u |
+| `.claude/workflows/` | orkiestratory `-wf` w JS: autopilot, execute, review, compound, complete, PR |
+| `.claude/scripts/` | logika deterministyczna z testami: doctor, bramki, plan, dossier review, E2E, wiedza, telemetria |
+| `.claude/rules/coding-rules.md` | reguły kodu ładowane przy pracy z plikami kodu i SQL |
+| `.claude/hooks/` | m.in. blokada wypisywania wartości z `.env*` i zbieranie telemetrii po runie |
+
+W projekcie pipeline prowadzi `docs/`: `plans/` (plany), `active/` i `completed/` (zadania), `operator/` (listy dla
+człowieka), `solutions/` i `learned-patterns.md` (wiedza), `CONCEPTS.md` (słownik domenowy).
+
+## Najważniejsze zasady
+
+- **Branch ustawiasz przed autopilotem** - workflow nie przełącza gałęzi (robi to `/dev-plan`).
+- **Po STOP-ie bramki** (środowisko E2E, nieudana poprawka) i Twojej naprawie: **nowy run z tymi samymi `args`, bez `resumeFromRunId`**.
+  `resumeFromRunId` tylko po awarii runu, też z tymi samymi `args`. Stan faz i tak wznawia się z `.autopilot-state.json`.
+- **Raport telemetrii** zapisuj poza repo projektu (`--wyj`): niezacommitowane pliki zatrzymują następny start autopilota.
+- **Konektory claude.ai** profil wyłącza tylko w terminalowym `claude`; w aplikacji desktop wyłącz je w menu konektorów sesji.
 
 ## Bonus: Output Style „adhd"
 
-Masz dość gadatliwych odpowiedzi? W [`output-styles/adhd.md`](output-styles/adhd.md) znajdziesz
-gotowy Output Style, który sprawia, że Claude zaczyna od konkretu zamiast ściany tekstu.
-Napisany według wytycznych Anthropic dla modeli z serii 5 (zero zakazów — opisany cel,
-resztę model wyprowadza sam). Inspiracja: skill [i-have-adhd](https://github.com/ayghri/i-have-adhd)
-z wiralowego wątku na r/ClaudeAI.
+W [`output-styles/adhd.md`](output-styles/adhd.md) jest Output Style, przy którym Claude zaczyna od konkretu zamiast
+ściany tekstu (inspiracja: [i-have-adhd](https://github.com/ayghri/i-have-adhd)). Skopiuj go do `.claude/output-styles/`,
+zrestartuj sesję i wybierz w `/config` → *Output style* → *adhd*.
 
-1. Skopiuj `output-styles/adhd.md` do folderu `.claude/output-styles/` w swoim projekcie
-   (albo do `~/.claude/output-styles/` globalnie).
-2. Zrestartuj sesję Claude Code.
-3. Wpisz `/config`, wybierz **Output style → adhd** i zatwierdź enterem.
+## Historia zmian
 
----
+Changelog nie jest prowadzony w README - zmiany opisują [commity na `main`](https://github.com/AIBiz-Automatyzacje/claude-code-starter/commits/main).
 
-## Co dostajesz
-
-Sklonuj → skopiuj katalog `.claude/` do swojego projektu → masz gotowy, spójny system pracy z Claude Code. A gdy szablon się rozwinie — jedno `/sync-template` zaciąga zmiany z tego repo do projektu (bez ręcznego dyktowania linku):
-
-- **Pipeline `dev-*`** — od ideacji, przez plan, po autonomiczną implementację z review i naprawami (`dev-autopilot-wf`).
-- **Skille techniczne** pod stack — React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry — z aktualnymi wzorcami (React 19, Tailwind v4, Zod v4, OWASP 2025).
-- **24 pliki agentów** — buildery warstw (z wariantami Figma), reviewerzy, tester E2E, research i sześć klas ról pipeline'u.
-- **Knowledge compounding** — rozwiązane problemy z polami wiedzy (`docs/solutions/`), indeks reguł generowany skryptem (`docs/learned-patterns.md`) i żywy słownik domenowy (`docs/CONCEPTS.md`).
-- **Reguły kodu** (`.claude/rules/coding-rules.md`) — ładowane przy pracy z plikami kodu i SQL.
-
----
-
-## Pipeline `dev-*` — przegląd
-
-```
-/dev-brainstorm → /dev-prep → /dev-plan → [ dev-autopilot-wf ] → /dev-pr → merge
-  (CO budować)   (CO ma       (JAK +       (cały pipeline auto)   (review bota,
-                  dostarczyć   zadanie                               tury poprawek,
-                  człowiek)    w docs/active)                        compound)
-
-dev-autopilot-wf orkiestruje:
-  bootstrap + bramka startu → per faza( execute-wf → review-wf + adversarial verify → fix + kontrola fixa )
-    → compound-wf → compound-refresh(scoped) → ogrodnik → complete-wf
-```
-
-Zasady ogólne:
-- Skille `dev-*` **działają BEZ argumentów** (wyciągają kontekst z sesji). Argumenty są opcjonalne.
-- Skille bez `disable-model-invocation` mogą być wołane programowo przez inne skille i agentów.
-- Fazę implementacji prowadzi **`dev-autopilot-wf`** (dynamic workflow).
-
-### Dynamic Workflows (`-wf`)
-
-Część pipeline'u to **deterministyczne orkiestratory w JavaScript** w `.claude/workflows/*.js` (suffix `-wf`, by uniknąć kolizji nazw ze skillami). Orkiestrator trzyma plan i sterowanie w kodzie, a buildery/reviewerzy to **leaf-agenci** wołani przez `agentType`.
-
-> **Wymagane włączenie w Claude Code.** Dynamic Workflows są funkcją samego Claude Code, sterowaną
-> przez `/config` → **Dynamic workflows**. Gdy jest ustawione na `false`, Claude nie widzi żadnego
-> pliku z `.claude/workflows/` - `dev-autopilot-wf` nie istnieje dla niego, mimo że leży w projekcie.
-> Tego nie da się dowieźć w szablonie: to ustawienie Twojego konta, nie repozytorium (`.claude/settings.json`
-> projektu może je tylko wyłączyć, nie włączyć). Skopiowanie folderu `.claude/` **nie** włącza tego za Ciebie - sprawdź
-> `/config` albo doctor (`bash .claude/scripts/doctor/doctor.sh`, wiersz „Dynamic Workflows”) przed pierwszym uruchomieniem. Skille `dev-*` (`/dev-brainstorm`, `/dev-plan`) działają
-> niezależnie od tego przełącznika; blokuje on wyłącznie workflowy `-wf`.
-
-| Workflow | Co robi |
-|----------|---------|
-| `dev-autopilot-wf` | Autonomiczny pipeline: bootstrap (stan z `.autopilot-state.json`, **walidowany JSON.parse przed odczytem** — uszkodzony plik = powrót do parse md, nie zmyślony stan) → **bramka startu** (doctor bez braków, drzewo czyste poza katalogiem zadania, testy zielone na starcie gałęzi — wynik trzymany w stanie, więc kolejny run bez zmian w kodzie ich nie powtarza — i żaden plik `docs/decisions/` z `claude_md: do-uzgodnienia` na gałęzi głównej; każde niespełnienie = STOP z komendą naprawy) → **bramka setupu E2E** (precheck czyta `.env.e2e` ORAZ markery `[E2E]` w planie; zadanie wymaga E2E a środowiska brak = STOP przed fazą 1) → per faza (execute → review + adversarial verify → fix + kontrola diffu fixa wg list K-1…K-7) → compound → **compound-refresh (scoped)** → **ogrodnik** (pomiar wzorców, które agenci kopiują: wyciszenia lint/TS, `any`, wymuszone rzutowania, komentarze-obejścia, puste `catch`; propozycje tylko do Twojej decyzji) → complete. **Telemetria bez agentów**: po każdym runie — także STOP, KILLED i FAILED — hook Stop uruchamia `.claude/scripts/telemetria/zbierz.mjs`, który z pliku harnessu, journala i transkryptów dopisuje rekordy `run` / `faza` / `agent` / `skill` do `~/.claude/telemetry/pipeline.jsonl` (koszt w pełnym cenniku z cache, efort, kontekst startowy, pliki fixa A/M, wersja wykonanego skryptu); raport: patrz [Telemetria](#telemetria). Metryki fazy utrwalane w stanie, więc resume ich nie gubi. Stan fazy **liczony w JS**, a zapis dokleja się do agenta, który i tak startuje (precheck E2E, domknięcie execute z bazą fazy, fix, walidacja, commit artefaktów STOP-u) — z **odczytem z dysku** (zapis bez dowodu = brak zapisu); przed pod-workflowem i przy niepotwierdzonym zapisie zapisuje tani agent `stan:zapis`. Po fixie **guard plików binarnych**: plik źródłowy, który przestał być tekstem, zatrzymuje pipeline STOP-em, zanim zabije kolejne agenty na `Read`. Po review **bramka blokera środowiska**: sygnatura infra-błędu (dev server down, DNS) w findingu **testera E2E**, poparta wpisem FAIL/SKIP w jego przebiegach, = STOP zamiast ciągnięcia kolejnych faz na zepsutym środowisku; STOP zapisuje przy tym metryki i otwarte findingi fazy, więc praca reviewerów nie przepada. Walidacja końcowa ma **completion-gate E2E z planu zadania** (nie z istnienia `.env.e2e`) i **przegląd known-issues.md** (z commitem). |
-| `dev-docs-execute-wf` | Wykonanie JEDNEJ fazy: planner czyta Implementation Units z `docs/plans/`, buildery `feature-builder-*` implementują je przez `agentType`, potem domknięcie: System-Wide Test Check, [bramki domknięcia](#bramki-domknięcia) skryptem (porażki naprawia przed commitem), commit, dossier fazy dla review. |
-| `dev-docs-review-wf` | Review jednej fazy: **dossier fazy ze skryptu** `.claude/scripts/dossier/` (liczy go domknięcie fazy w execute-wf; po STOP-ie między execute a review — zapasowy agent tym samym skryptem): mapa zmian + **flagi warstw** + **zrzut diffu fazy do pliku**, który reviewerzy czytają jednym `Read` zamiast każdy własnym `git diff`, + wynik bramek domknięcia → **routing domenowy** (`security`/`test-coverage`/`code-quality`/`correctness` — faza z kodem; `spec-compliance` — kod albo teksty UI / dokument prawny; `performance`/`e2e` tylko gdy ich domena jest w fazie obecna; brak flag = pełny skład) → do 7 reviewerów równolegle (**limit 5 P3 na reviewera** + **globalny limit 15 P3 po dedupie z wyborem round-robin po źródle**, najpierw nity w plikach z P1/P2 — żeby ucinanie nie wyciszało systematycznie tych samych reviewerów; P3 idą do `known-issues.md` i opisu PR, fix naprawia P1/P2; P1/P2 bez limitu; tester E2E w trybie `przegladarka` / `bez-przegladarki` / `pominiety` — zależnie od domeny fazy i tego, czy środowisko przeglądarkowe stoi; semantyka jednostek pól jest listą w plikach ról — spec-compliance: grep wszystkich użyć + kolejność źródeł prawdy + odczyt realnego wiersza z bazy e2e, test-coverage: znaczenie pola w fixture'ach vs źródło; spec-compliance i test-coverage na efortcie `medium`) → dedup 2-przebiegowy (JS + semantyczny Haiku) → **detekcja blokera środowiska po sygnaturze** (JS, bez LLM — connection refused / DNS, ale **tylko** w findingach testera E2E, **tylko** w trybie `przegladarka` i **tylko** gdy tester ma wpis FAIL albo SKIP w `przebiegi[]`; sama nazwa `getaddrinfo` w opisie defektu kodu blokerem nie jest — regexy pod testem `__tests__/bloker-srodowiska.test.mjs`; orkiestrator robi STOP zamiast ciągnąć fazy na zepsutym środowisku) → adversarial verify P1/P2 (findingi E2E/OPERATOR testera poza verify — dowodem jest przebieg, nie kod) → scribe zapisuje raport + sekcję **`## Przebieg review`** + bookkeeping checkboxów (`[E2E]` odznacza **wyłącznie** z wpisów PASS w `przebiegi[]` testera — brak findingu ≠ PASS) → severity gate. Gdy scribe padnie po udanym zapisie, **wynik jest odzyskiwany z dysku** po sentinelu `## Przebieg review` zamiast powtarzać całe review. |
-| `dev-docs-complete-wf` | Dwie fazy: **smoke operatora** (`docs/operator/<data>-<zadanie>-smoke.md` — co sprawdzić ręcznie po zielonym automacie; `[E2E]` nieuruchomione jako czerwona flaga, scenariusze przeniesione w trakcie runu na `[Manual]` jako osobna sekcja) → archiwizacja: mapa funkcji skilla weryfikacji, `docs/active/<zadanie>` → `docs/completed/`, podsumowanie z sekcją „Ogród”, plik decyzji `docs/decisions/<data>-<zadanie>.md` (`claude_md: do-uzgodnienia` — CLAUDE.md uzgadnia `/dev-pr` po merge'u, archiwizacja go nie edytuje), commit jawnym pathspecem (także wyjścia compound). |
-| `dev-pr-wf` | Mechanika obsługi pull requesta, wołana etapami przez skill `/dev-pr`: **bramka wejścia** (gałąź inna niż główna, czyste drzewo, zadanie istnieje) i utworzenie PR przez `gh pr create --body-file` (nigdy stdin — przy pustym stdin `gh` kończy się kodem 0 i tworzy PR z pustym opisem) → **zebranie i klasyfikacja** nierozwiązanych wątków przez GraphQL (`napraw` / `napraw-szerzej` / `odrzuć` / `do-operatora`, każdy z polem `wplywNaProjekt` i klastrem wspólnej przyczyny; `odrzuć` bez cytatu ze źródła decyzji JS przeklasyfikowuje na `do-operatora`) → **naprawa** wybranych wątków + odpowiedzi w wątkach + commit jawnym pathspecem i push → **bramka merge'a** (pięć warunków liczonych w JS) → **compound** z pętlą zwrotną do reviewerów → po merge'u **uzgodnienie CLAUDE.md** z plikiem decyzji zadania (etap `claude-md`, przyrost CLAUDE.md pilnowany w JS). |
-| `dev-compound-wf` | Dokumentuje rozwiązane problemy do `docs/solutions/` z polami wiedzy (bez poprawnych pól — `wiedza.mjs sprawdz` — nie ma zapisu), regułę ze szczeblem `regula` wpisuje do indeksu `docs/learned-patterns.md` skryptem, szczebel `kod`/`lint` zwraca jako `propozycjeBramek[]`, aktualizuje `docs/CONCEPTS.md` — i **commituje te artefakty** (whitelist ścieżek, bez `git add -A`), żeby nie zostawiać brudnego drzewa blokującego następny run. |
-
-**Jak odpalać:** toolem `Workflow`, np. `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js"}, args)`.
-**RESUME po przerwanym runie:** `Workflow({scriptPath, resumeFromRunId})` + **ZAWSZE przekaż `args` ponownie** (te same, np. ścieżkę zadania — `args` NIE przeżywa między wywołaniami). Stan wznowienia czyta z `.autopilot-state.json` (źródło prawdy); checkboxy w `.md` to tylko widok dla człowieka.
-
----
-
-## Skille — pełna lista
-
-### Pipeline `dev-*`
-
-#### Discovery
-
-**`/dev-brainstorm`** *(opcjonalny — „pusta kartka")* — walidacja pomysłu (**CO** budować). Interaktywny dialog: jedno pytanie na raz, pressure test, eksploracja podejść. → `docs/brainstorms/*-requirements.md`
-- **Kiedy:** nowy feature bez wymagań, kilka konkurencyjnych kierunków, niejasno ujęty problem. **Kiedy nie:** wymagania już są (etap w zbiorczym `mvp-requirements.md`, lista poprawek z feedbacku, bug/tech-debt, „zrób jak w X") — wtedy od razu `/dev-plan`, który czyta takie źródła bezpośrednio.
-- Nie oferuje skoku do implementacji z pominięciem planu — kod powstaje tylko z Implementation Units.
-
-#### Planowanie
-
-**`/dev-prep`** *(opcjonalny — nowy etap)* — **operator checklist etapu** (**CO CZŁOWIEK MUSI DOSTARCZYĆ**, zanim ruszy implementacja). Czyta etap zbiorczego dokumentu wymagań (`docs/brainstorms/mvp-requirements.md#etap-17`), skanuje repo read-only (route'y, `docs/DESIGN.md`, `SPEC.md`, **nazwy** zmiennych z `.env.example`, wcześniejsze checklisty etapów) i zapisuje **jeden** dokument z czterema sekcjami: decyzje (pytania zamknięte z opcjami, `[blokuje: planowanie]`), konta/konsole/sekrety (🔓 publiczne vs 🔒 sekrety, notatka o kolejności zależnych kroków, „Gdzie to ląduje"), assety i treści (`[~]` = świadomy dług), makiety (nazwa ekranu = klucz, stany, breakpointy, puste `URL Figma:`). Nie planuje — zero IU, zero architektury. → `docs/operator/<slug>-przygotowanie.md`
-- **Kiedy:** startujesz etap wymagający kont zewnętrznych, assetów albo makiet i chcesz je zamówić, zanim usiądziesz do planowania. **Kiedy nie:** bugfix, tech-debt, zmiana czysto backendowa — wtedy wprost `/dev-plan`, który utworzy krótką listę sam.
-- **Dziedziczy nazewnictwo zastanej serii:** gdy w `docs/operator/` leżą już checklisty etapów (np. `e1-operator-checklist.md`, `e2-operator-checklist.md`), nowy plik dostaje ten sam wzorzec nazwy z identyfikatorem bieżącego etapu — zamiast wstawiać w środek serii obcy `<slug>-przygotowanie.md`. Dwa konkurencyjne wzorce = pytanie do użytkownika, pusty katalog = nazwa domyślna. Cały pipeline odnajduje ten plik po frontmatterze (`origin:`, `feature_slug:`) i po `operator_prep:` w planie, nigdy po nazwie — więc dowolna konwencja działa bez zmian w `/dev-plan`.
-- **To ten sam plik, który uzupełnia `/dev-plan`** — nie powstaje drugi dokument przygotowawczy. `/dev-prep` zakłada listę bez numerów faz (jeszcze ich nie ma), `/dev-plan` dopisuje do niej numery blokowanych faz i pozycje wynikłe z IU (3.7 → 5.2b, edycja w miejscu, `[x]` nietknięte). Gdy wszystkie ekrany mają wklejone URL-e Figmy, `/dev-plan` **nie pyta o Figmę** — fetchuje wprost z listy (1.6 krok C).
-
-**`/dev-plan`** — planowanie techniczne (**JAK** budować) i przygotowanie zadania dla autopilota. Źródłem wymagań jest requirements doc z `docs/brainstorms/`, **sekcja zbiorczego dokumentu** (np. `docs/brainstorms/mvp-requirements.md#etap-17`) albo lista wymagań z requestu. Czyta w całości indeks wiedzy `docs/learned-patterns.md` i `docs/CONCEPTS.md`; agentów badawczych woła zawsze w planie Standardowym i Głębokim, a w Lekkim tylko przy nowej zależności / usłudze / API / wersji głównej albo w katalogu bez wpisu w wiedzy projektu. Tworzy Implementation Units **pogrupowane w numerowane fazy** (`### Faza N — …`, obowiązkowe — autopilot wykonuje plan fazami). Każda IU ma **tabelę plików** z długością pliku dziś (liczoną skryptem jak ESLint) i po zmianie: plik powyżej 300 linii dostaje ocenę wymiarów, powyżej 360 (próg ESLint i bota) — wydzielenie modułu w planie, zanim ktokolwiek napisze kod. Wartości używane przez kilka IU idą do **rejestru stałych** (jedno źródło). Klasyfikację UI/pure-data wyprowadza z plików, bez pytania. Dla scenariuszy `[E2E]` stosuje konwencję zarządzanego harnessu: jedna linia scenariusza `[E2E] \`<flow>\` — <URL, kroki> → <oczekiwany stan>` (agent-browser wykonuje ją z opisu), seed `e2e/seeds/<flow>-seed.sql` jako deliverable **buildera**; przed generowaniem zadania sprawdza każdy scenariusz (natywne okno, zewnętrzny system, dane spoza stanu bazowego). → `docs/plans/`
-- **Przygotowanie dla operatora (dokument #1):** sekcja „Wymagania wstępne operatora" w planie + plik `docs/operator/<slug>-przygotowanie.md` — wyłącznie to, czego Claude nie zrobi sam (konsole OAuth, sekrety w `.env`, `.env.e2e` wg `.claude/templates/e2e-env/` gdy plan ma `[E2E]`, assety graficzne, dane na projekcie głównym). Każda pozycja: po co / jak / dowód wykonania + marker blokady z jednej rodziny: `[blokuje: planowanie]` albo `[blokuje: faza N]` (`/dev-prep` pisze pierwszy, `/dev-plan` podmienia go na drugi, gdy zna numer fazy). Frontmatter `operator_prep:`.
-- **Zadanie dla autopilota (koniec skilla):** `plan.mjs sprawdz` (walidacja planu: fazy, tabela plików i budżet, scenariusze, seedy) → poprawki planu → branch `feature/[nazwa]` (istniejący → checkout, brudne drzewo → pytanie) → `plan.mjs generuj --zapisz` — 3 pliki w `docs/active/[nazwa]/`: plan (mapa faz), kontekst (designerski kontekst, wskaźnik do planu technicznego, dziennik), zadania (checkboxy wg kontraktu parserów: impl. / `Test:` / `Weryfikacja:` / `## Operator checklist faza N`, z odnośnikami do IU zamiast kopii treści) → commit inicjalny → `plan.mjs gotowosc` (plan, `[E2E]` vs `.env.e2e`, blokery z checklisty, branch i czyste drzewo) → gotowe wywołanie `Workflow({scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/[nazwa]"})`. Kontrakt plików `docs/active/` z konsumentami pilnuje test `kontrakt-docs-active.test.mjs`.
-
-#### Implementacja
-
-**`dev-autopilot-wf docs/active/[nazwa]`** *(workflow, domyślna ścieżka)* — automatyczne wykonanie WSZYSTKICH faz z review i naprawami. Buduje `PlanState` + kolejkę faz, sprawdza bramkę startu, per faza woła `dev-docs-execute-wf` → `dev-docs-review-wf` → (przy P1/P2) cykl fix z kontrolą fixa. Po fazach: walidacja końcowa → compound → scoped refresh → ogrodnik → complete.
-- **Resumability:** po **awarii runu** (crash/kill) — `Workflow({scriptPath, resumeFromRunId})` + te same args (cache odtwarza ukończone kroki). Po **STOP bramki** (środowisko E2E, fix FAIL, nierozwiązane P1), gdy coś naprawiłeś — **świeży run bez resume** (stan faz i tak wznowi się z `.autopilot-state.json`; resume zwróciłby porażkę bramki z cache).
-- **Stop conditions:** bramka startu (doctor, brudne drzewo poza zadaniem, czerwone testy na starcie, CLAUDE.md nieuzgodniony po poprzednim merge'u), zadanie z `[E2E]` bez środowiska, P1 po cyklu fix (limit fix = 1 — drugi cykl naprawiał 0 findingów przy koszcie pełnego re-review; test naprawy P1 musi padać na kodzie sprzed poprawki — sprawdza to kontrola diffu fixa, lista K-6), błąd buildu/testów, git conflict.
-- **Myk:** walidację brancha robisz **w sesji PRZED** odpaleniem — workflow nie pyta o branch switch.
-
-**`dev-docs-execute-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — wykonanie jednej fazy. Każdy IU delegowany do buildera przez `agentType` (pole `Delegate to:` w IU): `feature-builder-ui` | `feature-builder-data` | `feature-builder-fullstack`. Strategia serial (zależne) / parallel (niezależne). Planner dokleja każdemu IU reguły projektu i zdania klas zapobiegalnych dla jego plików (`wiedza.mjs wycinek --zapobieganie`), a IU dotykającym UI — kontekst designerski (przy makietach wariant buildera `-figma`). Na końcu domknięcie: System-Wide Test Check, bramki domknięcia skryptem, commit, dossier fazy.
-
-**`dev-docs-review-wf`** *(workflow — woła go autopilot, standalone z args `{sciezka, faza}`)* — code review fazy. **Dossier fazy ze skryptu** (mapa zmian + flagi warstw + diff + wycinki planu, zadań i reguł wiedzy dla plików fazy + wynik bramek, żeby reviewerzy nie czytali ośmiokrotnie tych samych dokumentów) → **do 7 reviewerów równolegle** (Security, Performance, Code-quality, Correctness, Spec-compliance, Test-coverage, E2E) → dedup → **adversarial verify** każdego P1/P2 (sceptycy próbują obalić finding; **P1 = 3 niezależnych sceptyków z konsensusem 2/3, P2 = jeden sceptyk na grupę findingów z jednego pliku (najwyżej 4)**, każdy oceniany osobno; zarzut obala tylko etykieta `DISAGREE_EVIDENCE` z linią kodu albo testem, wątpliwość bez dowodu obniża wagę o stopień) → scribe zapisuje raport + `## Przebieg review` + bookkeeping checkboxów `Weryfikacja:` → severity gate (P1 blokuje / P2 zastrzeżenia / P3 OK).
-- **Routing domenowy:** `security`, `test-coverage`, `code-quality` i `correctness` — gdy faza ma choć jeden plik kodu; `spec-compliance` — także w fazie bez kodu, gdy dotyka tekstów UI (katalogi tłumaczeń, HTML) albo dokumentu prawnego; `performance` — gdy dotyka warstwy danych albo ma ≥5 plików kodu. **W praktyce faza z kodem dostaje pełny skład** — pomijany bywa tylko tester E2E; routing przycina wyłącznie fazy czysto dokumentacyjne — te nie dostają żadnego reviewera kodu (audyt 2026-09-06: w 10 fazach dwóch projektów z kodem jedynym pominiętym był `e2e`). Osobne reviewery architektury, prostoty i typów nie istnieją od 2026-09-03 — to trzy osie wewnątrz `code-quality` (konsolidacja B12). Tester przeglądarki odpala się po **policzonej pracy**, nie po warstwie: potrzebuje niezaznaczonego checkboxa `[E2E]` albo makiet `figma_screens` do visual diffu, więc faza UI bez ani jednego scenariusza go nie budzi. Gdy dossier nie powstanie → pełny skład (fail-open). Pominięcie E2E blokuje odznaczanie browserowych checkboxów `Weryfikacja:` (idą do Operator checklist).
-- **Myk E2E:** `feature-tester-e2e` testuje w **prawdziwej przeglądarce** (agent-browser) na serwerze aplikacji, który autopilot uruchomił według `.env.e2e` (`E2E_URL`, domyślnie Vite w trybie e2e `localhost:5174`; serwer spoza pipeline'u na tym porcie = STOP z PID-em i komendą). Procedura testera jest w całości w pliku roli; workflow podaje fazę i tryb. Scenariusze bierze ze skryptu (`e2e.mjs scenariusze`), drogę do funkcji i selektory — ze **skilla weryfikacji projektu** (`.claude/skills/weryfikacja/`, mapa funkcji; generator `/weryfikacja-setup`). Zwraca **jawny przebieg per checkbox `[E2E]`** (`przebiegi[]` PASS/FAIL/SKIP z przyczyną i dowodem) i **nie pisze do pliku zadań** — linie księguje skrypt, PASS odznacza, SKIP środowiska/limitu/harnessu przenosi na `[Manual]` do smoke'u operatora. Seed sprawdza wobec kontraktu migracji (kolumny wymagane, DEFAULT, wartości nieosiągalne w produkcji = P2). Przy `figma_screens` robi side-by-side visual diff z mockupami (manualna akceptacja = finding OPERATOR). Bez `.env.e2e` zadanie z `[E2E]` zatrzymuje się przed fazą 1 (STOP z komendą naprawy).
-
-#### Zamknięcie
-
-**`/dev-docs-complete [nazwa]`** — archiwizacja ukończonego zadania. Weryfikuje ukończenie, wyciąga wnioski, przenosi `docs/active/` → `docs/completed/`, zapisuje decyzje zadania do `docs/decisions/` (CLAUDE.md nie edytuje — uzgadnia go `/dev-pr` po merge'u). W trybie ręcznym skill wykonuje procedurę inline w sesji (smoke → archiwizacja); `dev-docs-complete-wf` jest wołany przez autopilot i czyta ten skill jako referencję procedury. → sugeruje `/dev-compound`.
-- **Smoke operatora (dokument #2):** przed archiwizacją generuje `docs/operator/<data>-<nazwa>-smoke.md` — listę **wyłącznie tego, czego automat nie sprawdził** (niezaznaczone `## Operator checklist faza N`, scenariusze `[Manual]`, findingi OPERATOR z raportów review, known-issues i otwarte P1/P2 widoczne dla użytkownika; nity P3 zostają w known-issues — fix naprawia tylko P1/P2), z sekcją „0. Przygotowanie" (właściwy projekt Supabase — nie e2e, konto testowe nazwą zmiennej, dev server) i ramką „Jak kontynuować w nowej sesji". Niezaznaczone `[E2E]` trafiają na górę jako `⚠️ E2E nieuruchomione` — nigdy nie są cicho odhaczane. Autopilot loguje ścieżkę i zwraca ją w `smokeOperatora`.
-
-**`/dev-pr [tury] [--bez-merge]`** *(workflow: `dev-pr-wf` — skill prowadzi rozmowę, workflow wykonuje etapy)* — **obsługa pull requesta od wysłania do merge'a**. Domyka odcinek, który do tej pory był poza szablonem: w projekcie źródłowym to 127 komentarzy bota w 6 pull requestach i 14 commitów ręcznych tur przy **zerze** wpisów w bazie wiedzy. Tworzy PR (opis z `<zadanie>-podsumowanie.md` + sekcja „Świadomie nienaprawione" z otwartych P3 i `known-issues.md`), czeka na recenzję bota (`Monitor`, limit 20 min), klasyfikuje **każdy wątek** wg wpływu **na teraz i na dalszy ciąg projektu**, prowadzi tury poprawek z odpowiedziami w wątkach, a na końcu uruchamia compound — zapisuje do `docs/solutions/` **klasy błędów, które bot znalazł po naszym własnym review**, i proponuje reguły do konkretnych agentów-reviewerów (wdrożenie zostaje decyzją operatora).
-- **Tryby:** `/dev-pr` interaktywny (operator wybiera przez `AskUserQuestion`, co naprawiamy; merge zawsze jego decyzją) · `/dev-pr 3` autonomiczny do 3 tur · `/dev-pr 3 --bez-merge` kończy raportem. **Liczba tur jest twardym limitem.**
-- **Ograniczenie:** bot odpowiada nieprzewidywalnie (w danych: PR otwarty 22:13, tury następnego dnia 08:58), a `Monitor` jest związany z sesją — **tryb autonomiczny ma sens tylko w sesji zostawionej otwartej**.
-- **Bramka merge'a** (tylko autonomicznie): `mergeable = MERGEABLE` **i** `mergeStateStatus = CLEAN` **i** zero wątków klasy `napraw` **i** zero `do-operatora` **i** CI zielone. Którykolwiek warunek niespełniony → raport „gotowy do Twojej decyzji" z listą tego, co zostało.
-
-#### Knowledge capture
-
-**`/dev-compound`** — dokumentowanie rozwiązanego problemu. Bez argumentów = wyciąga kontekst z sesji autonomicznie. Compact mode domyślny, `--full` dla pełnego formatu. Solution dostaje pola wiedzy i szczebel (`kod` → `lint` → `regula`); `wiedza.mjs sprawdz` pilnuje pól, reguły trafiają do indeksu `docs/learned-patterns.md`, `kod`/`lint` to propozycja bramki dla Ciebie. Jeśli pojawił się termin domenowy → dopisuje hasło do `docs/CONCEPTS.md` (Krok 4.5). → `docs/solutions/[category]/`
-- **Kategorie:** build-errors, runtime-errors, supabase-issues, auth-issues, ui-bugs, performance-issues, typescript-errors, deployment-issues, testing-issues.
-
-**`/dev-compound-refresh`** — przegląd aktualności bazy wiedzy. Autonomicznie przegląda `docs/solutions/`: Keep / Update / Replace / Archive. Generuje indeks `docs/learned-patterns.md` od nowa (bramka: koszyk „zawsze” ≤ 5, indeks ≤ 40 000 zn — porządek robi w solutions), `--konwersja` przenosi stary plik reguł do pól wiedzy (patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd)), przegląda też `docs/CONCEPTS.md` (usuwa martwe hasła, scala duplikaty).
-- **Myk:** pełny refresh (bez argumentu) przegląda całą bazę — uruchamiaj okresowo. W autopilocie odpala się **automatycznie, ale scoped** (tylko dotknięta kategoria + CONCEPTS.md, i tylko gdy compound coś zapisał).
-
-### Skille techniczne (guidelines pod stack)
-
-Ładowane on-demand (progressive disclosure: `SKILL.md` + `resources/`). Preładowane do **builderów** przez pole `skills:` w ich definicji (`feature-builder-ui`, `-data`, `-fullstack`) oraz do testera `feature-tester-e2e`. Reviewerzy tego pola nie mają — ich wiedza siedzi w prompcie agenta i w blokach doklejanych przez `dev-docs-review-wf`.
-
-| Skill | Zakres |
-|-------|--------|
-| **`tailwind-react-guidelines`** | React 19 (`use`, Actions, `useActionState`, `useOptimistic`, ref jako prop), TypeScript, Tailwind v4 (CSS-first `@theme`), shadcn/ui, React Query, RHF + **Zod v4**, testy (Vitest + RTL + MSW), lazy/Suspense, Sonner. `SKILL.md` = checklisty i zasady stałe (memoizacja według React Compilera); przykłady w `resources/` zgodne z regułami kodu (warstwy z serwisem, klient API z limitem czasu i kopertą, testy przez MSW). |
-| **`supabase-dev-guidelines`** | Auth (OAuth + email, PKCE przez `onAuthStateChange`), PostgreSQL, RLS (`(SELECT auth.uid())`), SECURITY DEFINER (`search_path=''`, EXECUTE odebrane od `anon`), Edge Functions (Deno, Stripe v22), Realtime, Supavisor pooling. `SKILL.md` = checklisty i zasady stałe; przykłady kodu i przegląd tematów w `resources/klient-i-przeglad.md`. |
-| **`ux-ui-guidelines`** | Design system (OKLCH), dostępność (WCAG 2.2, ARIA, natywny `inert`), responsive (container queries), animacje (Motion, View Transitions, `interpolate-size`), interface polish. `SKILL.md` = checklista dostępności (według niej builder UI przechodzi każdy element interaktywny), checklisty komponentu i formularza, zasady z powodem; palety, skale i przykłady w `resources/`. |
-| **`security`** | `SKILL.md` = reguły implementatora (RLS per operacja z `with check`, tożsamość ze zweryfikowanego tokenu, klucz sekretny, fail-closed, webhooki, SSRF, XSS, testy odmowy) — tę warstwę dostają buildery. Protokół audytu (6 obszarów, wagi, raport) w `resources/protokol-audytu.md`; **OWASP Top 10:2025**, CSP dla Vite, `getClaims` + asymetryczne JWT w pozostałych `resources/`. |
-| **`sentry-integration`** | Error tracking + performance dla React + Edge Functions (Deno 2.x): `beforeSend`, source maps (`@sentry/vite-plugin`), release tracking, `await captureError`. |
-
-### Skille narzędziowe
-
-| Skill | Do czego |
-|-------|----------|
-| **`agent-browser`** | Automatyzacja przeglądarki przez CLI (nawigacja, formularze, screenshoty, scraping, testowanie UI) z ref-based selection (`@e1`, `@e2`). Silnik E2E dla `feature-tester-e2e`. |
-| **`figma:figma-design-to-code`** | Implementacja designu Figma jako kod (kierunek design→code). Skill pluginu `figma` (instalacja w kroku 3), bez kopii w `.claude/skills/`. Preładowany do wariantów builderów z Figmą (`feature-builder-ui-figma`, `feature-builder-fullstack-figma`). |
-| **`makieta`** | Narzędzie „makieta obok aplikacji” w smoke'u operatora (`.claude/scripts/makieta/`): aplikacja w ramkach kilku urządzeń obok makiety `visual-diff/<ekran>-figma.png` 1:1, decyzje „Zgodne” / „Odstępstwo OK” / „Zgłoś błąd” zapisywane do linii checklisty, zgłoszenia do sesji smoke'u przez `Monitor` (`makieta.mjs czekaj`), po poprawce `makieta.mjs poprawione` przeładowuje ramki. Serwer w tle na `http://127.0.0.1:5180` jest proxy do aplikacji (osadzanie tylko z tego originu); OAuth wymaga `http://127.0.0.1:5180/**` w Redirect URLs Supabase dev. |
-| **`zroastuj-mnie`** | Bezlitosny wywiad stress-testujący plan/projekt. Research docs przed sesją, wykrywanie sprzeczności, scenariusze. Na końcu sugeruje utrwalenie (m.in. terminu do `docs/CONCEPTS.md`). |
-| **`coolify-manager`** | Zarządzanie i troubleshooting deploymentów Coolify (CLI + API): serwery, WordPress, kontenery, SSL, bazy, env, backupy. |
-| **`coderabbit-setup`** | Tworzy `.coderabbit.yaml` dopasowany do stacku projektu (detekcja z `package.json` i struktury katalogów: Expo/RN, Next.js, React+Vite, Node, Supabase — bloki można łączyć). Standard między projektami: review po polsku, profil assertive, eslint/actionlint/gitleaks/trufflehog/semgrep/osvScanner, guidelines z `coding-rules.md`. Do `filePatterns` trafiają tylko pliki istniejące w repo; YAML walidowany przed oddaniem. Przypomina o jednorazowej instalacji aplikacji GitHub CodeRabbit na repo. |
-| **`weryfikacja-setup`** | Tworzy w projekcie skill weryfikacji aplikacji `.claude/skills/weryfikacja/` (artefakt projektu, sync-template go nie rusza): Launch / Doctor / Cleanup = `e2e.mjs start` / `sprawdz` / `stop`, Drive i Evidence z faktów repo (trasy, logowanie, selektory) oraz **mapa funkcji** (droga użytkownika, dowód działania, pliki kodu) zasiana ze scenariuszy `[E2E]` planów zrobionych zadań. Raz przechodzony na żywo (`clean` / `changed` / `blocked`). Mapę dalej dopisuje archiwizacja każdego zadania; tester E2E czyta skill przy każdym scenariuszu. |
-| **`sync-template`** | Aktualizuje maszynerię `.claude/` (skille, agenci, reguły, hooki, workflows, templates + `settings.json`) w projekcie docelowym, zaciągając najnowszą wersję z tego repo (`claude-code-starter`, branch `main`). Jedno uruchomienie sprawdza po SHA commita, czy coś się zmieniło, i **automatycznie aplikuje** — szablon zawsze wygrywa, ale nadpisywane/usuwane pliki najpierw trafiają do backupu (`.claude/.backups/`). Pliki lokalne projektu (`settings.local.json`, własne skille) pozostają nietknięte. Argumenty: `--dry-run` (podgląd), `--force` (twardy reset do wersji z szablonu). |
-
----
-
-## Agenci — pełna lista (24)
-
-### Buildery warstw (wołane przez `dev-docs-execute-wf`)
-
-| Agent | Rola |
-|-------|------|
-| `feature-builder-ui` | Warstwa UI: komponenty React 19, Tailwind v4, shadcn/ui, formy, dostępność. Czyta kontekst designerski (SPEC/DESIGN/Figma) + `docs/CONCEPTS.md`; bez makiety unika nazwanych stylów „szablonowych”; dane tylko przez hook albo serwis. |
-| `feature-builder-data` | Warstwa danych: zapytania Supabase, RLS, migracje SQL, walidacja Zod, Edge Functions, autoryzacja. |
-| `feature-builder-fullstack` | Cross-layer (UI + dane naraz): formularze z auth, full-page z fetchem, CRUD end-to-end. Reguły danych jak builder danych, reguły UI jak builder UI. |
-
-Buildery mają wspólny szkielet pliku roli (test `szkielet-buildera.test.mjs`): jeden blok poleceń, jawny odczyt `.claude/rules/coding-rules.md`, zakres = pliki, scenariusze `[Unit]` i pole Weryfikacja jednostki (`[E2E]`/`[Manual]` wykonują tester i operator), samosprawdzenie tylko na plikach jednostki (`tsc --noEmit -p`, `vitest related --run`, ESLint), pytanie „undefined” przed zostawieniem testu, wynik wyłącznie w schemacie `BUILD_RESULT` (braki środowiska w `odchylenia`, nie w statusie). Warianty `-figma` mają tę samą treść plus narzędzia Figma MCP.
-
-### Reviewerzy (wołani przez `dev-docs-review-wf` — do 7 równolegle)
-
-| Agent | Rola |
-|-------|------|
-| `security-sentinel` | **Bezpieczeństwo** (`security`): każda nowa bramka z gałęzią domyślną i co najmniej 5 wejściami obejścia + test odmowy, nagłówki nowego originu, koperta wejścia (Zod), autoryzacja trasy i zasobu (`getUser`/`getClaims`, nie `getSession`), parametryzacja zapytań, XSS, sekrety i zmienne publiczne (`VITE_`/`NEXT_PUBLIC_`/`EXPO_PUBLIC_`), zapisy omijające API i strażnicy w seedach. RLS, `search_path` i `auth.users` — gdy advisors bazy e2e (po db-sync fazy) ma status ok albo porazka, sprawdza je advisors, a security przypisuje jego błędy (P1) i ostrzeżenia (P2) migracjom fazy; bez wyniku advisors security ma listy RLS. |
-| `performance-oracle` | **Wydajność** (`performance`): kolekcje bez limitu i złożoność, N+1 i niezależne żądania po kolei, kolumny i indeksy zapytań, Realtime, wycieki pamięci, rendery i efekty Reacta (brak memoizacji przy React Compilerze w profilu stacku nie jest findingiem), miejsce importu w paczce klienta, Edge Functions. Bez progów liczbowych niesprawdzalnych w diffie. |
-| `architecture-strategist` | **Jakość wewnętrzna, trzy osie** (`code-quality`): granice warstw i struktura · YAGNI, martwy kod i zbędne abstrakcje · typy; wejście: ostrzeżenia ESLint (warn) i knip z dossier; listy duplikatów stałych i kontraktów, mapowania błędów na statusy, cichego odsiewania i idempotencji. |
-| `correctness-reviewer` | **Poprawność wykonania** (`correctness`): polecenia-listy — drogi do operacji zmieniającej stan i bramka na każdej, `await` w ścieżce zapisu, limit czasu wywołań, wartość przed/po `await`, ograniczenia migracji, wartości graniczne, cache, zapis do dwóch systemów, usunięcia. Każdy finding ze scenariuszem awarii. |
-| `spec-compliance-reviewer` | Zgodność implementacji z zamówieniem — wymagania brakujące, częściowe, błędne i niezamówione, teksty dla użytkownika, dokument prawny, semantyka pól. Każdy finding cytuje ID wymagania lub nazwę IU. |
-| `test-coverage-reviewer` | **Testy fazy** (`test-coverage`): przeżyte mutanty z dossier (mutant → test, który powinien go zabić → powód), pytanie „czy test przeszedłby, gdyby importy zwracały `undefined`”, 5 kształtów testu niefalsyfikowalnego, gałęzie, test odmowy bramki, scenariusze planu. |
-| `feature-tester-e2e` | E2E w przeglądarce (agent-browser) — odgrywa scenariusze `[E2E]` fazy (oba prefiksy `Test:`/`Weryfikacja:`) według skilla weryfikacji projektu i mapy funkcji, sprawdza seedy wobec kontraktu migracji, zwraca przebieg PASS/FAIL/SKIP z przyczyną i dowodem, visual diff z Figmą. Nie pisze do pliku zadań. |
-
-> Procedura każdej osi jest w pliku roli jako jeden blok `## Polecenia`; workflow podaje osi tylko jej nazwę, źródła i schemat wyniku. Pozycje z warunkiem w nawiasie dotyczą fazy, której diff, profil stacku (z paczkami pakietów workspace'u) albo status bramki go spełnia. Liczbę poleceń pokazuje doctor (wiersz „warstwa stała ról”) i telemetria (`instrukcje_stale`). Cofnięcie osi = przywrócenie pliku jednej roli.
-
-### Klasy ról pipeline'u (wołane przez workflowy `dev-*` przez `agentType`)
-
-Każde wywołanie agenta w workflowie ma swoją klasę: plik z allowlistą `tools:`, modelem i jednym zdaniem roli; szczegóły dostaje
-w poleceniu workflowu. Allowlista skraca kontekst startowy agenta (pomiar na pustym agencie: ~62k → ~12k tokenów), bo agent nie
-dziedziczy wszystkich narzędzi sesji razem z serwerami MCP.
-
-| Klasa | Rola |
-|-------|------|
-| `klasa-mechaniczny` | Haiku, bez CLAUDE.md: jedna mechaniczna czynność z zapisem (stan, precheck, sprzątanie środowiska, commit artefaktów). |
-| `klasa-mechaniczny-odczyt` | Haiku, tylko odczyt: dedup findingów, inspekcja raportu na dysku. |
-| `klasa-mechaniczny-pomiar` | Haiku, Read + Bash bez edycji: uruchomienie skryptu pomiaru (ogrodnik) i przepisanie wyniku. |
-| `klasa-orkiestracyjny` | Kroki organizacyjne: bootstrap, planner, domknięcie fazy, scribe, walidacja, compound, archiwizacja, etapy PR. |
-| `klasa-naprawiacz` | Fix fazy, poprawka po kontroli fixa, tura napraw PR; przed pierwszą zmianą czyta reguły kodu narzędziem Read. |
-| `klasa-sceptyk` | Bez edycji: verify findingów P1/P2, kontrola diffu fixa, ocena wzorców ogrodnika. |
-
-### Research (wołani przez `dev-plan`, `dev-brainstorm`)
-
-| Agent | Rola |
-|-------|------|
-| `repo-research-analyst` | Struktura repo, konwencje, wzorce implementacyjne (dev-plan). |
-| `learnings-researcher` | Szuka w `docs/solutions/` + `docs/CONCEPTS.md` powiązanych wniosków (dev-plan). |
-| `best-practices-researcher` | Best practices online (WebSearch, WebFetch) (dev-plan). |
-| `framework-docs-researcher` | Dokumentacja frameworków/bibliotek, wersje, ograniczenia (dev-plan). |
-| `web-research-specialist` | Iteracyjny research w sieci — prior art, wzorce konkurencji (dev-brainstorm). |
-| `spec-flow-analyzer` | Analiza specyfikacji **przed** implementacją: kompletność user flow, edge case'y, luki w handoffach (`dev-plan` 1.5). W review fazy już nie występuje — tam pracuje `spec-compliance-reviewer`. |
-
----
-
-## Słownik domenowy — `docs/CONCEPTS.md`
-
-Żywy glosariusz pojęć o znaczeniu **specyficznym dla projektu** (encje, nazwane procesy, statusy/enumy o niestandardowym sensie). Forma: **cienki indeks** — `## Termin` + 1-2 zdania + link do szczegółów w `CLAUDE.md`. Tylko słownik, nie spec.
-
-- **Zasilany** przez `/dev-compound` (Krok 4.5) — automatycznie łapie nowe terminy domenowe.
-- **Czytany** przez `dev-plan`, buildery i `learnings-researcher` — żeby nie „naprawiać" zachowania wbrew definicjom (klasyczny błąd: „poprawianie" statusu, który celowo działa nietypowo).
-- **Utrzymywany** przez `/dev-compound-refresh` (dedup, usuwanie martwych haseł).
-- **Seed:** przy pierwszym `/dev-compound` w projekcie z bogatą domeną generuje startowy słownik z `CLAUDE.md` + schematu bazy.
-
----
-
-## Wiedza projektu — `docs/learned-patterns.md`
-
-Trzy poziomy: **solution** w `docs/solutions/` z polami wiedzy we frontmatterze (`klasa`, `regula`, `paths`, `waga`, `szczebel`,
-`szczebel_powod`, `zrodlo`, `ucieczki`) → **indeks** `docs/learned-patterns.md` (jeden wiersz na regułę, generuje go
-`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz`) → **wycinek** do 2000 zn dla plików jednostki albo fazy (planner wkleja
-go builderowi razem ze zdaniami klas zapobiegalnych — `--zapobieganie`, kolejność według liczby solutions klasy w projekcie —
-dossier niesie go reviewerom, fix autopilota i tura poprawek `/dev-pr` liczą go dla poprawianych plików). Indeks nie leży w `.claude/rules/`, więc nie ładuje się do każdego agenta.
-
-- **Szczebel:** `kod` (zły wzorzec niemożliwy w kodzie) → `lint` (wykryje go analiza statyczna) → `regula` (wymaga osądu).
-  `kod` i `lint` to propozycje bramek w raporcie autopilota i `/dev-pr` — decyzja Twoja. Do wdrożenia bramki lekcja działa
-  jak reguła (indeks, wycinek). Po wdrożeniu dopisz w solution `bramka: <gdzie, np. eslint.config.js no-restricted-syntax>`
-  i odśwież indeks (`wiedza.mjs indeks --zapisz`) — lekcja wypada z indeksu i wycinków, pilnuje jej bramka. Wynik `indeks`
-  podaje `bramki: { propozycje, wdrozone }` (odsetek wdrożonych propozycji).
-- **Bramka indeksu:** koszyk „zawsze” (`paths: ["**"]`) najwyżej 5 wpisów, indeks do 40 000 zn (~75 reguł). Limit dotyczy indeksu,
-  nie wiedzy — porządkuje go `/dev-compound-refresh` (zawężenie `paths`, scalenie, archiwum; treści reguł nie skraca).
-  Pełny indeks widać w wyniku autopilota i raporcie `/dev-pr`: „Indeks wiedzy pełny — uruchom `/dev-compound-refresh`
-  (pełny przegląd)”. Wąski przegląd po compoundzie autopilota bramki rozmiaru nie rusza.
-- **Jedna linia w `CLAUDE.md` projektu** (CLAUDE.md należy do projektu — szablon go nie edytuje), żeby sesja główna wiedziała,
-  gdzie szukać:
-
-  ```markdown
-  Wiedza projektu: reguły z rozwiązanych problemów — indeks `docs/learned-patterns.md` (generuje `/dev-compound`; agenci pipeline'u dostają wycinek dla swoich plików).
-  ```
-
-- **Projekt ze starym plikiem reguł** (`.claude/rules/learned-patterns.md`): po `sync-template`, przed następnym autopilotem,
-  w sesji projektu przy czystym drzewie uruchom `/dev-compound-refresh --konwersja`. Skrypt wylicza kandydatów, skill dopisuje
-  klasę i poprawia regułę/wzorce, skrypt waliduje i zapisuje pola do solutions, generuje indeks i przenosi stary plik do
-  `docs/archiwum/learned-patterns-<data>.md`; reguły, których nie dało się zapisać, są w `docs/archiwum/learned-patterns-odrzuty-<data>.md`
-  (dopisz pola ręcznie i sprawdź `wiedza.mjs sprawdz <plik>` albo pomiń). Bez konwersji stary plik dalej ładuje się eager,
-  a planner i reviewerzy nie widzą z niego żadnej reguły.
-- **Cofnięcie:** revert zmian szablonu + w projekcie `git mv docs/archiwum/learned-patterns-<data>.md .claude/rules/learned-patterns.md`
-  (pola wiedzy w solutions mogą zostać — stary pipeline ich nie czyta).
-
----
-
-## E2E i weryfikacja
-
-Opcjonalne: zadanie bez scenariuszy `[E2E]` i bez makiet nie uruchamia przeglądarki. Gdy chcesz testów w prawdziwej przeglądarce:
-
-1. **Środowisko** — `.env.e2e` wg [`.claude/templates/e2e-env/`](.claude/templates/e2e-env/README.md): dedykowany projekt Supabase e2e
-   (nigdy dev ani prod), adres i komenda startu aplikacji. Sprawdzenie bez startu:
-   `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/<zadanie>`.
-2. **Skill weryfikacji projektu** — `/weryfikacja-setup` tworzy `.claude/skills/weryfikacja/` (jak uruchomić aplikację, jak się
-   zalogować, gdzie są funkcje, co jest dowodem działania) i mapę funkcji zasianą z planów zrobionych zadań. Tester E2E czyta go przy
-   każdym scenariuszu, archiwizacja każdego zadania dopisuje do mapy nowe funkcje. To artefakt projektu — `/sync-template` go nie rusza.
-3. **W runie** — bootstrap stawia serwer i sprawdza środowisko (niesprawne na starcie = STOP przed fazą 1). Każda faza ze
-   scenariuszami albo makietami zaczyna review od restartu serwera (`e2e.mjs restart`): serwer z bootstrapu nie widzi plików
-   konfiguracji powstałych w fazach. Potem synchronizacja migracji i seedów bazy e2e z lintem advisors, tester odgrywa scenariusze
-   i zwraca przebieg PASS/FAIL/SKIP, skrypt księguje linie `[E2E]`. Scenariusz niewykonalny w trakcie runu (serwer padł, limit
-   usługi zewnętrznej, popup OAuth) przechodzi na `[Manual]` z powodem i trafia do smoke'u operatora — run idzie dalej.
-   **Projekt od zera:** gdy repo nie ma jeszcze aplikacji (brak `package.json` albo `package.json` bez zależności), a komenda
-   startu nie ma czego uruchomić, start jest odroczony zamiast STOP-u — serwer wstaje restartem przed testerem pierwszej fazy,
-   która go potrzebuje. Projekt z aplikacją (świeży klon bez `node_modules`, literówka w `E2E_START`) dostaje nadal STOP z naprawą.
-   Serwer, który po restarcie pada od razu, daje fazie tester bez przeglądarki, a ogon logu trafia do reviewera correctness
-   (kod fazy położył serwer = defekt); do końca runu przeglądarka znika tylko, gdy serwer nie odpowiada w limicie startu.
-
-## Ogrodnik
-
-Po compoundzie i przed archiwizacją każde zadanie kończy pomiar „ogrodnika” (`.claude/scripts/ogrod/`): skrypt liczy w kodzie TS/JS
-projektu wzorce, które agenci kopiują dalej — wyciszenia lint/TS, `any`, wymuszone rzutowania, komentarze-obejścia (TODO/FIXME/HACK,
-workaround) i puste `catch` — oraz ich przyrost względem poprzedniego pomiaru. Ocenę (agent-sceptyk czyta kod w miejscach i grupuje je
-we wzorce) uruchamia nowe wyciszenie, przyrost pozostałych kategorii ≥ 5 albo co piąty pomiar bez oceny. Wynik to sekcja „## Ogród”
-w podsumowaniu zadania: liczby, nowe miejsca i najwyżej kilka propozycji ze szczeblem (reguła lint teraz / zadanie sprzątające /
-zostawić). **Ogrodnik niczego nie zmienia w kodzie** — każda propozycja czeka na Twoją decyzję. Pomiar kosztuje ~0,01 M na zadanie;
-gdy w kilku zadaniach z rzędu nie przyjmiesz żadnej propozycji, ogrodnik nie płaci za siebie (wyłączenie = revert jego kroku).
-
-## Telemetria
-
-Bez agentów i bez Twojej pracy: hook Stop po każdym runie workflowu (także STOP, KILLED, FAILED) uruchamia
-`.claude/scripts/telemetria/zbierz.mjs`, który z pliku harnessu, journala i transkryptów dopisuje rekordy `run` / `faza` / `agent` /
-`skill` do `~/.claude/telemetry/pipeline.jsonl` — koszt w pełnym cenniku z cache, kontekst startowy, efort, findingi per oś, bramki,
-sceptycy, wiedza, E2E, ogrodnik, uwagi bota z `/dev-pr`. Doctor nadrabia skanem, gdy hook coś zgubił. Raport:
-
-```bash
-node .claude/scripts/telemetria/raport.mjs --od RRRR-MM-DD --do RRRR-MM-DD --projekt <nazwa katalogu projektu> --wyj <katalog poza repo>
-```
-
-Sekcje: koszt per etap, kontekst startowy per klasa roli i model, efort, jakość (findingi reviewerów per oś, uwagi bota na 100 plików
-PR), niezawodność i STOP per kategoria, skille sesji głównej, anomalie. `--wyj` poza repozytorium projektu: raport zapisany w drzewie
-projektu zostawiłby niezacommitowane pliki, a te zatrzymują start następnego runu autopilota.
-
-## Reguły, hooki, szablony
-
-- **`.claude/rules/coding-rules.md`** — reguły kodu w sekcjach po temacie (reguły pilnowane przez ESLint, rozmiar i struktura, testowanie, organizacja, obsługa błędów, zakres zmian i bramki, nazewnictwo, zależności, bezpieczeństwo, type safety, performance, async i React, architektura). Frontmatter `paths:` (kod i SQL): plik wchodzi do kontekstu, gdy sesja albo agent czyta lub edytuje taki plik narzędziem Read/Edit. Agent zmieniający kod bez Read/Edit by go nie dostał, więc buildery i klasa naprawiacza (fix, poprawka fixa, naprawy `/dev-pr`) czytają go narzędziem Read na początku pracy — polecenie jest w pliku roli (test `reguly-naprawiacza.test.mjs`). Domknięcie fazy i walidacja końcowa poprawiają kod po bramkach mechanicznych i dostają reguły przez `paths:`.
-- **`.claude/scripts/wiedza/`** — wiedza projektu: walidacja pól solutions, indeks `docs/learned-patterns.md`, wycinek reguł, zdania klas zapobiegalnych dla buildera (`zapobieganie.mjs`), konwersja
-  starego pliku reguł (CLI `wiedza.mjs`); patrz [Wiedza projektu](#wiedza-projektu--docslearned-patternsmd).
-- **`.claude/hooks/`** — hooki harnessa (walidacje/automatyzacje przy wywołaniach narzędzi). `error-handling-reminder.sh` wyłącza się
-  w projekcie z `eslint.config.*` z szablonu (tam to samo łapie ESLint w bramkach). `env-wartosci.mjs` (PreToolUse, Bash)
-  blokuje komendę, która wypisałaby wartości z `.env*` (`cat`, `grep`, `sed`, `head`… bez ograniczenia do nazw kluczy); nazwy
-  kluczy, `grep -c`/`-q`, wczytanie do zmiennej (`set -a; . .env.e2e`, `T=$(… | cut -d= -f2-)`) i pliki `.env*.example` przechodzą.
-- **`.claude/scripts/bramki/`** + **`.claude/templates/bramki/`** — skrypt bramek domknięcia fazy i konfiguracje dla nowego projektu
-  (ESLint, knip, size-limit, Stryker, lista devDependencies); patrz [Bramki domknięcia](#bramki-domknięcia).
-- **`.claude/templates/e2e-env/`** — opcjonalne środowisko E2E (agent-browser na dedykowanej bazie Supabase e2e). Opt-in przez `.env.e2e`.
-- **`.claude/templates/smoke-autopilot/`** — smoke-test po każdej zmianie `.claude/workflows/*-wf.js`.
-- **`.claude/scripts/`** — logika deterministyczna, którą wołają agenci i workflowy (moduły z testami node): `doctor/` (wymagania projektu),
-  `bramki/` (bramki domknięcia), `dossier/` (dossier fazy dla review), `plan/` (walidacja planu, generator `docs/active/`, bramka gotowości),
-  `wiedza/` (wiedza projektu), `e2e/` (środowisko, scenariusze i księgowanie `[E2E]`, mapa funkcji), `ogrod/` (pomiar ogrodnika),
-  `telemetria/` (zbieranie i raport), `makieta/` (narzędzie makiet w smoke'u operatora: proxy, strona, zapis decyzji do checklisty).
-
----
-
-## Struktura katalogów
-
-```
-docs/
-├── brainstorms/              ← requirements docs z /dev-brainstorm (lub zbiorczy, np. mvp-requirements.md)
-├── plans/                    ← plany techniczne z /dev-plan (IU w fazach)
-├── operator/                 ← dokumenty dla człowieka: <slug>-przygotowanie.md (z /dev-prep, uzupełniany
-│                                przez /dev-plan — PRZED implementacją) i <data>-<zadanie>-smoke.md
-│                                (z /dev-docs-complete, PO autopilocie)
-├── decisions/                ← decyzje zakończonych zadań (z /dev-docs-complete); claude_md: do-uzgodnienia → /dev-pr po merge'u
-├── reviews/propozycje-do-reviewerow.md ← propozycje reguł dla reviewerów z compoundu /dev-pr (decyzja Twoja)
-├── CONCEPTS.md               ← słownik domenowy (żywy)
-├── learned-patterns.md       ← indeks wiedzy projektu (generowany z pól solutions — nie edytuj ręcznie)
-├── archiwum/                 ← stary plik reguł i odrzuty po konwersji (/dev-compound-refresh --konwersja)
-├── solutions/                ← rozwiązane problemy z /dev-compound
-│   ├── build-errors/  runtime-errors/  supabase-issues/  auth-issues/
-│   ├── ui-bugs/  performance-issues/  typescript-errors/  deployment-issues/
-│   ├── testing-issues/
-│   └── _archived/
-├── active/                   ← aktywne zadania z /dev-plan (generowane skryptem z planu)
-│   └── [nazwa]/  { plan.md · kontekst.md · zadania.md }   + branch feature/[nazwa]
-└── completed/                ← zarchiwizowane z /dev-docs-complete
-    └── [nazwa]/  { plan · kontekst · zadania · podsumowanie (z sekcją „Ogród”) }
-```
-
----
-
-## Typowe scenariusze
-
-**1. Pełny autopilot (ścieżka domyślna)**
-```
-/dev-brainstorm lazy loading            ← tylko gdy wymagań jeszcze nie ma („pusta kartka")
-/dev-plan                               ← plan techniczny (IU w fazach) + docs/operator/<slug>-przygotowanie.md
-                                           + branch + docs/active/ ze skryptu + bramka gotowości → gotowe wywołanie autopilota
-# czerwona bramka: odhacz przygotowanie (konsole, sekrety, .env.e2e wg templates/e2e-env gdy plan ma [E2E]) i zacommituj
-dev-autopilot-wf docs/active/lazy-loading   ← execute→review→fix→compound→refresh→complete
-# po runie: docs/operator/<data>-lazy-loading-smoke.md → przejdź ręcznie w przeglądarce
-/dev-pr 3                               ← PR, recenzja bota, do 3 tur poprawek, bramka merge'a, compound
-```
-
-**2. Maintenance bazy wiedzy**
-```
-/dev-compound-refresh                   ← przejrzyj całość
-/dev-compound-refresh supabase-issues   ← tylko jedna kategoria
-```
-
----
-
-## Myki i pułapki (najważniejsze)
-
-- **Autopilot: waliduj branch PRZED odpaleniem** — workflow nie pyta o branch switch.
-- **RESUME tylko po awarii runu** (zawsze z tymi samymi `args` — nie przeżywają między wywołaniami). Po **STOP bramki** (środowisko E2E, fix FAIL), gdy coś naprawiłeś — **świeży run bez `resumeFromRunId`**: resume zwróciłby porażkę bramki z cache; stan faz i tak wznowi się z `.autopilot-state.json` (źródło prawdy), checkboxy `.md` to tylko widok. Ręczne edycje `.autopilot-state.json` też wymagają świeżego runu.
-- **E2E to prawdziwa przeglądarka**, nie symulacja — autopilot sam stawia serwer aplikacji z `.env.e2e`. Bez `.env.e2e` zadanie z `[E2E]` zatrzymuje się przed fazą 1 (STOP z komendą naprawy); środowisko, które padnie w trakcie runu, przenosi scenariusze na `[Manual]` do smoke'u operatora. Przed testerem każdej fazy serwer startuje od nowa, a repo bez aplikacji (projekt od zera) nie dostaje STOP-u na starcie (P17).
-- **Limit cyklu fix = 1** — drugi cykl historycznie naprawiał 0 findingów przy koszcie pełnego re-review. Po fixie commity fixa ogląda **kontrola diffu naprawczego** (P8): jeden agent z listami K-1…K-7 katalogu A (regresja i zmiana kontraktu, bramki bez testu odmowy, listy correctness na diffie fixa, stare nazwy, niezgodne opisy, test P1 czerwony na kodzie sprzed poprawki, zmiany poza zgłoszonym miejscem) i bramkami mechanicznymi P6 na plikach fixa; zakres z hashy commitów fixa, jedna tura poprawek. Pre-skan haiku i targeted verify P1 usunięte.
-- **`compound-refresh` w autopilocie jest scoped** (tylko dotknięta kategoria + CONCEPTS.md) — pełny refresh całej bazy odpalaj osobno, okresowo.
-- **Nie autoryzuj po `user_metadata`** (Supabase) — jest edytowalne przez usera; rola z tabeli ról albo z `app_metadata` ustawianego po stronie serwera (reguły kodu, sekcja Bezpieczeństwo).
-- **Po każdej zmianie `.claude/workflows/*-wf.js`** odpal smoke-test z `.claude/templates/smoke-autopilot/`.
-- **Skille `dev-*` działają bez argumentów** — argument jest opcjonalnym doprecyzowaniem, nie wymogiem.
-
----
-
-## Changelog
-
-**Ostatnia aktualizacja:** 2026-10-08
-
-| Data | Zmiana |
-|------|--------|
-| **2026-10-08** | **Poprawa całego szablonu wg analizy pipeline'u (17 paczek P0–P16, plan `docs/reviews/2026-09-19-analiza-pipeline/PLAN-POPRAWY.md`).** Instalacja per projekt i doctor; klasy ról z allowlistą `tools:` i efortem jawnym per rola (smoke po tej zmianie: koszt runu −28% względem stanu sprzed poprawy); bramka startu autopilota; obsługa PR przez `/dev-pr` z klasyfikacją uwag bota i uzgodnieniem CLAUDE.md po merge'u; bramki domknięcia skryptem; dossier i stan fazy ze skryptu; pętla fix z kontrolą diffu naprawczego (listy K-1…K-7), P3 do known-issues zamiast fixa; sceptycy z etykietami dowodu i porcjami P2; wiedza projektu w polach solutions z indeksem i wycinkiem; reviewerzy i buildery przepisani od zera (ślepe testy przed/po); scalony `/dev-plan` z generatorem zadania; E2E ze skryptem środowiska, skillem weryfikacji i `[Manual]` zamiast STOP-u w trakcie runu; ogrodnik; telemetria bez agentów. Ponowny prompt-audit całości: `PROMPT-AUDIT-2.md`; co i kiedy czytać w telemetrii pierwszego nowego projektu: `KARTA-ODCZYTU.md`. |
-| **2026-09-03** | **Wdrożenie planu naprawy po audycie pipeline'u z 2026-09-02** (`docs/reviews/2026-09-02-audyt-pipeline.md`, plan: `2026-09-03-plan-naprawy.md`). Audyt oparty na dowodach z **39 runów autopilota** (telemetria) i projektu produkcyjnego (7 zadań, 6 pull requestów), nie na lekturze kodu. Trzy tury, 23 commity, jedna pozycja = jeden commit. **Tura A — poprawki punktowe.** Detektor blokera środowiska łapał findingi **o kodzie**: gołe `getaddrinfo` w regexie zatrzymywało cały run na realnym P2 („`dns.lookup`/`getaddrinfo` nie ma własnego limitu"). Teraz wzorzec wymaga kodu błędu złączonego z wywołaniem, wejście zawężone do findingów **testera E2E**, tylko w trybie `przegladarka` i tylko przy wpisie FAIL/SKIP w `przebiegi[]` — plus **realny test 12 przypadków** (`__tests__/bloker-srodowiska.test.mjs`), o którym README twierdziło, że istnieje. STOP na blokerze **zapisuje teraz metryki i otwarte findingi** zamiast gubić pracę ośmiu reviewerów. Tester E2E odpala się po **policzonej pracy** (checkbox `[E2E]` albo makiety `figma_screens`), nie po warstwie UI — historycznie 10 z 18 uruchomień szło w tryb `przegladarka` przy zerze checkboxów. Pięć wywołań agentów badawczych w `dev-plan` szło jako `type: Explore` z doklejonym plikiem agenta (Explore jest read-only i bez narzędzi sieciowych, więc research zewnętrzny po cichu nie działał) → `subagent_type`. **Jedna rodzina markerów blokera operatora** `[blokuje: planowanie]` / `[blokuje: faza N]` zamiast trzech różnych w trzech skillach — bramka gotowości `/dev-docs` nigdy wcześniej nie zadziałała, bo szukała markera, którego 5 z 7 checklist nie zawierało. `git add .` w `dev-docs-update` → `git add -u` + decyzja per plik nieśledzony. Pojedynczy sceptyk **nie zmienia już severity** (`1 > 0.5` przepuszczało korektę każdego głosu, a P2 ma z definicji jednego sceptyka — reguła z komentarza nie obowiązywała dla żadnego findingu ważnego). Usunięty legacy skill `/dev-autopilot` (501 linii sprzecznych z workflow) i sześć nieprawdziwych zdań w README. **Tura B — zmiany zachowania.** **P3 typu KOD/TEST wchodzą do pętli naprawczej** (decyzja operatora): 741 wygenerowanych P3, zero naprawionych przez autopilota, a CodeRabbit naprawiał część z nich dzień później jako realne błędy. Limit P3 8 → 15, wybór nitów dwustopniowy (najpierw te w plikach, które agent fixa i tak otworzy), zasada „napraw albo uzasadnij" z polem `p3Pominiete` w `required`. `stopRun` **commituje własne artefakty** jawnym pathspec — najczęstszy STOP w telemetrii (6/39) to „niezacommitowane zmiany" wywołane własnymi plikami pipeline'u po poprzednim STOP-ie. **Dossier fazy**: packager zapisuje drugi artefakt obok diffu (sekcja fazy z planu, przywołane wiersze śledzenia wymagań, `learned-patterns.md`, zadania fazy) zamiast ośmiu lektur tych samych 150 KB. Sceptycy P2 **batchowani po pliku** (maks 4 na grupę, ocena osobna), tiery per rola przez `args.tiery`. **Kontrola diffu naprawczego**: pre-skan mechaniczny po dodanych liniach + jeden tani agent (regresje, wektory obejścia nowych bramek, test odmowy) — fix fazy 5 dodał `loading="lazy"` i pusty `catch`, oba usunięte przez bota dzień później. `security-sentinel` dostał **tryb atakującego** (5 konkretnych wektorów obejścia na każdą nową bramkę + checklista nagłówków), `architecture-strategist` checklistę async z `coding-rules` §4/§13. Nowy **`spec-compliance-reviewer`** zamiast `spec-flow-analyzera` (ten jest do analizy specyfikacji **przed** implementacją, a był używany po — najdroższy reviewer w zestawie, mediana 174k tokenów). Planner czyta **wycinki** zamiast czterech pełnych dokumentów, zamknięte findingi znikają z pliku zadań (23 KB → 59 KB w trakcie jednego zadania). Odwołania do decyzji **niosą treść** — builder pracuje w osobnym kontekście, więc „strażnik regresji D2" był dla niego pustym stringiem. Plik kontekstu przestaje być drugim źródłem prawdy (cztery przepisane sekcje → jedna linia ze wskaźnikiem; „Decyzje techniczne" miały 1 linię wspólną z planem na 23). Obalone findingi **zostają w raporcie** review. **Konsolidacja reviewerów**: `architecture` + `simplicity` + `typescript` → jeden `code-quality`, a zwolnione miejsce dostała oś, której nikt nie miał — **`correctness`** („prześledź zmienione ścieżki i znajdź defekt, który tam jest"). **Tura C — nowy skill `/dev-pr`** (patrz sekcja „Zamknięcie"). **Trzy warunki pomiarowe zapisane w kodzie i commitach:** mediana fixa >120k = wróć do limitu P3 8; czas i liczba wywołań narzędzi reviewerów przed/po dossier (nie tokeny wyjściowe — oszczędność jest po stronie wejścia); spadek potwierdzonych P1/P2 typu KOD przez 5 faz = rozdziel `code-quality` z powrotem (`kieran-typescript-reviewer` i `code-simplicity-reviewer` zostały w repo właśnie na tę okoliczność). |
-| **2026-09-01** | **Fallback wyszukiwania requirements doc** (`dev-plan` 0.2, `dev-prep` 0.1): `docs/brainstorms/` to konwencja szablonu, nie kontrakt — projekt mógł zapisać brainstorm gdzie indziej (np. `docs/dev-brainstorms/`), a pusty glob oznaczał dotąd ciche przejście w planning bootstrap i zgubienie istniejącego brainstormu. Teraz pusty glob → fallback `docs/**/*-requirements.md` + katalogi `*brainstorm*` (z pominięciem `plans/`, `active/`, `completed/`, `solutions/`, `operator/`), trafienie ogłaszane jako nietypowa lokalizacja, a brak trafień = **pytanie do użytkownika** o ścieżkę zamiast milczącego bootstrapu. Błąd wykryty na realnym projekcie z `docs/dev-brainstorms/`; ta sama łata w szablonie mobile (`workspace-template-mobile@6fbd49d`). |
-| **2026-08-24** *(popr.)* | **Konsolidacja: jeden dokument przygotowawczy, nie dwa.** Pierwsza wersja `/dev-prep` zapisywała własny `<slug>-przed-planem.md` obok `<slug>-przygotowanie.md` z `/dev-plan` — dwie listy do odhaczania dla tej samej pracy. Teraz **`/dev-prep` tworzy `docs/operator/<slug>-przygotowanie.md`**, a `/dev-plan` go **uzupełnia w miejscu** (`Edit`, nigdy `Write`): dopisuje numery blokowanych faz przy istniejących pozycjach i dokłada te wynikłe z IU; `[x]` wraz z wpisanymi wartościami i datami są nietykalne, sekcje nie są duplikowane, układ zastany w pliku wygrywa z szablonem. Wejście wprost do `/dev-plan` (bugfix) tworzy plik od zera jak dotąd — 5.2b ma teraz dwie ścieżki: uzupełnij albo utwórz. Zostają **dwa** dokumenty operatora zamiast trzech: przygotowanie i smoke. Sam skill przeorientowany na wzorzec z realnego projektu (`Nawykometr`, `docs/operator/e1…e6`): tytuł „Operator checklist (przygotowanie przed implementacją)", sekcja **Decyzje na górze** („zero plików, ale blokują resztę"), legenda **🔓 publiczne / 🔒 sekret** + zamykająca sekcja **„Gdzie to ląduje"**, notatka o **kolejności zależnych kroków** (klucz wymagający fingerprintu z builda), `[~]` = świadomy dług, `*(kod)*` przy pozycjach na granicy „człowiek vs autopilot", dziedziczenie układu sekcji z checklist wcześniejszych etapów i pomijanie pozycji dostarczonych w etapie poprzednim. **Dziedziczenie nazewnictwa serii** (`/dev-prep` 0.3): skill wykrywa wzorzec nazw w `docs/operator/` (≥2 pliki ze wspólnym sufiksem po identyfikatorze etapu, z pominięciem `*-smoke.md`), odtwarza prefiks w konwencji serii, przy jednym pliku przyjmuje jego sufiks, przy dwóch konkurencyjnych wzorcach pyta, przy pustym katalogu bierze domyślny `<slug>-przygotowanie.md`. Żeby to nie rozjechało pipeline'u, wyszukiwanie checklisty poszło z nazwy na **frontmatter**: `dev-plan` 0.2 globuje `docs/operator/*.md` i dopasowuje po `origin:`, 5.2b używa znalezionej ścieżki bez zmiany nazwy, a `operator_prep:` w planie jest jedyną referencją dla `/dev-docs` (bramka gotowości, commit inicjalny, sekcja źródeł). |
-| **2026-08-24** | **Nowy skill `/dev-prep` — zamówienie na materiały wejściowe przed planowaniem.** Luka zamknięta: `/dev-plan` pytał o mockupy Figmy dopiero w kroku 1.6, w środku przebiegu, więc o potrzebie makiet dowiadywałeś się w trakcie planowania — a tabela 3.7 miała martwy wiersz „dostęp do Figmy z mockupami" ze źródłem 1.6, czyli pozycję dopisywaną ~300 linii PO tym, jak sprawa została rozstrzygnięta (fetch się udał albo zapadła decyzja „projektujemy z głowy"); dopisanie jej do checklisty przed autopilotem niczego już nie odblokowywało. `/dev-prep` czyta **etap zbiorczego dokumentu wymagań** (`mvp-requirements.md#etap-17` — ta sama konwencja `origin:` z kotwicą sekcji co `dev-plan` 0.2), skanuje repo read-only (route'y → ekran istniejący to zamówienie na *modyfikację*, nie nowy design; `docs/DESIGN.md`; `docs/plans/*-figma/SPEC.md`; **nazwy** zmiennych z `.env.example` — nigdy wartości) i zapisuje `docs/operator/<slug>-przed-planem.md` z czterema listami: **makiety** (nazwa ekranu kebab-case = klucz dopasowania do URL-a Figmy, status nowy/modyfikacja/już-zaprojektowany, stany pusty·ładowanie·błąd, breakpointy, ID wymagań, puste pole `URL Figma:`), konta/klucze/dostępy, assety i treści (kryterium: **czas realizacji po stronie człowieka**), decyzje produktowe jako **pytania zamknięte z opcjami** (`[blokuje planowanie]`). Skill jawnie **nie planuje** (zero IU, architektury, szacunków) i jest opcjonalny — bugfix/tech-debt/backend idą wprost do `/dev-plan`. **Trzy sprzężenia w `dev-plan`:** (1) **0.2** — glob `docs/operator/*-przed-planem.md` po `origin:`, przejęcie `feature_slug:` (jeden slug na cały pipeline: plan, `-figma/`, `-przygotowanie.md`), pytanie o nieodhaczone `[blokuje planowanie]`; (2) **1.6 krok C** — dokument wskoczył jako pozycja 2 kolejności sprawdzeń (za istniejącym SPEC, przed linkami w źródle) z czterema rozstrzygnięciami po stanie pól `URL Figma:`: wszystkie wypełnione → **fetch bez pytania** z listą `{name, url}` z dokumentu, część → wybór (fetchuj gotowe / podaj brakujące / przerwij), zero → projektujemy z głowy albo stop, sekcja pusta/`dotyka_ui: false` → `figma_spec: null`; (3) **3.7** — pozycje `[x]` z sekcji 2–3 **nie są powtarzane** (operator nie robi tego samego dwa razy), nieodhaczone przepisywane z dołożeniem numeru blokowanego IU/fazy, martwy wiersz Figmy usunięty z tabeli. Brak dokumentu `/dev-prep` = pełna kompatybilność wstecz: `dev-plan` idzie starą ścieżką i pyta o Figmę interaktywnie — skill nigdy nie jest wymogiem. README: trzeci dokument operatora w drzewie `docs/` i w opisie pipeline'u. |
-| **2026-08-23** | **Port audytu pipeline'u z szablonu mobile (commit `c57847d`): audyt `dev-brainstorm` / `dev-plan` / `dev-docs` + dokumenty dla operatora + domknięcie toru `[E2E]`.** `dev-docs` przepisany na **czystą transformację planu** (koniec z dublowaniem analizy/ryzyk/szacunków z `dev-plan`; brak planu → odesłanie do `/dev-plan`), jawny **kontrakt formatu** czytany przez parsery (checkboxy w kolumnie 0, impl. / `Test:` / `Weryfikacja:` / `## Operator checklist faza N`, **jedna nośna linia per scenariusz** `Test: [E2E] \`<flow>\`[ (seed: e2e/seeds/<x>-seed.sql)] — <scenariusz> → <stan>` z kebab-case identyfikatorem flow w backtickach), bezpieczny branch (istniejący → checkout, brudne drzewo → STOP ze stash per ścieżka), **handoff na autopilot** z bramką gotowości (`[E2E]` vs `.env.e2e`, blokery operatora, git) zamiast sugestii ręcznego `/dev-docs-execute`. `dev-plan`: **fazy obowiązkowe** (`### Faza N — …`, numeracja od 1 — `/dev-docs` przenosi 1:1), **zbiorczy dokument wymagań / lista z requestu jako pełnoprawne źródło**, klasyfikacja UI/pure-data bez pytania, nowa sekcja **„Wymagania wstępne operatora"** + `docs/operator/<slug>-przygotowanie.md` (frontmatter `operator_prep:`). `dev-brainstorm`: sekcja „Kiedy używać" (opcjonalny, tylko „pusta kartka"), usunięte „Przejdź bezpośrednio do pracy" (omijało plan, IU, `[E2E]` i stan). `dev-docs-complete-wf`: nowa faza **smoke operatora** (`docs/operator/<data>-<zadanie>-smoke.md` z Operator checklist, `[Manual]`, findingów OPERATOR, known-issues; `[E2E]` nieuruchomione jako ⚠️), `smokeOperatora`/`smokeStatus`/`archiwizacjaStatus` w wyniku autopilota; complete commituje jawnym pathspecem także wyjścia compound. **Domknięcie toru `[E2E]` end-to-end** (P1 z audytu mobile: scribe traktował brak findingu jako PASS — tester zabity przez watchdoga = fałszywa zieleń): tester E2E zwraca **jawny przebieg per checkbox** (`przebiegi[]` PASS/FAIL/SKIP z dowodem) — scribe odznacza `[E2E]` **wyłącznie** z wpisu PASS, retry testera po null/pustym wyniku + twardy STOP (`e2eTesterFail`) zamiast cichej degradacji do OPERATOR, findingi E2E/OPERATOR testera poza adversarial verify (dowodem jest przebieg, nie kod) i poza limitem P3, właściciel odznaczania `Test: [E2E]` = scribe/fix (execute nie rusza), kopie w Operator checklist z `[E2E]`→`[Manual]`, completion-gate rozdziela `e2eFail` (przebiegło i padło, suffix `(FAIL: …)`) od `e2eNieuruchomione` i **cofa fazy z otwartymi `[E2E]` do `review=pending`** (`e2eFazy`) zamiast pętli identycznych STOP-ów, jeden grep `[E2E]` we wszystkich bramkach (oba prefiksy, bez kopii `Operator:`), db-sync dobiera seedy ze wszystkich linii `[E2E]` i checkboxów `Stwórz/Modyfikuj (e2e seed)`, pola E2E w `skrotPrzebiegu`/telemetrii. Agent **`feature-tester-e2e` przepisany na kontrakt** — zintegrowany z trzema trybami z 2026-07-30 (`przegladarka`/`bez-przegladarki`/`pominiety` zostają; kontrakt `przebiegi[]` obowiązuje w każdym trybie): oba prefiksy, scenariusz wiążący z treści linii `[E2E]`, runner `e2e/<etap>-run-all.sh` uruchamiany RAZ z wynikiem per scenariusz, brak seeda = P2 typ E2E dla fixa (tester go nie pisze), nie modyfikuje pliku zadań, visual-diff jako finding OPERATOR. Web-adaptacje portu: brak plików flow (agent-browser gra scenariusz z opisu w linii — kluczem dopasowania przebieg↔checkbox jest backtick-identyfikator flow z nośnej linii, fallback po znormalizowanej treści), dev server Vite z harnessu `.env.e2e` zamiast dev-clienta z prebuildu. Spójność: fixture `smoke-autopilot` (`### IU-1`, `Test: [Unit]`, `## Operator checklist faza 1` + asercje smoke'u w README), README `e2e-env` (runner wskazywany jedną linią `Weryfikacja: [E2E]`). |
-| **2026-08-18** | **Port 8 ulepszeń architektury z szablonu mobile (commity 899dd2c..a67df8c, wyprowadzone z runów feedback-marcin-poprawki i e3-core-loop).** **Integralność stanu:** `zapiszStan` czyta plik z dysku po zapisie i waliduje `JSON.parse` (+1 retry na modelu głównym) — niezaescapowany cudzysłów w opisie findingu potrafił uszkodzić `.autopilot-state.json`, a to plik, z którego pipeline odtwarza stan po awarii; bootstrap waliduje plik przed odczytem i przy uszkodzeniu wraca do parse md zamiast „odczytywać" (= zmyślać) stan faz. **Telemetria także na STOP:** run zatrzymany na bramce zostawiał ZERO telemetrii (w mobile: ~10 h, 136 agentów, 5 STOP-ów, ani jednej linii) — teraz każdy STOP przechodzi przez `stopRun()` z wpisem status+powód, w try/catch (529 przy zapisie nie może zabić komunikatu bramki), a linia JSONL jest walidowana i usuwana gdy wadliwa. **Bramka setupu E2E:** opt-in czyta DWA sygnały — `.env.e2e` (czy środowisko jest) i markery `[E2E]` w planie (czy jest wymagane); zadanie z `[E2E]` bez środowiska = STOP przed fazą 1 zamiast cichej degradacji do OPERATOR wykrywanej dopiero na completion-gate (w mobile kosztowało to 3 fazy i ~20 h); completion-gate w walidacji końcowej też czyta PLAN, nie repo. **Bloker środowiska po sygnaturze:** review-wf rozpoznaje w JS (bez LLM) infra-błędy w findingach E2E (`ERR_CONNECTION_REFUSED`/`ECONNREFUSED` = dev server down; `ERR_NAME_NOT_RESOLVED`/`ENOTFOUND` = zły URL / spauzowany projekt Supabase) i autopilot STOP-uje od razu zamiast ciągnąć kolejne fazy na zepsutym środowisku; tester E2E ma nakaz cytowania DOSŁOWNYCH komunikatów błędów (parafraza nie uruchomi detekcji); regexy pokryte testem 12 przypadków. **Globalny limit P3 (8 po dedupie) z round-robinem po źródle:** per-reviewerowy limit 5 nie ogranicza agregatu (8×5), a proste `slice` ucinałoby po kolejności reviewerów — systematycznie wyciszając simplicity/test-coverage/e2e w każdej fazie; odrzucone P3 jawnie w logu i metryce `p3Odrzucone`. **Blok semantyki jednostek pól** dla spec-compliance i test-coverage: wykonywalna procedura (grep WSZYSTKICH użyć pola, kolejność źródeł prawdy: migracja SQL → spec/IU → requirements, odczyt realnego wiersza z bazy e2e) — w mobile pole `price_pln` czytane w 3 miejscach jako kwota od gracza zamiast całości dało 8× zawyżenie przy ZIELONYCH testach, bo fixture powielał to samo błędne założenie. **Przegląd known-issues.md w walidacji końcowej** (z commitem — brudne drzewo blokuje bootstrap następnego runu): wpisy domknięte późniejszymi fazami przenoszone do sekcji „Zamknięte" zamiast strasznić operatora nieaktualnym obrazem. **Konwencje bezpieczeństwa seedów** (templates/e2e-env): seedy WYŁĄCZNIE przez `psql` (`supabase db query -f` wysyła plik jako jedno prepared statement — 42601), pozytywna identyfikacja bazy tabelą-markerem przed każdym destrukcyjnym seedem (guard „konto istnieje" zawodzi dokładnie wtedy, gdy konto o tym mailu jest na dev/prod), re-seed per scenariusz egzekwowany runnerem, nie zdaniem w README. NIE portowane (czysto mobilne): świeżość binarki dev-clienta, bramka natywnych zależności, canary Maestro, pary `EXPO_PUBLIC_*`. |
-| **2026-07-30** | **Dwie luki z audytu runu `rownolegle-joby` (4 fazy, 1,8 M tokenów).** **Baza wiedzy jest commitowana przez tego, kto ją zapisuje:** `dev-compound-wf` zapisywał solution, `learned-patterns.md` i `CONCEPTS.md`, a NIKT tego nie commitował — dwa runy z rzędu zostawiły te pliki w drzewie, co blokowało bramkę bootstrapu następnego runu (STOP „niezacommitowane zmiany"), czyli compound sabotował kolejne uruchomienie pipeline'u. Teraz commituje compound (krok 7, whitelist ścieżek, zakaz `git add -A`), commituje `compound-refresh` (edytuje istniejące dokumenty, więc ma ten sam obowiązek), a `dev-docs-complete-wf` sprawdza `git status` i dociąga to, co zostało — trzy warstwy, bo compound bywa też odpalany standalone. **Tester E2E ma trzy tryby zamiast włącz/wyłącz:** orkiestrator zna status środowiska (`e2eAktywne`), ale nie przekazywał go do review-wf, więc routing przywoływał testera na podstawie samego diffu — w audytowanym runie poszedł w przeglądarkę bez środowiska i skończyło się na 1 passed / 1 failed / 3 skipped. Teraz `srodowiskoE2E` idzie w argumentach, a tester dostaje tryb `przegladarka` / `bez-przegladarki` (tylko HTTP i CLI, scenariusze browserowe → Operator checklist) / `pominiety`; `undefined` (ręczne `/dev-docs-review`) = fail-open bez zmian. Ostrzeżenie dla scribe'a przeniesione z „tester nie odpalił" na **„tester nie miał przeglądarki"** — w trybie ograniczonym tester jest na liście aktywnych, więc stary warunek przepuściłby odznaczanie niepotwierdzonych checkboxów. `e2eTryb` trafia do `## Przebieg review` i telemetrii (poza `required` w schemacie stanu — starsze `.autopilot-state.json` go nie mają). **README: wymóg włączenia Dynamic Workflows** — zgłoszenie od osoby instalującej szablon: przy `/config` → Dynamic workflows = `false` Claude nie widzi żadnego pliku z `.claude/workflows/`, więc `dev-autopilot-wf` „nie istnieje" mimo poprawnej instalacji. Teraz to osobny krok w „Jak zacząć" + ostrzeżenie z objawem w sekcji Dynamic Workflows. |
-| **2026-07-27** | **Sześć poprawek z audytu pierwszego runu na routingu v2 (`team-os-onboarding-instalatory`, 3 fazy, 4 uruchomienia, 6 h 45 min).** **Odzyskiwanie scribe'a:** scribe potrafi paść PO udanym zapisie, przy zwracaniu wyniku — w audytowanym runie raport (363 linie) i bookkeeping leżały już na dysku, a pipeline i tak zażądał powtórki całego review (~150–250 k tokenów). Teraz przed ogłoszeniem porażki inspektor na Haiku sprawdza sentinel `## Przebieg review` (scribe wkleja go na samym końcu, więc jego obecność = zapis domknięty) i wynik jest odzyskiwany z dysku. **Guard plików binarnych:** fix wpisał do pliku źródłowego surowe bajty sterujące, plik przestał być tekstem i każdy kolejny agent rozłączał się na jego `Read` — 6 prób, run martwy po 2 h 47 min. Agent fixa raportuje teraz `plikiBinarne[]` (`git diff --numstat` = `-`, z whitelistą legalnych binariów), a orkiestrator robi STOP **przed** bramką walidacji, bo uszkodzony plik jest przyczyną, a failujący typecheck tylko objawem. **Limit P3:** telemetria 5 zadań dała P1=2, P2=29, **P3=179** przy tym, że P3 nigdy nie wchodzi do pętli naprawczej — twardy limit 5 P3 na reviewera + wymóg konkretnej akcji naprawczej (P1/P2 bez limitu). **Atrybucja tokenów per etap:** `execute`/`review`/`fix` osobno w raporcie i telemetrii, z `null` (nie `0`) dla etapu nieobecnego w runie — bez tego wiadomo tylko, że faza kosztowała 250 k, nie na co. **Diff jako artefakt:** packager zrzuca diff fazy przekierowaniem powłoki do pliku poza repo, reviewerzy czytają go jednym `Read` zamiast 6–8× własny `git diff`; przez schemat idą wyłącznie metadane (treść przez output agenta kosztowałaby dokładnie tyle, ile oszczędzamy), z limitem 300 KB, znacznikiem ucięcia i fail-open. **Dedup JS — świadomie NIE zmieniony:** przebieg JS nie skleja nic (zmierzone 49→49, 44→44, 24→24), ale wzmocnienie klucza po lokalizacji dało na 75 realnych findingach 5 sklejeń i każde błędne (pod jednym `plik:linia` siedzą dwa różne defekty); wariant z bramką podobieństwa działał, lecz kalibrował progi na jednym polskojęzycznym korpusie przy zysku jednej pary — odrzucone jako zła wymiana wobec ryzyka cichej utraty findingu, z dowodem zapisanym w komentarzu. **Telemetria opisuje całe zadanie, nie tylko ostatni run:** `kolejka` filtruje fazy po `pending`, więc faza domknięta we wcześniejszym runie nigdy nie dostawała wiersza — w audytowanym zadaniu z telemetrii zniknęła faza 1, mimo że jej metryki leżały w stanie. Wpis JSONL scala teraz raporty runu z `fazy[].metryki` ze stanu (`zrodlo: "run" \| "stan"`, `null` tam, gdzie stan nie zna wartości, nowe pole `fazyZadania`). **Routing — `performance` wymaga pliku kodu:** faza czysto dokumentacyjna (5 plików `.md`, 0 kodu) dostawała od packagera `dane=true` i budziła `performance-oracle` nad markdownem; warunek to teraz `(dane && plikiKodu > 0) \|\| plikiKodu >= 5`. |
-| **2026-07-26** | **Wnioski z audytu runu produkcyjnego (`team-os-hub-api`, 4 fazy).** **Routing reviewerów v2 — domenowy zamiast ilościowego:** stary próg „≤2 pliki" nie odpalił ani razu (realne fazy: 6–15 plików), a regexy po ścieżce (`src/hooks|lib`) nie trafiały w projekty bez `src/`. Teraz `context-packager` zwraca **flagi warstw** (`ui`/`dane`/`typowanie`/`nowyModul`) + liczbę browserowych checkboxów, a reviewer odpala się, gdy jego domena jest w fazie obecna; rdzeń (security/spec/simplicity/test) zawsze, brak flag = pełny skład (fail-open). Nowość: **E2E też jest warunkowy** — z drugą furtką na checkboxy `Weryfikacja:` i twardym zakazem odznaczania ich, gdy tester nie odpalił. **Obserwowalność:** raport review kończy się sekcją **`## Przebieg review`** (aktywni/pominięci reviewerzy z powodem, `znalezione → dedup JS → dedup semantyczny`, `verify: weryfikowane/obalone/bez głosów`) — liczby liczy orkiestrator, scribe je tylko wkleja. **Telemetria:** metryki routingu/dedupu/verify per faza trafiają do wpisu JSONL i są **utrwalane w `.autopilot-state.json`** (`fazy[].metryki`, przepisywane 1:1 przez bootstrap), więc resume ich nie gubi. **Severity dyscyplina:** skrypty migracyjne/ETL/seedy omijające warstwę API to granica zaufania — nowa sekcja w `security-sentinel`, blok w promptach reviewerów i sceptyków oraz reguła w `coding-rules §9`; „jednorazowy/throwaway" **nie** obniża severity (w audytowanym runie ta klasa błędu — spoofing tożsamości przy migracji z publicznie eksponowanej bazy — wylądowała jako dwa P3). |
-| **2026-07-21** | **Nowy skill `/coderabbit-setup`** — generuje `.coderabbit.yaml` dopasowany do stacku projektu (Expo/RN, Next.js, React+Vite, Node, Supabase), żeby CodeRabbit robił automatyczny AI code review każdego PR-a przed merge. Część wspólna (język polski, profil assertive, tools, knowledge_base z `coding-rules.md`) w `templates/coderabbit-base.yaml`, bloki per stack w `reference/stack-blocks.md`; skill wykrywa stack z `package.json`/struktury katalogów, wpisuje do `code_guidelines.filePatterns` tylko istniejące pliki i waliduje YAML przed zapisem. |
-| **2026-07-14** | **Nowy skill `/sync-template`** — aktualizacja maszynerii `.claude/` w projekcie docelowym prosto z tego repo (`claude-code-starter`). Sprawdza po SHA commita, czy szablon się zmienił, i automatycznie aplikuje (szablon wygrywa; backup nadpisywanych/usuwanych plików do `.claude/.backups/`; `settings.local.json` i własne skille projektu nietknięte; usuwanie wycofanych plików sterowane manifestem `.claude/.template-manifest`). Bundlowany skrypt bash zgodny z bash 3.2 (macOS), tryby `--dry-run`/`--force`. Rozwiązuje potrzebę ręcznego dyktowania linku i proszenia o aktualizację po wrzuceniu szablonu do nowego projektu. |
-| **2026-07-12** | **Poprawki po multi-agent review (46 findingów, 0 obalonych):** naprawa nazwy skilla Figma (`figma-design-to-code` — zaimportowany lokalnie z pluginu; poprzednia nazwa nie istniała), ujednolicenie ścieżki `docs/brainstorms/` (handoff brainstorm→plan był cicho zerwany), usunięcie skażonego `auto-error-resolver`, **8. reviewer** (`code-simplicity-reviewer`) w review-wf, **targeted verify P1/KOD po fixie** (niezależny weryfikator zamiast czystego self-reportu), warmup degraduje zamiast STOP, retry scribe'a, readerzy `learned-patterns.md` (planner/reviewerzy/buildery), audyt console.log/Sentry w domknięciu fazy, skille `/dev-docs-execute`+`/dev-docs-review` = cienkie wrappery na workflowy, `web-research-specialist` podłączony do brainstorm/ideate. Freshness: **Stripe v22** (wpis 2026-07-06 błędnie utrzymywał v18), Zod v4 w Edge Functions, `getClaims()` preferowane, React Router v8 (`react-router`, bez `-dom`), TS 6.0/7.0, Sentry `defaultIntegrations: false`. Skorygowana semantyka RESUME (świeży run po STOP bramki vs resume po awarii). **Nowe mechanizmy:** routing reviewerów wg mapy zmian + dedup semantyczny (Haiku) w review-wf, `/freshness-audit` (cykliczny audyt skilli w żywych źródłach), telemetria runów autopilota (`~/.claude/telemetry/autopilot-runs.jsonl`), pola `paths` w skillach guideline, sync `agent-browser` z upstream 0.31.1. |
-| **2026-07-06** | **Słownik domenowy `docs/CONCEPTS.md`** (writer w `dev-compound`, readerzy w `dev-plan`/`dev-docs`/builderach, utrzymanie w `dev-compound-refresh`). Autopilot woła teraz **scoped `dev-compound-refresh`** po compound. **Audyt skilli technicznych:** `security` → OWASP Top 10:2025 + błąd `user_metadata` (reguła w `coding-rules §9`); `tailwind` → Zod v4 + `useOptimistic` w transition; `supabase` → PKCE `onAuthStateChange` + Stripe v18 + `search_path=''`; `ux-ui` → kontrast/`inert`/`interpolate-size`; `sentry` → source maps + Deno 2.x. |
-| 2026-06-21 | Dev Autopilot przeniesiony na **Dynamic Workflow** (`.claude/workflows/*-wf.js`); orkiestrator w JS, buildery/reviewerzy jako leaf-agenci. |
-| 2026-06-04 | Wchłonięte koncepty inżynierskie z mattpocock/skills (Tier 2); agenty/skille podciągnięte z compound-engineering. |
-| 2026-05-18 | Świadomość Figma/DESIGN.md w pipeline `dev-*` + visual diff w testerze E2E. |
-| 2026-05-11 | `sentry-integration` podłączony do builderów data + fullstack. |
-| 2026-05-05 | Polish wcielony w `ux-ui-guidelines`; sprzątanie skilli legacy. |
-
-> Źródła inspiracji: `compound-engineering-plugin` (EveryInc) + `mattpocock/skills`, zaadaptowane i spolszczone pod nasz stack. Szczegóły adaptacji: lokalna notatka `ZRODLA-SZABLONU.md` (gitignored).
+> Źródła inspiracji: `compound-engineering-plugin` (EveryInc) i `mattpocock/skills`, zaadaptowane i spolszczone pod nasz stack.
