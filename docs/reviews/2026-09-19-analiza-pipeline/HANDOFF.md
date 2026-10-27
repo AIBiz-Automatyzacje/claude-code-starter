@@ -3363,10 +3363,11 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (poprawka obejmuje wywołanie narzędziem); parser nagłówków review nie łapie `plik:?` i zakresów `:12-20`; pola zamrożone
     nie da się poprawić podbiciem `v`; `--grep` archiwum szuka w całej wiadomości commita.
     **Decyzje operatora (2026-10-27):** merge `popr/P27-S4` → main `de8c49a` (wypchnięty); próg E5-14 wdrożony na gałęzi
-    `popr/P27-E5-14`: `uwagiRozmiaruIu` w `walidacja-planu.mjs` (≥ 7 scenariuszy albo ≥ 10 plików = uwaga, nie błąd) + akapit
-    w `dev-plan` 3.3; na danych etapów 3–5 uwagę dostałoby 29/51 IU (przy ≥ 8 / ≥ 12 — 17/51). Test
+    `popr/P27-E5-14` (main `2d3806e`): `uwagiRozmiaruIu` w `walidacja-planu.mjs` (uwaga, nie błąd) + akapit w `dev-plan` 3.3.
+    Pierwszy próg ≥ 7 scenariuszy albo ≥ 10 plików łapał 29/51 IU etapów 3–5 (środek zwykłego rozmiaru) — operator zaostrzył
+    do ≥ 8 / ≥ 12 (17/51, najcięższe: kontekst 250–350k, 80–100 tur), gałąź `popr/E5-14-prog-8-12`. Test
     `srodowisko.test.mjs` „restart: potomek… ignorujący SIGTERM” padł raz w pełnym biegu i przeszedł 4/4 w powtórce — niestabilny.
-    **Dalej:** merge `popr/P27-E5-14` po zgodzie; potem `/sync-template` + doctor w vibersi
+    **Dalej:** `/sync-template` + doctor w vibersi
     i pełny skan telemetrii (WERSJA 9 przelicza ucieczki etapów 1–5), potem etap 6 (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
