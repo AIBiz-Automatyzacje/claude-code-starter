@@ -214,3 +214,45 @@ test('P28 opis punktu dla człowieka: co (urządzenie i miejsce), stany (wariant
     { co: 'Telefon: /tworca/<slug>', stany: null, sprawdz: 'karta zgodna' })
   assert.equal(opis('Ekran obok `visual-diff/e-figma.png` bez wymiaru i strzałki'), null, 'zapis spoza formatu — strona pokazuje całą linię')
 })
+
+const TRZY_POLA = 'Telefon: `/p/kawiarnia-u-ani` obok `visual-diff/projekt-telefon-figma.png` (viewport 390×844) → Wejście: z `/odkrywaj` kliknij kartę „Kawiarnia u Ani”. Porównaj: nagłówek z awatarem, trzy karty zrzutów w rzędzie, przycisk „Odwiedź” pod opisem. Stany: ładowanie — panel „Sieć”, Slow 3G; błąd — zablokuj `*/api/projekty*`.'
+
+test('P27 S3 poz. 28: punkt w formacie trzech pól — jak wejść, co porównać, stany i jak je wywołać — daje opis z polem wejscie', () => {
+  const opis = (/** @type {string} */ t) => punktyWizualne(`- [ ] ${t}`, skrot)[0].opis
+  assert.deepEqual(opis(TRZY_POLA), {
+    co: 'Telefon: /p/kawiarnia-u-ani',
+    wejscie: 'z /odkrywaj kliknij kartę „Kawiarnia u Ani”',
+    sprawdz: 'nagłówek z awatarem, trzy karty zrzutów w rzędzie, przycisk „Odwiedź” pod opisem',
+    stany: 'ładowanie — panel „Sieć”, Slow 3G; błąd — zablokuj */api/projekty*',
+  })
+  assert.deepEqual(opis(TRZY_POLA.replace(/ Stany: .*$/, ' Stany: brak (ekran bez stanów)'))?.stany, 'brak (ekran bez stanów)')
+  assert.equal(punktyWizualne(`- [ ] ${TRZY_POLA}`, skrot)[0].trasa, '/p/kawiarnia-u-ani', 'trasa i ekran jak w R11')
+})
+
+test('P27 S3 poz. 28: kontrola formatu — z --pola punkt bez trzech pól (stary R11) to problem; niepełne pola zawsze; stare smoke\'i bez --pola bez nowych uwag', () => {
+  const r11 = '- [ ] Telefon: `/konto/projekty` obok `visual-diff/moje-projekty-telefon-figma.png` (viewport 390×782) → układ zgodny z makietą'
+  assert.deepEqual(sprawdzFormat(`- [ ] ${TRZY_POLA}`, { pola: true }), [])
+  assert.deepEqual(sprawdzFormat(r11), [])
+  assert.deepEqual(sprawdzFormat(r11, { pola: true }).map((p) => p.powod), ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”'])
+  for (const [zly, brak] of [[TRZY_POLA.replace(/ Stany: .*$/, ''), 'Stany'], [TRZY_POLA.replace(/ Porównaj: [^.]*\./, ''), 'Porównaj']]) {
+    assert.deepEqual(sprawdzFormat(`- [ ] ${zly}`).map((p) => p.powod), [`po „→” brak pola „${brak}:” (format: Wejście: … Porównaj: … Stany: …)`], brak)
+  }
+  for (const f of ['vibersi-etap-3-smoke.md', 'vibersi-etap-4-smoke.md']) {
+    const md = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', f), 'utf8')
+    assert.ok(!sprawdzFormat(md).some((p) => /Wejście|Porównaj|Stany/.test(p.powod)), f)
+  }
+})
+
+test('po recenzji P27 S3: stary R11 ze słowem „Stany:” po „→” bez --pola bez uwag; zapis ASCII (Wejscie/Porownaj) czytany jak polski; pola w złej kolejności i tekst przed „Wejście:” = uwaga', () => {
+  const r11 = '- [ ] Komputer: `/a` obok `visual-diff/a-figma.png` (viewport 1440×900) → Stany: ładowanie i błąd jak w makiecie'
+  assert.deepEqual(sprawdzFormat(r11), [])
+  assert.deepEqual(sprawdzFormat(r11, { pola: true }).map((p) => p.powod), ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”'])
+  const ascii = `- [ ] ${TRZY_POLA.replace('Wejście:', 'Wejscie:').replace('Porównaj:', 'Porownaj:')}`
+  assert.deepEqual(sprawdzFormat(ascii, { pola: true }), [])
+  assert.equal(punktyWizualne(ascii, skrot)[0].opis?.wejscie, 'z /odkrywaj kliknij kartę „Kawiarnia u Ani”')
+  const kolejnosc = '- [ ] T: `/a` obok `visual-diff/a-figma.png` (viewport 390×844) → Porównaj: nagłówek. Wejście: z `/`. Stany: brak'
+  assert.deepEqual(sprawdzFormat(kolejnosc, { pola: true }).map((p) => p.powod), ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:'])
+  const przed = '- [ ] T: `/a` obok `visual-diff/a-figma.png` (viewport 390×844) → zgodne. Wejście: z `/`. Porównaj: nagłówek. Stany: brak'
+  assert.deepEqual(sprawdzFormat(przed).map((p) => p.powod), ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:'])
+  assert.deepEqual(sprawdzFormat(`- [ ] ${TRZY_POLA.replace(/\.\s*Porównaj:/, ';Porównaj:')}`), ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:'].map((powod) => ({ linia: 1, powod })), 'Porównaj: bez spacji przed')
+})

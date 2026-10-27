@@ -395,11 +395,11 @@ test('smoke: format punktu wizualnego, zdanie o /makieta przed punktami i w ramc
   const p = smokePrompt('zadanie-x')
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
   const zdania = [
-    'Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → <oczekiwany wynik>”: trasa w backtickach (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka.',
+    'Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”.',
     'Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke\'u wpisz /makieta.',
     'Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).',
     'Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×.',
-    'Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik>`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.',
+    'Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik> --pola`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.',
   ]
   for (const z of zdania) {
     assert.ok(p.includes(z), `workflow: ${z}`)

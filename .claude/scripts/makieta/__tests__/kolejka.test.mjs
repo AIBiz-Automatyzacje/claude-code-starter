@@ -11,7 +11,7 @@ import { LIMIT_CZEKANIA_MIN, czekaj, dopiszPrzeglad, dopiszZgloszenie, niedostar
 import { punktyWizualne } from '../punkty.mjs'
 import { skrotSha1 } from '../zapis-linii.mjs'
 
-const WPIS = { punkt: 'p-12345678', ekran: 'a', trasa: '/konto', viewport: { szerokosc: 390, wysokosc: 844 }, urzadzenie: 'iphone-15', szerokosc: 393, opis: 'ucięty tytuł', spec: 'docs/plans/x/ekrany/a.md', makieta: 'docs/completed/z/visual-diff/a-figma.png' }
+const WPIS = { punkt: 'p-12345678', ekran: 'a', trasa: '/konto', viewport: { szerokosc: 390, wysokosc: 844 }, urzadzenie: 'iphone-15', szerokosc: 393, opis: 'ucięty tytuł', spec: 'docs/plans/x/ekrany/a.md', makieta: 'docs/completed/z/visual-diff/a-figma.png', zrzut: null }
 
 /** @param {(stan: string) => Promise<void>} cialo */
 async function zeStanem(cialo) {

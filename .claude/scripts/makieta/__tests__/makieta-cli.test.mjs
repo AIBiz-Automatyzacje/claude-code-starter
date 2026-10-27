@@ -224,6 +224,8 @@ test('sprawdz: fixture etapu 4 wskazuje punkt z dwiema makietami; smoke w formac
   assert.ok(w.json.problemy.some((/** @type {{ powod: string }} */ p) => /brak PNG makiety ekranu admin-stany/.test(p.powod)))
   const r11 = await k.cli(['sprawdz', '--smoke', SMOKE_R11])
   assert.deepEqual([r11.status, r11.json], [0, { punkty: 1, problemy: [] }])
+  const pola = await k.cli(['sprawdz', '--smoke', SMOKE_R11, '--pola'])
+  assert.deepEqual([pola.status, pola.json.problemy.map((/** @type {{ powod: string }} */ p) => p.powod)], [1, ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”']], 'P27 S3 poz. 28: --pola wymaga trzech pól')
   writeFileSync(join(k.projekt, 'docs/operator/2026-10-20-bez-smoke.md'), '- [ ] zwykły punkt\n')
   assert.equal((await k.cli(['sprawdz', '--smoke', 'docs/operator/2026-10-20-bez-smoke.md'])).status, 0, 'bez punktów wizualnych')
   assert.equal((await k.cli(['start', '--smoke', SMOKE, '--aplikacja', 'http://example.com', '--port', String(k.port)])).status, 2)

@@ -11,6 +11,8 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { setTimeout as czekajMs } from 'node:timers/promises'
 
+import { ZNACZNIK_ZRZUTU } from './punkty.mjs'
+
 export const LIMIT_CZEKANIA_MIN = 25
 const PLIK_KOLEJKI = 'kolejka.jsonl'
 const PLIK_DOSTARCZONYCH = 'dostarczone.jsonl'
@@ -19,9 +21,9 @@ const ODSTEP_MS = 500
 /**
  * @typedef {import('./punkty.mjs').Punkt} Punkt
  * @typedef {{ punkt: string, ekran: string, trasa: string | null, viewport: import('./punkty.mjs').Wymiary | null, urzadzenie: string,
- *   szerokosc: number, opis: string, spec: string | null, makieta: string | null }} Zgloszenie
+ *   szerokosc: number, opis: string, spec: string | null, makieta: string | null, zrzut: string | null }} Zgloszenie
  * @typedef {Zgloszenie & { id: string, czas: string }} WpisKolejki
- * @typedef {{ punkt: string, linia: number, zgloszenie: string | undefined, tresc: string, trasa: string | null,
+ * @typedef {{ punkt: string, linia: number, zgloszenie: string | undefined, zrzut: string | null, tresc: string, trasa: string | null,
  *   ekrany: { ekran: string, spec: string | null, makieta: string | null, wymiary: import('./punkty.mjs').Wymiary | null }[] }} OtwarteZgloszenie
  * @typedef {{ punkty: number } & Record<Punkt['status'], number>} Podsumowanie
  * @typedef {{ smoke: string, zgloszenia: OtwarteZgloszenie[], podsumowanie: Podsumowanie }} Przeglad
@@ -121,6 +123,12 @@ export function otwarteZgloszenia(punkty) {
   return punkty.filter((p) => p.status === 'blad')
 }
 
+/** @param {string | undefined} adnotacja @returns {string | null} sciezka zrzutu operatora z konca adnotacji bledu (P27 S3) */
+function zrzutAdnotacji(adnotacja) {
+  const i = adnotacja?.lastIndexOf(ZNACZNIK_ZRZUTU) ?? -1
+  return adnotacja && i !== -1 ? adnotacja.slice(i + ZNACZNIK_ZRZUTU.length).trim() : null
+}
+
 /**
  * Otwarte zgloszenia z ekranami (SPEC, PNG, wymiary) — wynik `makieta.mjs zgloszenia` i lista w zdarzeniu konca przegladu.
  * @param {Punkt[]} punkty
@@ -129,7 +137,7 @@ export function otwarteZgloszenia(punkty) {
  */
 export function opisOtwartych(punkty, zrodla) {
   return otwarteZgloszenia(punkty).map((p) => ({
-    punkt: p.id, linia: p.linia, zgloszenie: p.adnotacje[0], tresc: p.tresc, trasa: p.trasa,
+    punkt: p.id, linia: p.linia, zgloszenie: p.adnotacje[0], zrzut: zrzutAdnotacji(p.adnotacje[0]), tresc: p.tresc, trasa: p.trasa,
     ekrany: zrodla.ekrany.filter((e) => e.punkt === p.id).map(({ ekran, spec, makieta, wymiary }) => ({ ekran, spec, makieta, wymiary })),
   }))
 }

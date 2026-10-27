@@ -1,7 +1,7 @@
 // Serwer narzedzia makiet (P24 IU-5) na prawdziwym node:http: punkty fixture'u etapu 4 w katalogu tymczasowym, decyzje z tokenem
 // i bez, konflikt 409, zgloszenie do kolejki, SSE `punkty` i `przeladuj`, statyka bez wyjscia poza katalog, proxy poza prefiksem.
 
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, request } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -91,7 +91,7 @@ function zapytaj(port, { method = 'GET', path = '/__makieta/', headers = {}, bod
       })
     })
     r.on('error', nie)
-    r.end(body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body))
+    r.end(body === undefined ? undefined : typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body))
   })
 }
 
@@ -180,7 +180,7 @@ test('„błąd” zapisuje linię i wpis kolejki ze SPEC i PNG; czekaj oddaje g
   assert.deepEqual({ ...zdarzenia[0], id: undefined, czas: undefined }, {
     zdarzenie: 'zgloszenie', id: undefined, czas: undefined, punkt: p.id, ekran: 'moje-projekty-telefon', trasa: '/konto/projekty',
     viewport: { szerokosc: 390, wysokosc: 782 }, urzadzenie: 'iphone-15', szerokosc: 393, opis: 'liczniki w jednej linii', spec: null,
-    makieta: `docs/completed/${ZADANIE}/visual-diff/moje-projekty-telefon-figma.png`,
+    makieta: `docs/completed/${ZADANIE}/visual-diff/moje-projekty-telefon-figma.png`, zrzut: null,
   })
   const ponownie = []
   for await (const z of czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 })) ponownie.push(z)
@@ -369,3 +369,81 @@ test('po recenzji P28: kolejka niezapisywalna przy końcu przeglądu = 503 z dro
   assert.deepEqual([w.status, w.json.error.code], [503, 'kolejka'])
   assert.match(w.json.error.message, /napisz w sesji „zgłoszenia”/)
 }, { zgloszenia: 'na-koniec' }))
+
+const SYGNATURA_PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+const ZRZUT = Buffer.concat([SYGNATURA_PNG, Buffer.from('zrzut operatora')])
+const KATALOG_ZRZUTOW = `docs/completed/${ZADANIE}/visual-diff/zgloszenia`
+
+/** @param {number} port @param {string} punkt @param {Buffer} cialo @param {Record<string, string>} [naglowki] */
+const wyslijZrzut = (port, punkt, cialo, naglowki = {}) => zapytaj(port, { method: 'POST', path: `/__makieta/api/zrzut?punkt=${punkt}`, headers: { ...zTokenem, 'content-type': 'image/png', ...naglowki }, body: cialo })
+
+test('P27 S3 poz. 27: POST api/zrzut zapisuje PNG w visual-diff/zgloszenia/<punkt>-<n>.png katalogu zadania; inny typ 415, nie-PNG 415, ponad 5 MB 413, zły punkt 400/404', () => zSerwerem(async ({ port, plik, projekt }) => {
+  const p = punktLinii(plik, 51)
+  const pierwszy = await wyslijZrzut(port, p.id, ZRZUT)
+  assert.equal(pierwszy.status, 200, pierwszy.tekst)
+  assert.equal(pierwszy.json.data.zrzut, `${KATALOG_ZRZUTOW}/${p.id}-1.png`)
+  assert.deepEqual(readFileSync(join(projekt, pierwszy.json.data.zrzut)), ZRZUT)
+  assert.equal((await wyslijZrzut(port, p.id, ZRZUT)).json.data.zrzut, `${KATALOG_ZRZUTOW}/${p.id}-2.png`)
+  assert.equal((await wyslijZrzut(port, p.id, ZRZUT, { 'content-type': 'image/jpeg' })).status, 415)
+  assert.equal((await wyslijZrzut(port, p.id, Buffer.from('<svg/>'))).status, 415, 'treść bez sygnatury PNG')
+  const zaDuzy = await wyslijZrzut(port, p.id, Buffer.concat([SYGNATURA_PNG, Buffer.alloc(5 * 1024 * 1024)]))
+  assert.equal(zaDuzy.status, 413)
+  assert.equal((await wyslijZrzut(port, 'p-zle', ZRZUT)).status, 400)
+  assert.equal((await wyslijZrzut(port, 'p-00000000', ZRZUT)).status, 404)
+  assert.equal((await zapytaj(port, { method: 'POST', path: `/__makieta/api/zrzut?punkt=${p.id}`, headers: { 'content-type': 'image/png' }, body: ZRZUT })).status, 403)
+  assert.deepEqual(readdirSync(join(projekt, KATALOG_ZRZUTOW)).sort(), [`${p.id}-1.png`, `${p.id}-2.png`])
+}))
+
+test('P27 S3 poz. 27: „błąd” ze zrzutem — ścieżka w adnotacji linii, w zgłoszeniu kolejki (od razu) i w przeglądzie (na koniec); zrzut spoza katalogu, innego punktu albo nieistniejący = 400', () => zSerwerem(async ({ port, plik, stan }) => {
+  const p = punktLinii(plik, 51)
+  const zrzut = (await wyslijZrzut(port, p.id, ZRZUT)).json.data.zrzut
+  const inny = punktLinii(plik, 52)
+  for (const zly of [`${KATALOG_ZRZUTOW}/${p.id}-9.png`, `${KATALOG_ZRZUTOW}/${inny.id}-1.png`, 'tajne.txt', `${KATALOG_ZRZUTOW}/../../${ZADANIE}-plan.md`]) {
+    const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'iphone-15', szerokosc: 393, zrzut: zly } })
+    assert.equal(w.status, 400, zly)
+  }
+  const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'liczniki', urzadzenie: 'iphone-15', szerokosc: 393, zrzut } })
+  assert.equal(w.status, 200, w.tekst)
+  assert.match(punktLinii(plik, 51).adnotacje[0], new RegExp(`: błąd zgłoszony — iphone-15 393 px: liczniki · zrzut: ${zrzut.replace(/[.]/g, '\\.')}$`))
+  const z = []
+  for await (const x of czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 })) z.push(x)
+  assert.equal(z[0].zdarzenie, 'zgloszenie')
+  assert.equal(z[0].zrzut, zrzut)
+}))
+
+test('P27 S3 poz. 27: przegląd na koniec niesie pole zrzut każdego zgłoszenia (null bez zrzutu)', () => zSerwerem(async ({ port, plik, stan }) => {
+  const [a, b] = [punktLinii(plik, 51), punktLinii(plik, 52)]
+  const zrzut = (await wyslijZrzut(port, a.id, ZRZUT)).json.data.zrzut
+  for (const [p, extra] of [[a, { zrzut }], [b, {}]]) {
+    const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'iphone-15', szerokosc: 393, ...extra } })
+    assert.equal(w.status, 200, w.tekst)
+  }
+  assert.equal((await zapytaj(port, { method: 'POST', path: '/__makieta/api/zakoncz', headers: zTokenem })).status, 200)
+  const z = []
+  for await (const x of czekaj({ katalogStanu: stan, limitMs: 60, odstepMs: 20 })) z.push(x)
+  assert.ok(z[0].zdarzenie === 'przeglad-zakonczony')
+  assert.deepEqual(z[0].zgloszenia.map((/** @type {{ linia: number, zrzut: string | null }} */ x) => [x.linia, x.zrzut]), [[51, zrzut], [52, null]])
+}, { zgloszenia: 'na-koniec' }))
+
+test('po recenzji P27 S3 (P2): zrzut tylko z katalogu zrzutów zadania — `../` za prefiksem i katalog o tej samej długości z istniejącym plikiem = 400; zrzut nie-tekstem = 400', () => zSerwerem(async ({ port, plik, projekt }) => {
+  const p = punktLinii(plik, 51)
+  await wyslijZrzut(port, p.id, ZRZUT)
+  const podrzucone = [`${KATALOG_ZRZUTOW}/../../x/${p.id}-1.png`, `${KATALOG_ZRZUTOW.replace('zgloszenia', 'zgloszeniA')}/${p.id}-1.png`]
+  for (const sciezka of podrzucone) {
+    mkdirSync(join(projekt, sciezka, '..'), { recursive: true })
+    writeFileSync(join(projekt, sciezka), ZRZUT)
+  }
+  for (const zrzut of [...podrzucone, 5]) {
+    const w = await zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: { punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'iphone-15', szerokosc: 393, zrzut } })
+    assert.equal(w.status, 400, String(zrzut))
+  }
+  assert.equal(punktLinii(plik, 51).tekst, p.tekst, 'linia bez zmian')
+}))
+
+test('po recenzji P27 S3 (P2): typ zrzutu bez względu na wielkość liter i parametry; ciało ponad limit + 1 MB zrywa połączenie (JSON i zrzut)', () => zSerwerem(async ({ port, plik }) => {
+  const p = punktLinii(plik, 51)
+  assert.equal((await wyslijZrzut(port, p.id, ZRZUT, { 'content-type': 'IMAGE/PNG; x=1' })).status, 200)
+  await assert.rejects(zapytaj(port, { method: 'POST', path: '/__makieta/api/decyzja', headers: zTokenem, body: 'x'.repeat(16 * 1024 + 1024 * 1024 + 64 * 1024) }))
+  await assert.rejects(wyslijZrzut(port, p.id, Buffer.concat([SYGNATURA_PNG, Buffer.alloc(6 * 1024 * 1024 + 64 * 1024)])))
+  assert.equal((await zapytaj(port, { path: '/__makieta/api/punkty', headers: zTokenem })).status, 200, 'serwer dalej odpowiada')
+}))

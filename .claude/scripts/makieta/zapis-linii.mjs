@@ -12,7 +12,7 @@ import { closeSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, re
 import { basename, dirname, join } from 'node:path'
 import { setTimeout as czekaj } from 'node:timers/promises'
 
-import { ZNACZNIK_BLEDU, ZNACZNIK_ODSTEPSTWA, ZNACZNIK_POPRAWKI, punktyWizualne } from './punkty.mjs'
+import { ZNACZNIK_BLEDU, ZNACZNIK_ODSTEPSTWA, ZNACZNIK_POPRAWKI, ZNACZNIK_ZRZUTU, punktyWizualne } from './punkty.mjs'
 
 const DLUGOSC_NOTATKI = 300
 const DLUGOSC_URZADZENIA = 40
@@ -22,10 +22,12 @@ const LIMIT_BLOKADY_MS = 3000
 const ODSTEP_BLOKADY_MS = 50
 const PLIK_BLOKADY = 'zapis.lock'
 const SHA = /^[0-9a-f]{4,40}$/
+// Sciezka zrzutu sprawdzona przez serwer (katalog zadania, punkt, plik istnieje) — tu tylko znaki bezpieczne w adnotacji.
+const ZRZUT = /^[\w./-]+\.png$/
 
 /**
  * @typedef {'zgodne' | 'odstepstwo' | 'blad' | 'poprawione'} Decyzja
- * @typedef {{ notatka?: string, urzadzenie?: string, szerokosc?: number, commit?: string }} DaneDecyzji
+ * @typedef {{ notatka?: string, urzadzenie?: string, szerokosc?: number, commit?: string, zrzut?: string }} DaneDecyzji
  * @typedef {{ wynik: 'zapisano', linia: string } | { wynik: 'konflikt', powod: 'brak-punktu' | 'niejednoznaczny' | 'linia-zmieniona', linia: string | null }} WynikZapisu
  */
 
@@ -48,6 +50,8 @@ const neutralizuj = (t) => t
   .replace(/\)\*+/g, ')')
   .replace(/\[+\s*(E2E|Manual|Unit|P[1-3])\s*\]+/gi, '$1')
   .replace(/(Operator)\s*:+/gi, '$1')
+  // Znacznik sciezki zrzutu (P27 S3) stawia tylko narzedzie — notatka nie podszyje sie pod zrzut w `opisOtwartych`.
+  .replace(/·\s*(zrzut)\s*:+/gi, '· $1 ')
 
 /**
  * Notatka operatora jako fragment jednej linii checkboxa: neutralizacja do punktu stalego (resztki nie skladaja sie w nowe
@@ -92,7 +96,8 @@ function adnotacjaDecyzji(decyzja, dane) {
     if (!urzadzenie || typeof szerokosc !== 'number' || !Number.isInteger(szerokosc) || szerokosc < 1 || szerokosc > MAKS_SZEROKOSC) {
       throw new BladZapisu('odmowa', '„Zgłoś błąd” wymaga urządzenia i szerokości ramki (1–10000 px)')
     }
-    return { checkbox: ' ', tresc: `${ZNACZNIK_BLEDU} — ${urzadzenie} ${szerokosc} px: ${opis}` }
+    if (dane.zrzut !== undefined && !ZRZUT.test(dane.zrzut)) throw new BladZapisu('odmowa', 'ścieżka zrzutu spoza visual-diff/zgloszenia/')
+    return { checkbox: ' ', tresc: `${ZNACZNIK_BLEDU} — ${urzadzenie} ${szerokosc} px: ${opis}${dane.zrzut ? `${ZNACZNIK_ZRZUTU}${dane.zrzut}` : ''}` }
   }
   if (decyzja === 'poprawione') {
     if (typeof dane.commit !== 'string' || !SHA.test(dane.commit)) throw new BladZapisu('odmowa', '„poprawione” wymaga skrótu commita (4–40 znaków hex)')

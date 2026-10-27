@@ -2,12 +2,17 @@
 // presetow, wspolna trasa dla wszystkich ramek, skalowanie `transform: scale` z oknem po skali (media queries ramki widza
 // pelna szerokosc urzadzenia), wybor urzadzen pamietany miedzy ekranami (localStorage z try/catch). Skala (P28): „przewijaj”
 // (domyslna) — najszersza ramka na szerokosc kolumny, rzad przewijany w poziomie; „wszystkie” — caly rzad w kolumnie; „1:1”.
-// Strona nie czyta zawartosci ramek: jedyna interakcja to `src` i przeladowanie.
+// Strona nie czyta zawartosci ramek: jedyna interakcja to `src` i przeladowanie. Adres ramki (P27 S3) zglasza skrypt
+// wstrzykiwany przez proxy (`siec.mjs`, `postMessage`); strona trzyma go w `data-adres` ramki.
 
 const KLUCZ_WYBORU = 'makieta.urzadzenia'
 const ODSTEP_RAMEK_PX = 16
 const OBRAMOWANIE_PX = 1
 const MARGINES_PASKA_PX = 20
+const ORIGIN_WZGLEDNY = 'http://makieta.invalid'
+// Przekierowanie po przeniesieniu ramki przychodzi zaraz po jej zaladowaniu (start dokumentu albo replace routera).
+const OKNO_ECHA_MS = 3000
+const RODZAJE = new Set(['start', 'push', 'replace', 'pop'])
 
 /**
  * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
@@ -100,6 +105,8 @@ export function ustawRamki(kontener, urzadzenia, trasa, tryb) {
     iframe.width = String(u.szerokosc)
     iframe.height = String(u.wysokosc)
     iframe.dataset.urzadzenie = u.id
+    iframe.dataset.adres = trasa
+    iframe.dataset.przeniesiona = String(Date.now())
     wymiaruj(okno, iframe, podpis, u, skala)
     iframe.src = trasa
     okno.append(iframe)
@@ -108,12 +115,66 @@ export function ustawRamki(kontener, urzadzenia, trasa, tryb) {
   }))
 }
 
-/** @param {HTMLElement} kontener @param {string} trasa wszystkie ramki od nowa na trasie */
+/**
+ * @param {string} trasa wpis operatora albo adres zgloszony przez ramke
+ * @returns {string | null} trasa tego originu poza strona narzedzia; `//host` i `/\\host` przegladarka czyta jako adres obcy
+ *   (ramka ucieklaby z proxy)
+ */
+export function bezpiecznaTrasa(trasa) {
+  if (!trasa.startsWith('/') || trasa.includes('\\') || trasa.startsWith('/__makieta/')) return null
+  try {
+    // Parser URL zdejmuje tabulatory i nowe linie — `/\t/host` to tez adres obcy.
+    return new URL(trasa, ORIGIN_WZGLEDNY).origin === ORIGIN_WZGLEDNY ? trasa : null
+  } catch {
+    // Trasa, ktorej przegladarka nie zlozy w adres — jak obca.
+    return null
+  }
+}
+
+/**
+ * Komunikat skryptu ramki o jej adresie (P27 S3 poz. 25). „Ramki razem”: pozostale ramki ida na ten adres. Bez petli: ramka
+ * przeniesiona zglasza po zaladowaniu adres, ktory juz ma w `data-adres`, a jej przekierowanie (start albo replace w oknie
+ * OKNO_ECHA_MS od przeniesienia — np. telefon `/x` → `/m/x`) zmienia tylko jej adres; push i pop rozsylane zawsze.
+ * @param {HTMLElement} kontener
+ * @param {{ origin: string, source: unknown, data: unknown }} zdarzenie zdarzenie `message` okna strony
+ * @param {{ origin: string, razem: boolean, teraz?: number }} opcje origin strony narzedzia (i proxy)
+ * @returns {string | null} nowy adres ramki-nadawcy (do paska adresu) albo null, gdy komunikat nic nie zmienia
+ */
+export function adresZRamki(kontener, zdarzenie, { origin, razem, teraz = Date.now() }) {
+  const { data } = zdarzenie
+  if (zdarzenie.origin !== origin || typeof data !== 'object' || data === null || !('makieta' in data) || data.makieta !== 'adres') return null
+  const rodzaj = 'rodzaj' in data && typeof data.rodzaj === 'string' && RODZAJE.has(data.rodzaj) ? data.rodzaj : null
+  const trasa = 'adres' in data && typeof data.adres === 'string' ? bezpiecznaTrasa(data.adres) : null
+  const ramki = [...kontener.querySelectorAll('iframe')]
+  const nadawca = ramki.find((r) => r.contentWindow === zdarzenie.source)
+  if (!rodzaj || !trasa || !nadawca || nadawca.dataset.adres === trasa) return null
+  const echo = (rodzaj === 'start' || rodzaj === 'replace') && teraz - Number(nadawca.dataset.przeniesiona ?? -Infinity) < OKNO_ECHA_MS
+  nadawca.dataset.adres = trasa
+  if (razem && !echo) przeniesRamki(kontener, trasa, teraz)
+  return trasa
+}
+
+/**
+ * @param {HTMLElement} kontener
+ * @param {string} trasa ramki z innym adresem ida na trase (ramki z nia zostaja bez przeladowania)
+ * @param {number} [teraz] chwila przeniesienia — od niej liczy sie okno echa przekierowania
+ */
+export function przeniesRamki(kontener, trasa, teraz = Date.now()) {
+  for (const iframe of kontener.querySelectorAll('iframe')) {
+    if (iframe.dataset.adres === trasa) continue
+    iframe.dataset.adres = trasa
+    iframe.dataset.przeniesiona = String(teraz)
+    iframe.src = trasa
+  }
+}
+
+/** @param {HTMLElement} kontener @param {string} trasa ramki od nowa na swoim adresie (P27 S3); ramka bez zgloszonego adresu — na trasie */
 export function przeladujRamki(kontener, trasa) {
   for (const iframe of kontener.querySelectorAll('iframe')) {
     // Ten sam src nie przeladowuje ramki, ktora zmienila trase sama (nawigacja w aplikacji) — ustawiamy go od nowa przez about:blank.
     iframe.src = 'about:blank'
-    iframe.src = trasa
+    iframe.dataset.przeniesiona = String(Date.now())
+    iframe.src = iframe.dataset.adres || trasa
   }
 }
 

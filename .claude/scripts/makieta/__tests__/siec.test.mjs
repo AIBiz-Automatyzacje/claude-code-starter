@@ -129,3 +129,58 @@ test('po recenzji: * w środku wzorca, znaki specjalne dosłownie, wzorzec z sam
   await druga.okno.fetch('/a')
   assert.ok(Date.now() - t < 280, `jedno opóźnienie, było ${Date.now() - t} ms`)
 })
+
+/**
+ * Ramka aplikacji pod strona narzedzia: location, history z pushState/replaceState, zdarzenia okna i rodzic z postMessage.
+ * @param {{ wRamce?: boolean }} [opcje] wRamce false = karta z „Otwórz w karcie” (window.parent === window)
+ */
+function ramka({ wRamce = true } = {}) {
+  /** @type {[unknown, string][]} */
+  const wyslane = []
+  const zdarzenia = new EventTarget()
+  let url = new URL('http://127.0.0.1:5180/p/x')
+  const location = { get href() { return url.href }, get origin() { return url.origin }, get pathname() { return url.pathname }, get search() { return url.search }, get hash() { return url.hash } }
+  /** @param {string} nowy */
+  const zmien = (nowy) => { url = new URL(nowy, url) }
+  const okno = {
+    location, URL, Request, TypeError, EventTarget, ProgressEvent: Event, Event, DOMException, setTimeout, Date,
+    localStorage: { getItem: () => null }, fetch: async () => 'odpowiedz',
+    history: { pushState: (/** @type {unknown} */ _s, /** @type {string} */ _t, /** @type {string} */ u) => zmien(u), replaceState: (/** @type {unknown} */ _s, /** @type {string} */ _t, /** @type {string} */ u) => zmien(u) },
+    addEventListener: zdarzenia.addEventListener.bind(zdarzenia),
+    // Obiekt z piaskownicy vm ma inny prototyp Object — porownanie po kopii JSON.
+    parent: { postMessage: (/** @type {unknown} */ dane, /** @type {string} */ origin) => wyslane.push([JSON.parse(JSON.stringify(dane)), origin]) },
+  }
+  const kontekst = /** @type {any} */ (createContext(okno))
+  runInContext('var window = globalThis', kontekst)
+  if (!wRamce) kontekst.parent = kontekst
+  runInContext(SKRYPT, kontekst)
+  /** @param {string} u wstecz/dalej przegladarki: adres zmienia sie bez pushState, potem popstate */
+  const wstecz = (u) => { zmien(u); zdarzenia.dispatchEvent(new Event('popstate')) }
+  return { okno: kontekst, wyslane, wstecz }
+}
+
+test('P27 S3 poz. 25: skrypt w ramce zgłasza stronie adres (ścieżka, query, hash) i rodzaj zmiany po załadowaniu, pushState, replaceState i wstecz — jeden komunikat na zmianę', () => {
+  const { okno, wyslane, wstecz } = ramka()
+  okno.history.pushState(null, '', '/tworca/x?tab=2#opis')
+  okno.history.replaceState(null, '', '/tworca/x?tab=3')
+  assert.equal(wyslane.length, 3, 'replaceState zgłasza od razu (przekierowanie routera)')
+  okno.history.pushState(null, '', '/tworca/x?tab=3')
+  wstecz('/p/x')
+  const o = 'http://127.0.0.1:5180'
+  assert.deepEqual(wyslane, [
+    [{ makieta: 'adres', adres: '/p/x', rodzaj: 'start' }, o],
+    [{ makieta: 'adres', adres: '/tworca/x?tab=2#opis', rodzaj: 'push' }, o],
+    [{ makieta: 'adres', adres: '/tworca/x?tab=3', rodzaj: 'replace' }, o],
+    [{ makieta: 'adres', adres: '/p/x', rodzaj: 'pop' }, o],
+  ], 'pushState na ten sam adres nie wysyła drugi raz; komunikat tylko do originu narzędzia')
+})
+
+test('P27 S3 poz. 25: karta z „Otwórz w karcie” (bez rodzica) nie wysyła komunikatów; drugie uruchomienie skryptu nie dubluje zgłoszeń', () => {
+  const karta = ramka({ wRamce: false })
+  karta.okno.history.pushState(null, '', '/a')
+  assert.deepEqual(karta.wyslane, [])
+  const { okno, wyslane } = ramka()
+  runInContext(SKRYPT, okno)
+  okno.history.pushState(null, '', '/b')
+  assert.equal(wyslane.length, 2, 'adres startowy + jeden za pushState')
+})

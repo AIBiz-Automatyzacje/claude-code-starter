@@ -27,6 +27,7 @@
     </div>
     <div class="tresc-wiersz">
       <dl id="opis" class="opis">
+        <div id="opis-wejscie-wiersz" hidden><dt>Jak wejść</dt> <dd id="opis-wejscie"></dd></div>
         <div><dt>Sprawdź</dt> <dd id="opis-sprawdz"></dd></div>
         <div id="opis-stany-wiersz"><dt>Stany</dt> <dd id="opis-stany"></dd></div>
         <div><dt>Gdzie</dt> <dd id="opis-co"></dd></div>
@@ -45,6 +46,10 @@
       <textarea id="opis-bledu" rows="2" maxlength="300" required></textarea>
       <label for="urzadzenie-bledu">Urządzenie</label>
       <select id="urzadzenie-bledu"></select>
+      <label for="zrzut-bledu">Zrzut (opcjonalnie): wklej Cmd+V albo wybierz plik, potem zaznacz fragment myszą</label>
+      <input type="file" id="zrzut-bledu" accept="image/*">
+      <canvas id="podglad-zrzutu" class="podglad-zrzutu" hidden></canvas>
+      <button type="button" id="usun-zrzut" hidden>Usuń zrzut</button>
       <button type="submit" id="wyslij-blad">Wyślij do sesji</button>
       <button type="button" class="anuluj">Anuluj</button>
     </form>
@@ -71,6 +76,8 @@
           <button type="submit">Przejdź</button>
         </form>
         <button type="button" id="przeladuj">Przeładuj ramki</button>
+        <label class="razem" title="Nawigacja w jednej ramce przenosi pozostałe"><input type="checkbox" id="razem" checked> Ramki razem</label>
+        <button type="button" id="tutaj" hidden>Wszystkie ramki tutaj</button>
         <button type="button" id="w-karcie">Otwórz w karcie</button>
         <div class="skala" role="group" aria-label="Skala ramek">
           <button type="button" data-skala="przewijaj" aria-pressed="true" title="Najszersza ramka na szerokość kolumny, pozostałe obok — przewiń albo przeciągnij rząd">Przewijaj</button>

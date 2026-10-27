@@ -31,7 +31,11 @@ test('P28 (3) uwagi narzędzia (ekrany SPEC bez punktu, ostrzeżenia, plik smoke
 
 test('P28 (3) opis punktu dla człowieka: Sprawdź, Stany, Gdzie; pełna linia checklisty ukryta pod „Pokaż całą linię”', () => {
   const opis = /<dl id="opis"[^>]*>([\s\S]*?)<\/dl>/.exec(HTML)?.[1] ?? ''
-  assert.deepEqual([...opis.matchAll(/<dt>([^<]*)<\/dt>\s*<dd id="([^"]*)"/g)].map((m) => [m[1], m[2]]), [['Sprawdź', 'opis-sprawdz'], ['Stany', 'opis-stany'], ['Gdzie', 'opis-co']])
+  assert.deepEqual([...opis.matchAll(/<dt>([^<]*)<\/dt>\s*<dd id="([^"]*)"/g)].map((m) => [m[1], m[2]]), [['Jak wejść', 'opis-wejscie'], ['Sprawdź', 'opis-sprawdz'], ['Stany', 'opis-stany'], ['Gdzie', 'opis-co']], 'P27 S3 poz. 28: „Jak wejść” z formatu trzech pól')
+  assert.match(HTML, /<div id="opis-wejscie-wiersz" hidden><dt>Jak wejść<\/dt>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  assert.match(js, /el\('opis-wejscie', HTMLElement\)\.textContent = opis\?\.wejscie \?\? ''/)
+  assert.match(js, /el\('opis-wejscie-wiersz', HTMLDivElement\)\.hidden = !opis\?\.wejscie/)
   assert.match(HTML, /<button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całą linię<\/button>/)
   assert.match(HTML, /<p id="tresc" class="tresc" hidden><\/p>/)
 })
@@ -111,4 +115,137 @@ test('P28 po pilocie: strzałki na rozdzielaczu nie zmieniają ekranu (globalny 
   const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
   const skrot = js.slice(js.indexOf("document.addEventListener('keydown'"), js.indexOf("if (z.key === 'ArrowLeft')"))
   assert.match(skrot, /role="separator"|getAttribute\('role'\) === 'separator'/)
+})
+
+/**
+ * Ramki bez DOM: iframe z dataset, contentWindow i licznikiem ustawien src; kontener z querySelectorAll.
+ * @param {string[]} adresy adres startowy kazdej ramki
+ */
+function atrapaRamek(adresy) {
+  const ramki = adresy.map((adres) => {
+    /** @type {string[]} historia ustawien src */
+    const historia = []
+    return Object.defineProperty({ dataset: /** @type {Record<string, string>} */ ({ adres }), contentWindow: {}, historia }, 'src', {
+      set(/** @type {string} */ v) { historia.push(v) },
+      get() { return historia.at(-1) ?? '' },
+    })
+  })
+  return { ramki, kontener: /** @type {any} */ ({ querySelectorAll: () => ramki }) }
+}
+
+const ORIGIN = 'http://127.0.0.1:5180'
+
+test('P27 S3 poz. 25: „Ramki razem” — nawigacja w ramce A przenosi pozostałe ramki; ramka przeniesiona nie rozsyła dalej (1 przeniesienie na nawigację)', async () => {
+  const { adresZRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b, c], kontener } = atrapaRamek(['/p/x', '/p/x', '/p/x'])
+  const z = (/** @type {{ contentWindow: object }} */ r, /** @type {string} */ adres) => ({ origin: ORIGIN, source: r.contentWindow, data: { makieta: 'adres', adres, rodzaj: 'push' } })
+  assert.equal(adresZRamki(kontener, z(a, '/tworca/x'), { origin: ORIGIN, razem: true }), '/tworca/x')
+  assert.deepEqual([a.historia, b.historia, c.historia], [[], ['/tworca/x'], ['/tworca/x']])
+  // B i C po zaladowaniu zglaszaja ten sam adres — bez kolejnych przeniesien (bez petli).
+  assert.equal(adresZRamki(kontener, z(b, '/tworca/x'), { origin: ORIGIN, razem: true }), null)
+  assert.equal(adresZRamki(kontener, z(c, '/tworca/x'), { origin: ORIGIN, razem: true }), null)
+  assert.deepEqual([a.historia, b.historia, c.historia], [[], ['/tworca/x'], ['/tworca/x']])
+  // Tryb niezalezny: ramka zmienia tylko swoj adres.
+  assert.equal(adresZRamki(kontener, z(c, '/inna'), { origin: ORIGIN, razem: false }), '/inna')
+  assert.deepEqual([a.historia, b.historia, c.historia, c.dataset.adres], [[], ['/tworca/x'], ['/tworca/x'], '/inna'])
+})
+
+test('P27 S3 poz. 25: komunikat obcego originu, spoza ramek, innego typu albo z trasą poza aplikacją (//host, /__makieta/) — bez zmian', async () => {
+  const { adresZRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b], kontener } = atrapaRamek(['/p/x', '/p/x'])
+  const opcje = { origin: ORIGIN, razem: true }
+  for (const zdarzenie of [
+    { origin: 'http://zly.example', source: a.contentWindow, data: { makieta: 'adres', adres: '/y', rodzaj: 'push' } },
+    { origin: ORIGIN, source: {}, data: { makieta: 'adres', adres: '/y', rodzaj: 'push' } },
+    { origin: ORIGIN, source: a.contentWindow, data: { makieta: 'inne', adres: '/y' } },
+    { origin: ORIGIN, source: a.contentWindow, data: '/y' },
+    ...['//zly.example/y', '/\\zly.example', '/\t/zly.example', '/__makieta/strona/', 'y', 7].map((adres) => ({ origin: ORIGIN, source: a.contentWindow, data: { makieta: 'adres', adres, rodzaj: 'push' } })),
+    { origin: ORIGIN, source: a.contentWindow, data: { makieta: 'adres', adres: '/y', rodzaj: 'inny' } },
+  ]) assert.equal(adresZRamki(kontener, zdarzenie, opcje), null, JSON.stringify(zdarzenie.data))
+  assert.deepEqual([a.historia, b.historia, a.dataset.adres], [[], [], '/p/x'])
+})
+
+test('P27 S3 poz. 25: przełącznik „Ramki razem” w pasku ramek, domyślnie włączony; strona słucha komunikatów ramek', () => {
+  const pasek = HTML.slice(HTML.indexOf('id="form-adres"'), HTML.indexOf('class="skala"'))
+  assert.match(pasek, /<label[^>]*><input type="checkbox" id="razem" checked> Ramki razem<\/label>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  assert.match(js, /addEventListener\('message', \(z\) => \{\s*const trasa = adresZRamki\(/)
+})
+
+test('P27 S3 poz. 26: „Przeładuj ramki” przeładowuje każdą ramkę na jej bieżącym adresie (nie na trasie punktu); ramka bez adresu — na trasie', async () => {
+  const { przeladujRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b, c], kontener } = atrapaRamek(['/tworca/x', '/p/x', ''])
+  delete c.dataset.adres
+  przeladujRamki(kontener, '/p/x')
+  assert.deepEqual([a.historia, b.historia, c.historia], [['about:blank', '/tworca/x'], ['about:blank', '/p/x'], ['about:blank', '/p/x']])
+})
+
+test('P27 S3 poz. 26: „Wszystkie ramki tutaj” (tryb niezależny) przenosi ramki z innym adresem na adres z paska; ramka już tam — bez przeładowania', async () => {
+  const { przeniesRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b], kontener } = atrapaRamek(['/tworca/x', '/p/x'])
+  przeniesRamki(kontener, '/tworca/x')
+  assert.deepEqual([a.historia, b.historia, b.dataset.adres], [[], ['/tworca/x'], '/tworca/x'])
+})
+
+test('P27 S3 poz. 26: pasek adresu śledzi adres ramki (bez nadpisywania wpisu operatora w trakcie pisania); „Wszystkie ramki tutaj” widoczne tylko bez „Ramki razem”', () => {
+  assert.match(HTML, /<button type="button" id="tutaj" hidden>Wszystkie ramki tutaj<\/button>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  const nasluch = js.slice(js.indexOf("addEventListener('message'"), js.indexOf("el('przeladuj'"))
+  assert.match(nasluch, /const trasa = adresZRamki\(/)
+  assert.match(nasluch, /stan\.trasa = trasa/)
+  assert.match(nasluch, /document\.activeElement !== pole/)
+  assert.match(js, /el\('tutaj', HTMLButtonElement\)\.hidden = [^\n]*checked/)
+  assert.match(js, /el\('tutaj', HTMLButtonElement\)\.addEventListener\('click', \(\) => przeniesRamki\(el\('ramki', HTMLDivElement\), stan\.trasa\)\)/)
+})
+
+test('P27 S3 poz. 27: kadr zrzutu — zaznaczenie w pikselach podglądu (w dowolną stronę) na piksele obrazu, przycięte do obrazu; zaznaczenie mniejsze niż 8 px = cały obraz', async () => {
+  const { kadrZrzutu } = await import('../strona/zrzut.mjs')
+  const obraz = { szerokosc: 2000, wysokosc: 1000 }
+  assert.deepEqual(kadrZrzutu({ x0: 10, y0: 20, x1: 110, y1: 70 }, 4, obraz), { x: 40, y: 80, szerokosc: 400, wysokosc: 200 })
+  assert.deepEqual(kadrZrzutu({ x0: 110, y0: 70, x1: 10, y1: 20 }, 4, obraz), { x: 40, y: 80, szerokosc: 400, wysokosc: 200 }, 'od prawej dolnej')
+  assert.deepEqual(kadrZrzutu({ x0: 450, y0: 200, x1: 900, y1: -50 }, 4, obraz), { x: 1800, y: 0, szerokosc: 200, wysokosc: 800 }, 'poza podglądem — do krawędzi obrazu')
+  assert.deepEqual(kadrZrzutu({ x0: 10.4, y0: 10.6, x1: 20.6, y1: 30.2 }, 1, obraz), { x: 10, y: 11, szerokosc: 11, wysokosc: 19 })
+  assert.deepEqual(kadrZrzutu({ x0: 10, y0: 10, x1: 17, y1: 100 }, 4, obraz), { x: 0, y: 0, szerokosc: 2000, wysokosc: 1000 })
+  assert.deepEqual(kadrZrzutu(null, 4, obraz), { x: 0, y: 0, szerokosc: 2000, wysokosc: 1000 })
+})
+
+test('P27 S3 poz. 27: formularz „Zgłoś błąd” — zrzut z pliku albo Cmd+V, podgląd z zaznaczeniem, „Usuń zrzut”; zgłoszenie wysyła PNG do api/zrzut przed decyzją', () => {
+  const form = /<form id="form-blad"[^>]*>([\s\S]*?)<\/form>/.exec(HTML)?.[1] ?? ''
+  assert.match(form, /<label for="zrzut-bledu">[^<]*Cmd\+V[^<]*<\/label>/)
+  assert.match(form, /<input type="file" id="zrzut-bledu" accept="image\/\*">/)
+  assert.match(form, /<canvas id="podglad-zrzutu" class="podglad-zrzutu" hidden><\/canvas>/)
+  assert.match(form, /<button type="button" id="usun-zrzut" hidden>Usuń zrzut<\/button>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  const wysylka = js.slice(js.indexOf('async function zglosBlad'), js.indexOf('function podepnij()'))
+  assert.match(wysylka, /api\(`zrzut\?punkt=\$\{[^}]+\}`, \{ method: 'POST', body: png, headers: \{ 'content-type': 'image\/png' \} \}\)/)
+  assert.ok(wysylka.indexOf("api(`zrzut") < wysylka.indexOf("zapisz('blad'"), 'zrzut przed decyzją')
+})
+
+test('po recenzji P27 S3 (P2): przekierowanie zależne od szerokości nie zapętla „Ramki razem” — start/replace ramki przeniesionej przez narzędzie w oknie 3 s nie rozsyła dalej', async () => {
+  const { adresZRamki, przeniesRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b], kontener } = atrapaRamek(['/x', '/x'])
+  const z = (/** @type {{ contentWindow: object }} */ r, /** @type {string} */ adres, /** @type {string} */ rodzaj) => ({ origin: ORIGIN, source: r.contentWindow, data: { makieta: 'adres', adres, rodzaj } })
+  // Komputer (A) klika: telefon (B) dostaje /d, aplikacja przekierowuje go na /m/d (start nowego dokumentu albo replace routera).
+  assert.equal(adresZRamki(kontener, z(a, '/d', 'push'), { origin: ORIGIN, razem: true, teraz: 1000 }), '/d')
+  assert.equal(adresZRamki(kontener, z(b, '/m/d', 'start'), { origin: ORIGIN, razem: true, teraz: 1500 }), '/m/d')
+  assert.equal(adresZRamki(kontener, z(b, '/m/d?r=1', 'replace'), { origin: ORIGIN, razem: true, teraz: 2000 }), '/m/d?r=1')
+  assert.deepEqual([a.historia, b.historia, b.dataset.adres], [[], ['/d'], '/m/d?r=1'], 'A zostaje na /d — bez ping-ponga')
+  // Klik operatora w B (push) rozsyła zawsze; po oknie 3 s zwykłe replace też.
+  assert.equal(adresZRamki(kontener, z(b, '/m/e', 'push'), { origin: ORIGIN, razem: true, teraz: 2500 }), '/m/e')
+  assert.deepEqual(a.historia, ['/m/e'])
+  assert.equal(adresZRamki(kontener, z(b, '/m/f', 'replace'), { origin: ORIGIN, razem: true, teraz: 9000 }), '/m/f')
+  assert.deepEqual(a.historia, ['/m/e', '/m/f'])
+  // Ramka przeniesiona przyciskiem „Wszystkie ramki tutaj” tak samo nie odbija przekierowania.
+  przeniesRamki(kontener, '/g', 20_000)
+  assert.equal(adresZRamki(kontener, z(a, '/m/g', 'start'), { origin: ORIGIN, razem: true, teraz: 20_500 }), '/m/g')
+  assert.deepEqual([a.historia.at(-1), b.historia.at(-1)], ['/g', '/g'])
+})
+
+test('po recenzji P27 S3: kadr zrzutu — granica 8 px to zaznaczenie, mała wysokość przy dużej szerokości = cały obraz, zaznaczenie całkiem poza obrazem = cały obraz, zaokrąglenie do najbliższego piksela', async () => {
+  const { kadrZrzutu } = await import('../strona/zrzut.mjs')
+  const obraz = { szerokosc: 100, wysokosc: 100 }
+  assert.deepEqual(kadrZrzutu({ x0: 0, y0: 0, x1: 8, y1: 8 }, 1, obraz), { x: 0, y: 0, szerokosc: 8, wysokosc: 8 })
+  assert.deepEqual(kadrZrzutu({ x0: 0, y0: 0, x1: 80, y1: 7 }, 1, obraz), { x: 0, y: 0, szerokosc: 100, wysokosc: 100 })
+  assert.deepEqual(kadrZrzutu({ x0: 200, y0: 200, x1: 300, y1: 300 }, 1, obraz), { x: 0, y: 0, szerokosc: 100, wysokosc: 100 })
+  assert.deepEqual(kadrZrzutu({ x0: 10.6, y0: 10, x1: 30, y1: 30 }, 1, obraz), { x: 11, y: 10, szerokosc: 19, wysokosc: 20 })
 })

@@ -1,13 +1,15 @@
 // Strona narzedzia makiet (P24 IU-7): ekrany z punktow wizualnych smoke'u, aplikacja w ramkach urzadzen po lewej, makieta 1:1
 // po prawej, decyzje „Zgodne”, „Odstępstwo OK” i „Zgłoś błąd” zapisywane do linii checklisty przez API serwera. Token z linku
 // (`?t=`) trafia do sessionStorage i znika z paska adresu; API dostaje go w naglowku, SSE — w query (EventSource nie ma naglowkow).
-// Zmiany sesji (SSE `punkty`) odswiezaja liste z zachowaniem biezacego ekranu; `przeladuj` (po poprawce) przeladowuje ramki.
+// Zmiany sesji (SSE `punkty`) odswiezaja liste z zachowaniem biezacego ekranu; `przeladuj` (po poprawce) stawia ramki od nowa
+// na trasie punktu.
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
 import { podepnijPanelSieci } from './panel-sieci.mjs'
-import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { adresZRamki, bezpiecznaTrasa, przeciaganieRzedu, przeladujRamki, przeniesRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
 import { liczebnik } from './teksty.mjs'
 import { podepnijRozdzielacz } from './uklad.mjs'
+import { podepnijZrzut } from './zrzut.mjs'
 
 const API = '/__makieta/api/'
 const KLUCZ_TOKENU = 'makieta.token'
@@ -20,7 +22,7 @@ const BRAK_SERWERA = 'Serwer narzędzia nie odpowiada — w sesji sprawdź „ma
  * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
  * @typedef {{ id: string, linia: number, tekst: string, tresc: string, status: keyof typeof STATUSY, ekrany: string[], trasa: string | null,
  *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean,
- *   opis: { co: string, stany: string | null, sprawdz: string } | null }} Punkt
+ *   opis: { co: string, wejscie?: string, stany: string | null, sprawdz: string } | null }} Punkt
  * @typedef {{ punkt: string, ekran: string, makieta: string | null, url: string | null, spec: string | null, wymiary: { szerokosc: number, wysokosc: number } | null }} Ekran
  * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[],
  *   zgloszenia: 'na-koniec' | 'od-razu' }} Dane
@@ -110,7 +112,7 @@ function rysujRamki() {
 }
 
 /**
- * Opis punktu dla operatora (Sprawdź / Stany / Gdzie); pelna linia checklisty tylko na zadanie. Punkt spoza formatu (opis null)
+ * Opis punktu dla operatora (Jak wejść / Sprawdź / Stany / Gdzie; „Jak wejść” tylko w formacie trzech pol); pelna linia checklisty tylko na zadanie. Punkt spoza formatu (opis null)
  * pokazuje od razu cala linie.
  * @param {Punkt} punkt
  */
@@ -123,6 +125,8 @@ function ustawOpis(punkt) {
   el('opis-stany', HTMLElement).textContent = opis?.stany ?? ''
   el('opis-stany-wiersz', HTMLDivElement).hidden = !opis?.stany
   el('opis-co', HTMLElement).textContent = opis?.co ?? ''
+  el('opis-wejscie', HTMLElement).textContent = opis?.wejscie ?? ''
+  el('opis-wejscie-wiersz', HTMLDivElement).hidden = !opis?.wejscie
   if (tresc.textContent === punkt.tresc) return
   tresc.textContent = punkt.tresc
   tresc.hidden = Boolean(opis)
@@ -223,17 +227,17 @@ async function zakonczPrzeglad() {
 
 /**
  * @param {'zgodne' | 'odstepstwo' | 'blad'} decyzja
- * @param {{ notatka?: string, urzadzenie?: Urzadzenie }} [dane]
+ * @param {{ notatka?: string, urzadzenie?: Urzadzenie, zrzut?: string }} [dane]
  * @returns {Promise<boolean>} czy zapisano (formularz czysci pole tylko po zapisie)
  */
-async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
+async function zapisz(decyzja, { notatka, urzadzenie, zrzut } = {}) {
   const b = biezacy()
   if (!b) return false
   const przyciski = document.querySelectorAll('#decyzje button, .formularz button[type="submit"]')
   // Drugie klikniecie w trakcie zapisu dostaloby 409 i komunikat konfliktu po udanym zapisie.
   for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = true
   try {
-    const cialo = { punkt: b.punkt.id, linia: b.punkt.tekst, decyzja, notatka, ekran: b.ekran.ekran, urzadzenie: urzadzenie?.nazwa, szerokosc: urzadzenie?.szerokosc }
+    const cialo = { punkt: b.punkt.id, linia: b.punkt.tekst, decyzja, notatka, ekran: b.ekran.ekran, urzadzenie: urzadzenie?.nazwa, szerokosc: urzadzenie?.szerokosc, zrzut }
     const { status, json } = await api('decyzja', { method: 'POST', body: JSON.stringify(cialo) })
     if (status === 409) {
       await wczytaj({ zmienTrase: false })
@@ -252,6 +256,30 @@ async function zapisz(decyzja, { notatka, urzadzenie } = {}) {
   } finally {
     for (const p of przyciski) if (p instanceof HTMLButtonElement) p.disabled = false
   }
+}
+
+/**
+ * „Zgłoś błąd”: najpierw zrzut (jesli jest) do `api/zrzut`, potem decyzja ze sciezka zrzutu — linia checklisty dostaje
+ * zgloszenie dopiero, gdy zrzut juz lezy w katalogu zadania.
+ * @param {{ notatka: string, urzadzenie: Urzadzenie, zrzuty: ReturnType<typeof podepnijZrzut> }} o
+ * @returns {Promise<boolean>} czy zapisano
+ */
+async function zglosBlad({ notatka, urzadzenie, zrzuty }) {
+  const b = biezacy()
+  const png = await zrzuty.png()
+  /** @type {string | undefined} */
+  let zrzut
+  if (b && png) {
+    const { status, json } = await api(`zrzut?punkt=${encodeURIComponent(b.punkt.id)}`, { method: 'POST', body: png, headers: { 'content-type': 'image/png' } })
+    if (status !== 200) {
+      komunikat(status === 413 ? 'Zrzut większy niż 5 MB — zaznacz mniejszy fragment.' : json?.error?.message ?? `Zrzut nie zapisał się (${status}).`)
+      return false
+    }
+    zrzut = json.data.zrzut
+  }
+  const ok = await zapisz('blad', { notatka, urzadzenie, zrzut })
+  if (ok) zrzuty.wyczysc()
+  return ok
 }
 
 function podepnij() {
@@ -287,21 +315,36 @@ function podepnij() {
     if (!notatka) return komunikat('Wpisz, co się różni i dlaczego to OK.')
     void zapisz('odstepstwo', { notatka }).then((ok) => { if (ok) el('notatka-odstepstwa', HTMLTextAreaElement).value = '' })
   })
+  const zrzuty = podepnijZrzut({ formularz: el('form-blad', HTMLFormElement), pole: el('zrzut-bledu', HTMLInputElement), podglad: el('podglad-zrzutu', HTMLCanvasElement),
+    usun: el('usun-zrzut', HTMLButtonElement), komunikat })
   el('form-blad', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
     const notatka = el('opis-bledu', HTMLTextAreaElement).value.trim()
     const urzadzenie = stan.urzadzenia.find((u) => u.id === el('urzadzenie-bledu', HTMLSelectElement).value) ?? stan.urzadzenia[0]
     if (!notatka || !urzadzenie) return komunikat('Wpisz, co jest nie tak.')
-    void zapisz('blad', { notatka, urzadzenie }).then((ok) => { if (ok) el('opis-bledu', HTMLTextAreaElement).value = '' })
+    void zglosBlad({ notatka, urzadzenie, zrzuty }).then((ok) => { if (ok) el('opis-bledu', HTMLTextAreaElement).value = '' })
   })
   el('form-adres', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
-    const trasa = el('adres', HTMLInputElement).value.trim()
-    // Tylko trasa tego originu: `//host` i `/\\host` przegladarka czyta jako adres obcy — ramka ucieklaby z proxy.
-    const naszOrigin = (() => { try { return new URL(trasa, location.origin).origin === location.origin } catch { return false } })()
-    stan.trasa = trasa.startsWith('/') && naszOrigin && !trasa.includes('\\') && !trasa.startsWith('/__makieta/') ? trasa : '/'
+    stan.trasa = bezpiecznaTrasa(el('adres', HTMLInputElement).value.trim()) ?? '/'
     rysujRamki()
   })
+  const pole = el('adres', HTMLInputElement)
+  const razem = el('razem', HTMLInputElement)
+  // Adres zgloszony przez skrypt w ramce (P27 S3): „Ramki razem” przenosi pozostale ramki, pasek adresu pokazuje adres ramki
+  // (wpisu operatora w trakcie pisania nie nadpisuje).
+  window.addEventListener('message', (z) => {
+    const trasa = adresZRamki(el('ramki', HTMLDivElement), z, { origin: location.origin, razem: razem.checked })
+    if (!trasa) return
+    stan.trasa = trasa
+    if (document.activeElement !== pole) pole.value = trasa
+  })
+  // Wlaczenie „Ramki razem” zrownuje ramki na adresie z paska; bez niego ramki ida tam przyciskiem.
+  razem.addEventListener('change', () => {
+    el('tutaj', HTMLButtonElement).hidden = razem.checked
+    if (razem.checked) przeniesRamki(el('ramki', HTMLDivElement), stan.trasa)
+  })
+  el('tutaj', HTMLButtonElement).addEventListener('click', () => przeniesRamki(el('ramki', HTMLDivElement), stan.trasa))
   el('przeladuj', HTMLButtonElement).addEventListener('click', () => przeladujRamki(el('ramki', HTMLDivElement), stan.trasa))
   el('w-karcie', HTMLButtonElement).addEventListener('click', () => window.open(stan.trasa, '_blank', 'noopener'))
   const przyciskiSkali = [...document.querySelectorAll('[data-skala]')].filter((p) => p instanceof HTMLButtonElement)
@@ -347,11 +390,11 @@ function podepnij() {
     if (zdarzenia.readyState === EventSource.CLOSED) komunikat(BRAK_SERWERA)
   })
   zdarzenia.addEventListener('punkty', () => void wczytaj({ zmienTrase: false }))
-  // Po poprawce sesji ramki wracaja na trase punktu (HMR Vite i tak odswiezy moduly).
+  // Po poprawce sesji ramki wracaja na trase punktu (HMR Vite i tak odswiezy moduly) — od nowa, bo „Przeładuj ramki”
+  // zostaje na biezacym adresie kazdej ramki.
   zdarzenia.addEventListener('przeladuj', () => {
     stan.trasa = biezacy()?.punkt.trasaStartowa ?? stan.trasa
-    el('adres', HTMLInputElement).value = stan.trasa
-    przeladujRamki(el('ramki', HTMLDivElement), stan.trasa)
+    rysujRamki()
     void wczytaj({ zmienTrase: false })
   })
 }

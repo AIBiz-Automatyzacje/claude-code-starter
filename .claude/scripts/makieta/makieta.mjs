@@ -10,7 +10,7 @@
 //   makieta.mjs czekaj [--limit-min N]          zdarzenia zgloszen i konca przegladu do limitu (N <= 25, domyslnie 25), na koncu `limit`
 //   makieta.mjs zgloszenia [--smoke <plik>]     otwarte zgloszenia z checklisty (droga awaryjna)
 //   makieta.mjs poprawione --punkt <id> --commit <sha> [--smoke <plik>]   adnotacja „poprawione”, przeladowanie ramek
-//   makieta.mjs sprawdz --smoke <plik>          kontrola formatu punktow wizualnych (dev-docs-complete)
+//   makieta.mjs sprawdz --smoke <plik> [--pola]  kontrola formatu punktow wizualnych (dev-docs-complete; --pola: trzy pola po „→”)
 //   makieta.mjs serwer …                        wewnetrzne: proces serwera (uruchamia go start)
 // Wynik: JSON w jednej linii. Kod wyjscia: 0 = ok, 1 = problem (format, konflikt, port zajety, brak zadania), 2 = zle argumenty,
 // 3 = wyjatek. Stdout bez wartosci env i bez tokenu poza polem `link` startu.
@@ -38,13 +38,13 @@ const LIMIT_STARTU_MS = 10_000
 const LIMIT_APLIKACJI_MS = 60_000
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, smoke: { type: 'string' }, aplikacja: { type: 'string' }, port: { type: 'string' },
-  'limit-min': { type: 'string' }, punkt: { type: 'string' }, commit: { type: 'string' }, zgloszenia: { type: 'string' },
+  'limit-min': { type: 'string' }, punkt: { type: 'string' }, commit: { type: 'string' }, zgloszenia: { type: 'string' }, pola: { type: 'boolean' },
 })
 const TRYBY_ZGLOSZEN = /** @type {const} */ (['na-koniec', 'od-razu'])
 
 class BladArgumentow extends Error {}
 
-/** @typedef {{ projekt?: string, smoke?: string, aplikacja?: string, port?: string, 'limit-min'?: string, punkt?: string, commit?: string, zgloszenia?: string }} Opcje */
+/** @typedef {{ projekt?: string, smoke?: string, aplikacja?: string, port?: string, 'limit-min'?: string, punkt?: string, commit?: string, zgloszenia?: string, pola?: boolean }} Opcje */
 
 /**
  * Wynik polecenia i koniec procesu po oproznieniu stdout (na macOS zapis do potoku jest asynchroniczny — exit zaraz po write
@@ -216,7 +216,7 @@ async function poprawione(projekt, o) {
 function sprawdz(projekt, o) {
   const smoke = wymagane(o.smoke, 'smoke')
   const md = czytajSmoke(projekt, smoke)
-  const problemy = sprawdzFormat(md)
+  const problemy = sprawdzFormat(md, { pola: o.pola })
   const punkty = punktyWizualne(md, skrotSha1)
   if (punkty.length) {
     /** @type {import('./zrodla.mjs').Zrodla | null} */
@@ -249,7 +249,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
   } catch (blad) {
     const komunikat = blad instanceof Error ? blad.message : String(blad)
     if (blad instanceof BladArgumentow || blad instanceof BladProxy || (blad instanceof TypeError && 'code' in blad && String(blad.code).startsWith('ERR_PARSE_ARGS'))) {
-      process.stderr.write(`makieta: ${komunikat}\nUzycie: makieta.mjs start --smoke <plik> [--aplikacja <url>] [--port <n>] [--zgloszenia na-koniec|od-razu] | stop | stan | czekaj [--limit-min N] | zgloszenia | poprawione --punkt <id> --commit <sha> | sprawdz --smoke <plik>\n`)
+      process.stderr.write(`makieta: ${komunikat}\nUzycie: makieta.mjs start --smoke <plik> [--aplikacja <url>] [--port <n>] [--zgloszenia na-koniec|od-razu] | stop | stan | czekaj [--limit-min N] | zgloszenia | poprawione --punkt <id> --commit <sha> | sprawdz --smoke <plik> [--pola]\n`)
       process.exit(KOD_ZLYCH_ARGUMENTOW)
     }
     if (blad instanceof BladZrodel || blad instanceof BladZapisu) await wynik({ blad: komunikat, kod: blad.kod }, KOD_PROBLEMU)

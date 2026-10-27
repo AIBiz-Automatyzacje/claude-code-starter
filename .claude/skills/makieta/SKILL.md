@@ -39,7 +39,9 @@ Serwer narzędzia działa w tle na `http://127.0.0.1:5180` i jest zarazem proxy 
    widgetu. Po zmianie konta: „Przeładuj ramki”.
 5. Zaraz po starcie uruchom `Monitor` z sekcji „Zgłoszenia z narzędzia” (narzędzie odroczone — najpierw ToolSearch
    `select:Monitor`). Powiedz operatorowi: „Zgłoszenia zbieram do końca przeglądu — po ostatnim ekranie kliknij »Zakończ
-   przegląd«; gdy w minutę nie odpowiem, napisz: zgłoszenia”.
+   przegląd«; gdy w minutę nie odpowiem, napisz: zgłoszenia”. Do zgłoszenia operator dołącza zrzut (Cmd+V albo plik
+   w formularzu „Zgłoś błąd”, prostokąt zaznacza fragment) — narzędzie zapisuje go w `visual-diff/zgloszenia/` katalogu
+   zadania, nie w `docs/operator/`. „Ramki razem” (domyślnie włączone) przenosi nawigację jednej ramki na pozostałe.
 
 ## Zgłoszenia z narzędzia
 
@@ -54,15 +56,18 @@ Monitor({command: "node .claude/scripts/makieta/makieta.mjs czekaj --limit-min 2
 z tą samą komendą. `serwer-zatrzymany` = narzędzie nie działa; zapytaj operatora, czy uruchomić je od nowa (`start`).
 
 Zdarzenie `przeglad-zakonczony` (tryb „na koniec”) ma pola `smoke`, `podsumowanie` (liczba punktów według statusu)
-i `zgloszenia` — lista jak w wyniku `makieta.mjs zgloszenia` (`punkt`, `linia`, `zgloszenie`, `tresc`, `trasa`, `ekrany[]`
-ze `spec`, `makieta`, `wymiary`). Obsługa w sekcji „Koniec przeglądu”.
+i `zgloszenia` — lista jak w wyniku `makieta.mjs zgloszenia` (`punkt`, `linia`, `zgloszenie`, `zrzut`, `tresc`, `trasa`,
+`ekrany[]` ze `spec`, `makieta`, `wymiary`). Obsługa w sekcji „Koniec przeglądu”.
 
 Zdarzenie `zgloszenie` (tryb „od razu”) ma pola `punkt`, `ekran`, `trasa`, `viewport`, `urzadzenie`, `szerokosc`, `opis`,
-`spec`, `makieta`. Obsługa jednego zgłoszenia:
+`spec`, `makieta`, `zrzut`. Obsługa jednego zgłoszenia:
 
 1. Przeczytaj SPEC z pola `spec` (zwykle `ekrany/<ekran>.md`, bez niego cały SPEC.md; `null` — opis wyłącznie z treści
    punktu). PNG makiety z pola `makieta` podajesz tylko ścieżką i nie otwierasz obrazu — jeden zrzut w kontekście to
-   ok. 2,5 tys. tokenów w każdej kolejnej turze.
+   ok. 2,5 tys. tokenów w każdej kolejnej turze. Wyjątek: zrzut operatora z pola `zrzut` (`null` = bez zrzutu) to dowód
+   usterki — otwórz go narzędziem Read przy obsłudze tego zgłoszenia, jeden naraz, i nie otwieraj go drugi raz. Zrzuty
+   z `visual-diff/zgloszenia/` commitujesz z artefaktami zadania (razem ze smoke'iem albo dokumentem ustaleń) — nieśledzony
+   plik zatrzymałby `/dev-pr` na kontroli czystości drzewa.
 2. Odtwórz usterkę w aplikacji na trasie punktu przy szerokości `szerokosc` (pomiar agent-browserem bez zrzutu: `snapshot`,
    `get box`, `get styles`), napraw ją z testem i commitem, jak mówi ramka „Jak kontynuować” smoke'u. Przy zbudowanym
    serwerze (nie Vite dev) przebuduj aplikację i uruchom serwer od nowa.
@@ -88,7 +93,7 @@ ustaleń, zanim zmienisz kod:
    poprawiania. Zgłoszenie bez usterki w kodzie (aplikacja zgodna z makietą, a operator chce innego układu) to zmiana
    decyzji, nie błąd.
 2. Zapisz `docs/operator/<data>-<zadanie>-makiety-ustalenia.md` (data i zadanie z nazwy smoke'u): podsumowanie z pola
-   `podsumowanie`, potem tabela — nr, ekran, urządzenie i szerokość, opis operatora, co mówi SPEC, przyczyna w kodzie
+   `podsumowanie`, potem tabela — nr, ekran, urządzenie i szerokość, opis operatora, zrzut (ścieżka), co mówi SPEC, przyczyna w kodzie
    (`plik:linia`), propozycja (poprawka / zmiana decyzji z nowym układem / odstępstwo), pusta kolumna „Decyzja”.
 3. Pokaż operatorowi tabelę i zbierz decyzję dla każdego wiersza; wpisz je do dokumentu.
 4. Poprawki zrób jedna po drugiej, każda z testem i commitem, potem `poprawione` dla jej punktu. Odstępstwo zaznacza operator
@@ -110,7 +115,7 @@ node .claude/scripts/makieta/makieta.mjs zgloszenia --smoke <plik>
 ```
 
 Wynik to otwarte zgłoszenia z checklisty (status „błąd zgłoszony”): `punkt`, `linia`, `zgloszenie` (adnotacja z urządzeniem,
-szerokością i opisem), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary`. W trybie „na koniec” po przeglądzie
+szerokością i opisem), `zrzut` (ścieżka zrzutu operatora albo `null`), `tresc`, `trasa`, `ekrany[]` z `spec`, `makieta` i `wymiary`. W trybie „na koniec” po przeglądzie
 obsłuż je jak w sekcji „Koniec przeglądu” (dokument ustaleń), w trybie „od razu” — każde jak pojedyncze zgłoszenie.
 Po `/clear` narzędzie nie działa: `start` od nowa (nowy link), `Monitor`, potem `zgloszenia`.
 

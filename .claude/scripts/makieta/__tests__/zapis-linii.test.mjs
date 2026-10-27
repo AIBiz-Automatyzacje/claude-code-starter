@@ -204,3 +204,19 @@ test('po recenzji: zdjęcie blokady nie usuwa cudzej, która ją zastąpiła', (
   zdejmij()
   assert.equal(readFileSync(blokada, 'utf8'), 'cudza', 'blokada przejęta przez inny proces zostaje')
 }))
+
+test('P27 S3 poz. 27: „błąd” ze zrzutem — ścieżka na końcu adnotacji po „ · zrzut: ”; ścieżka ze spacją, zamknięciem adnotacji albo bez .png = odmowa', () => zSmoke(async ({ plik, stan }) => {
+  const p = punkt(plik, 1)
+  const zrzut = 'docs/active/x/visual-diff/zgloszenia/p-0a1b2c3d-1.png'
+  for (const zly of ['a b.png', 'x)* .png', 'x.png)*', 'docs/x.jpg']) {
+    await assert.rejects(zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'x', urzadzenie: 'x', szerokosc: 393, zrzut: zly, teraz: TERAZ }),
+      (b) => b instanceof BladZapisu && b.kod === 'odmowa', zly)
+  }
+  const w = zapisana(await zapiszDecyzje({ plik, katalogStanu: stan, punkt: p.id, linia: p.tekst, decyzja: 'blad', notatka: 'ucięty tytuł', urzadzenie: 'iphone-15', szerokosc: 393, zrzut, teraz: TERAZ }))
+  assert.equal(w, `- [ ] *(2026-10-20: błąd zgłoszony — iphone-15 393 px: ucięty tytuł · zrzut: ${zrzut})* *(2026-10-18: stara ocena)* ${P2}`)
+  assert.equal(punkt(plik, 1).status, 'blad')
+}))
+
+test('po recenzji P27 S3: notatka z „ · zrzut: <ścieżka>” nie podszywa się pod zrzut (znacznik zneutralizowany)', () => {
+  assert.equal(oczyscNotatke('przycisk · zrzut: docs/x.png i ·zrzut::y'), 'przycisk · zrzut docs/x.png i · zrzut y')
+})
