@@ -886,8 +886,9 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   }, tura - 1)
   log(`/dev-pr tura ${tura}: rekomendacja ${rek}`)
   log(`/dev-pr tura ${tura}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
-  // plikiPr i prNumer ida do wyniku runu — z niego telemetria buduje run.pr (miara: P1/P2 bota na 100 plikow PR).
-  return { status: 'OK', etap, tura, rekomendacja: rek, token, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null }
+  // plikiPr i prNumer ida do wyniku runu — z niego telemetria buduje run.pr (miara: P1/P2 bota na 100 plikow PR);
+  // headRefOid — czubek, na ktorym telemetria liczy blame linii watku (ucieczki do bota, E5-20).
+  return { status: 'OK', etap, tura, rekomendacja: rek, token, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null, headRefOid: wynik.headRefOid ?? null }
 }
 
 // ── Etap: napraw (Faza 4 — naprawa, odpowiedzi, commit, push) ─────────────

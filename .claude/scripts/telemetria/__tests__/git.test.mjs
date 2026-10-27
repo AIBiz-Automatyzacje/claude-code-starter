@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { zmianyCommitow } from '../git.mjs'
+import { blameLinii, czasArchiwum, zmianyCommitow } from '../git.mjs'
 
 /** @param {string} repo @param {string[]} argumenty */
 const git = (repo, argumenty) => execFileSync('git', ['-C', repo, ...argumenty], { encoding: 'utf8' }).trim()
@@ -56,4 +56,34 @@ test('brak commitow fixa: pusta lista, bez wywolania gita', () => {
 
 test('nieznany katalog projektu przy commitach fixa: wynik z powodem', () => {
   assert.deepEqual(zmianyCommitow(null, ['abc']), { ok: false, powod: 'nieznany katalog projektu' })
+})
+
+test('blame linii: temat i czas commitu, ktory ostatni zmienil linie; brak linii albo rewizji = null (E5-20)', () => {
+  const { repo, sha } = repoZFixem()
+  try {
+    const czasFixa = Number(git(repo, ['log', '-1', '--format=%ct', sha]))
+    assert.deepEqual(blameLinii(repo, sha, 'a.ts', 2), { temat: 'fix(x): poprawki po review fazy 1', czas: czasFixa })
+    assert.equal(blameLinii(repo, sha, 'a.ts', 1)?.temat, 'feat')
+    assert.equal(blameLinii(repo, sha, 'a.ts', 99), null)
+    assert.equal(blameLinii(repo, 'deadbeef', 'a.ts', 1), null)
+    assert.equal(blameLinii(repo, sha, 'nie-ma.ts', 1), null)
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('czas commitu archiwum zadania w historii rewizji; brak archiwum = null', () => {
+  const { repo, sha } = repoZFixem()
+  try {
+    assert.equal(czasArchiwum(repo, sha, 'x'), null)
+    git(repo, ['commit', '-q', '--allow-empty', '-m', 'docs(x): archiwum'])
+    const glowa = git(repo, ['rev-parse', 'HEAD'])
+    assert.equal(czasArchiwum(repo, glowa, 'x'), Number(git(repo, ['log', '-1', '--format=%ct', glowa])))
+    assert.equal(czasArchiwum(repo, glowa, 'y'), null)
+    assert.equal(czasArchiwum(repo, sha, 'x'), null, 'archiwum po rewizji nie jest w jej historii')
+    git(repo, ['commit', '-q', '--allow-empty', '-m', 'docs(x): archiwum'])
+    assert.equal(czasArchiwum(repo, git(repo, ['rev-parse', 'HEAD']), 'x'), Number(git(repo, ['log', '-1', '--format=%ct'])), 'dwa archiwa: najnowsze')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
 })

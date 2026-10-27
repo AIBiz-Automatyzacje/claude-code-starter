@@ -3325,6 +3325,45 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     po zrzucie dostanie 409/400 (ponowienie tworzy `-2`); `req.resume()` przy 400/415 opróżnia ciało bez limitu (token,
     127.0.0.1).
     **Dalej:** merge `popr/P27-S3` po zgodzie operatora, potem sesja S4 „telemetria i pomiar” (§8).
+105. **WDROŻENIE S4 „telemetria i pomiar” (2026-10-27, jedna sesja) — gałąź `popr/P27-S4` od main `5a83acb`, 7 commitów
+    (5 pozycji 29–33 + pomiar E5-14 + poprawki po recenzji), testy 1284 → 1309, NIEZMERGOWANA (merge za zgodą operatora).**
+    Każda pozycja: test → czerwony → poprawka → zielony → `npm test` + tsc + eslint (skrypt kontroli, kod ≠ 0) → commit.
+    (29) E5-16 `jakoscBota`: pliki = suma PR-ów części (różne `pr.numer`), każdy PR z najnowszego rekordu z liczbą plików;
+    vibersi etap 5 na prawdziwych rekordach: 2,7 → 1,2/100 (mianownik to `changedFiles` 176 + 140 + 260, nie pliki do recenzji).
+    (30) E5-17 `zapis.mjs` `POLA_ZAMROZONE` (`szablon`, `instrukcje_stale`): przy odczycie pierwsza niepusta wartość klucza,
+    `doZapisu` nie dopisuje wersji różniącej się tylko nimi. (31) E5-18: od CC 2.1.30x lista odroczonych narzędzi jest pusta
+    i po pierwszej odpowiedzi, `prompt_snapshot` z `tools` też po niej — narzędzia pierwszego zapytania są w `api-request-shape`
+    (prawdziwy transkrypt `wf_e17cca34-115`, wycinek bez treści jako fixture `transkrypt-harness-2.1.304.jsonl`); nowe pole
+    `narzedzia_zapytania_n` (4–13; po recenzji osobno od `narzedzia_n` = odroczone nazwy 322–390), `tools_zn` z shape, raport
+    §2 pokazuje oba; na runie 163/164 agentów z liczbą. (32) E5-19: `/clear` w danych zawsze otwiera NOWY plik sesji (0 odpowiedzi
+    przed `/clear` w żadnym pliku) — więc `skill.po_clear` (raport nie łączy epizodu po `/clear` z otwartym epizodem poprzedniej
+    sesji) + `/clear` w pliku zamyka epizod; skill-krok wołany narzędziem (lista `SKILLE_KROKI` + `figma:*`) kończy się z turą,
+    polecenia operatora po zakończonym skillu = epizod „(sesja glowna bez skilla)” do następnego skilla. vibersi c2bba459:
+    sync-template 4,96 M → 0,12 M, smoke 4,84 M w „bez skilla”. (33) E5-20 `ucieczki.mjs` (port `ucieczki_bota.py`): blame
+    linii wątku na czubku PR z chwili `zbierz` (`headRefOid` dopisany do wyniku `dev-pr-wf`, w starych runach prefiks SHA
+    z tokenu tury), temat commitu → kod fixa / tura PR / smoke (po archiwum) / build / sprzed zadania; finding review albo
+    known-issues: ten plik i okno 10 linii (oś nieznana) albo ten plik i ta sama oś (`[P3/<os>]` z poz. 4 S1;
+    spec-compliance/test-coverage = spec/test bota). Raport §4 „ucieczki do bota” per zadanie z P1/P2; kubełek z pierwszego
+    rekordu z oznaczeniem, ucieczka zamrożona po id wątku przy odczycie. Fixture etapu 5: P1/P2 znane 1, fix 2, tury PR 3,
+    smoke 0 (jak raport). Na prawdziwych runach (skan bez zapisu) etapy 3–5 dają to samo co skrypt analizy, łącznie z jego
+    2 fałszywymi kandydatami (stare known-issues i review bez osi). `WERSJA_REKORDU` 6 → 9 (pozycje 31–33).
+    **Pomiar E5-14 (bez zmiany kodu):** `skrypty/e5_14_tury_iu.py`, `dane/e5-14-tury-iu.txt` — 51 IU etapów 3–5, każda
+    z rekordem buildera, 0 ponowień, wszystkie `ok`. Spearman: pliki IU ↔ tury +0,71, ↔ ctx_max +0,57; scenariusze testowe ↔
+    ctx_max +0,83, ↔ koszt +0,80; linie z planu słabiej (+0,54). Kubełki: pliki 1–3 tury p50 27, ctx_max p50 89k; 10+ — 72
+    i 227k (max 353k); scenariusze 7–9 — 80 i 263k. Korelacja jest, sygnału jakości brak (zero porażek buildera) — próg
+    w `dev-plan` 3.3 tylko za decyzją operatora (propozycja: uwaga `sprawdz` przy IU z ≥ 7 scenariuszami albo ≥ 10 plikami).
+    **Recenzja subagenta z mutacjami (worktree):** 111 mutacji, 65 zabitych, 11 równoważnych; 4 × P2 — (F1) „koniec z turą”
+    dla każdego skilla spoza `dev-*` zabierał dialog `zroastuj-mnie` (Nawykometr 540559b7: 7 wiadomości operatora → 0),
+    (F2) osie review `spec-compliance`/`test-coverage` ≠ osie bota `spec`/`test`, (F3) `narzedzia_n` z dwiema miarami,
+    (F4) wątek odrzucony wraca w turze 2 i blame po fixie tury dawał „kod-tury-PR”, a ponowny skan po gc gubił kubełki — wszystkie
+    poprawione (commit `fix(P27 S4): recenzja…`), P3 poprawione: `plikiPr: null`, nazwa zadania jako słowo, testy granicy okna,
+    osi z myślnikiem, shape bez `tools`, `RE_SHA`, dwóch archiwów. Zostało (P3): drugi skill w tej samej turze nie otwiera
+    epizodu (`e0`, sprzed S4); podsumowanie `/compact`, `<ci-monitor-event>` i `[shell reconnected` liczą się jako wiadomość
+    człowieka; praca przed pierwszym skillem pliku nie jest „bez skilla”; `/sync-template` wpisany komendą dalej wchłania smoke
+    (poprawka obejmuje wywołanie narzędziem); parser nagłówków review nie łapie `plik:?` i zakresów `:12-20`; pola zamrożone
+    nie da się poprawić podbiciem `v`; `--grep` archiwum szuka w całej wiadomości commita.
+    **Dalej:** decyzja operatora o progu E5-14; merge `popr/P27-S4` po zgodzie; potem `/sync-template` + doctor w vibersi
+    i pełny skan telemetrii (WERSJA 9 przelicza ucieczki etapów 1–5), potem etap 6 (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3750,10 +3789,36 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   w kolejnym teście). Strona narzędzia ma CSP `img-src 'self' data:` — podgląd obrazu przez `createImageBitmap` na canvas.
   `agent-browser screenshot` w sesji w tle wisi (znane z §7) — w kontroli na żywo tylko `eval`, `upload`, `mouse`; macOS
   nie ma `timeout`; zsh sesji bez `extendedglob` — kwalifikator `*.png(N)` daje „no matches found”, listuj przez `ls`.
+- P27 S4 (2026-10-27): założenie planu sprawdzaj na danych, zanim napiszesz test — „`/clear` zamyka epizod w pliku” nie
+  zachodzi nigdy (`/clear` zawsze otwiera nowy plik sesji), a liczby „61/130/148” z planu to pliki do recenzji, nie
+  `changedFiles`, którym liczy telemetria. Reguła na całą klasę skilli („spoza `dev-*`”) psuje te, które prowadzą dialog —
+  porównaj epizody stary/nowy na wszystkich lokalnych sesjach, zanim zawęzisz granicę. Dwie miary w jednym polu (odroczone
+  nazwy vs narzędzia zapytania) dają p50 bez znaczenia w okresie przejściowym — nowy format = nowe pole. Wynik zależny od git
+  przy skanie (blame) zamrażaj przy odczycie, bo podbicie `WERSJA_REKORDU` liczy go na nowo po squash-merge'u i gc. Raport
+  telemetrii bez `--bez-skanu` dopisuje rekordy do `~/.claude/telemetry/pipeline.jsonl` — z gałęzi przed merge'em tylko
+  `--bez-skanu`, a sprawdzenie nowego kodu: wywołanie `rekordyRunu`/`epizodySesji` w skrypcie bez zapisu.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-27, po S3) — WDROŻENIE P27 + P29 + E5, SESJA S4 „telemetria i pomiar” (6a pkt 101–104).** Warunek:
+**AKTUALNA (2026-10-27, po S4) — SYNC PACZKI P27 DO VIBERSI I PRZYGOTOWANIE ETAPU 6 (6a pkt 105).** Warunek: `popr/P27-S4`
+zmergowana do main (zgoda operatora), decyzja o progu E5-14 podjęta (jeśli próg — wdrożony w szablonie przed syncem).
+Sesja w katalogu vibersi. Operator wkleja:
+
+```
+Kontynuujemy w vibersi. Szablon (workspace-template) dostał paczkę P27 + P29 + E5 (S1–S4 zmergowane, HANDOFF 6a pkt 102–105
+w workspace-template/docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md). Przeczytaj pkt 105 i §7 ostatni wpis. Potwierdź w 3–5 zdaniach.
+
+Cel: 1) /sync-template, potem bash .claude/scripts/doctor/doctor.sh; zmiany w .claude/ commit „chore(claude): sync maszynerii
+z szablonu (P27)” na bieżącej gałęzi, nic więcej w .claude/. 2) Pełny skan telemetrii (zbierz.mjs, WERSJA_REKORDU 9) i raport
+--projekt vibersi za październik: pokaż mi sekcję 4 (jakość bota, ucieczki do bota per etap) i 6 (skille, „sesja glowna bez
+skilla”). 3) Stan przed etapem 6: gałąź, czyste drzewo, .env.e2e (tylko nazwy kluczy), bramka gotowości — co blokuje start.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko narzędziem Write/Edit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) w workspace-template + §8.
+```
+
+**Historia: (2026-10-27, po S3) — WDROŻENIE P27 + P29 + E5, SESJA S4 „telemetria i pomiar” — WYKONANE (6a pkt 105, gałąź `popr/P27-S4`).** Warunek:
 `popr/P27-S3` zmergowana do main (zgoda operatora). S4 = pozycje 29–33 planu (E5-16…E5-20) + pomiar E5-14 (bez zmiany kodu;
 wynik pokaż operatorowi — propozycja progu w `dev-plan` 3.3 tylko do jego decyzji). Operator wkleja:
 

@@ -5,7 +5,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { epizodySesji, rekordSkilla, scalEpizody } from '../skill.mjs'
+import { SESJA_BEZ_SKILLA, epizodySesji, rekordSkilla, scalEpizody } from '../skill.mjs'
 
 /** @param {string} uuid @param {string | unknown[]} content @param {Record<string, unknown>} [inne] */
 const user = (uuid, content, inne = {}) => ({ type: 'user', uuid, timestamp: '2026-09-20T10:00:00.000Z', message: { content }, ...inne })
@@ -217,4 +217,94 @@ test('ctx_start po scaleniu kopii wznowionej sesji: z kopii, w ktorej epizod zac
   const kopia = epizodySesji([...otwarcie, asystent('m9', 300_000)], 'sesja-2').map((e) => ({ ...e, start: '2026-09-20T11:00:00.000Z' }))
   const [scalony] = scalEpizody([...kopia, ...pierwsza])
   assert.equal(scalony.ctxStart, 70_000)
+})
+
+// E5-19 (vibersi c2bba459, 2026-10-21): model wywolal sync-template narzedziem Skill jako punkt 1 polecenia operatora, potem
+// smoke przez 14 wiadomosci operatora i 158 tur — epizod sync-template trwal do nastepnego skilla (6,6 M z subagentami E2E).
+test('skill pomocniczy wywolany narzedziem konczy sie z tura; dalsza praca operatora = „sesja glowna bez skilla” do nastepnego skilla', () => {
+  const sesja = [
+    user('o1', 'Punkt 1: uruchom /sync-template. Punkt 2: srodowisko E2E.'),
+    asystent('a1', 10, [{ type: 'tool_use', id: 's-sync', name: 'Skill', input: { skill: 'sync-template' } }]),
+    asystent('a2', 20, [{ type: 'tool_use', id: 'b-1', name: 'Bash' }]),
+    user('t1', [{ type: 'tool_result', tool_use_id: 'b-1', content: 'ok' }]),
+    asystent('a3', 30),
+    user('o2', 'dalej'),
+    asystent('a4', 400, [{ type: 'tool_use', id: 'agent-e2e', name: 'Agent' }]),
+    user('n1', '<task-notification>tester skonczyl</task-notification>'),
+    asystent('a5', 500),
+    user('o3', 'popraw Turnstile'),
+    asystent('a6', 600),
+    asystent('a7', 10, [{ type: 'tool_use', id: 's-figma', name: 'Skill', input: { skill: 'figma:figma-use' } }]),
+    asystent('a8', 20),
+  ]
+  const [sync, bezSkilla, figma, ...reszta] = epizodySesji(sesja, 's')
+  assert.equal(reszta.length, 0)
+  assert.equal(sync.skill, 'sync-template')
+  assert.deepEqual([...sync.odpowiedzi.keys()], ['a1', 'a2', 'a3'])
+  assert.equal(sync.zamkniety, true)
+  assert.equal(sync.operator.size, 0)
+  assert.equal(bezSkilla.skill, SESJA_BEZ_SKILLA)
+  assert.equal(bezSkilla.zrodlo, 'bez-skilla')
+  assert.equal(bezSkilla.klucz, 'o2')
+  assert.deepEqual([...bezSkilla.odpowiedzi.keys()], ['a4', 'a5', 'a6'])
+  assert.deepEqual([...bezSkilla.operator], ['o2', 'o3'])
+  assert.deepEqual([...bezSkilla.subagenci], ['agent-e2e'])
+  assert.equal(bezSkilla.zamkniety, true)
+  assert.equal(figma.skill, 'figma:figma-use')
+  assert.deepEqual([...figma.odpowiedzi.keys()], ['a7', 'a8'])
+})
+
+test('skill pipeline\'u (dev-*) wywolany narzedziem i skill z komendy operatora trwaja przez wiadomosci operatora (dialog)', () => {
+  const sesja = [
+    user('o1', 'zrobmy brainstorm'),
+    asystent('a1', 10, [{ type: 'tool_use', id: 's-b', name: 'Skill', input: { skill: 'dev-brainstorm' } }]),
+    user('o2', 'odpowiedz na pytanie 1'),
+    asystent('a2', 20),
+  ]
+  const [brainstorm, ...reszta] = epizodySesji(sesja, 's')
+  assert.equal(reszta.length, 0)
+  assert.deepEqual([...brainstorm.odpowiedzi.keys()], ['a1', 'a2'])
+  assert.deepEqual([...brainstorm.operator], ['o2'])
+})
+
+test('/clear zamyka epizod; praca po nim = „sesja glowna bez skilla”; po_clear w rekordzie epizodu po /clear', () => {
+  const clear = '<command-name>/clear</command-name>\n            <command-message>clear</command-message>'
+  const sesja = [
+    user('c0', clear),
+    user('o1', '<command-name>/sync-template</command-name>'),
+    asystent('a1', 10),
+    user('c1', clear),
+    user('o2', 'teraz smoke'),
+    asystent('a2', 900),
+  ]
+  const [sync, bezSkilla, ...reszta] = epizodySesji(sesja, 's')
+  assert.equal(reszta.length, 0)
+  assert.deepEqual([...sync.odpowiedzi.keys()], ['a1'])
+  assert.equal(sync.zamkniety, true)
+  assert.equal(rekordSkilla(sync, () => 0).po_clear, true, 'plik sesji zaczal sie od /clear — to nie kontynuacja poprzedniej sesji')
+  assert.equal(bezSkilla.skill, SESJA_BEZ_SKILLA)
+  assert.deepEqual([...bezSkilla.odpowiedzi.keys()], ['a2'])
+  assert.equal(rekordSkilla(epizod('dev-plan'), () => 0).po_clear, false)
+})
+
+// Recenzja S4 (F1): zroastuj-mnie wolany narzedziem prowadzi dialog (Nawykometr 540559b7: 18 odpowiedzi i 7 wiadomosci
+// operatora → 4 i 0 przy regule „kazdy skill spoza dev-* konczy sie z tura”). Z tura koncza sie tylko skille-kroki z listy.
+test('skill dialogowy spoza dev-* wolany narzedziem trwa przez wiadomosci operatora; skill-krok (lista, figma:*) konczy sie z tura', () => {
+  /** @param {string} nazwa */
+  const sesja = (nazwa) => [
+    user('o1', 'zrob to'),
+    asystent('a1', 10, [{ type: 'tool_use', id: 's-1', name: 'Skill', input: { skill: nazwa } }]),
+    user('o2', 'odpowiedz operatora'),
+    asystent('a2', 20),
+  ]
+  for (const nazwa of ['zroastuj-mnie', 'makieta', 'utworz-zadanie']) {
+    const [e, ...reszta] = epizodySesji(sesja(nazwa), 's')
+    assert.equal(reszta.length, 0, nazwa)
+    assert.deepEqual([...e.odpowiedzi.keys()], ['a1', 'a2'], nazwa)
+  }
+  for (const nazwa of ['sync-template', 'figma:figma-use', 'security']) {
+    const [e, bez] = epizodySesji(sesja(nazwa), 's')
+    assert.deepEqual([...e.odpowiedzi.keys()], ['a1'], nazwa)
+    assert.equal(bez.skill, SESJA_BEZ_SKILLA, nazwa)
+  }
 })

@@ -2,6 +2,7 @@
 
 import { etapRoli } from './faza.mjs'
 import { KOMENDY_LOKALNE } from './skill.mjs'
+import { KUBELKI } from './ucieczki.mjs'
 
 /** @typedef {Record<string, unknown>} Rekord */
 
@@ -59,6 +60,7 @@ export function kontekstPerKlasa(agenci) {
       klasa, model, n: lista.length,
       ctx_start_p50: kwantyl(ctx, 0.5), ctx_start_p90: kwantyl(ctx, 0.9),
       narzedzia_n_p50: kwantyl(lista.map((a) => liczba(obiekt(a.kontekst).narzedzia_n)), 0.5),
+      narzedzia_zapytania_p50: kwantyl(lista.map((a) => liczba(obiekt(a.kontekst).narzedzia_zapytania_n)), 0.5),
       claude_md_zn_p50: kwantyl(lista.map((a) => liczba(obiekt(a.kontekst).claude_md_zn)), 0.5),
     }
   }).sort((a, b) => a.klasa.localeCompare(b.klasa) || a.model.localeCompare(b.model))
@@ -78,31 +80,71 @@ export function efortPerKlasa(agenci) {
 }
 
 // Uwagi bota P1/P2 na 100 plikow PR — miara jakosci z mapy walidacji (PANEL-WEJSCIE §12). Unikalne watki per zadanie:
-// suma po runach dev-pr zawyza o 43% (przeglad D5 §8 pkt 4).
+// suma po runach dev-pr zawyza o 43% (przeglad D5 §8 pkt 4). Pliki: suma po PR-ach czesci (rozne `pr.numer`), kazdy PR
+// z najnowszego rekordu — maksimum czesci zawyzalo miare PR w czesciach (etap 5 vibersi: 2,7 zamiast 1,2/100; E5-16).
 const NA_STO = 100
 const WAGI = new Set(['P1', 'P2', 'P3'])
 
 /** @param {Rekord[]} runy */
 export function jakoscBota(runy) {
-  /** @type {Map<string, { pliki: number, watki: Map<string, string> }>} */
+  /** @type {Map<string, { pr: Map<unknown, { start: string, pliki: number }>, watki: Map<string, string> }>} */
   const perZadanie = new Map()
   for (const r of runy) {
     const pr = obiekt(r.pr)
     if (!Object.keys(pr).length || typeof r.zadanie !== 'string') continue
-    const z = perZadanie.get(r.zadanie) ?? { pliki: 0, watki: new Map() }
-    z.pliki = Math.max(z.pliki, liczba(pr.pliki) ?? 0)
+    const z = perZadanie.get(r.zadanie) ?? { pr: new Map(), watki: new Map() }
+    // Run sprzed numeru PR (numer null) = jeden PR zadania.
+    const numer = liczba(pr.numer)
+    const start = String(r.start ?? '')
+    const dotad = z.pr.get(numer)
+    // Rekord bez liczby plikow (plikiPr null) nie zeruje PR-u zapisanego wczesniej z liczba.
+    const pliki = liczba(pr.pliki)
+    if (!dotad || (start >= dotad.start && pliki !== null)) z.pr.set(numer, { start, pliki: pliki ?? dotad?.pliki ?? 0 })
     for (const k of Array.isArray(pr.klasy) ? pr.klasy.map(obiekt) : []) {
       if (typeof k.id === 'string') z.watki.set(k.id, String(k.severity))
     }
     perZadanie.set(r.zadanie, z)
   }
   return [...perZadanie].map(([zadanie, z]) => {
+    const pliki = [...z.pr.values()].reduce((s, p) => s + p.pliki, 0)
     const wagi = [...z.watki.values()]
     // Runy dev-pr sprzed slownika klas (It. 1 krok 8) nie zapisywaly wagi — to brak danych, nie zero P1/P2.
     const bezWagi = wagi.filter((s) => !WAGI.has(s)).length
     const p1p2 = wagi.filter((s) => s === 'P1' || s === 'P2').length
-    const liczalne = z.pliki && bezWagi < wagi.length
-    return { zadanie, pliki: z.pliki, watki: z.watki.size, bez_wagi: bezWagi, p1p2, p1p2_na_100_plikow: liczalne ? Math.round((p1p2 / z.pliki) * NA_STO * 10) / 10 : null }
+    const liczalne = pliki && bezWagi < wagi.length
+    return { zadanie, pliki, watki: z.watki.size, bez_wagi: bezWagi, p1p2, p1p2_na_100_plikow: liczalne ? Math.round((p1p2 / pliki) * NA_STO * 10) / 10 : null }
+  })
+}
+
+// Ucieczki do bota (E5-20): waga watku z najnowszego rekordu, kubelek z pierwszego rekordu z oznaczeniem — watek odrzucony
+// wraca w kolejnej turze, a blame jego linii po fixie tury dalby „kod-tury-PR” (recenzja S4). Watek bez oznaczenia (rekord
+// sprzed E5-20, brak repo albo czubka PR) = „bez danych”, nie „nowy”.
+const BEZ_DANYCH = 'bez danych'
+
+/** @param {Rekord[]} runy */
+export function ucieczkiBota(runy) {
+  /** @type {Map<string, Map<string, { severity: unknown, kubelek: string }>>} */
+  const perZadanie = new Map()
+  const poCzasie = [...runy].sort((a, b) => String(a.start ?? '').localeCompare(String(b.start ?? '')))
+  for (const r of poCzasie) {
+    const pr = obiekt(r.pr)
+    if (!Array.isArray(pr.klasy) || typeof r.zadanie !== 'string') continue
+    const watki = perZadanie.get(r.zadanie) ?? new Map()
+    for (const k of pr.klasy.map(obiekt)) {
+      if (typeof k.id !== 'string') continue
+      const kubelek = obiekt(k.ucieczka).kubelek
+      const dotad = watki.get(k.id)?.kubelek ?? BEZ_DANYCH
+      watki.set(k.id, { severity: k.severity, kubelek: dotad === BEZ_DANYCH && typeof kubelek === 'string' ? kubelek : dotad })
+    }
+    perZadanie.set(r.zadanie, watki)
+  }
+  return [...perZadanie].filter(([, w]) => w.size).map(([zadanie, watki]) => {
+    const lista = [...watki.values()]
+    const kubelki = [...KUBELKI, BEZ_DANYCH].map((kubelek) => {
+      const w = lista.filter((x) => x.kubelek === kubelek)
+      return { kubelek, razem: w.length, p1p2: w.filter((x) => x.severity === 'P1' || x.severity === 'P2').length }
+    }).filter((k) => k.razem)
+    return { zadanie, watki: lista.length, kubelki }
   })
 }
 
@@ -136,7 +178,7 @@ export function anomalie(agenci) {
 // Epizod „otwarty” trwal do konca pliku sesji. Bez ruchu od 2 h to koniec sesji, nie skill w toku — szybki skan nie
 // odswieza rekordu sesji, ktorej plik juz sie nie zmienia, wiec bez tej reguly epizod znikal z raportu na zawsze (vibersi:
 // dev-plan 1,06 M i dev-brainstorm 2,22 M). Ten sam skill w nowej sesji do 30 min po takim koncu to kontynuacja (restart
-// sesji, np. pod wtyczke MCP) — jeden epizod (6a pkt 80 j).
+// sesji, np. pod wtyczke MCP) — jeden epizod (6a pkt 80 j). Nowa sesja po /clear (`po_clear`) to nie kontynuacja (E5-19).
 const CISZA_MS = 2 * 3_600_000
 const PRZERWA_KONTYNUACJI_MS = 30 * 60_000
 
@@ -149,7 +191,7 @@ function polaczKontynuacje(lista) {
   const wynik = []
   for (const s of [...lista].sort((a, b) => String(a.start).localeCompare(String(b.start)))) {
     const p = wynik.findLast((x) => x.skill === s.skill && x.projekt === s.projekt)
-    if (p && p.otwarty === true && p.sesja !== s.sesja && ms(s.start) - ms(p.koniec) < PRZERWA_KONTYNUACJI_MS) {
+    if (p && p.otwarty === true && p.sesja !== s.sesja && s.po_clear !== true && ms(s.start) - ms(p.koniec) < PRZERWA_KONTYNUACJI_MS) {
       const sub = [p.subagenci_jedn, s.subagenci_jedn]
       Object.assign(p, {
         koszt_jedn: (liczba(p.koszt_jedn) ?? 0) + (liczba(s.koszt_jedn) ?? 0),

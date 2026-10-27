@@ -140,7 +140,8 @@ export function katalogProjektu(run) {
 
 /**
  * Liczba instrukcji warstwy stalej roli: pozycje bloku `## Polecenia` pliku agenta w projekcie runu (ten sam licznik co
- * test szablonu i doctor). Plik czytany w chwili skanu — hook Stop skanuje zaraz po sesji, wiec to zwykle wersja z runu.
+ * test szablonu i doctor). Plik czytany w chwili skanu — hook Stop skanuje zaraz po sesji, wiec to zwykle wersja z runu;
+ * ponowny skan po sync-template nie zmienia wartosci (odczyt bierze pierwsza, `POLA_ZAMROZONE` w zapis.mjs).
  * @param {string | null} repo katalog projektu runu
  * @param {string | null} agentType
  * @returns {number | null} null = brak projektu, typu, pliku albo bloku polecen

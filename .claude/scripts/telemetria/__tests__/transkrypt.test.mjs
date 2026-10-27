@@ -128,7 +128,7 @@ test('stary transkrypt bez zalacznikow: kontekst ma klucze z null, nie znika', (
   const stary = TRANSKRYPT.filter((w) => w.type !== 'attachment')
   const k = analizujTranskrypt(stary).kontekst
   assert.deepEqual(Object.keys(k).sort(), [
-    'claude_md_zn', 'instrukcje', 'learned_zn', 'narzedzia_n', 'odroczone_zn', 'pamiec_zn', 'rules_zn', 'skille_n', 'skille_zn', 'tools_zn',
+    'claude_md_zn', 'instrukcje', 'learned_zn', 'narzedzia_n', 'narzedzia_zapytania_n', 'odroczone_zn', 'pamiec_zn', 'rules_zn', 'skille_n', 'skille_zn', 'tools_zn',
   ])
   assert.equal(k.claude_md_zn, null)
   assert.equal(k.narzedzia_n, null)
@@ -169,4 +169,37 @@ test('promptAgenta: zwykla wiadomosc bez zmian; sama przekazana prosba = null; n
   assert.equal(promptAgenta('[Workflow harness — user request] ...:\n  Uruchom'), null)
   assert.equal(promptAgenta('[Workflow harness — computed task] inny format'), '[Workflow harness — computed task] inny format')
   assert.equal(analizujTranskrypt([{ type: 'user', message: { content: '[Workflow harness — user request] x:\n  Uruchom' } }]).prompt, null)
+})
+
+// E5-18 (etap 5 vibersi): od CC 2.1.30x agent workflowu nie ma listy odroczonych narzedzi w kontekscie startowym
+// (`deferred_tools_record` pusty i dopiero po pierwszej odpowiedzi), a `prompt_snapshot` z `tools` przychodzi po pierwszej
+// odpowiedzi — narzedzia_n i tools_zn byly null u 200/200 agentow. Narzedzia pierwszego zapytania sa w `api-request-shape`.
+test('transkrypt CC 2.1.304 (wycinek wf_e17cca34-115): narzedzia_n i tools_zn z api-request-shape przed pierwsza odpowiedzia', async () => {
+  const { readFileSync } = await import('node:fs')
+  const wpisy = readFileSync(new URL('./fixtures/transkrypt-harness-2.1.304.jsonl', import.meta.url), 'utf8').trim().split('\n').map((l) => JSON.parse(l))
+  const ksztalt = wpisy.find((w) => w.type === 'api-request-shape')
+  const k = analizujTranskrypt(wpisy).kontekst
+  // Recenzja S4 (F3): narzedzia_n = odroczone nazwy (stary format, 322–390), narzedzia zapytania (4–13) to inna miara — osobne pole.
+  assert.equal(k.narzedzia_zapytania_n, 4)
+  assert.equal(k.narzedzia_n, null)
+  assert.equal(k.tools_zn, JSON.stringify(ksztalt.shape.tools).length)
+})
+
+test('api-request-shape bez tools nie wywraca analizy; tools_zn z prompt_snapshot ma pierwszenstwo przed shape', () => {
+  const bezTools = [TRANSKRYPT[0], { type: 'api-request-shape', shape: { system: [] } }, ...TRANSKRYPT.slice(2)]
+  assert.equal(analizujTranskrypt(bezTools).kontekst.narzedzia_zapytania_n, null)
+  const ksztalt = { type: 'api-request-shape', shape: { system: [], tools: [{ name: 'X', description: 'dluga definicja' }] } }
+  const k = analizujTranskrypt([...TRANSKRYPT.slice(0, 5), ksztalt, ...TRANSKRYPT.slice(5)]).kontekst
+  assert.equal(k.tools_zn, JSON.stringify([{ name: 'Read' }, { name: 'Bash' }]).length)
+  assert.equal(k.narzedzia_zapytania_n, 1)
+})
+
+test('api-request-shape po pierwszej odpowiedzi nie zmienia kontekstu startowego; stary deferred_tools_delta ma pierwszenstwo', () => {
+  const ksztalt = { type: 'api-request-shape', shape: { system: [], tools: [{ name: 'Read' }, { name: 'Bash' }, { name: 'Write' }, { name: 'Edit' }, { name: 'Grep' }] } }
+  const poOdpowiedzi = [TRANSKRYPT[0], ...TRANSKRYPT.slice(2).filter((w) => w.type !== 'attachment'), ksztalt]
+  assert.equal(analizujTranskrypt(poOdpowiedzi).kontekst.narzedzia_n, null)
+  const zDelta = [...TRANSKRYPT.slice(0, 2), ksztalt, ...TRANSKRYPT.slice(2)]
+  assert.equal(analizujTranskrypt(zDelta).kontekst.narzedzia_n, 3)
+  assert.equal(analizujTranskrypt(zDelta).kontekst.narzedzia_zapytania_n, 5)
+  assert.equal(analizujTranskrypt(poOdpowiedzi).kontekst.narzedzia_zapytania_n, null)
 })

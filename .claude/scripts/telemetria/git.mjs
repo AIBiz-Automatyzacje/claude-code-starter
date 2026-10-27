@@ -1,4 +1,5 @@
-// Jedyne wywolania gita w telemetrii: pliki i linie commitow fixa (D12: status A/M per plik), tylko odczyt.
+// Jedyne wywolania gita w telemetrii: pliki i linie commitow fixa (D12: status A/M per plik) oraz blame linii watku bota
+// i czas commitu archiwum zadania (ucieczki, E5-20) — tylko odczyt.
 
 import { execFileSync } from 'node:child_process'
 
@@ -44,4 +45,39 @@ export function zmianyCommitow(repo, commity) {
     return { ok: false, powod: e.message.split('\n')[0] }
   }
   return { ok: true, pliki: [...pliki].map(([plik, status]) => ({ plik, status })), linie }
+}
+
+/**
+ * Temat i czas commitu, ktory ostatni zmienil linie pliku na rewizji. null = linii, pliku albo rewizji nie ma
+ * (watek na usunietym pliku, galaz skasowana po squash-merge'u) — watek idzie do kubelka „nieustalone”.
+ * @param {string} repo @param {string} rewizja @param {string} plik @param {number} linia
+ * @returns {{ temat: string, czas: number } | null}
+ */
+export function blameLinii(repo, rewizja, plik, linia) {
+  let wynik
+  try {
+    wynik = git(repo, ['blame', '--porcelain', '-L', `${linia},${linia}`, rewizja, '--', plik])
+  } catch (e) {
+    if (e instanceof Error) return null
+    throw e
+  }
+  const temat = wynik.match(/^summary (.*)$/m)
+  const czas = wynik.match(/^committer-time (\d+)$/m)
+  return temat && czas ? { temat: temat[1], czas: Number(czas[1]) } : null
+}
+
+/**
+ * Czas (s) commitu archiwum zadania (`docs(<zadanie>): archiwum`, dev-docs-complete-wf) w historii rewizji; null = brak.
+ * @param {string} repo @param {string} rewizja @param {string} zadanie
+ * @returns {number | null}
+ */
+export function czasArchiwum(repo, rewizja, zadanie) {
+  let wynik
+  try {
+    wynik = git(repo, ['log', rewizja, '-1', '--format=%ct', '--fixed-strings', `--grep=docs(${zadanie}): archiwum`]).trim()
+  } catch (e) {
+    if (e instanceof Error) return null
+    throw e
+  }
+  return /^\d+$/.test(wynik) ? Number(wynik) : null
 }
