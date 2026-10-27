@@ -112,3 +112,57 @@ test('P28 po pilocie: strzałki na rozdzielaczu nie zmieniają ekranu (globalny 
   const skrot = js.slice(js.indexOf("document.addEventListener('keydown'"), js.indexOf("if (z.key === 'ArrowLeft')"))
   assert.match(skrot, /role="separator"|getAttribute\('role'\) === 'separator'/)
 })
+
+/**
+ * Ramki bez DOM: iframe z dataset, contentWindow i licznikiem ustawien src; kontener z querySelectorAll.
+ * @param {string[]} adresy adres startowy kazdej ramki
+ */
+function atrapaRamek(adresy) {
+  const ramki = adresy.map((adres) => {
+    /** @type {string[]} historia ustawien src */
+    const historia = []
+    return Object.defineProperty({ dataset: /** @type {Record<string, string>} */ ({ adres }), contentWindow: {}, historia }, 'src', {
+      set(/** @type {string} */ v) { historia.push(v) },
+      get() { return historia.at(-1) ?? '' },
+    })
+  })
+  return { ramki, kontener: /** @type {any} */ ({ querySelectorAll: () => ramki }) }
+}
+
+const ORIGIN = 'http://127.0.0.1:5180'
+
+test('P27 S3 poz. 25: „Ramki razem” — nawigacja w ramce A przenosi pozostałe ramki; ramka przeniesiona nie rozsyła dalej (1 przeniesienie na nawigację)', async () => {
+  const { adresZRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b, c], kontener } = atrapaRamek(['/p/x', '/p/x', '/p/x'])
+  const z = (/** @type {{ contentWindow: object }} */ r, /** @type {string} */ adres) => ({ origin: ORIGIN, source: r.contentWindow, data: { makieta: 'adres', adres } })
+  assert.equal(adresZRamki(kontener, z(a, '/tworca/x'), { origin: ORIGIN, razem: true }), '/tworca/x')
+  assert.deepEqual([a.historia, b.historia, c.historia], [[], ['/tworca/x'], ['/tworca/x']])
+  // B i C po zaladowaniu zglaszaja ten sam adres — bez kolejnych przeniesien (bez petli).
+  assert.equal(adresZRamki(kontener, z(b, '/tworca/x'), { origin: ORIGIN, razem: true }), null)
+  assert.equal(adresZRamki(kontener, z(c, '/tworca/x'), { origin: ORIGIN, razem: true }), null)
+  assert.deepEqual([a.historia, b.historia, c.historia], [[], ['/tworca/x'], ['/tworca/x']])
+  // Tryb niezalezny: ramka zmienia tylko swoj adres.
+  assert.equal(adresZRamki(kontener, z(c, '/inna'), { origin: ORIGIN, razem: false }), '/inna')
+  assert.deepEqual([a.historia, b.historia, c.historia, c.dataset.adres], [[], ['/tworca/x'], ['/tworca/x'], '/inna'])
+})
+
+test('P27 S3 poz. 25: komunikat obcego originu, spoza ramek, innego typu albo z trasą poza aplikacją (//host, /__makieta/) — bez zmian', async () => {
+  const { adresZRamki } = await import('../strona/ramki.mjs')
+  const { ramki: [a, b], kontener } = atrapaRamek(['/p/x', '/p/x'])
+  const opcje = { origin: ORIGIN, razem: true }
+  for (const zdarzenie of [
+    { origin: 'http://zly.example', source: a.contentWindow, data: { makieta: 'adres', adres: '/y' } },
+    { origin: ORIGIN, source: {}, data: { makieta: 'adres', adres: '/y' } },
+    { origin: ORIGIN, source: a.contentWindow, data: { makieta: 'inne', adres: '/y' } },
+    { origin: ORIGIN, source: a.contentWindow, data: '/y' },
+    ...['//zly.example/y', '/\\zly.example', '/\t/zly.example', '/__makieta/strona/', 'y', 7].map((adres) => ({ origin: ORIGIN, source: a.contentWindow, data: { makieta: 'adres', adres } })),
+  ]) assert.equal(adresZRamki(kontener, zdarzenie, opcje), null, JSON.stringify(zdarzenie.data))
+  assert.deepEqual([a.historia, b.historia, a.dataset.adres], [[], [], '/p/x'])
+})
+
+test('P27 S3 poz. 25: przełącznik „Ramki razem” w pasku ramek, domyślnie włączony; strona słucha komunikatów ramek', () => {
+  const pasek = HTML.slice(HTML.indexOf('id="form-adres"'), HTML.indexOf('class="skala"'))
+  assert.match(pasek, /<label[^>]*><input type="checkbox" id="razem" checked> Ramki razem<\/label>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  assert.match(js, /addEventListener\('message', [^\n]*adresZRamki\(/)
+})

@@ -3,13 +3,39 @@
 // ustawien `makieta.siec` w localStorage (wspolny origin ze strona narzedzia) — czytanych przy kazdym zadaniu, wiec zmiana
 // w panelu „Sieć” dziala bez przeladowania ramki. Zastepuje throttling i blokade adresow z DevTools przy wywolywaniu stanow
 // ladowania i bledow. Nie obejmuje nawigacji, obrazow ani ramek obcych (np. widget Turnstile). Klasyczny skrypt: musi wykonac
-// sie przed modulami aplikacji.
+// sie przed modulami aplikacji. W ramce zglasza tez stronie narzedzia swoj adres (P27 S3).
 ;(() => {
   const okno = /** @type {Record<string, unknown>} */ (/** @type {unknown} */ (window))
   if (okno.__makietaSiec) return
   // Znacznik dla strony narzedzia: skrypt dziala w tej ramce (CSP aplikacji go nie zablokowal).
   okno.__makietaSiec = true
   const KLUCZ = 'makieta.siec'
+
+  // Adres ramki dla strony narzedzia (P27 S3 poz. 25–26): pasek adresu, „Ramki razem” i „Przeładuj ramki” w biezacym miejscu.
+  // Tylko w ramce (karta z „Otwórz w karcie” nie ma rodzica), tylko do originu narzedzia; ten sam adres nie idzie drugi raz.
+  if (window.parent && window.parent !== window) {
+    let zgloszony = ''
+    const zglos = () => {
+      const adres = window.location.pathname + window.location.search + window.location.hash
+      if (adres === zgloszony) return
+      zgloszony = adres
+      window.parent.postMessage({ makieta: 'adres', adres }, window.location.origin)
+    }
+    const { pushState, replaceState } = window.history
+    /** @param {Parameters<History['pushState']>} argumenty */
+    window.history.pushState = function pushStateZNarzedzia(...argumenty) {
+      pushState.apply(this, argumenty)
+      zglos()
+    }
+    /** @param {Parameters<History['replaceState']>} argumenty */
+    window.history.replaceState = function replaceStateZNarzedzia(...argumenty) {
+      replaceState.apply(this, argumenty)
+      zglos()
+    }
+    window.addEventListener('popstate', zglos)
+    window.addEventListener('hashchange', zglos)
+    zglos()
+  }
 
   /** @returns {{ opoznienieMs: number, blokady: string[] }} ustawienia albo brak ograniczen (brak zapisu, zapis uszkodzony) */
   function ustawienia() {

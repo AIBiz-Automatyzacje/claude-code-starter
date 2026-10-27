@@ -5,7 +5,7 @@
 
 import { PRESETY, domyslneUrzadzenia, urzadzenieZWymiaru } from '../urzadzenia.mjs'
 import { podepnijPanelSieci } from './panel-sieci.mjs'
-import { przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
+import { adresZRamki, bezpiecznaTrasa, przeciaganieRzedu, przeladujRamki, skalujRamki, ustawRamki, zapisanyWybor, zapiszWybor } from './ramki.mjs'
 import { liczebnik } from './teksty.mjs'
 import { podepnijRozdzielacz } from './uklad.mjs'
 
@@ -296,12 +296,11 @@ function podepnij() {
   })
   el('form-adres', HTMLFormElement).addEventListener('submit', (z) => {
     z.preventDefault()
-    const trasa = el('adres', HTMLInputElement).value.trim()
-    // Tylko trasa tego originu: `//host` i `/\\host` przegladarka czyta jako adres obcy — ramka ucieklaby z proxy.
-    const naszOrigin = (() => { try { return new URL(trasa, location.origin).origin === location.origin } catch { return false } })()
-    stan.trasa = trasa.startsWith('/') && naszOrigin && !trasa.includes('\\') && !trasa.startsWith('/__makieta/') ? trasa : '/'
+    stan.trasa = bezpiecznaTrasa(el('adres', HTMLInputElement).value.trim()) ?? '/'
     rysujRamki()
   })
+  // Adres zgloszony przez skrypt w ramce (P27 S3): „Ramki razem” przenosi pozostale ramki.
+  window.addEventListener('message', (z) => void adresZRamki(el('ramki', HTMLDivElement), z, { origin: location.origin, razem: el('razem', HTMLInputElement).checked }))
   el('przeladuj', HTMLButtonElement).addEventListener('click', () => przeladujRamki(el('ramki', HTMLDivElement), stan.trasa))
   el('w-karcie', HTMLButtonElement).addEventListener('click', () => window.open(stan.trasa, '_blank', 'noopener'))
   const przyciskiSkali = [...document.querySelectorAll('[data-skala]')].filter((p) => p instanceof HTMLButtonElement)

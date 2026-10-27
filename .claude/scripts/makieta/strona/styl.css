@@ -73,6 +73,7 @@ button[aria-pressed="true"] { background: var(--tusz); color: #fff; border-color
 .uklad--przeciagany iframe { pointer-events: none; }
 .adres { display: flex; gap: 4px; flex: 1 1 280px; }
 .adres input { flex: 1; min-width: 0; font-family: ui-monospace, monospace; }
+.razem { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .urzadzenia { margin: 8px 0; }
 .siec { margin: 8px 0; }
 .siec summary { cursor: pointer; width: max-content; }
