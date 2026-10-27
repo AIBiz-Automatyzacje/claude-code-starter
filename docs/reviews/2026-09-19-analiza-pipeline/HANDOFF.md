@@ -3391,6 +3391,17 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     (to robi `/dev-plan`). Wcześniej blokuje: brak checklisty `docs/operator/etap-6-…-przygotowanie.md` (`/dev-prep`), makieta
     Figma „admin: zgłoszenia i wyróżnione” (mvp-requirements etap-6), decyzje prep (Cookieyes, PostHog premium, GA4, Pixel FB —
     decyzja Marcina), R11 treści po przeglądzie prawnika. **Dalej:** nowa sesja (maszyneria buforowana) → `/dev-prep` etapu 6 (§8).
+107. **ZAMKNIĘCIE SESJI SZABLONU PO P27 (2026-10-27).** Stan: workspace-template main = origin/main (`859a438`, po nim
+    ten wpis); w main cała paczka P27 + P29 + E5 (S1–S4) i próg rozmiaru IU 8 scenariuszy / 12 plików (uwaga `sprawdz`,
+    `dev-plan` 3.3). vibersi `16a9f73` (sync P27) — push robi operator sam. Ocena raportu sesji vibersi (pkt 106): zgodny
+    ze stanem repo (commit vibersi tylko `.claude/`, drzewo czyste); jedna nieścisłość w jego potwierdzeniu — „sesja główna
+    bez skilla” to praca operatora po zakończonym skillu-kroku do następnego skilla, nie „epizody po `/clear`” (`/clear` tylko
+    zamyka epizod). Operator robi teraz w vibersi `/dev-prep` i `/dev-plan` etapu 6 (osobne sesje, §8 „sesja vibersi”), a sesja
+    szablonu czeka na jego wiadomość z planem przed startem autopilota. Pierwszy run na maszynerii P27 — co sprawdzić przy planie
+    i po runie: uwagi rozmiaru IU (próg 8/12) i faz (> 5 IU) w `plan.mjs sprawdz`; części PR (`## Części PR`, czubek
+    mierzony przed pushem, E5-6); linie known-issues w formacie `[P3/<os>]` (S1 poz. 4) — od nich zależy kubełek „review-P3”
+    ucieczek; scribe/fix: L-COR-4/5 kontroli fixa (S2); telemetria po runie: `raport.mjs --projekt vibersi --bez-skanu` po
+    skanie hooka — §4 ucieczki etapu 6, §2 `narzedzia_zapytania`, §6 „sesja glowna bez skilla”.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3827,7 +3838,26 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-27, po syncu P27 do vibersi) — ETAP 6 VIBERSI: PREP (6a pkt 106).** Warunek: vibersi `16a9f73`
+**AKTUALNA — SESJA SZABLONU (2026-10-27, 6a pkt 107): CZUWANIE NA ETAP 6 VIBERSI.** Nowa sesja w katalogu
+workspace-template. Operator wkleja ją, gdy skończy `/dev-prep` i `/dev-plan` etapu 6 w vibersi (przed autopilotem):
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main = origin/main). Paczka P27 + P29 + E5 jest w main i zsynchronizowana
+do vibersi (HANDOFF 6a pkt 101–107; plan paczki docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md). Przeczytaj pkt 105–107
+i §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach i czekaj na moją wiadomość o etapie 6 vibersi — nic nie zmieniaj przed nią.
+
+Gdy napiszę (plan etapu 6 gotowy, przed autopilotem): przejrzyj w vibersi plan techniczny i docs/active/etap-6… pod kątem
+maszynerii P27 (uwagi plan.mjs sprawdz — rozmiar IU 8/12 i faz, Części PR, bramka gotowości, [E2E] i sondy serwera), powiedz,
+co poprawić przed startem, i daj polecenie dev-autopilot-wf. Po runie: przebieg, STOP-y, telemetria (raport --bez-skanu:
+ucieczki etapu 6, sesja bez skilla) i co z tego wynika dla szablonu.
+
+Zasady: jedna sesja; w vibersi tylko odczyt, chyba że poproszę; nie wypisuj wartości z plików .env*; liczby skryptem;
+pliki .md tylko narzędziem Write/Edit; zmiany w szablonie na gałęzi popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**AKTUALNA — SESJA VIBERSI (2026-10-27, po syncu P27 do vibersi) — ETAP 6 VIBERSI: PREP (6a pkt 106).** Warunek: vibersi `16a9f73`
 (sync P27) na main — wypchnięty albo świadomie lokalny (decyzja operatora); makieta Figma „admin: zgłoszenia i wyróżnione”
 gotowa albo `/dev-prep` ją zgłosi jako bloker. Nowa sesja w katalogu vibersi. Operator wkleja:
 
