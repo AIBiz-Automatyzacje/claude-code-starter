@@ -24,6 +24,9 @@ const DATA_ADNOTACJI = /^\d{4}-\d{2}-\d{2}[^:]*:\s*/
 // Bez polskich znakow tez — agent smoke'u pisal znacznik z prompta workflowu w ASCII.
 const FIZYCZNE = /\*\*\[fizyczne urz[aą]dzenie\]\*\*/
 const DLUGOSC_ID = 8
+// Trzy pola punktu dla czlowieka po „→” (P27 S3 poz. 28, P29(3)): jak wejsc, co porownac, stany i jak je wywolac.
+const POLA = /^Wejście:\s*(.+?)\s+Porównaj:\s*(.+?)\s+Stany:\s*(.+)$/
+const NAZWY_POL = /** @type {const} */ (['Wejście', 'Porównaj', 'Stany'])
 
 /**
  * @typedef {'otwarty' | 'zgodny' | 'odstepstwo' | 'blad' | 'poprawione'} Status
@@ -31,7 +34,8 @@ const DLUGOSC_ID = 8
  * @typedef {{ szerokosc: number, wysokosc: number }} Wymiary
  * @typedef {{ id: string, linia: number, tekst: string, checkbox: ' ' | 'x', adnotacje: string[], tresc: string, status: Status,
  *   ekrany: string[], trasa: string | null, trasaStartowa: string, viewport: Wymiary | null, niejednoznaczny: boolean, opis: Opis | null }} Punkt
- * @typedef {{ co: string, stany: string | null, sprawdz: string }} Opis tresc punktu dla operatora (bez sciezek makiet i wymiaru)
+ * @typedef {{ co: string, wejscie?: string, stany: string | null, sprawdz: string }} Opis tresc punktu dla operatora (bez sciezek makiet
+ *   i wymiaru); `wejscie` tylko w formacie trzech pol
  * @typedef {{ linia: number, powod: string }} Problem
  * @typedef {(tekst: string) => string} Skrot funkcja skrotu hex (SHA-1)
  */
@@ -112,6 +116,7 @@ function viewportTresci(tresc) {
  * Opis punktu dla czlowieka (P28, pilot etapu 5: surowa linia R11 z dwiema sciezkami PNG i wymiarem „ciezko sie czyta”):
  * `co` — tekst przed „obok” (urzadzenie, miejsce, trasa), `stany` — warianty po „(viewport …):”, `sprawdz` — wynik po „→”.
  * Backticki znikaja (tresc zostaje). Zapis bez „obok”, wymiaru albo „→” = null — strona pokazuje wtedy cala linie.
+ * Format trzech pol po „→” (P27 S3): `wejscie` z „Wejście:”, `sprawdz` z „Porównaj:”, `stany` z „Stany:”.
  * @param {string} tresc
  * @returns {Opis | null}
  */
@@ -123,7 +128,11 @@ function opisTresci(tresc) {
   const czysty = (/** @type {string} */ t) => t.replace(/`/g, '').trim()
   const co = czysty(tresc.slice(0, obok)).replace(/:$/, '')
   const stany = czysty(tresc.slice(wymiar.index + wymiar[0].length, strzalka)).replace(/^:\s*/, '')
-  return { co, stany: stany || null, sprawdz: czysty(tresc.slice(strzalka + 1)) }
+  const sprawdz = czysty(tresc.slice(strzalka + 1))
+  const pola = POLA.exec(sprawdz)
+  const bezKonca = (/** @type {string} */ t) => t.replace(/[.;]\s*$/, '').trim()
+  if (pola) return { co, wejscie: bezKonca(pola[1]), sprawdz: bezKonca(pola[2]), stany: bezKonca(pola[3]) }
+  return { co, stany: stany || null, sprawdz }
 }
 
 /** @param {string} md @returns {{ nr: number, tekst: string, rozbior: Linia }[]} linie checkboxow z makieta (bez fizycznych urzadzen i blokow ```) */
@@ -165,11 +174,26 @@ export function punktyWizualne(md, skrot) {
 
 /**
  * Uwagi formatu R11 punktu wizualnego: `- [ ] <Urzadzenie>: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport WxH) → <wynik>`.
+ * Pola po „→”: niepelny zestaw — zawsze uwaga; brak wszystkich — uwaga tylko z `pola` (nowy smoke; stare smoke'i bez zmian).
  * @param {string} tresc
- * @param {string[]} ekrany
+ * @param {boolean} pola
  * @returns {string[]}
  */
-function uwagiFormatu(tresc, ekrany) {
+function uwagiPol(tresc, pola) {
+  const po = tresc.slice(tresc.indexOf('→') + 1)
+  const brak = NAZWY_POL.filter((n) => !po.includes(`${n}:`))
+  if (brak.length === NAZWY_POL.length) return pola ? ['po „→” brak pól „Wejście: … Porównaj: … Stany: …”'] : []
+  if (brak.length) return brak.map((n) => `po „→” brak pola „${n}:” (format: Wejście: … Porównaj: … Stany: …)`)
+  return POLA.test(po.replace(/`/g, '').trim()) ? [] : ['pola po „→” w kolejności: Wejście:, Porównaj:, Stany:']
+}
+
+/**
+ * @param {string} tresc
+ * @param {string[]} ekrany
+ * @param {boolean} pola
+ * @returns {string[]}
+ */
+function uwagiFormatu(tresc, ekrany, pola) {
   if (!ekrany.length) return ['makieta bez ścieżki `visual-diff/<ekran>-figma.png` — narzędzie nie znajdzie ekranu']
   /** @type {string[]} */
   const uwagi = []
@@ -177,19 +201,21 @@ function uwagiFormatu(tresc, ekrany) {
   if (!new RegExp(`(^|\\s)obok \`visual-diff/${ekrany[0].replace(/[.]/g, '\\.')}-figma\\.png\``).test(tresc)) uwagi.push('makieta nie stoi po „obok” w backtickach (zapis: `<trasa>` obok `visual-diff/<ekran>-figma.png`)')
   if (!VIEWPORT_R11.test(tresc)) uwagi.push('brak „(viewport <W>×<H>)” bez dwukropka i sufiksu')
   if (!tresc.includes('→')) uwagi.push('brak „→ <oczekiwany wynik>”')
+  else uwagi.push(...uwagiPol(tresc, pola))
   return uwagi
 }
 
 /**
  * Kontrola formatu smoke'u (fail-closed, z numerem linii): punkty z makieta spoza formatu R11, bez ekranu albo niejednoznaczne.
  * @param {string} md
+ * @param {{ pola?: boolean }} [opcje] pola: punkt wymaga trzech pol po „→” (smoke pisany wedlug formatu P27 S3)
  * @returns {Problem[]}
  */
-export function sprawdzFormat(md) {
+export function sprawdzFormat(md, { pola = false } = {}) {
   const linie = linieZMakieta(md)
   const dublowane = powtorzone(linie)
   return linie.flatMap(({ nr, rozbior }) => {
-    const uwagi = uwagiFormatu(rozbior.tresc, ekranyTresci(rozbior.tresc))
+    const uwagi = uwagiFormatu(rozbior.tresc, ekranyTresci(rozbior.tresc), pola)
     if (dublowane.has(rozbior.tresc)) uwagi.push('ta sama treść punktu stoi w checkliście kilka razy — narzędzie nie zapisze decyzji')
     return uwagi.map((powod) => ({ linia: nr, powod }))
   })

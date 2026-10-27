@@ -31,7 +31,11 @@ test('P28 (3) uwagi narzędzia (ekrany SPEC bez punktu, ostrzeżenia, plik smoke
 
 test('P28 (3) opis punktu dla człowieka: Sprawdź, Stany, Gdzie; pełna linia checklisty ukryta pod „Pokaż całą linię”', () => {
   const opis = /<dl id="opis"[^>]*>([\s\S]*?)<\/dl>/.exec(HTML)?.[1] ?? ''
-  assert.deepEqual([...opis.matchAll(/<dt>([^<]*)<\/dt>\s*<dd id="([^"]*)"/g)].map((m) => [m[1], m[2]]), [['Sprawdź', 'opis-sprawdz'], ['Stany', 'opis-stany'], ['Gdzie', 'opis-co']])
+  assert.deepEqual([...opis.matchAll(/<dt>([^<]*)<\/dt>\s*<dd id="([^"]*)"/g)].map((m) => [m[1], m[2]]), [['Jak wejść', 'opis-wejscie'], ['Sprawdź', 'opis-sprawdz'], ['Stany', 'opis-stany'], ['Gdzie', 'opis-co']], 'P27 S3 poz. 28: „Jak wejść” z formatu trzech pól')
+  assert.match(HTML, /<div id="opis-wejscie-wiersz" hidden><dt>Jak wejść<\/dt>/)
+  const js = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'strona', 'strona.mjs'), 'utf8')
+  assert.match(js, /el\('opis-wejscie', HTMLElement\)\.textContent = opis\?\.wejscie \?\? ''/)
+  assert.match(js, /el\('opis-wejscie-wiersz', HTMLDivElement\)\.hidden = !opis\?\.wejscie/)
   assert.match(HTML, /<button type="button" id="cala-tresc" aria-expanded="false" aria-controls="tresc">Pokaż całą linię<\/button>/)
   assert.match(HTML, /<p id="tresc" class="tresc" hidden><\/p>/)
 })

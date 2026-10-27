@@ -22,7 +22,7 @@ const BRAK_SERWERA = 'Serwer narzędzia nie odpowiada — w sesji sprawdź „ma
  * @typedef {import('../urzadzenia.mjs').Urzadzenie} Urzadzenie
  * @typedef {{ id: string, linia: number, tekst: string, tresc: string, status: keyof typeof STATUSY, ekrany: string[], trasa: string | null,
  *   trasaStartowa: string, viewport: { szerokosc: number, wysokosc: number } | null, niejednoznaczny: boolean,
- *   opis: { co: string, stany: string | null, sprawdz: string } | null }} Punkt
+ *   opis: { co: string, wejscie?: string, stany: string | null, sprawdz: string } | null }} Punkt
  * @typedef {{ punkt: string, ekran: string, makieta: string | null, url: string | null, spec: string | null, wymiary: { szerokosc: number, wysokosc: number } | null }} Ekran
  * @typedef {{ smoke: string, zadanie: string, aplikacja: string, punkty: Punkt[], ekrany: Ekran[], pominiete: string[], ostrzezenia: string[],
  *   zgloszenia: 'na-koniec' | 'od-razu' }} Dane
@@ -112,7 +112,7 @@ function rysujRamki() {
 }
 
 /**
- * Opis punktu dla operatora (Sprawdź / Stany / Gdzie); pelna linia checklisty tylko na zadanie. Punkt spoza formatu (opis null)
+ * Opis punktu dla operatora (Jak wejść / Sprawdź / Stany / Gdzie; „Jak wejść” tylko w formacie trzech pol); pelna linia checklisty tylko na zadanie. Punkt spoza formatu (opis null)
  * pokazuje od razu cala linie.
  * @param {Punkt} punkt
  */
@@ -125,6 +125,8 @@ function ustawOpis(punkt) {
   el('opis-stany', HTMLElement).textContent = opis?.stany ?? ''
   el('opis-stany-wiersz', HTMLDivElement).hidden = !opis?.stany
   el('opis-co', HTMLElement).textContent = opis?.co ?? ''
+  el('opis-wejscie', HTMLElement).textContent = opis?.wejscie ?? ''
+  el('opis-wejscie-wiersz', HTMLDivElement).hidden = !opis?.wejscie
   if (tresc.textContent === punkt.tresc) return
   tresc.textContent = punkt.tresc
   tresc.hidden = Boolean(opis)
