@@ -116,13 +116,15 @@ function tenSamSerwer(a, b) {
 
 /**
  * Klucze proxy z vite.config (napisy w cudzyslowie z dwukropkiem za nimi, po `proxy:`), bez komentarzy. Klucz z `^` to wyrazenie
- * regularne Vite, pozostale — prefiks sciezki.
+ * regularne Vite, pozostale — prefiks sciezki. Proxy z wywolania albo zmiennej (vibersi etap 6a: `proxy: proxySerweraE2e(...)`
+ * z tablicy tras) nie ma kluczy w tekscie — kandydatem jest wtedy kazdy napis-sciezka w pliku.
  * @param {string} tresc @returns {string[]}
  */
 function kluczeProxy(tresc) {
   const bezKomentarzy = tresc.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1')
-  const proxy = /\bproxy\s*:\s*\{/.exec(bezKomentarzy)
+  const proxy = /\bproxy\s*:\s*(\{)?/.exec(bezKomentarzy)
   if (!proxy) return []
+  if (!proxy[1]) return [...bezKomentarzy.matchAll(/['"`](\^?\/[^'"`\s]*)['"`]/g)].map((m) => m[1])
   return [...bezKomentarzy.slice(proxy.index).matchAll(/['"`](\^?\/[^'"`\s]*)['"`]\s*:/g)].map((m) => m[1])
 }
 

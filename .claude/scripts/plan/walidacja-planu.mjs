@@ -2,7 +2,7 @@
 // naprawia w runie (faza bez kodu uznana za wykonana, E2E bez flow albo policzone dwa razy, seed bez autora, Weryfikacja,
 // ktorej scribe nie uruchomi), budzet pliku z tabeli plikow i problemy zapisu, ktorych parser nie przeczytal jednoznacznie.
 
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { akcja, sprawdzBudzet } from './budzet-pliku.mjs'
@@ -88,8 +88,34 @@ function znaczniki(iu, w) {
   }
 }
 
-/** @param {Jednostka} iu @param {Wynik} w */
-function pliki(iu, w) {
+const NUMER_MIGRACJI = /\b\d{14}\b/g
+
+/**
+ * Numery migracji (14 cyfr z poczatku nazwy pliku) z pola Pliki jednostek planu i z supabase/migrations/ projektu.
+ * @param {Jednostka[]} jednostki @param {string} projekt @returns {Set<string>}
+ */
+function numeryMigracji(jednostki, projekt) {
+  const katalog = join(projekt, 'supabase/migrations')
+  const nazwy = [
+    ...jednostki.flatMap((iu) => iu.pliki.map((p) => p.sciezka).filter((s) => s.startsWith('supabase/migrations/')).map((s) => s.slice(20))),
+    ...(existsSync(katalog) ? readdirSync(katalog) : []),
+  ]
+  return new Set(nazwy.map((n) => /^\d{14}/.exec(n)?.[0]).filter((n) => n !== undefined))
+}
+
+/**
+ * Opis wspomina migracje bez pliku w polu Pliki. Linia z numerem migracji z planu albo z repo to odwolanie (vibersi etap 6a IU-3:
+ * „test pilnuje zgodnosci kodow z migracja” przy CHECK-ach migracji IU-1), nie nowa migracja.
+ * @param {Jednostka} iu @param {Set<string>} migracje @returns {boolean}
+ */
+function migracjaBezPliku(iu, migracje) {
+  if (iu.pliki.some((p) => p.sciezka.startsWith('supabase/migrations/'))) return false
+  const odwolanie = (/** @type {string} */ l) => [...l.matchAll(NUMER_MIGRACJI)].some((m) => migracje.has(m[0]))
+  return iu.opis.split('\n').some((l) => /migracj/i.test(l) && !odwolanie(l))
+}
+
+/** @param {Jednostka} iu @param {Set<string>} migracje @param {Wynik} w */
+function pliki(iu, migracje, w) {
   w.bledy.push(...iu.problemy.map((p) => `${iu.id}: ${p}`))
   if (!iu.pliki.length) {
     w.bledy.push(`${iu.id}: brak plików w polu Pliki`)
@@ -105,7 +131,7 @@ function pliki(iu, w) {
   if (iu.scenariusze.some((s) => s.typ === 'Unit') && !iu.pliki.some((p) => akcja(p).startsWith('test') || PLIK_TESTU.test(p.sciezka))) {
     w.bledy.push(`${iu.id}: scenariusze [Unit] bez pliku testu w polu Pliki`)
   }
-  if (/migracj/i.test(iu.opis) && !iu.pliki.some((p) => p.sciezka.startsWith('supabase/migrations/'))) {
+  if (migracjaBezPliku(iu, migracje)) {
     w.uwagi.push(`${iu.id}: opis wspomina migrację, a pole Pliki nie ma pliku w supabase/migrations/`)
   }
 }
@@ -193,11 +219,12 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   const seedyPlanu = new Set(jednostki.flatMap((iu) => iu.pliki.filter((p) => akcja(p).includes('e2e seed')).map((p) => p.sciezka)))
   /** @type {Map<string, string>} */
   const flowy = new Map()
+  const migracje = numeryMigracji(jednostki, projekt)
   for (const iu of jednostki) {
     if (!DELEGACI.includes(iu.delegate)) {
       w.bledy.push(`${iu.id}: Delegate to „${iu.delegate}” — dozwolone ${BUILDERZY.join(' | ')}`)
     }
-    pliki(iu, w)
+    pliki(iu, migracje, w)
     znaczniki(iu, w)
     scenariusze(iu, projekt, seedyPlanu, flowy, w)
   }

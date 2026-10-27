@@ -13,6 +13,8 @@
 // Kod wyjscia: 0 = ok, 2 = zle argumenty, 3 = wyjatek (JSON z polem wyjatek).
 
 import { spawnSync } from 'node:child_process'
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const PLIK_KONFIGURACJI = '.coderabbit.yaml'
@@ -164,7 +166,7 @@ export function rozmiarPr(projekt, baza, czubek = 'HEAD') {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   /** @type {{ projekt?: string, baza?: string, czubek?: string }} */
   let o = {}
   try {

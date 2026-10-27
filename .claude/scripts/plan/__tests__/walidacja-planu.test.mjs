@@ -201,6 +201,16 @@ test('IU opisujace migracje bez pliku migracji w tabeli dostaje uwage (nie blad)
   assert.deepEqual(sprawdz(md), { bledy: [], uwagi: ['IU-3: opis wspomina migrację, a pole Pliki nie ma pliku w supabase/migrations/'] })
 })
 
+// vibersi etap 6a IU-3: „test pilnuje zgodności kodów z migracją” przy CHECK-ach w migracji IU-1 dawało uwagę — linia z numerem
+// migracji z innej IU planu albo z dysku to odwołanie, nie nowa migracja.
+test('IU odwolujaca sie do migracji z innej IU albo z repo po numerze — bez uwagi; nieznany numer — uwaga zostaje', () => {
+  const odwolanie = (/** @type {string} */ numer) => zmien('- Strona czyta ofertę przez hook, szkic zwraca 404.', `- Strona czyta ofertę przez hook; test pilnuje zgodności statusów z migracją ${numer}.`)
+  const uwaga = 'IU-3: opis wspomina migrację, a pole Pliki nie ma pliku w supabase/migrations/'
+  assert.deepEqual(sprawdz(odwolanie('20261007120000')).uwagi, [], 'migracja IU-1 tego planu')
+  assert.deepEqual(sprawdz(odwolanie('20250101090000')).uwagi, [uwaga], 'numer bez pliku w planie i w repo')
+  assert.deepEqual(sprawdz(odwolanie('20250101090000'), { 'supabase/migrations/20250101090000_oferty.sql': 'select 1;\n' }).uwagi, [], 'migracja z repo')
+})
+
 test('origin wskazujacy nieistniejacy plik w repo dostaje uwage; wartosc spoza repo nie', () => {
   const brak = zmien('origin: docs/brainstorms/2026-10-01-publikacja-ofert-requirements.md', 'origin: docs/brainstorms/brak-requirements.md#etap-2')
   assert.deepEqual(sprawdz(brak).uwagi, ['frontmatter: origin docs/brainstorms/brak-requirements.md#etap-2 — plik nie istnieje (popraw origin)'])

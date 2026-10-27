@@ -14,7 +14,7 @@
 // w potoku (`| jq -r 'keys[]'`, `| cut -d= -f1`), przekierowanie do pliku.
 // Kod wyjscia 2 = blokada z powodem na stderr (Claude Code przekazuje go modelowi); nieczytelne wejscie = przepuszczenie.
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const KOD_BLOKADY = 2
@@ -446,7 +446,7 @@ export function powodBlokady(plik) {
     + `Wartość do komendy bez wypisania: set -a; . ${plik}; set +a — albo T=$(grep '^KLUCZ=' ${plik} | cut -d= -f2-).`
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   let komenda = ''
   try {
     const wejscie = JSON.parse(readFileSync(0, 'utf8'))
