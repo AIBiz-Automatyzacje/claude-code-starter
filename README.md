@@ -1,6 +1,6 @@
 [![Akademia Automatyzacji](assets/baner-akademia-automatyzacji.png)](https://akademiaautomatyzacji.com)
 
-> **[Dołącz do Akademii Automatyzacji →](https://akademiaautomatyzacji.com)** - prawie 1400 osób
+> **[Dołącz do Akademii Automatyzacji →](https://akademiaautomatyzacji.com)** - 1350+ osób
 > uczy się u nas automatyzacji i AI na prawdziwych wdrożeniach, nie na teorii.
 
 # Claude Code Starter
