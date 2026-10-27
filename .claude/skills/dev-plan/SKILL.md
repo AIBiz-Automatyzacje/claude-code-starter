@@ -165,7 +165,8 @@ Fazy są obowiązkowe na każdej głębokości, bo autopilot wykonuje plan fazam
 - każda IU w dokładnie jednej fazie; nagłówek `### Faza N — <nazwa>`, numeracja od 1 bez luk, pod nim `**Zależy od:** Brak | Faza K` i opcjonalnie `**Równolegle z:** Faza M` (informacja dla operatora — autopilot wykonuje fazy po kolei);
 - faza kończy się w stanie, który da się zreviewować i przetestować niezależnie (typecheck i testy przechodzą, aplikacja działa); typowy układ: fundament danych → warstwa danych i akcje → strony i komponenty → polish i E2E; trywialna IU dołącza do sąsiedniej fazy;
 - IU ze scenariuszem `[E2E]` stoi w fazie, w której istnieje wszystko, czego flow potrzebuje (strona, dane, seed);
-- faza ma najwyżej 5 IU, a migracje przepisujące istniejące funkcje bazy (`create or replace` funkcji z poprzednich etapów, `drop function` + `create` RPC) stoją w fazie bez fundamentu serwera i klienta — review takiej fazy czyta same zmiany schematu (vibersi etap 5: faza z 3 migracjami, serwerem, E2E i Sentry po podziale dała dwa mniejsze review); `sprawdz` daje uwagę przy fazie powyżej 5 IU.
+- faza ma najwyżej 5 IU, a migracje przepisujące istniejące funkcje bazy (`create or replace` funkcji z poprzednich etapów, `drop function` + `create` RPC) stoją w fazie bez fundamentu serwera i klienta — review takiej fazy czyta same zmiany schematu (vibersi etap 5: faza z 3 migracjami, serwerem, E2E i Sentry po podziale dała dwa mniejsze review); `sprawdz` daje uwagę przy fazie powyżej 5 IU;
+- IU z co najmniej 7 scenariuszami testowymi albo 10 plikami dostaje uwagę `sprawdz`: builder takiej jednostki ma 2–3 razy więcej tur i kontekstu (vibersi etapy 3–5: 10+ plików — tury p50 72 i kontekst 227k wobec 27 i 89k przy 1–3 plikach). Dzielisz ją na granicy zachowania albo warstwy, gdy obie części dają się zreviewować osobno; jednostkę spójną zostawiasz.
 
 Numeracja IU jest ciągła przez cały plan (IU-1, IU-2, …).
 

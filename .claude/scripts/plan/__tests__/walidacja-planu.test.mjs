@@ -12,7 +12,7 @@ import assert from 'node:assert/strict'
 
 import { parsujPlan } from '../plan-techniczny.mjs'
 import { liczLinieKodu } from '../budzet-pliku.mjs'
-import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan, uwagiRozmiaruFaz } from '../walidacja-planu.mjs'
+import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan, uwagiRozmiaruFaz, uwagiRozmiaruIu } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
 
 const FIXTURE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/plan-techniczny.md'), 'utf8')
@@ -495,6 +495,34 @@ test('sprawdzPlan: faza z 6 IU daje uwage rozmiaru fazy (wpiecie uwagiRozmiaruFa
     const uwagi = sprawdzPlan(plan, korzen).uwagi.filter((u) => /IU \(próg 5\)/.test(u))
     assert.equal(uwagi.length, 1)
     assert.match(uwagi[0], new RegExp(`^faza ${faza.numer}: 6 IU \\(próg 5\\)`))
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})
+
+// E5-14 (vibersi etapy 3–5, 51 IU, dane/e5-14-tury-iu.txt): scenariusze IU ↔ ctx_max buildera Spearman +0,83, pliki ↔ tury +0,71;
+// IU z 10+ plikami: tury p50 72, ctx_max p50 227k (1–3 pliki: 27 i 89k); 7–9 scenariuszy: 80 i 263k. Zero porazek buildera,
+// wiec uwaga (koszt i kontekst), nie blad — decyzja operatora 2026-10-27.
+test('rozmiar IU: >= 7 scenariuszy albo >= 10 plikow = uwaga z liczbami; 6 scenariuszy i 9 plikow — bez uwagi', () => {
+  /** @param {string} id @param {number} scen @param {number} pliki */
+  const iu = (id, scen, pliki) => ({ id, scenariusze: Array.from({ length: scen }, () => ({})), pliki: Array.from({ length: pliki }, () => ({})) })
+  assert.deepEqual(uwagiRozmiaruIu([iu('IU-1', 6, 9)]), [])
+  const uwagi = uwagiRozmiaruIu([iu('IU-1', 7, 2), iu('IU-2', 1, 10), iu('IU-3', 8, 12), iu('IU-4', 6, 9)])
+  assert.equal(uwagi.length, 3)
+  assert.match(uwagi[0], /^IU-1: 7 scenariuszy testowych, 2 plików \(próg: 7 scenariuszy albo 10 plików\)/)
+  assert.match(uwagi[1], /^IU-2: 1 scenariuszy testowych, 10 plików/)
+  assert.match(uwagi[2], /^IU-3: /)
+  assert.match(uwagi[0], /podziel/)
+})
+
+test('sprawdzPlan: IU z 10 plikami daje uwage rozmiaru IU (wpiecie), fixture — bez niej', () => {
+  const korzen = projekt()
+  try {
+    const plan = parsujPlan(FIXTURE)
+    assert.deepEqual(sprawdzPlan(plan, korzen).uwagi.filter((u) => /próg: 7 scenariuszy/.test(u)), [])
+    const [jednostka] = plan.fazy[0].iu
+    while (jednostka.scenariusze.length < 7) jednostka.scenariusze.push({ ...jednostka.scenariusze[0] })
+    assert.equal(sprawdzPlan(plan, korzen).uwagi.filter((u) => new RegExp(`^${jednostka.id}: 7 scenariuszy`).test(u)).length, 1)
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }
