@@ -1,0 +1,73 @@
+E5-14 — tury i kontekst builderow vs rozmiar IU z planu (vibersi, etap-3-konto-i-auth, etap-4-dodawanie-i-moderacja, etap-5-interakcje-i-profil)
+IU z rekordem buildera: 51
+
+zadanie                        IU     pliki nowe  linie brak scen prob  tury  ctx_max  koszt M wynik
+etap-3-konto-i-auth            IU-1       8    4    235    5    6    1    77     264k     2.16 ok
+etap-3-konto-i-auth            IU-2       4    2    141    1    2    1    38     133k     0.72 ok
+etap-3-konto-i-auth            IU-3      15    8   1000    1    8    1    59     220k     1.64 ok
+etap-3-konto-i-auth            IU-4      12    6   1116    0    6    1    65     216k     1.66 ok
+etap-3-konto-i-auth            IU-5       8    3    527    0    6    1    40     178k     1.10 ok
+etap-3-konto-i-auth            IU-6      17    8   1395    1   11    1    99     352k     3.72 ok
+etap-3-konto-i-auth            IU-7       7    2    550    0    7    1    55     243k     1.62 ok
+etap-3-konto-i-auth            IU-8       7    4    680    1    8    1    81     276k     2.46 ok
+etap-3-konto-i-auth            IU-9      12    8    834    3    9    1    79     302k     2.49 ok
+etap-3-konto-i-auth            IU-10      4    2    293    1    4    1    42     179k     1.01 ok
+etap-3-konto-i-auth            IU-11      8    5    954    0    9    1    60     278k     1.90 ok
+etap-3-konto-i-auth            IU-12     17    4    551    2    6    1    73     262k     2.16 ok
+etap-3-konto-i-auth            IU-13      2    1    105    0    3    1    16      85k     0.28 ok
+etap-4-dodawanie-i-moderacja   IU-1       7    4    165    4    7    1    48     240k     1.59 ok
+etap-4-dodawanie-i-moderacja   IU-2       3    2    260    0    4    1    39      95k     0.55 ok
+etap-4-dodawanie-i-moderacja   IU-3      10    3    842    0    6    1    58     211k     1.59 ok
+etap-4-dodawanie-i-moderacja   IU-4       3    1    208    0    3    1    22      91k     0.36 ok
+etap-4-dodawanie-i-moderacja   IU-5       7    3    646    0    4    1    35     118k     0.70 ok
+etap-4-dodawanie-i-moderacja   IU-6      11    6   1065    0    4    1    63     186k     1.36 ok
+etap-4-dodawanie-i-moderacja   IU-7      12    2    256    0    4    1    63     174k     1.28 ok
+etap-4-dodawanie-i-moderacja   IU-8       9    7   1170    0    5    1    62     200k     1.51 ok
+etap-4-dodawanie-i-moderacja   IU-9       3    2    450    0    4    1    38     140k     0.77 ok
+etap-4-dodawanie-i-moderacja   IU-10     12    6   1072    0    7    1    82     298k     2.47 ok
+etap-4-dodawanie-i-moderacja   IU-11     10    6    900    1    7    1    80     226k     1.87 ok
+etap-4-dodawanie-i-moderacja   IU-12      6    4    325    2    4    1    36     144k     0.74 ok
+etap-4-dodawanie-i-moderacja   IU-13      4    0    224    0    3    1    46     144k     0.85 ok
+etap-4-dodawanie-i-moderacja   IU-14     10    6    997    0    7    1    71     227k     1.71 ok
+etap-5-interakcje-i-profil     IU-1       5    3     90    4    4    1    51     158k     1.00 ok
+etap-5-interakcje-i-profil     IU-2       4    1      0    4    7    1    55     245k     1.64 ok
+etap-5-interakcje-i-profil     IU-3       4    1      0    4    8    1   101     329k     3.25 ok
+etap-5-interakcje-i-profil     IU-4      24    4    867    0    7    1   100     246k     2.51 ok
+etap-5-interakcje-i-profil     IU-5       5    1    247    1    3    1    29     112k     0.56 ok
+etap-5-interakcje-i-profil     IU-6      15    5    610    1    5    1    60     155k     1.15 ok
+etap-5-interakcje-i-profil     IU-7       7    4    685    0    7    1    44     204k     1.17 ok
+etap-5-interakcje-i-profil     IU-8      17    7   1482    0    8    1    99     262k     2.50 ok
+etap-5-interakcje-i-profil     IU-9       6    4    431    0    3    1    42     158k     0.98 ok
+etap-5-interakcje-i-profil     IU-10     15    5    851    1    7    1   106     298k     2.95 ok
+etap-5-interakcje-i-profil     IU-11     16    4    877    0    7    1    98     303k     2.79 ok
+etap-5-interakcje-i-profil     IU-12      8    3    779    0    6    1    48     196k     1.26 ok
+etap-5-interakcje-i-profil     IU-13     14    6   1119    0    6    1    59     184k     1.33 ok
+etap-5-interakcje-i-profil     IU-14      8    4    914    1    7    1    92     304k     2.69 ok
+etap-5-interakcje-i-profil     IU-15      5    3    515    0    5    1    51     191k     1.22 ok
+etap-5-interakcje-i-profil     IU-16      7    2    565    0    6    1    66     208k     1.55 ok
+etap-5-interakcje-i-profil     IU-17     11    4   1127    0    6    1    48     178k     1.18 ok
+etap-5-interakcje-i-profil     IU-18      9    2    664    0    4    1    96     252k     2.32 ok
+etap-5-interakcje-i-profil     IU-19      8    5    754    1    7    1    78     263k     2.17 ok
+etap-5-interakcje-i-profil     IU-20      3    1    160    0    3    1    32      83k     0.39 ok
+etap-5-interakcje-i-profil     IU-21      9    1    367    0    5    1    38     126k     0.67 ok
+etap-5-interakcje-i-profil     IU-22     11    4    627    0    6    1    59     198k     1.32 ok
+etap-5-interakcje-i-profil     IU-23     14    2    517    0    5    1   102     312k     3.08 ok
+etap-5-interakcje-i-profil     IU-24      2    0     30    0    2    1    11      54k     0.15 ok
+
+Korelacja Spearmana (n = 51):
+  pliki        tury +0.71   ctx_max +0.57   koszt +0.66
+  pliki_nowe   tury +0.54   ctx_max +0.51   koszt +0.54
+  linie_plan   tury +0.54   ctx_max +0.48   koszt +0.53
+  scenariusze  tury +0.69   ctx_max +0.83   koszt +0.80
+
+Tury i ctx_max wg liczby plikow IU (mediana; kubelki):
+  pliki 1–3   n=6   tury p50    27   ctx_max p50   89k   ctx_max max  140k   proba > 1: 0
+  pliki 4–6   n=10  tury p50    44   ctx_max p50  158k   ctx_max max  330k   proba > 1: 0
+  pliki 7–9   n=15  tury p50    60   ctx_max p50  240k   ctx_max max  304k   proba > 1: 0
+  pliki 10+   n=20  tury p50    72   ctx_max p50  227k   ctx_max max  353k   proba > 1: 0
+
+Tury i ctx_max wg scenariuszy testowych IU (mediana; kubelki):
+  scen. 1–3   n=8   tury p50    30   ctx_max p50  102k   ctx_max max  158k
+  scen. 4–6   n=24  tury p50    58   ctx_max p50  186k   ctx_max max  313k
+  scen. 7–9   n=18  tury p50    80   ctx_max p50  263k   ctx_max max  330k
+  scen. 10+   n=1   tury p50    99   ctx_max p50  353k   ctx_max max  353k
