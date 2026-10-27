@@ -12,8 +12,9 @@
 // nowe zmienne, ktorych nazwy nie ma w pliku smoke'u. Kod wyjscia: 0 = ok, 1 = braki w smoke'u, 2 = zle argumenty, 3 = wyjatek.
 
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const KOD_BRAKOW = 1
@@ -132,7 +133,7 @@ export function zmienneGalezi(projekt, { baza, glowa = 'HEAD', smoke } = {}) {
   return smoke === undefined ? { baza: od, zmienne } : { baza: od, zmienne, braki: brakiWSmoke(zmienne, readFileSync(isAbsolute(smoke) ? smoke : join(projekt, smoke), 'utf8')) }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   /** @type {{ projekt?: string, baza?: string, glowa?: string, smoke?: string }} */
   let o = {}
   try {

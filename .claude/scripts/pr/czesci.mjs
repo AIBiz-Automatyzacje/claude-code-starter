@@ -13,8 +13,9 @@
 //   ciecia, plan, uwaga }. ok = jeden PR <= 150 albo kazda czesc < 150. Kod wyjscia: 0 = ok, 1 = czesc za duza, 2 = zle argumenty, 3 = wyjatek.
 
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
 import { podzialFaz, sekcjaCzesci } from '../plan/czesci-pr.mjs'
@@ -206,7 +207,7 @@ export function czesciZadania(projekt, katalog, bazaArg) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   /** @type {{ projekt?: string, zadanie?: string, baza?: string }} */
   let o = {}
   try {

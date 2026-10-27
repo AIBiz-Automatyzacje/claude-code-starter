@@ -6,7 +6,7 @@
 // Uzycie:  node .claude/templates/smoke-autopilot/generuj-fixture.mjs [--zapisz]
 //   bez --zapisz: kod 1, gdy pliki fixture'u roznia sie od wyniku generatora (lista w polu "rozne" wyniku JSON)
 
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -37,7 +37,7 @@ export function plikiFixture() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const zapisz = process.argv.includes('--zapisz')
   const rozne = Object.entries(plikiFixture()).filter(([plik, tresc]) => {
     const sciezka = join(KATALOG, plik)
