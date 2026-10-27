@@ -3296,6 +3296,35 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     jako równoważny. Zostało (P3, poza S2): `ok` na liście skrótów `walidacja.mjs:22` („Status ok. Potem X.” = całość),
     sprawdzenie argumentów przez `f.mock.calls` daje fałszywy alarm reguły ESLint.
     **Dalej:** merge `popr/P27-S2` po zgodzie operatora, potem sesja S3 „makieta” (§8).
+104. **WDROŻENIE S3 „narzędzie makiet” (2026-10-27, jedna sesja) — gałąź `popr/P27-S3` od main `67e04d9`, 5 commitów
+    (4 pozycje 25–28 + poprawki po recenzji), testy 1262 → 1284, NIEZMERGOWANA (merge za zgodą operatora).** Każda pozycja:
+    test → czerwony → poprawka → zielony → `npm test` + tsc + eslint (skrypt kontroli, kod ≠ 0 przy czerwonym) → commit.
+    (25) P29(2b) „Ramki razem” (domyślnie wł.): `strona/siec.mjs` (wstrzykiwany przez proxy) w ramce wysyła
+    `postMessage({makieta:'adres', adres, rodzaj})` do originu narzędzia (start, push, replace, pop; ten sam adres raz);
+    `ramki.mjs` `adresZRamki` trzyma adres w `data-adres` i przenosi ramki z innym adresem (`przeniesRamki`); walidacja trasy
+    wspólna z paskiem (`bezpiecznaTrasa`, także `/\t/host`). (26) P29(2): pasek adresu śledzi ramkę (bez nadpisywania
+    wpisu w trakcie pisania), „Przeładuj ramki” = bieżący adres każdej ramki, „Wszystkie ramki tutaj” w trybie niezależnym;
+    SSE `przeladuj` po poprawce sesji dalej wraca na trasę punktu (świadomie bez zmian). (27) P29(1)+E5-11: `POST api/zrzut?punkt=`
+    (image/png + sygnatura, 415; 5 MB, 413; punkt 400/404) → `visual-diff/zgloszenia/<punkt>-<n>.png` katalogu zadania;
+    decyzja „blad” z `zrzut` tylko tego punktu i katalogu (400 przed zapisem linii); adnotacja „ · zrzut: <ścieżka>”, pole
+    `zrzut` w kolejce, `opisOtwartych`, `przeglad-zakonczony`; front: plik albo Cmd+V, podgląd canvas (`createImageBitmap` —
+    CSP strony nie wpuszcza `blob:`), kadr prostokątem; skill `/makieta`: wyjątek — sesja otwiera zrzut zgłoszenia (jeden
+    naraz) i commituje go z artefaktami. (28) P29(3): punkt wizualny „… → Wejście: … Porównaj: … Stany: …” (prompt
+    `dev-docs-complete-wf.js:238` i skill), parser → `opis.wejscie/sprawdz/stany` (+ zapis ASCII), wiersz „Jak wejść” na stronie;
+    `makieta.mjs sprawdz --pola` wymaga pól (prompt woła z flagą), bez flagi stare R11 i fixture'y etapów 3–4 bez nowych uwag.
+    Rozbieżność z planem: dziś linia w nowym formacie daje opis z całością w „Sprawdź” (nie `null`) — test czerwony na `wejscie`.
+    **Na żywo** (aplikacja demo + agent-browser): 3 ramki zbiegają po kliknięciu w jednej (2 przeładowania, bez pętli), tryb
+    niezależny, „Przeładuj” per ramka, „Wszystkie tutaj”, zrzut 800×600 z kadrem → PNG 399×199 i ścieżka w linii. Cmd+V
+    niesprawdzone na żywo (tylko plik).
+    **Recenzja subagenta z mutacjami (worktree):** 90 mutacji, 63 zabite, 9 równoważnych, 18 przeżyło; P2: (1) przekierowanie
+    zależne od szerokości (telefon `/x` → `/m/x`) zapętlało „Ramki razem” — poprawione: start/replace ramki przeniesionej
+    przez narzędzie w oknie 3 s nie rozsyła dalej (push/pop zawsze), sprawdzone na żywo; (2) bramka `zrzutPunktu` (`^`,
+    prefiks) bez testu; (3) zrywanie ponad limit + 1 MB i normalizacja `content-type` bez testu — testy dodane, mutanty
+    zabite (10/10 kontrolnych); `czytajCialo` nie wisi po zerwaniu. P3 poprawione: notatka podszywająca się pod „ · zrzut:”,
+    R11 ze „Stany:” po → bez flagi, pola ASCII, brzegi kadru, test replaceState. Zostało (P3): osierocony PNG, gdy decyzja
+    po zrzucie dostanie 409/400 (ponowienie tworzy `-2`); `req.resume()` przy 400/415 opróżnia ciało bez limitu (token,
+    127.0.0.1).
+    **Dalej:** merge `popr/P27-S3` po zgodzie operatora, potem sesja S4 „telemetria i pomiar” (§8).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3713,10 +3742,39 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   przeżywa. Dobry fixture ESLint przechodzi też przez reguły typowane (`no-deprecated` na `toBeCalledTimes`,
   `no-confusing-void-expression` na `waitFor(() => expect…)`). Test `sync-template` raz padł na „Broken pipe” (printf w
   `sync-template.sh:168`) i przeszedł w powtórce — niestabilny, obserwacja.
+- P27 S3 (2026-10-27): synchronizacja ramek przez „ten sam adres = koniec” nie wystarcza — aplikacja, która przekierowuje
+  zależnie od szerokości albo dokleja parametr w `replaceState`, robi ping-pong; komunikat ramki musi nieść rodzaj zmiany
+  (start/push/replace/pop), a echo przekierowania po przeniesieniu nie jest rozsyłane. Atrapę ramki do testu pisz bez DOM
+  (`dataset`, `contentWindow`, `src` z historią przez `defineProperty`); obiekt z piaskownicy `vm` ma inny prototyp — porównuj
+  po kopii JSON. Walidacja zrzutu przed zapisem linii, nie po (pierwsza wersja zapisała linię i dopiero oddała 400 → 409
+  w kolejnym teście). Strona narzędzia ma CSP `img-src 'self' data:` — podgląd obrazu przez `createImageBitmap` na canvas.
+  `agent-browser screenshot` w sesji w tle wisi (znane z §7) — w kontroli na żywo tylko `eval`, `upload`, `mouse`; macOS
+  nie ma `timeout`; zsh sesji bez `extendedglob` — kwalifikator `*.png(N)` daje „no matches found”, listuj przez `ls`.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA (2026-10-26, po S2) — WDROŻENIE P27 + P29 + E5, SESJA S3 „narzędzie makiet” (6a pkt 101–103).** Warunek:
+**AKTUALNA (2026-10-27, po S3) — WDROŻENIE P27 + P29 + E5, SESJA S4 „telemetria i pomiar” (6a pkt 101–104).** Warunek:
+`popr/P27-S3` zmergowana do main (zgoda operatora). S4 = pozycje 29–33 planu (E5-16…E5-20) + pomiar E5-14 (bez zmiany kodu;
+wynik pokaż operatorowi — propozycja progu w `dev-plan` 3.3 tylko do jego decyzji). Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main zsynchronizowany z origin, popr/P27-S3 zmergowana). Sesja: WDROŻENIE S4
+„telemetria i pomiar” paczki P27. Przeczytaj docs/reviews/2026-10-26-plan-paczki-P27-P29-E5.md (sekcje Wniosek, S4, Kolejność
+i zasady) i HANDOFF 6a pkt 101–104, §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+
+Cel: pozycje 29–33 na gałęzi popr/P27-S4 od main, potem pomiar E5-14 (skrypt i wynik jak w planie; wynik pokaż mi, próg w dev-plan
+tylko za moją zgodą). Każda pozycja: test → bieg bez poprawki (czerwony) → poprawka → zielony; pełny npm test (skrypt kontroli
+z kodem wyjścia ≠ 0 przy czerwonym) przed każdym commitem; commit na pozycję. Przed zmianą sprawdź plik:linia z planu na obecnym
+main (E5-18: format transkryptu na prawdziwym transkrypcie). Na koniec recenzja subagenta z mutacjami w osobnym worktree
+(raport-sekcje.mjs, zapis.mjs, transkrypt.mjs, skill.mjs); P2 poprawiasz w tej sesji. Merge za moją zgodą.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; subagenci bez pkill z szerokim wzorcem; liczby skryptem;
+pliki .md tylko narzędziem Write/Edit.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: (2026-10-26, po S2) — WDROŻENIE S3 „narzędzie makiet” — WYKONANE (6a pkt 104, gałąź `popr/P27-S3`).** Warunek:
 `popr/P27-S2` zmergowana do main (zgoda operatora). S3 = pozycje 25–28 planu (P29 (2b), (2), (1)+E5-11, (3)). Operator wkleja:
 
 ```
