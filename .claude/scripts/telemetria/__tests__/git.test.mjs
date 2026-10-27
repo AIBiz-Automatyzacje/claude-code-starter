@@ -81,6 +81,8 @@ test('czas commitu archiwum zadania w historii rewizji; brak archiwum = null', (
     assert.equal(czasArchiwum(repo, glowa, 'x'), Number(git(repo, ['log', '-1', '--format=%ct', glowa])))
     assert.equal(czasArchiwum(repo, glowa, 'y'), null)
     assert.equal(czasArchiwum(repo, sha, 'x'), null, 'archiwum po rewizji nie jest w jej historii')
+    git(repo, ['commit', '-q', '--allow-empty', '-m', 'docs(x): archiwum'])
+    assert.equal(czasArchiwum(repo, git(repo, ['rev-parse', 'HEAD']), 'x'), Number(git(repo, ['log', '-1', '--format=%ct'])), 'dwa archiwa: najnowsze')
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }

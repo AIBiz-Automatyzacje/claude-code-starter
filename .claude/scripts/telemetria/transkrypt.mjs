@@ -43,7 +43,8 @@ import { kosztJednostek } from './cennik.mjs'
  * @property {number | null} rules_zn
  * @property {number | null} learned_zn
  * @property {number | null} pamiec_zn
- * @property {number | null} narzedzia_n
+ * @property {number | null} narzedzia_n odroczone nazwy narzedzi w kontekscie startowym (format do ~CC 2.1.29x)
+ * @property {number | null} narzedzia_zapytania_n narzedzia pierwszego zapytania API (`api-request-shape`, CC 2.1.30x) — inna miara
  * @property {number | null} odroczone_zn
  * @property {number | null} skille_n
  * @property {number | null} skille_zn
@@ -139,7 +140,7 @@ function policzNarzedzia(tresc, n) {
 /** @returns {KontekstStartowy} */
 function pustyKontekst() {
   return {
-    claude_md_zn: null, rules_zn: null, learned_zn: null, pamiec_zn: null, narzedzia_n: null,
+    claude_md_zn: null, rules_zn: null, learned_zn: null, pamiec_zn: null, narzedzia_n: null, narzedzia_zapytania_n: null,
     odroczone_zn: null, skille_n: null, skille_zn: null, tools_zn: null, instrukcje: null,
   }
 }
@@ -180,12 +181,13 @@ function dopiszZalacznik(zal, k) {
 /**
  * Narzedzia pierwszego zapytania API (`api-request-shape`). Od CC 2.1.30x agent workflowu nie ma listy odroczonych narzedzi
  * w kontekscie startowym, a `prompt_snapshot` z `tools` przychodzi dopiero po pierwszej odpowiedzi (etap 5 vibersi: null
- * u 200/200 agentow, E5-18). Lista odroczona ze starego formatu ma pierwszenstwo.
+ * u 200/200 agentow, E5-18). Liczba idzie do osobnego pola — odroczone nazwy (322–390) i narzedzia zapytania (4–13) to dwie
+ * miary (recenzja S4). tools_zn z `prompt_snapshot` ma pierwszenstwo.
  * @param {Record<string, unknown>} ksztalt @param {KontekstStartowy} k
  */
 function dopiszKsztaltZapytania(ksztalt, k) {
   if (!Array.isArray(ksztalt.tools)) return
-  k.narzedzia_n ??= ksztalt.tools.length
+  k.narzedzia_zapytania_n ??= ksztalt.tools.length
   k.tools_zn ??= JSON.stringify(ksztalt.tools).length
 }
 

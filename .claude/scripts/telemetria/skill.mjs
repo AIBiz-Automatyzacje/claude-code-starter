@@ -47,10 +47,14 @@ export const KOMENDY_LOKALNE = new Set(['model', 'clear', 'compact', 'context', 
 const czyKrokSkilla = (nazwa, otwarte) => !nazwa.startsWith('dev-') && otwarte.some((e) => e.zrodlo === 'slash')
 // Skille, ktorych epizod konczy wywolanie Workflow (oddanie pracy autopilotowi). /dev-pr woła dev-pr-wf w kazdym etapie — nie tu.
 const KONIEC_NA_WORKFLOW = new Set(['dev-plan'])
-// Skill pomocniczy wywolany narzedziem to krok odpowiedzi na polecenie operatora — konczy sie z tura (E5-19: sync-template
-// jako punkt 1 polecenia, potem smoke). Skill pipeline'u (dev-*) i skill z komendy operatora prowadza dialog — trwaja dalej.
+// Skill-krok wywolany narzedziem konczy sie z tura (E5-19: sync-template jako punkt 1 polecenia operatora, potem smoke).
+// Lista jawna, nie „wszystko spoza dev-*”: zroastuj-mnie, makieta i skille projektow prowadza dialog (recenzja S4: Nawykometr
+// zroastuj-mnie 18 odpowiedzi → 4). Skill z komendy operatora trwa zawsze do nastepnego skilla.
+const SKILLE_KROKI = new Set(['sync-template', 'security', 'sentry-integration', 'agent-browser', 'coolify-manager', 'run',
+  'supabase-dev-guidelines', 'tailwind-react-guidelines', 'ux-ui-guidelines', 'artifact-design', 'artifact-capabilities',
+  'artifact-diagramming', 'dataviz', 'workflow-authoring', 'claude-api', 'update-config'])
 /** @param {Epizod} e */
-const konczySieZTura = (e) => e.zrodlo === 'Skill-tool' && !e.skill.startsWith('dev-')
+const konczySieZTura = (e) => e.zrodlo === 'Skill-tool' && (SKILLE_KROKI.has(e.skill) || e.skill.startsWith('figma:'))
 const RE_CLEAR = /^\s*<command-name>\/?clear<\/command-name>/
 // Praca sesji po zakonczonym skillu do nastepnego skilla (E5-19) — osobna pozycja raportu, nie koszt skilla.
 export const SESJA_BEZ_SKILLA = '(sesja glowna bez skilla)'

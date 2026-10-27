@@ -60,6 +60,7 @@ export function kontekstPerKlasa(agenci) {
       klasa, model, n: lista.length,
       ctx_start_p50: kwantyl(ctx, 0.5), ctx_start_p90: kwantyl(ctx, 0.9),
       narzedzia_n_p50: kwantyl(lista.map((a) => liczba(obiekt(a.kontekst).narzedzia_n)), 0.5),
+      narzedzia_zapytania_p50: kwantyl(lista.map((a) => liczba(obiekt(a.kontekst).narzedzia_zapytania_n)), 0.5),
       claude_md_zn_p50: kwantyl(lista.map((a) => liczba(obiekt(a.kontekst).claude_md_zn)), 0.5),
     }
   }).sort((a, b) => a.klasa.localeCompare(b.klasa) || a.model.localeCompare(b.model))
@@ -96,7 +97,9 @@ export function jakoscBota(runy) {
     const numer = liczba(pr.numer)
     const start = String(r.start ?? '')
     const dotad = z.pr.get(numer)
-    if (!dotad || start >= dotad.start) z.pr.set(numer, { start, pliki: liczba(pr.pliki) ?? 0 })
+    // Rekord bez liczby plikow (plikiPr null) nie zeruje PR-u zapisanego wczesniej z liczba.
+    const pliki = liczba(pr.pliki)
+    if (!dotad || (start >= dotad.start && pliki !== null)) z.pr.set(numer, { start, pliki: pliki ?? dotad?.pliki ?? 0 })
     for (const k of Array.isArray(pr.klasy) ? pr.klasy.map(obiekt) : []) {
       if (typeof k.id === 'string') z.watki.set(k.id, String(k.severity))
     }
@@ -113,24 +116,25 @@ export function jakoscBota(runy) {
   })
 }
 
-// Ucieczki do bota (E5-20): kubelek kazdego unikalnego watku zadania z najnowszego rekordu, ktory go klasyfikowal.
-// Watek bez oznaczenia (rekord sprzed E5-20, brak repo albo czubka PR) = „bez danych”, nie „nowy”.
+// Ucieczki do bota (E5-20): waga watku z najnowszego rekordu, kubelek z pierwszego rekordu z oznaczeniem — watek odrzucony
+// wraca w kolejnej turze, a blame jego linii po fixie tury dalby „kod-tury-PR” (recenzja S4). Watek bez oznaczenia (rekord
+// sprzed E5-20, brak repo albo czubka PR) = „bez danych”, nie „nowy”.
 const BEZ_DANYCH = 'bez danych'
 
 /** @param {Rekord[]} runy */
 export function ucieczkiBota(runy) {
-  /** @type {Map<string, Map<string, { start: string, severity: unknown, kubelek: string }>>} */
+  /** @type {Map<string, Map<string, { severity: unknown, kubelek: string }>>} */
   const perZadanie = new Map()
-  for (const r of runy) {
+  const poCzasie = [...runy].sort((a, b) => String(a.start ?? '').localeCompare(String(b.start ?? '')))
+  for (const r of poCzasie) {
     const pr = obiekt(r.pr)
     if (!Array.isArray(pr.klasy) || typeof r.zadanie !== 'string') continue
     const watki = perZadanie.get(r.zadanie) ?? new Map()
-    const start = String(r.start ?? '')
     for (const k of pr.klasy.map(obiekt)) {
       if (typeof k.id !== 'string') continue
-      const dotad = watki.get(k.id)
       const kubelek = obiekt(k.ucieczka).kubelek
-      if (!dotad || start >= dotad.start) watki.set(k.id, { start, severity: k.severity, kubelek: typeof kubelek === 'string' ? kubelek : BEZ_DANYCH })
+      const dotad = watki.get(k.id)?.kubelek ?? BEZ_DANYCH
+      watki.set(k.id, { severity: k.severity, kubelek: dotad === BEZ_DANYCH && typeof kubelek === 'string' ? kubelek : dotad })
     }
     perZadanie.set(r.zadanie, watki)
   }

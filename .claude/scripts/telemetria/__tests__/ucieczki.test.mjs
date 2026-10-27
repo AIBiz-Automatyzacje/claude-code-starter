@@ -80,3 +80,24 @@ test('kubelek: finding w oknie linii bez osi pasuje; inna znana os w oknie nie; 
   assert.equal(k('src/c.ts:3', 'spec', null).kubelek, 'nieustalone', 'linia bez blame (plik usuniety, commit nieosiagalny)')
   assert.equal(k('src/c.ts:3', 'spec', { temat: 'chore: stare', czas: 1 }).kubelek, 'sprzed-zadania')
 })
+
+// Recenzja S4 (F2): bot ma osie spec i test (OSIE_UWAG dev-pr-wf), review zapisuje spec-compliance i test-coverage (_zrodlo).
+test('osie review spec-compliance i test-coverage pasuja do osi bota spec i test; os z myslnikiem w linii known-issues', () => {
+  const findingi = findingiRaportow([{ nazwa: 'known-issues.md', tresc: '- 🟡 [P3/spec-compliance] src/a.ts:10 — brak\n- 🟡 [P3/test-coverage] src/b.test.ts:5 — mutant\n- 🟡 [P3/code-quality] src/c.ts:1 — kopia' }])
+  assert.deepEqual(findingi.map((f) => f.os), ['spec', 'test', 'code-quality'])
+  const zBuildu = { temat: `feat(${ZADANIE}): x`, czas: 1 }
+  const kontekst = { findingi, zadanie: ZADANIE, czasArchiwum: null }
+  assert.equal(kubelekWatku({ plik: 'src/a.ts:40', os: 'spec' }, zBuildu, kontekst).kubelek, 'review-P3')
+  assert.equal(kubelekWatku({ plik: 'src/b.test.ts:90', os: 'test' }, zBuildu, kontekst).kubelek, 'review-P3')
+})
+
+test('okno linii: odleglosc 10 pasuje, 11 nie; zadanie bedace prefiksem innego to nie ten sam build', () => {
+  const findingi = findingiRaportow([{ nazwa: 'review-faza-1.md', tresc: '### P3 · KOD · `src/a.ts:50`' }])
+  const zBuildu = { temat: `feat(${ZADANIE}): x`, czas: 1 }
+  const kontekst = { findingi, zadanie: ZADANIE, czasArchiwum: null }
+  assert.equal(kubelekWatku({ plik: 'src/a.ts:60', os: 'correctness' }, zBuildu, kontekst).kubelek, 'review-P3')
+  assert.equal(kubelekWatku({ plik: 'src/a.ts:61', os: 'correctness' }, zBuildu, kontekst).kubelek, 'nowy')
+  assert.equal(pochodzenieKodu({ temat: 'chore: etap-5b porzadki', czas: 1 }, 'etap-5', null), 'sprzed-zadania')
+  assert.equal(pochodzenieKodu({ temat: 'feat(etap-5b): inne', czas: 1 }, 'etap-5', null), 'sprzed-zadania')
+  assert.equal(pochodzenieKodu({ temat: 'chore: poprawka etap-5 po smoke', czas: 1 }, 'etap-5', null), 'kod-buildu')
+})

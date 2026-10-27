@@ -128,7 +128,7 @@ test('stary transkrypt bez zalacznikow: kontekst ma klucze z null, nie znika', (
   const stary = TRANSKRYPT.filter((w) => w.type !== 'attachment')
   const k = analizujTranskrypt(stary).kontekst
   assert.deepEqual(Object.keys(k).sort(), [
-    'claude_md_zn', 'instrukcje', 'learned_zn', 'narzedzia_n', 'odroczone_zn', 'pamiec_zn', 'rules_zn', 'skille_n', 'skille_zn', 'tools_zn',
+    'claude_md_zn', 'instrukcje', 'learned_zn', 'narzedzia_n', 'narzedzia_zapytania_n', 'odroczone_zn', 'pamiec_zn', 'rules_zn', 'skille_n', 'skille_zn', 'tools_zn',
   ])
   assert.equal(k.claude_md_zn, null)
   assert.equal(k.narzedzia_n, null)
@@ -179,8 +179,19 @@ test('transkrypt CC 2.1.304 (wycinek wf_e17cca34-115): narzedzia_n i tools_zn z 
   const wpisy = readFileSync(new URL('./fixtures/transkrypt-harness-2.1.304.jsonl', import.meta.url), 'utf8').trim().split('\n').map((l) => JSON.parse(l))
   const ksztalt = wpisy.find((w) => w.type === 'api-request-shape')
   const k = analizujTranskrypt(wpisy).kontekst
-  assert.equal(k.narzedzia_n, 4)
+  // Recenzja S4 (F3): narzedzia_n = odroczone nazwy (stary format, 322–390), narzedzia zapytania (4–13) to inna miara — osobne pole.
+  assert.equal(k.narzedzia_zapytania_n, 4)
+  assert.equal(k.narzedzia_n, null)
   assert.equal(k.tools_zn, JSON.stringify(ksztalt.shape.tools).length)
+})
+
+test('api-request-shape bez tools nie wywraca analizy; tools_zn z prompt_snapshot ma pierwszenstwo przed shape', () => {
+  const bezTools = [TRANSKRYPT[0], { type: 'api-request-shape', shape: { system: [] } }, ...TRANSKRYPT.slice(2)]
+  assert.equal(analizujTranskrypt(bezTools).kontekst.narzedzia_zapytania_n, null)
+  const ksztalt = { type: 'api-request-shape', shape: { system: [], tools: [{ name: 'X', description: 'dluga definicja' }] } }
+  const k = analizujTranskrypt([...TRANSKRYPT.slice(0, 5), ksztalt, ...TRANSKRYPT.slice(5)]).kontekst
+  assert.equal(k.tools_zn, JSON.stringify([{ name: 'Read' }, { name: 'Bash' }]).length)
+  assert.equal(k.narzedzia_zapytania_n, 1)
 })
 
 test('api-request-shape po pierwszej odpowiedzi nie zmienia kontekstu startowego; stary deferred_tools_delta ma pierwszenstwo', () => {
@@ -189,4 +200,6 @@ test('api-request-shape po pierwszej odpowiedzi nie zmienia kontekstu startowego
   assert.equal(analizujTranskrypt(poOdpowiedzi).kontekst.narzedzia_n, null)
   const zDelta = [...TRANSKRYPT.slice(0, 2), ksztalt, ...TRANSKRYPT.slice(2)]
   assert.equal(analizujTranskrypt(zDelta).kontekst.narzedzia_n, 3)
+  assert.equal(analizujTranskrypt(zDelta).kontekst.narzedzia_zapytania_n, 5)
+  assert.equal(analizujTranskrypt(poOdpowiedzi).kontekst.narzedzia_zapytania_n, null)
 })

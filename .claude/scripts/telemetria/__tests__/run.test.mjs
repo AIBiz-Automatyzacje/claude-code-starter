@@ -177,6 +177,10 @@ test('run.pr.head: headRefOid z wyniku zbierz; run sprzed pola — prefiks SHA z
   assert.equal(zbierz({ token: 'tura-2@abc123def456' }), 'abc123def456')
   assert.equal(zbierz({ token: 'tura-2@' }), null)
   assert.equal(zbierz({ token: 'tura-2@abc; rm -rf' }), null, 'tylko hex — wartosc idzie do gita')
+  assert.equal(zbierz({ headRefOid: '--output=/tmp/aaaaaaa' }), null, 'opcja gita z hex na koncu')
+  assert.equal(zbierz({ headRefOid: 'abc1234 --all' }), null)
+  assert.equal(zbierz({ headRefOid: 'abc12' }), null, 'krotszy niz 7 znakow')
+  assert.equal(zbierz({ headRefOid: 'a'.repeat(41) }), null)
   assert.equal(zbierz({}), null)
 })
 

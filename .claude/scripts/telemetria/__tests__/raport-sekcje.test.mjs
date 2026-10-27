@@ -32,7 +32,7 @@ test('kontekst per klasa i model: p50/p90 ctx_start, narzedzia, CLAUDE.md', () =
     agent('review:security', 'reviewer', 1, { ctx_start: 125_000 }),
   ])
   const mech = w.find((x) => x.klasa === 'mechaniczny')
-  assert.deepEqual(mech, { klasa: 'mechaniczny', model: 'claude-haiku-4-5', n: 2, ctx_start_p50: 91_000, ctx_start_p90: 91_000, narzedzia_n_p50: 900, claude_md_zn_p50: 20_000 })
+  assert.deepEqual(mech, { klasa: 'mechaniczny', model: 'claude-haiku-4-5', n: 2, ctx_start_p50: 91_000, ctx_start_p90: 91_000, narzedzia_n_p50: 900, narzedzia_zapytania_p50: null, claude_md_zn_p50: 20_000 })
 })
 
 test('efort per klasa: rozklad poziomow, null = efort sesji albo model bez efortu', () => {
@@ -169,7 +169,7 @@ test('skille: epizod w sesji zaczetej od /clear (po_clear) nie jest kontynuacja 
   assert.deepEqual(s, [{ skill: 'dev-plan', n: 2, pelny_p50: 300, wiadomosci_p50: 3 }])
 })
 
-test('ucieczki bota: unikalne watki per zadanie (najnowsza wersja), kubelki w stalej kolejnosci z P1/P2; watek bez oznaczenia = bez danych (E5-20)', () => {
+test('ucieczki bota: unikalne watki per zadanie (waga z najnowszej wersji, kubelek z pierwszej), kubelki w stalej kolejnosci z P1/P2; bez oznaczenia = bez danych (E5-20)', () => {
   /** @param {string} id @param {string} severity @param {string | null} kubelek */
   const w = (id, severity, kubelek) => ({ id, severity, ucieczka: kubelek ? { kubelek, pochodzenie: kubelek, znane: null } : null })
   const runy = [
@@ -180,10 +180,32 @@ test('ucieczki bota: unikalne watki per zadanie (najnowsza wersja), kubelki w st
   assert.deepEqual(ucieczkiBota(runy), [{
     zadanie: 'z', watki: 4,
     kubelki: [
-      { kubelek: 'review-P3', razem: 1, p1p2: 1 },
       { kubelek: 'kod-fixa', razem: 1, p1p2: 1 },
       { kubelek: 'kod-tury-PR', razem: 1, p1p2: 1 },
+      { kubelek: 'nowy', razem: 1, p1p2: 1 },
       { kubelek: 'bez danych', razem: 1, p1p2: 1 },
     ],
   }])
+})
+
+// Recenzja S4 (F4): watek odrzucony zostaje nierozwiazany i wraca w turze 2 — blame jego linii po fixie tury 1 daje
+// „kod-tury-PR”, choc bot zglosil kod sprzed tury. Pochodzenie z pierwszego widzenia watku, waga z najnowszego.
+test('ucieczki bota: kubelek z pierwszego rekordu z oznaczeniem watku, waga z najnowszego; zadanie bez watkow pominiete', () => {
+  /** @param {string} severity @param {string | null} kubelek */
+  const w = (severity, kubelek) => ({ id: 'A', severity, ucieczka: kubelek ? { kubelek, pochodzenie: kubelek, znane: null } : null })
+  const runy = [
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T12:00:00Z', pr: { numer: 9, klasy: [w('P2', 'kod-tury-PR')] } },
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T10:00:00Z', pr: { numer: 9, klasy: [w('P3', null)] } },
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T11:00:00Z', pr: { numer: 9, klasy: [w('P3', 'review-P3')] } },
+    { typ: 'run', zadanie: 'pusty', start: '2026-10-25T11:00:00Z', pr: { numer: 1, klasy: [] } },
+  ]
+  assert.deepEqual(ucieczkiBota(runy), [{ zadanie: 'z', watki: 1, kubelki: [{ kubelek: 'review-P3', razem: 1, p1p2: 1 }] }])
+})
+
+test('jakosc bota: najnowszy rekord PR bez liczby plikow nie zeruje plikow tego PR (F5)', () => {
+  const runy = [
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T10:00:00Z', pr: { numer: 9, pliki: 40, klasy: [{ id: 'A', severity: 'P2' }] } },
+    { typ: 'run', zadanie: 'z', start: '2026-10-25T11:00:00Z', pr: { numer: 9, pliki: null, klasy: [] } },
+  ]
+  assert.equal(jakoscBota(runy)[0].pliki, 40)
 })

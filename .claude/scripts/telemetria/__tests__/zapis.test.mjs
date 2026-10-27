@@ -99,6 +99,26 @@ test('pole zamrozone puste (null) w pierwszej wersji bierze pierwsza znana warto
   }
 })
 
+// Recenzja S4 (F4): ponowny skan po podbiciu WERSJA_REKORDU liczy blame od nowa — po squash-merge'u i gc czubek PR znika
+// i dobry kubelek zmienial sie w „nieustalone”. Ucieczka watku z pierwszej wersji, w ktorej byla ustalona.
+test('run.pr.klasy[].ucieczka zamrozona po id watku; nieustalona albo pusta bierze nastepna wersje', () => {
+  const k = katalog()
+  const plik = join(k, 'pipeline.jsonl')
+  /** @param {string} kubelek */
+  const u = (kubelek) => ({ kubelek, pochodzenie: kubelek, znane: null })
+  /** @param {number} v @param {Array<Record<string, unknown>>} klasy */
+  const run = (v, klasy) => rekord('wf_1|run|wf_1', { v, pr: { numer: 9, klasy } })
+  try {
+    dopisz(plik, [run(1, [{ id: 'A', ucieczka: u('kod-fixa') }, { id: 'B', ucieczka: null }, { id: 'C', ucieczka: u('nieustalone') }])])
+    const ponowny = run(2, [{ id: 'A', ucieczka: u('nieustalone') }, { id: 'B', ucieczka: u('nowy') }, { id: 'C', ucieczka: u('kod-smoke') }])
+    dopisz(plik, doZapisu([ponowny], odczytajRekordy(plik).ostatnie))
+    const pr = /** @type {{ klasy: Array<{ id: string, ucieczka: { kubelek: string } }> }} */ (odczytajRekordy(plik).ostatnie.get('wf_1|run|wf_1')?.pr)
+    assert.deepEqual(pr.klasy.map((x) => [x.id, x.ucieczka.kubelek]), [['A', 'kod-fixa'], ['B', 'nowy'], ['C', 'kod-smoke']])
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+})
+
 test('uszkodzona linia w pliku: odczyt ja pomija i liczy, reszta rekordow jest', () => {
   const k = katalog()
   const plik = join(k, 'pipeline.jsonl')

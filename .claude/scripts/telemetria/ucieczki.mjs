@@ -14,6 +14,8 @@ export const KUBELKI = ['review-P3', 'review-P1P2', 'kod-fixa', 'kod-tury-PR', '
 const OKNO_LINII = 10
 const NAGLOWEK_REVIEW = /^### (P[123]) · \w+ · `([^`:]+):(\d+)`/
 const WPIS_KNOWN_ISSUES = /^- \S+ \[(P[123])(?:\/([\w-]+))?\] ([^\s:]+):(\d+)/
+// Review zapisuje os nazwa reviewera (`_zrodlo`), bot — os ze slownika OSIE_UWAG dev-pr-wf.js (spec, test).
+const OS_BOTA = new Map([['spec-compliance', 'spec'], ['test-coverage', 'test']])
 
 /**
  * @typedef {{ zrodlo: string, waga: string, os: string | null, plik: string, linia: number }} Finding
@@ -31,7 +33,7 @@ export function findingiRaportow(raporty) {
     const r = wiersz.match(NAGLOWEK_REVIEW)
     if (r) return [{ zrodlo: nazwa, waga: r[1], os: null, plik: r[2], linia: Number(r[3]) }]
     const k = wiersz.match(WPIS_KNOWN_ISSUES)
-    return k ? [{ zrodlo: nazwa, waga: k[1], os: k[2] ?? null, plik: k[3], linia: Number(k[4]) }] : []
+    return k ? [{ zrodlo: nazwa, waga: k[1], os: k[2] ? OS_BOTA.get(k[2]) ?? k[2] : null, plik: k[3], linia: Number(k[4]) }] : []
   }))
 }
 
@@ -50,7 +52,8 @@ export function pochodzenieKodu(blame, zadanie, archiwum) {
   if (/^fix\(pr\): tura/.test(blame.temat)) return 'kod-tury-PR'
   if (new RegExp(`^feat\\(${z}\\)`).test(blame.temat)) return 'kod-buildu'
   if (archiwum !== null && blame.czas > archiwum) return 'kod-smoke'
-  if (blame.temat.includes(zadanie)) return 'kod-buildu'
+  // Nazwa zadania jako slowo: `etap-5` nie lapie `etap-5b`.
+  if (new RegExp(`(^|[^\\w-])${z}([^\\w-]|$)`).test(blame.temat)) return 'kod-buildu'
   return 'sprzed-zadania'
 }
 

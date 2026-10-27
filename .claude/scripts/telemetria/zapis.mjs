@@ -40,12 +40,37 @@ export function odczytajRekordy(plik) {
 // (E5-17). Obowiazuje pierwsza znana wartosc klucza; null = nie wyliczono, wiec bierze nastepna.
 const POLA_ZAMROZONE = ['szablon', 'instrukcje_stale']
 
+/** @param {unknown} x @returns {Record<string, unknown> | null} */
+const obiektLubNull = (x) => (x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x)) : null)
+
+/**
+ * Ucieczka watku bota (run.pr.klasy[].ucieczka, E5-20) z pierwszej wersji, w ktorej byla ustalona: ponowny skan po podbiciu
+ * WERSJA_REKORDU liczy blame od nowa, a po squash-merge'u i gc czubka PR juz nie ma (recenzja S4).
+ * @param {unknown} nowyPr @param {unknown} poprzedniPr @returns {unknown}
+ */
+function zZamrozonymiUcieczkami(nowyPr, poprzedniPr) {
+  const nowy = obiektLubNull(nowyPr)
+  const poprzedni = obiektLubNull(poprzedniPr)
+  if (!nowy || !poprzedni || !Array.isArray(nowy.klasy) || !Array.isArray(poprzedni.klasy)) return nowyPr
+  /** @type {Map<unknown, unknown>} */
+  const ustalone = new Map()
+  for (const k of poprzedni.klasy.map(obiektLubNull)) {
+    const u = obiektLubNull(k?.ucieczka)
+    if (k && u && u.kubelek !== 'nieustalone') ustalone.set(k.id, k.ucieczka)
+  }
+  return { ...nowy, klasy: nowy.klasy.map((k) => {
+    const klasa = obiektLubNull(k)
+    return klasa && ustalone.has(klasa.id) ? { ...klasa, ucieczka: ustalone.get(klasa.id) } : k
+  }) }
+}
+
 /** @param {Record<string, unknown>} nowy @param {Record<string, unknown>} poprzedni @returns {Record<string, unknown>} */
 function zZamrozonymi(nowy, poprzedni) {
   const wynik = { ...nowy }
   for (const pole of POLA_ZAMROZONE) {
     if (poprzedni[pole] !== null && poprzedni[pole] !== undefined) wynik[pole] = poprzedni[pole]
   }
+  if (nowy.typ === 'run') wynik.pr = zZamrozonymiUcieczkami(nowy.pr, poprzedni.pr)
   return wynik
 }
 

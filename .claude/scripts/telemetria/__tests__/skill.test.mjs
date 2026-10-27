@@ -286,3 +286,25 @@ test('/clear zamyka epizod; praca po nim = „sesja glowna bez skilla”; po_cle
   assert.deepEqual([...bezSkilla.odpowiedzi.keys()], ['a2'])
   assert.equal(rekordSkilla(epizod('dev-plan'), () => 0).po_clear, false)
 })
+
+// Recenzja S4 (F1): zroastuj-mnie wolany narzedziem prowadzi dialog (Nawykometr 540559b7: 18 odpowiedzi i 7 wiadomosci
+// operatora → 4 i 0 przy regule „kazdy skill spoza dev-* konczy sie z tura”). Z tura koncza sie tylko skille-kroki z listy.
+test('skill dialogowy spoza dev-* wolany narzedziem trwa przez wiadomosci operatora; skill-krok (lista, figma:*) konczy sie z tura', () => {
+  /** @param {string} nazwa */
+  const sesja = (nazwa) => [
+    user('o1', 'zrob to'),
+    asystent('a1', 10, [{ type: 'tool_use', id: 's-1', name: 'Skill', input: { skill: nazwa } }]),
+    user('o2', 'odpowiedz operatora'),
+    asystent('a2', 20),
+  ]
+  for (const nazwa of ['zroastuj-mnie', 'makieta', 'utworz-zadanie']) {
+    const [e, ...reszta] = epizodySesji(sesja(nazwa), 's')
+    assert.equal(reszta.length, 0, nazwa)
+    assert.deepEqual([...e.odpowiedzi.keys()], ['a1', 'a2'], nazwa)
+  }
+  for (const nazwa of ['sync-template', 'figma:figma-use', 'security']) {
+    const [e, bez] = epizodySesji(sesja(nazwa), 's')
+    assert.deepEqual([...e.odpowiedzi.keys()], ['a1'], nazwa)
+    assert.equal(bez.skill, SESJA_BEZ_SKILLA, nazwa)
+  }
+})
