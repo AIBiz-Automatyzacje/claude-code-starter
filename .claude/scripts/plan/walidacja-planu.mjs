@@ -163,8 +163,9 @@ export function uwagiRozmiaruFaz(fazy) {
 
 // E5-14 (vibersi etapy 3–5, 51 IU): scenariusze IU ↔ ctx_max buildera Spearman +0,83, pliki ↔ tury +0,71; IU z 10+ plikami
 // tury p50 72 i ctx_max p50 227k, z 7–9 scenariuszami 80 i 263k (1–3 pliki: 27 i 89k). Zero porazek buildera — uwaga, nie blad.
-const PROG_SCENARIUSZY_IU = 7
-const PROG_PLIKOW_IU = 10
+// Prog 8/12 (decyzja operatora): 7/10 lapal 29/51 IU, czyli srodek zwyklego rozmiaru; 8/12 — 17/51 najciezszych.
+const PROG_SCENARIUSZY_IU = 8
+const PROG_PLIKOW_IU = 12
 
 /**
  * @param {{ id: string, scenariusze: unknown[], pliki: unknown[] }[]} jednostki

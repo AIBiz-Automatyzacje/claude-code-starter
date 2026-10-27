@@ -503,26 +503,27 @@ test('sprawdzPlan: faza z 6 IU daje uwage rozmiaru fazy (wpiecie uwagiRozmiaruFa
 // E5-14 (vibersi etapy 3–5, 51 IU, dane/e5-14-tury-iu.txt): scenariusze IU ↔ ctx_max buildera Spearman +0,83, pliki ↔ tury +0,71;
 // IU z 10+ plikami: tury p50 72, ctx_max p50 227k (1–3 pliki: 27 i 89k); 7–9 scenariuszy: 80 i 263k. Zero porazek buildera,
 // wiec uwaga (koszt i kontekst), nie blad — decyzja operatora 2026-10-27.
-test('rozmiar IU: >= 7 scenariuszy albo >= 10 plikow = uwaga z liczbami; 6 scenariuszy i 9 plikow — bez uwagi', () => {
+// Decyzja operatora 2026-10-27: prog 7/10 dawal uwage 29/51 IU etapow 3–5 (srodek zwyklego rozmiaru), 8/12 — 17/51 najciezszym.
+test('rozmiar IU: >= 8 scenariuszy albo >= 12 plikow = uwaga z liczbami; 7 scenariuszy i 11 plikow — bez uwagi', () => {
   /** @param {string} id @param {number} scen @param {number} pliki */
   const iu = (id, scen, pliki) => ({ id, scenariusze: Array.from({ length: scen }, () => ({})), pliki: Array.from({ length: pliki }, () => ({})) })
-  assert.deepEqual(uwagiRozmiaruIu([iu('IU-1', 6, 9)]), [])
-  const uwagi = uwagiRozmiaruIu([iu('IU-1', 7, 2), iu('IU-2', 1, 10), iu('IU-3', 8, 12), iu('IU-4', 6, 9)])
+  assert.deepEqual(uwagiRozmiaruIu([iu('IU-1', 7, 11)]), [])
+  const uwagi = uwagiRozmiaruIu([iu('IU-1', 8, 2), iu('IU-2', 1, 12), iu('IU-3', 9, 14), iu('IU-4', 7, 11)])
   assert.equal(uwagi.length, 3)
-  assert.match(uwagi[0], /^IU-1: 7 scenariuszy testowych, 2 plików \(próg: 7 scenariuszy albo 10 plików\)/)
-  assert.match(uwagi[1], /^IU-2: 1 scenariuszy testowych, 10 plików/)
+  assert.match(uwagi[0], /^IU-1: 8 scenariuszy testowych, 2 plików \(próg: 8 scenariuszy albo 12 plików\)/)
+  assert.match(uwagi[1], /^IU-2: 1 scenariuszy testowych, 12 plików/)
   assert.match(uwagi[2], /^IU-3: /)
   assert.match(uwagi[0], /podziel/)
 })
 
-test('sprawdzPlan: IU z 10 plikami daje uwage rozmiaru IU (wpiecie), fixture — bez niej', () => {
+test('sprawdzPlan: IU z 8 scenariuszami daje uwage rozmiaru IU (wpiecie), fixture — bez niej', () => {
   const korzen = projekt()
   try {
     const plan = parsujPlan(FIXTURE)
-    assert.deepEqual(sprawdzPlan(plan, korzen).uwagi.filter((u) => /próg: 7 scenariuszy/.test(u)), [])
+    assert.deepEqual(sprawdzPlan(plan, korzen).uwagi.filter((u) => /próg: 8 scenariuszy/.test(u)), [])
     const [jednostka] = plan.fazy[0].iu
-    while (jednostka.scenariusze.length < 7) jednostka.scenariusze.push({ ...jednostka.scenariusze[0] })
-    assert.equal(sprawdzPlan(plan, korzen).uwagi.filter((u) => new RegExp(`^${jednostka.id}: 7 scenariuszy`).test(u)).length, 1)
+    while (jednostka.scenariusze.length < 8) jednostka.scenariusze.push({ ...jednostka.scenariusze[0] })
+    assert.equal(sprawdzPlan(plan, korzen).uwagi.filter((u) => new RegExp(`^${jednostka.id}: 8 scenariuszy`).test(u)).length, 1)
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }
