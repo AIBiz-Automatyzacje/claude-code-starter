@@ -1,5 +1,5 @@
 // Zapis telemetrii: jeden plik JSONL na maszyne (decyzja O4), TYLKO dopisywany (appendFileSync), nigdy nadpisywany.
-// Deduplikacja przy odczycie: ostatnia wersja per klucz (przeglad D5 §8 pkt 2 — dwie sesje koncza odpowiedz w ciagu 2 s
+// Deduplikacja przy odczycie: ostatnia wersja per klucz (pola wersji maszynerii z pierwszej — POLA_ZAMROZONE) (przeglad D5 §8 pkt 2 — dwie sesje koncza odpowiedz w ciagu 2 s
 // w 6,6% przypadkow, wiec poprawnosc nie moze zalezec od sprawdzania kluczy przed zapisem).
 
 import { appendFileSync, existsSync, mkdirSync, rmSync, statSync } from 'node:fs'
@@ -28,8 +28,25 @@ export function odczytajRekordy(plik) {
   const ostatnie = new Map()
   if (!existsSync(plik)) return { ostatnie, uszkodzone: 0 }
   const { wpisy, uszkodzone } = czytajJsonl(plik)
-  for (const w of wpisy) if (typeof w.klucz === 'string') ostatnie.set(w.klucz, w)
+  for (const w of wpisy) {
+    if (typeof w.klucz !== 'string') continue
+    const poprzedni = ostatnie.get(w.klucz)
+    ostatnie.set(w.klucz, poprzedni ? zZamrozonymi(w, poprzedni) : w)
+  }
   return { ostatnie, uszkodzone }
+}
+
+// Pola wersji maszynerii liczone z plikow projektu w chwili skanu: ponowny skan po sync-template wpisywal stan z dnia skanu
+// (E5-17). Obowiazuje pierwsza znana wartosc klucza; null = nie wyliczono, wiec bierze nastepna.
+const POLA_ZAMROZONE = ['szablon', 'instrukcje_stale']
+
+/** @param {Record<string, unknown>} nowy @param {Record<string, unknown>} poprzedni @returns {Record<string, unknown>} */
+function zZamrozonymi(nowy, poprzedni) {
+  const wynik = { ...nowy }
+  for (const pole of POLA_ZAMROZONE) {
+    if (poprzedni[pole] !== null && poprzedni[pole] !== undefined) wynik[pole] = poprzedni[pole]
+  }
+  return wynik
 }
 
 /** @param {Record<string, unknown>} r */
@@ -47,7 +64,8 @@ export function doZapisu(rekordy, ostatnie) {
     if (!poprzedni) return true
     // Nowsza wersja logiki wyliczania (pole v) nadpisuje przy odczycie takze rekordy jednorazowe.
     if (poprzedni.v !== r.v) return true
-    return !TYPY_JEDNORAZOWE.has(r.typ) && bezCzasu(poprzedni) !== bezCzasu(r)
+    // Pola zamrozone i tak wygrywaja z pierwszej wersji — ich zmiana nie jest nowa wersja.
+    return !TYPY_JEDNORAZOWE.has(r.typ) && bezCzasu(poprzedni) !== bezCzasu(zZamrozonymi(r, poprzedni))
   })
 }
 

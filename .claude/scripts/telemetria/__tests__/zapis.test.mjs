@@ -64,6 +64,41 @@ test('agent zapisany starsza wersja logiki (v) dostaje nowa wersje rekordu', () 
   }
 })
 
+test('ponowny skan: szablon i instrukcje_stale zamrozone z pierwszej wersji klucza, reszta z ostatniej (E5-17)', () => {
+  const k = katalog()
+  const plik = join(k, 'pipeline.jsonl')
+  try {
+    const zRunu = { marker: 'v1', zgodny: true }
+    dopisz(plik, [rekord('wf_1|run|wf_1', { status: 'KILLED', szablon: zRunu }), rekord('wf_1|agent|a1', { v: 1, instrukcje_stale: 12 })])
+    // Skan po sync-template: stan dnia skanu (nowy marker, inna liczba polecen agenta) przy zmianie statusu i wersji logiki
+    const poSyncu = [rekord('wf_1|run|wf_1', { status: 'OK', szablon: { marker: 'v2', zgodny: false } }), rekord('wf_1|agent|a1', { v: 2, instrukcje_stale: 19 })]
+    dopisz(plik, doZapisu(poSyncu, odczytajRekordy(plik).ostatnie))
+    const { ostatnie } = odczytajRekordy(plik)
+    assert.equal(ostatnie.get('wf_1|run|wf_1')?.status, 'OK')
+    assert.deepEqual(ostatnie.get('wf_1|run|wf_1')?.szablon, zRunu)
+    assert.equal(ostatnie.get('wf_1|agent|a1')?.v, 2)
+    assert.equal(ostatnie.get('wf_1|agent|a1')?.instrukcje_stale, 12)
+    // Sama zmiana pola zamrozonego to nie nowa wersja — inaczej kazdy skan po sync-template dopisywalby rekord
+    const tylkoSzablon = [rekord('wf_1|run|wf_1', { status: 'OK', szablon: { marker: 'v3', zgodny: false } })]
+    assert.deepEqual(doZapisu(tylkoSzablon, ostatnie), [])
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+})
+
+test('pole zamrozone puste (null) w pierwszej wersji bierze pierwsza znana wartosc', () => {
+  const k = katalog()
+  const plik = join(k, 'pipeline.jsonl')
+  try {
+    dopisz(plik, [rekord('wf_1|run|wf_1', { status: 'KILLED', szablon: null })])
+    dopisz(plik, [rekord('wf_1|run|wf_1', { status: 'OK', szablon: { marker: 'v1' } })])
+    dopisz(plik, [rekord('wf_1|run|wf_1', { status: 'STOP', szablon: { marker: 'v2' } })])
+    assert.deepEqual(odczytajRekordy(plik).ostatnie.get('wf_1|run|wf_1')?.szablon, { marker: 'v1' })
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+})
+
 test('uszkodzona linia w pliku: odczyt ja pomija i liczy, reszta rekordow jest', () => {
   const k = katalog()
   const plik = join(k, 'pipeline.jsonl')
