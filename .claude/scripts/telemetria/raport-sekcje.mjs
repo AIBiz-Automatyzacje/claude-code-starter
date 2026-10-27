@@ -78,31 +78,37 @@ export function efortPerKlasa(agenci) {
 }
 
 // Uwagi bota P1/P2 na 100 plikow PR — miara jakosci z mapy walidacji (PANEL-WEJSCIE §12). Unikalne watki per zadanie:
-// suma po runach dev-pr zawyza o 43% (przeglad D5 §8 pkt 4).
+// suma po runach dev-pr zawyza o 43% (przeglad D5 §8 pkt 4). Pliki: suma po PR-ach czesci (rozne `pr.numer`), kazdy PR
+// z najnowszego rekordu — maksimum czesci zawyzalo miare PR w czesciach (etap 5 vibersi: 2,7 zamiast 1,2/100; E5-16).
 const NA_STO = 100
 const WAGI = new Set(['P1', 'P2', 'P3'])
 
 /** @param {Rekord[]} runy */
 export function jakoscBota(runy) {
-  /** @type {Map<string, { pliki: number, watki: Map<string, string> }>} */
+  /** @type {Map<string, { pr: Map<unknown, { start: string, pliki: number }>, watki: Map<string, string> }>} */
   const perZadanie = new Map()
   for (const r of runy) {
     const pr = obiekt(r.pr)
     if (!Object.keys(pr).length || typeof r.zadanie !== 'string') continue
-    const z = perZadanie.get(r.zadanie) ?? { pliki: 0, watki: new Map() }
-    z.pliki = Math.max(z.pliki, liczba(pr.pliki) ?? 0)
+    const z = perZadanie.get(r.zadanie) ?? { pr: new Map(), watki: new Map() }
+    // Run sprzed numeru PR (numer null) = jeden PR zadania.
+    const numer = liczba(pr.numer)
+    const start = String(r.start ?? '')
+    const dotad = z.pr.get(numer)
+    if (!dotad || start >= dotad.start) z.pr.set(numer, { start, pliki: liczba(pr.pliki) ?? 0 })
     for (const k of Array.isArray(pr.klasy) ? pr.klasy.map(obiekt) : []) {
       if (typeof k.id === 'string') z.watki.set(k.id, String(k.severity))
     }
     perZadanie.set(r.zadanie, z)
   }
   return [...perZadanie].map(([zadanie, z]) => {
+    const pliki = [...z.pr.values()].reduce((s, p) => s + p.pliki, 0)
     const wagi = [...z.watki.values()]
     // Runy dev-pr sprzed slownika klas (It. 1 krok 8) nie zapisywaly wagi — to brak danych, nie zero P1/P2.
     const bezWagi = wagi.filter((s) => !WAGI.has(s)).length
     const p1p2 = wagi.filter((s) => s === 'P1' || s === 'P2').length
-    const liczalne = z.pliki && bezWagi < wagi.length
-    return { zadanie, pliki: z.pliki, watki: z.watki.size, bez_wagi: bezWagi, p1p2, p1p2_na_100_plikow: liczalne ? Math.round((p1p2 / z.pliki) * NA_STO * 10) / 10 : null }
+    const liczalne = pliki && bezWagi < wagi.length
+    return { zadanie, pliki, watki: z.watki.size, bez_wagi: bezWagi, p1p2, p1p2_na_100_plikow: liczalne ? Math.round((p1p2 / pliki) * NA_STO * 10) / 10 : null }
   })
 }
 

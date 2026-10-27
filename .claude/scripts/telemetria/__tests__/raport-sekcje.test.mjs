@@ -62,6 +62,21 @@ test('jakosc bota: watek bez wagi (runy dev-pr sprzed slownika klas) to brak kla
   ])
 })
 
+test('jakosc bota: PR w czesciach — suma plikow czesci (rozne pr.numer), ten sam PR raz z najnowszego rekordu (E5-16)', () => {
+  /** @param {number} numer @param {number} pliki @param {string} id */
+  const pr = (numer, pliki, id) => ({ numer, pliki, klasy: [{ id, severity: 'P2' }] })
+  const runy = [
+    // Etap 5 vibersi: trzy czesci 61/130/148 plikow, 4 watki P1/P2 — Math.max dawal 148 plikow i 2,7/100 zamiast 1,2/100
+    { typ: 'run', zadanie: 'etap5', start: '2026-10-20T10:00:00Z', pr: pr(11, 61, 'A') },
+    { typ: 'run', zadanie: 'etap5', start: '2026-10-21T10:00:00Z', pr: pr(12, 125, 'B') },
+    { typ: 'run', zadanie: 'etap5', start: '2026-10-21T12:00:00Z', pr: pr(12, 130, 'C') },
+    { typ: 'run', zadanie: 'etap5', start: '2026-10-22T10:00:00Z', pr: pr(13, 148, 'D') },
+    // Starszy rekord tego samego PR zapisany po nowszym (kolejnosc w pliku nie jest kolejnoscia czasu)
+    { typ: 'run', zadanie: 'etap5', start: '2026-10-21T08:00:00Z', pr: pr(12, 300, 'C') },
+  ]
+  assert.deepEqual(jakoscBota(runy), [{ zadanie: 'etap5', pliki: 339, watki: 4, bez_wagi: 0, p1p2: 4, p1p2_na_100_plikow: 1.2 }])
+})
+
 test('niezawodnosc: statusy per workflow i kategorie STOP', () => {
   const n = niezawodnosc([
     { typ: 'run', workflow: 'dev-autopilot', status: 'OK', stop_kategoria: null },
