@@ -313,6 +313,10 @@ test('gotowosc: uwaga proxy sondy tylko z E2E_HEALTH_TRESC, alias hosta, klucze 
     ["export default { server: { proxy: { '^/(': 'x' } } }", '/healthz', 1],
     ["export default { define: { '/healthz': 'x' }, server: { proxy: { '/api': 'x' } } }", '/healthz', 1],
     ["export default { server: { proxy: { '^/healthz$': 'x' } } }", '/healthz/', 0],
+    // vibersi etap 6a: proxy z funkcji (`proxySerweraE2e(...)` z tablicy tras) — kluczy nie widac, liczy sie napis-sciezka w pliku
+    ["const TRASY = ['/api/', '/healthz'] as const\nexport default { server: { proxy: zTras(TRASY) } }", '/healthz', 0],
+    ["const TRASY = ['/api/'] as const\nexport default { server: { proxy: zTras(TRASY) } }", '/healthz', 1],
+    ["export default { server: { proxy } }", '/healthz', 1],
   ])
   for (const [tresc, sciezka, ile] of przypadki) {
     vite(`${tresc}\n`)
