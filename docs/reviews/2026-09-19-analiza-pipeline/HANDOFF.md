@@ -3402,6 +3402,42 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     mierzony przed pushem, E5-6); linie known-issues w formacie `[P3/<os>]` (S1 poz. 4) — od nich zależy kubełek „review-P3”
     ucieczek; scribe/fix: L-COR-4/5 kontroli fixa (S2); telemetria po runie: `raport.mjs --projekt vibersi --bez-skanu` po
     skanie hooka — §4 ucieczki etapu 6, §2 `narzedzia_zapytania`, §6 „sesja glowna bez skilla”.
+108. **ETAP 6A VIBERSI NA MASZYNERII P27 + ISSUES #2/#3 + README (2026-10-27/28, jedna sesja szablonu).** Etap 6 podzielony
+    na 6a (admin, zgody, analityka) i 6b. (1) **Przegląd planu 6a przed startem** (`2026-10-27-001-feat-etap-6a-admin-i-zgody-plan.md`,
+    6 faz, 18 IU, 8 `[E2E]`): `plan.mjs gotowosc` ok; uwagi rozmiaru IU-2 (8 scen.), IU-6 (12 plików), IU-8 (9 scen.); fazy
+    ≤ 4 IU; `## Części PR` 1–3/4–6 przy szacunku ~140 (< 150 → możliwy jeden PR). Dwa fałszywe alarmy: sonda `/healthz` (proxy
+    Vite z funkcji `proxySerweraE2e(TRASY_SERWERA)` — `kluczeProxy` czytał tylko literał obiektu) i „migracja bez pliku” IU-3
+    (odwołanie do CHECK-ów migracji IU-1). Przed startem: push `main` vibersi (sync P27 był lokalny). (2) **Run:** pierwszy STOP
+    E2E-srodowisko — port 5174 trzymał `node server.js` innego projektu (od 22.10); bramka podała PID, operator zabił, drugi run
+    OK (`wf_dfadac9a-774`, 17:58–23:44, 6/6 faz, 0 P1, fix w każdej fazie, kontrola diffu naprawczego zmieniła kod w fazach
+    2, 3, 5, 6). Przy okazji operator zamknął 9 zapomnianych serwerów, w tym sierotę testu `srodowisko.test.mjs` (od 18.10).
+    Koszt 40,8 M (execute 45%, review 27%, fix 20%), 2,27 M/IU — najniżej od etapu 1 (etapy 2–5: 3,2–4,4 M/IU, rekordy po
+    `klucz`). Części PR: pomiar 142 plików do recenzji przy szacunku 140 → jeden PR (`czesci.mjs`: „plan przewidywał części,
+    całość 142”). known-issues: 33 linie, wszystkie `[P3/<os>]` (16 code-quality) — kubełek „review-P3” ucieczek zadziała.
+    Faza 1: migracja z polem `cytat` zepsuła smoke etapu 5 — złapała to linia Weryfikacji IU-1 („etap-5 smoke nadal PASS”).
+    Faza 6: review znalazło token z linku Auth w odsłonie → allowlista `PARAMETRY_ODSLONY` + solution. **E5-14 na 6a:** IU z
+    uwagą (2, 6, 8): tury p50 65, ctx_max 257k, koszt 1,89 M; reszta (15): 34, 108k, 0,55 M — próg trafia. Najdroższa IU-1
+    (82 tury, 287k, 4 pliki SQL, 6 scen., 6 plików) bez uwagi. Spearman z turami (n=18): długość opisu IU +0,76, scenariusze
+    +0,74, pliki +0,61 — kandydat na sygnał, do sprawdzenia na 69 IU etapów 3–6a, bez zmiany progu. **Zrzuty w fazie 3:**
+    tester (`agent-a8c787e19adbf01df`) dostał `rc=142` na zrzucie i na próbnym `about:blank` (21:02–21:03 lokalnie) → zgodnie
+    z procedurą bez zrzutów do końca fazy, asercje ze snapshotów PASS, 9 porównań z makietą przeszło do smoke'u (`/makieta`).
+    Przyczyna nieustalona: ekran był wyłączony (pmset 19:51–21:20), ale w fazie 6 zrzuty przy wyłączonym ekranie (23:05) działały.
+    Telemetria (`raport --bez-skanu`, 27–28.10): ucieczki etapu 6a puste (brak PR); §6 dev-prep 5,4 M / 37 wiad., dev-plan
+    4,9 M / 9, „bez skilla” 36k; §2 kolumna `narzedzia` = „brak listy” we wszystkich klasach (E5-18, oczekiwane). Decyzja
+    operatora w vibersi: `VITE_GTM_ID` jest w `.env.local`, więc trafia do `pnpm dev` i E2E — do przeniesienia do builda
+    staging/prod. (3) **Szablon** (main → origin): `popr/issue-3-i-falszywe-alarmy` (merge `f9ed40c`, 4 commity): warunek
+    uruchomienia CLI `realpathSync(argv[1]) === fileURLToPath(import.meta.url)` w `pr/czesci`, `pr/rozmiar`, `smoke/zmienne`
+    (issue #3: ścieżka ze spacją / polskim znakiem → kod 0 bez wyjścia) **i w hooku `env-wartosci`** (przez dowiązanie
+    przepuszczał każdą komendę — sprawdzone: kod 0 zamiast 2) oraz `generuj-fixture`; test z kopii w „projekt z spacją Ł” i przez
+    dowiązanie + strażnik zapisu warunku w `.claude/`; `srodowisko.test.mjs` `before` zabija sieroty (PPID 1, cwd
+    `e2e-srodowisko-*`); `kluczeProxy` bez literału obiektu bierze napisy-ścieżki z pliku; uwaga migracji pomija linię z numerem
+    migracji z planu albo z `supabase/migrations/` (na planach vibersi zmienia się tylko 6a IU-3). Testy 1309 → 1314.
+    Issue #2 (skaner Trustabl, „sync-template czyta poświadczenia”) zamknięte jako not planned z komentarzem (tekst `gh auth`
+    w dokumentacji i podpowiedzi błędu), #3 zamknięte commitem + komentarz. README 590 → 145 linii (`42c4838`; changelog →
+    odnośnik do commitów), baner w stylu strony Akademii i „1350+ osób” (`d341449`, render HTML w Chrome headless).
+    **Dalej:** w vibersi smoke 6a (30 punktów, `/makieta` dla 9 ekranów admina, migracje `20261027120000`–`0300` na dev) i `/dev-pr`;
+    po PR: `raport --bez-skanu` §4 ucieczki 6a; `/sync-template` do vibersi po merge'u PR 6a (zmiany z pkt 108 (3)); kandydaci:
+    ponowienie próbnego zrzutu przed porównaniem makiet na końcu fazy testera, długość opisu IU w pomiarze E5-14.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3838,7 +3874,25 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA SZABLONU (2026-10-27, 6a pkt 107): CZUWANIE NA ETAP 6 VIBERSI.** Nowa sesja w katalogu
+**AKTUALNA — SESJA SZABLONU (2026-10-28, 6a pkt 108): PO PR ETAPU 6A VIBERSI.** Nowa sesja w katalogu workspace-template.
+Operator wkleja ją, gdy PR etapu 6a w vibersi przejdzie `/dev-pr` (tury bota zakończone):
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main = origin/main). Etap 6a vibersi przeszedł autopilota na maszynerii
+P27 i PR (HANDOFF 6a pkt 108). Przeczytaj pkt 108 i §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+
+Cel: (1) telemetria po PR — raport.mjs --projekt vibersi --bez-skanu: §4 ucieczki etapu 6a (kubełki z [P3/<os>]) i uwagi bota
+na 100 plików; co z tego dla reviewerów. (2) /sync-template do vibersi (zmiany pkt 108 (3)) — w sesji vibersi, ja odpalam.
+(3) Pomiar E5-14 z długością opisu IU na 69 IU etapów 3–6a (skrypty/e5_14_tury_iu.py) — czy dokłada sygnał do progu 8/12.
+(4) Zrzuty testera: czy ponowić próbny zrzut przed porównaniem makiet na końcu fazy (6a faza 3: 9 porównań do smoke'u).
+
+Zasady: jedna sesja; w vibersi tylko odczyt, chyba że poproszę; nie wypisuj wartości z plików .env*; liczby skryptem;
+pliki .md tylko narzędziem Write/Edit; zmiany w szablonie na gałęzi popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: (2026-10-27, 6a pkt 107) — SESJA SZABLONU: CZUWANIE NA ETAP 6 VIBERSI — WYKONANE (6a pkt 108).** Nowa sesja w katalogu
 workspace-template. Operator wkleja ją, gdy skończy `/dev-prep` i `/dev-plan` etapu 6 w vibersi (przed autopilotem):
 
 ```
@@ -3857,7 +3911,7 @@ Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na p
 Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
 ```
 
-**AKTUALNA — SESJA VIBERSI (2026-10-27, po syncu P27 do vibersi) — ETAP 6 VIBERSI: PREP (6a pkt 106).** Warunek: vibersi `16a9f73`
+**Historia: SESJA VIBERSI (2026-10-27, po syncu P27 do vibersi) — ETAP 6 VIBERSI: PREP — WYKONANE (6a pkt 108).** Warunek: vibersi `16a9f73`
 (sync P27) na main — wypchnięty albo świadomie lokalny (decyzja operatora); makieta Figma „admin: zgłoszenia i wyróżnione”
 gotowa albo `/dev-prep` ją zgłosi jako bloker. Nowa sesja w katalogu vibersi. Operator wkleja:
 
