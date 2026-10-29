@@ -28,7 +28,7 @@ const MAPA_KLAS = /** @type {const} */ ([
   [/^(fix:faza-\*|fix:poprawka:faza-\*|pr:napraw:tura-\*)$/, 'klasa-naprawiacz'],
   [/^review:test-coverage$/, 'test-coverage-reviewer'],
   [/^review:spec-compliance$/, 'spec-compliance-reviewer'],
-  [/^review:e2e(:retry)?$/, 'feature-tester-e2e'],
+  [/^review:e2e(:\*\*)?(:retry)?$/, 'feature-tester-e2e'],
 ])
 const KLASA_DOMYSLNA = 'klasa-orkiestracyjny'
 

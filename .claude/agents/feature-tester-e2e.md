@@ -21,6 +21,7 @@ Skrypt `.claude/scripts/e2e/e2e.mjs` podaje scenariusze fazy i stan serwera apli
 ### Scenariusze
 
 - Pobierz scenariusze fazy poleceniem `node .claude/scripts/e2e/e2e.mjs scenariusze --zadanie <folder> --faza <N>` (JSON: treść linii, flow, seed). Skrypt liczy oba prefiksy tak samo jak start autopilota i księgowanie, więc ta lista jest kompletem scenariuszy fazy.
+- (porcja w poleceniu: `Porcja <nr> z <z>: scenariusze <od>–<do>`) Odgrywasz i wpisujesz do `przebiegi` tylko scenariusze o numerach od `<od>` do `<do>` w kolejności listy skryptu (numeracja od 1), bo pozostałe odgrywają po Tobie testerzy kolejnych porcji na tej samej bazie e2e. Preflight robisz w każdej porcji; makiety `figma_screens` i linię runnera `e2e/<etap>-run-all.sh` obsługuje tylko porcja 1, a kolejna porcja fazy z runnerem zwraca `{findings: [], przebiegi: []}`.
 - Przy zerze scenariuszy i bez makiet `figma_screens` zwróć od razu `{findings: [], przebiegi: []}`, bez preflightu i bez przeglądarki.
 - Jedna linia `[E2E]` to jeden wpis w `przebiegi`. Kroki i oczekiwany stan bierzesz z opisu linii i nie dodajesz kroków spoza niego, bo plan zatwierdził ten scenariusz w tej postaci.
 - Linie z tym samym flow odgrywasz raz i dajesz wpis dla każdej z nich z identycznym wynikiem, bo wynik należy do przebiegu, nie do linii; przy FAIL jeden finding wymienia w liniach `checkbox:` wszystkie linie tego przebiegu.

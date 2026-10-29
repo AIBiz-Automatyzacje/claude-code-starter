@@ -454,12 +454,47 @@ ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(po
 // Tryb `bez-przegladarki` = orkiestrator zglosil, ze srodowisko E2E nie dziala (sekcja trybu w pliku roli).
 const SKILL_WERYFIKACJI = '.claude/skills/weryfikacja/SKILL.md'
 
-function e2ePrompt(sciezka, faza, poprzednie, tryb, kontekst, przyczyna) {
+function e2ePrompt(sciezka, faza, poprzednie, tryb, kontekst, przyczyna, porcja = null) {
   const powod = tryb === 'bez-przegladarki' && przyczyna ? `Przyczyna trybu bez-przegladarki (powod wpisow SKIP zamiast ogolnego): ${przyczyna}\n` : ''
+  const zakres = porcja ? `Porcja ${porcja.nr} z ${porcja.z}: scenariusze ${porcja.od}–${porcja.do} listy skryptu (pozycja o porcji w pliku roli).\n` : ''
   return `Test E2E fazy ${faza} zadania w folderze ${sciezka}. Tryb: ${tryb}.
-${powod}Skill weryfikacji projektu: ${SKILL_WERYFIKACJI} (gdy istnieje — sekcje Drive i Evidence oraz mapa-funkcji.md obok).
+${zakres}${powod}Skill weryfikacji projektu: ${SKILL_WERYFIKACJI} (gdy istnieje — sekcje Drive i Evidence oraz mapa-funkcji.md obok).
 Wynik to obiekt {findings:[...], przebiegi:[...]} zgodny ze schematem; *-zadania.md i kod zostaja bez zmian.
 ${BLOK_DLUGIE_KOMENDY}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
+}
+
+// HANDOFF 6a pkt 111: vibersi 6b ma faze „przejscie calego MVP” z 55 scenariuszami [E2E], a jeden tester odgrywal dotad
+// najwyzej 6 (57 tur, ~100k kontekstu, do 16 min). Powyzej progu scenariusze ida do kolejnych testerow PO KOLEI — wspolna
+// baza e2e, seedy i limiter wykluczaja rownoleglosc. Kazda porcja ma jeden retry (wynik bez przebiegow), a SKIP `srodowisko`
+// konczy porcje: scenariusze bez wpisu ksiegowanie przenosi na [Manual], jak przy padzie jednego testera.
+const MAKS_SCENARIUSZY_TESTERA = 10
+
+// Rowne porcje (55 -> 9/9/9/9/9/10), numeracja scenariuszy od 1 w kolejnosci listy `e2e.mjs scenariusze`.
+function porcjeScenariuszy(liczba, maks) {
+  const ile = Math.ceil(liczba / maks)
+  return Array.from({ length: ile }, (_, i) => ({ nr: i + 1, z: ile, od: Math.floor((i * liczba) / ile) + 1, do: Math.floor(((i + 1) * liczba) / ile) }))
+}
+
+async function testerPorcjami(porcje, uruchom) {
+  const findings = []
+  const przebiegi = []
+  const stan = porcje.map((p) => ({ ...p, retry: false, przebiegi: null, przerwana: false }))
+  for (const s of stan) {
+    let w = await uruchom(s, false)
+    if (!w || !Array.isArray(w.przebiegi) || w.przebiegi.length === 0) {
+      s.retry = true
+      w = await uruchom(s, true)
+    }
+    const nowe = w && Array.isArray(w.przebiegi) ? w.przebiegi : []
+    findings.push(...((w && Array.isArray(w.findings)) ? w.findings : []))
+    przebiegi.push(...nowe)
+    s.przebiegi = nowe.length
+    if (nowe.some((p) => p && p.wynik === 'SKIP' && p.przyczyna === 'srodowisko')) {
+      s.przerwana = true
+      break
+    }
+  }
+  return { wynik: przebiegi.length || findings.length ? { findings, przebiegi } : null, porcje: stan }
 }
 
 // Gotowy blok markdown dla raportu — liczby policzone w JS, scribe wkleja 1:1 (nie przelicza).
@@ -789,9 +824,22 @@ function wywolajOs(r) {
   return agent(reviewerPrompt(sciezka, faza, r.fokus, poprzKod, kontekst, dodatek), zEffortem({ schema: FINDINGS, agentType: r.agentType, label: `review:${r.key}`, phase: 'Review' }, tiery.reviewer))
 }
 const thunki = aktywni.map((r) => () => wywolajOs(r))
+const porcjeE2e = e2eTryb !== 'pominiety' && e2eLiczbaZnana && e2eCheckboxy > MAKS_SCENARIUSZY_TESTERA ? porcjeScenariuszy(e2eCheckboxy, MAKS_SCENARIUSZY_TESTERA) : null
+let stanPorcjiE2e = null
 if (e2eTryb !== 'pominiety') {
   log(`Tester E2E: tryb ${e2eTryb} (srodowisko: ${srodowiskoE2E === undefined ? 'nieznane — run standalone' : srodowiskoE2E})`)
-  thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki), zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }, tiery.reviewer)))
+  if (porcjeE2e) {
+    log(`Tester E2E: ${e2eCheckboxy} scenariuszy w ${porcjeE2e.length} porcjach po kolei (maks ${MAKS_SCENARIUSZY_TESTERA} na testera)`)
+    const ponowienie = '\n\n(Ponowna proba porcji — poprzedni przebieg nie dal zadnego wpisu przebiegi[]. Kazdy scenariusz porcji dostaje wpis.)'
+    thunki.push(async () => {
+      const { wynik, porcje } = await testerPorcjami(porcjeE2e, (p, retry) => agent(`${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki, p)}${retry ? ponowienie : ''}`,
+        zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: `review:e2e:${p.nr}${retry ? ':retry' : ''}`, phase: 'Review' }, tiery.reviewer)))
+      stanPorcjiE2e = porcje
+      return wynik
+    })
+  } else {
+    thunki.push(() => agent(e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki), zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e', phase: 'Review' }, tiery.reviewer)))
+  }
 }
 
 const wyniki = await parallel(thunki)
@@ -807,7 +855,8 @@ const e2eMozeMiecCheckboxy = e2eCheckboxy > 0 || !e2eLiczbaZnana
 // dowiodl niczego (przerwany po preflighcie, zapomnial raportowac) — bez retry cala faza spadlaby do OPERATOR.
 const brakPrzebiegow = (w) => !w || (e2eMozeMiecCheckboxy && (!Array.isArray(w.przebiegi) || w.przebiegi.length === 0))
 let e2eRetry = false
-if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
+// Porcje maja wlasny retry kazdej porcji — globalny retry odgrywalby wszystkie scenariusze jednym testerem.
+if (e2eAktywny && !porcjeE2e && brakPrzebiegow(wyniki[indeksE2e])) {
   e2eRetry = true
   const powod = wyniki[indeksE2e] ? 'zwrocil wynik BEZ zadnego wpisu przebiegi[]' : 'zwrocil null (watchdog/API)'
   log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — brak dossier'}) — ponawiam raz`)
@@ -815,6 +864,10 @@ if (e2eAktywny && brakPrzebiegow(wyniki[indeksE2e])) {
     `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki)}\n\n(Ponowna proba — poprzedni przebieg ${powod}. Kazdy scenariusz z listy skryptu dostaje wpis w przebiegi; scenariusz, ktory milczy w przegladarce, prowadzisz w tle z logiem postepu.)`,
     zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }, tiery.reviewer)
   )
+}
+if (stanPorcjiE2e) {
+  e2eRetry = stanPorcjiE2e.some((p) => p.retry)
+  log(`Porcje testera E2E: ${stanPorcjiE2e.map((p) => `${p.nr}/${p.z} [${p.od}–${p.do}] ${p.przebiegi === null ? 'nie startowala' : `${p.przebiegi} wpisow`}${p.retry ? ' (po retry)' : ''}${p.przerwana ? ' — SKIP srodowisko, koniec porcji' : ''}`).join('; ')}`)
 }
 const e2eWynik = e2eAktywny ? wyniki[indeksE2e] : null
 const e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.przebiegi : []
