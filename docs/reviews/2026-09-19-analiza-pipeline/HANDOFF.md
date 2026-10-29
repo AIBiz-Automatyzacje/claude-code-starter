@@ -3438,6 +3438,25 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     **Dalej:** w vibersi smoke 6a (30 punktów, `/makieta` dla 9 ekranów admina, migracje `20261027120000`–`0300` na dev) i `/dev-pr`;
     po PR: `raport --bez-skanu` §4 ucieczki 6a; `/sync-template` do vibersi po merge'u PR 6a (zmiany z pkt 108 (3)); kandydaci:
     ponowienie próbnego zrzutu przed porównaniem makiet na końcu fazy testera, długość opisu IU w pomiarze E5-14.
+109. **AUDYT PR ETAPU 6A (2026-10-29, ta sama sesja) + POPRAWKI `/dev-pr`.** PR #14 vibersi: 2 tury, 2 wątki bota (tabela
+    bez dostępnej nazwy; błąd odświeżenia listy admina ukryty przy zachowanych danych), oba naprawione, squash `e914c43`,
+    CLAUDE.md 4159 → 4541 zn (`db6e336`), compound 2 solutions `ui-bugs` (`d0c41cd`). Przed PR: krótkie review po archiwum
+    (2 × P2, 2 × P3) i 6 z 7 P3 z known-issues naprawione. **Telemetria** (`raport --bez-skanu` 27–29.10): bot 0 P1/P2 z 2
+    wątków = **0 na 100 plików** (etapy 1–5: 1,0 / 0 / 0,8 / 0,9 / 1,2); ucieczki: nowy 1, nieustalone 1 — wątek z recenzji
+    ogólnej z zakresem `wyroznione-admina.tsx:150-164` (parser nie łapie zakresów, P3 z pkt 105). §5 dev-pr: STOP 1
+    (bramka-wejscia), OK 10. §6: `makieta` (smoke 6a) n=1 6,4 M / 68 wiad. — najdroższy epizod etapu (dev-prep 5,4 M,
+    dev-plan 4,9 M). `docs/reviews/propozycje-do-reviewerow.md` vibersi: 7 niewdrożonych propozycji od etapu 5 (correctness 5,
+    security 1, test-coverage 1). **Dwie usterki `/dev-pr` → gałąź `popr/dev-pr-check-run-i-push`** (testy 1314 → 1318,
+    NIEZMERGOWANA): (a) `czekaj-na-bota.mjs` czytał tylko status commita — od PR #14 CodeRabbit raportuje check-run aplikacji
+    `coderabbitai` (PR #12, #13 z 26.10 mają jeszcze status), obie tury kończyły się limitem 20 min; `statusZPrzebiegu` w `bot.mjs`
+    (w toku = pending od `started_at`, `conclusion` → success/failure/error od `completed_at`, `skipped` = brak statusu), fixture
+    `vibersi-pr14.json` z prawdziwych odpowiedzi, test CLI czerwony bez poprawki (`9d3b76c`); (b) bramka `start` jednego PR nie
+    miała kroku pushu („Nie pushuj”), a origin był 3 commity za lokalną gałęzią (smoke i poprawki po archiwum) → STOP, push
+    ręcznie; teraz `git fetch` + `git push -u` bez `--force`, gdy zdalnej nie ma albo jest za lokalną, rozjazd = STOP (`4c68203`).
+    Pełny bieg: 1 czerwony test `sync-template` „pierwsza instalacja…” (Broken pipe w `sync-template.sh:168`, znany z §7 P27 S2),
+    3/3 w powtórce. **Dalej:** merge `popr/dev-pr-check-run-i-push` za zgodą operatora, potem `/sync-template` do vibersi
+    (pkt 108 (3) + 109); przegląd 7 propozycji do reviewerów; pomiar E5-14 z długością opisu; zrzuty testera; parser zakresów
+    `plik:12-20` w ucieczkach.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3874,17 +3893,18 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA SZABLONU (2026-10-28, 6a pkt 108): PO PR ETAPU 6A VIBERSI.** Nowa sesja w katalogu workspace-template.
-Operator wkleja ją, gdy PR etapu 6a w vibersi przejdzie `/dev-pr` (tury bota zakończone):
+**AKTUALNA — SESJA SZABLONU (2026-10-29, 6a pkt 109): PO ETAPIE 6A — BACKLOG SZABLONU PRZED ETAPEM 6B.** Nowa sesja
+w katalogu workspace-template. Warunek: `popr/dev-pr-check-run-i-push` zmergowana (zgoda operatora) i `/sync-template`
+w vibersi zrobiony (w sesji vibersi). Operator wkleja:
 
 ```
-Kontynuujemy pracę nad szablonem (workspace-template, main = origin/main). Etap 6a vibersi przeszedł autopilota na maszynerii
-P27 i PR (HANDOFF 6a pkt 108). Przeczytaj pkt 108 i §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+Kontynuujemy pracę nad szablonem (workspace-template, main = origin/main). Etap 6a vibersi zamknięty (PR #14, HANDOFF 6a
+pkt 108–109). Przeczytaj pkt 108–109 i §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
 
-Cel: (1) telemetria po PR — raport.mjs --projekt vibersi --bez-skanu: §4 ucieczki etapu 6a (kubełki z [P3/<os>]) i uwagi bota
-na 100 plików; co z tego dla reviewerów. (2) /sync-template do vibersi (zmiany pkt 108 (3)) — w sesji vibersi, ja odpalam.
-(3) Pomiar E5-14 z długością opisu IU na 69 IU etapów 3–6a (skrypty/e5_14_tury_iu.py) — czy dokłada sygnał do progu 8/12.
-(4) Zrzuty testera: czy ponowić próbny zrzut przed porównaniem makiet na końcu fazy (6a faza 3: 9 porównań do smoke'u).
+Cel (kolejność do mojej decyzji): (1) 7 propozycji do reviewerów z vibersi docs/reviews/propozycje-do-reviewerow.md (od etapu 5)
+— które wdrożyć w plikach ról szablonu; (2) pomiar E5-14 z długością opisu IU na 69 IU etapów 3–6a (skrypty/e5_14_tury_iu.py)
+— czy dokłada sygnał do progu 8/12; (3) zrzuty testera: ponowienie próbnego zrzutu przed porównaniem makiet na końcu fazy
+(6a faza 3: 9 porównań do smoke'u); (4) parser ucieczek: zakresy `plik:12-20` i `plik:?` w nagłówkach review i wątkach bota.
 
 Zasady: jedna sesja; w vibersi tylko odczyt, chyba że poproszę; nie wypisuj wartości z plików .env*; liczby skryptem;
 pliki .md tylko narzędziem Write/Edit; zmiany w szablonie na gałęzi popr/<nazwa>, merge za moją zgodą.
