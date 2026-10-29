@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { findingiRaportow, kubelekWatku, oznaczUcieczki, pochodzenieKodu } from '../ucieczki.mjs'
+import { findingiRaportow, kubelekWatku, miejsceWatku, oznaczUcieczki, pochodzenieKodu } from '../ucieczki.mjs'
 
 /** @type {{ zadanie: string, czasArchiwum: number, watki: Array<{ id: string, plik: string, os: string | null, severity: string | null, blame: { temat: string, czas: number } }>, raporty: Array<{ nazwa: string, tresc: string }> }} */
 const ETAP5 = JSON.parse(readFileSync(new URL('./fixtures/ucieczki-vibersi-etap5.json', import.meta.url), 'utf8'))
@@ -100,4 +100,34 @@ test('okno linii: odleglosc 10 pasuje, 11 nie; zadanie bedace prefiksem innego t
   assert.equal(pochodzenieKodu({ temat: 'chore: etap-5b porzadki', czas: 1 }, 'etap-5', null), 'sprzed-zadania')
   assert.equal(pochodzenieKodu({ temat: 'feat(etap-5b): inne', czas: 1 }, 'etap-5', null), 'sprzed-zadania')
   assert.equal(pochodzenieKodu({ temat: 'chore: poprawka etap-5 po smoke', czas: 1 }, 'etap-5', null), 'kod-buildu')
+})
+
+// Pkt 105/109: watek z recenzji ogolnej ma zakres i dopiski (`(recenzja ogolna) plik:150-164`), a parser `plik:linia$`
+// odsylal go do „nieustalone”, choc linia jest znana. Format w rekordach PR: zakres, dopisek po linii, prefiks, `plik:?`.
+test('miejsce watku: zakres plik:12-20 bierze pierwsza linie, dopiski i prefiks recenzji ogolnej nie przeszkadzaja; plik:? i sam plik bez linii', () => {
+  assert.deepEqual(miejsceWatku('src/a.ts:12'), { plik: 'src/a.ts', linia: 12 })
+  assert.deepEqual(miejsceWatku('src/a.ts:12-20'), { plik: 'src/a.ts', linia: 12 })
+  assert.deepEqual(miejsceWatku('(recenzja ogolna) src/pages/wyroznione-admina.tsx:150-164'), { plik: 'src/pages/wyroznione-admina.tsx', linia: 150 })
+  assert.deepEqual(miejsceWatku('src/a.tsx:145-224 (recenzja ogolna, poza diffem)'), { plik: 'src/a.tsx', linia: 145 })
+  assert.deepEqual(miejsceWatku('src/a.ts:80 (+ a.test.tsx, b.test.ts)'), { plik: 'src/a.ts', linia: 80 })
+  assert.deepEqual(miejsceWatku('src/a.tsx:348 (+ b.tsx:298-299)'), { plik: 'src/a.tsx', linia: 348 }, 'pierwsze miejsce, nie dopisek')
+  assert.equal(miejsceWatku('src/a.ts:?'), null)
+  assert.equal(miejsceWatku('src/a.ts (wątek nieaktualny)'), null)
+  assert.equal(miejsceWatku('(recenzja ogolna)'), null)
+  assert.equal(miejsceWatku(''), null)
+})
+
+test('zakres i prefiks recenzji ogolnej: blame pierwszej linii i kubelek jak dla plik:linia', () => {
+  const zBuildu = { temat: `feat(${ZADANIE}): x`, czas: 1 }
+  const findingi = findingiRaportow([{ nazwa: 'known-issues.md', tresc: '- 🟡 [P3/correctness] src/pages/w.tsx:155 — stara lista' }])
+  /** @type {Array<[string, number]>} */
+  const pytania = []
+  const oznaczone = oznaczUcieczki(
+    [{ plik: '(recenzja ogolna) src/pages/w.tsx:150-164', os: 'correctness' }, { plik: 'src/pages/w.tsx:?', os: 'correctness' }],
+    { zadanie: ZADANIE, czasArchiwum: null, findingi, blame: (plik, linia) => { pytania.push([plik, linia]); return zBuildu } },
+  )
+  assert.deepEqual(pytania, [['src/pages/w.tsx', 150]])
+  assert.equal(oznaczone[0].ucieczka.kubelek, 'review-P3')
+  assert.equal(oznaczone[0].ucieczka.znane, 'known-issues.md P3/correctness src/pages/w.tsx:155')
+  assert.equal(oznaczone[1].ucieczka.kubelek, 'nieustalone')
 })
