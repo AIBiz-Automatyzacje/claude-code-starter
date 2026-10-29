@@ -3457,6 +3457,18 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     3/3 w powtórce. **Dalej:** merge `popr/dev-pr-check-run-i-push` za zgodą operatora, potem `/sync-template` do vibersi
     (pkt 108 (3) + 109); przegląd 7 propozycji do reviewerów; pomiar E5-14 z długością opisu; zrzuty testera; parser zakresów
     `plik:12-20` w ucieczkach.
+110. **ZAMKNIĘCIE AUDYTU 6A, START ETAPU 6B (2026-10-29).** Merge `popr/dev-pr-check-run-i-push` → main `755a40b` (push).
+    vibersi: `/sync-template` `990d683` → `755a40b` (2 nowe, 16 zmienionych plików + 3 pliki wersji, wszystko w `.claude/`,
+    backup `.claude/.backups/20261029-083528`); commit syncu i push `main` robi operator. **Etap 6b** (mvp-requirements `etap-6b`;
+    checklista `docs/operator/etap-6b-start-przygotowanie.md` z 27.10, decyzje rozstrzygnięte): produkcja jako faza planu
+    (skrypty dostają cel `prod` — szablony maili, captcha Auth), Supabase prod Pro UE, przejście E2E całego MVP przez autopilota
+    na środowisku e2e po mapie funkcji skilla `weryfikacja` + krótki smoke operatora na produkcji, R11 — start dopiero po
+    przeglądzie prawnika (termin ustala operator; treści blokują start, nie planowanie), scrape twórców i zaproszenia ręcznie.
+    Bez makiet. Z 6a do 6b: `VITE_GTM_ID` z `.env.local` do builda staging/prod (trafia do `pnpm dev` i E2E). **Ryzyka
+    maszynerii do sprawdzenia przy planie 6b:** (a) skrypty z celem `prod` — autopilot nie może ich uruchamiać (reguła „produkcyjnej
+    bazy nie zmieniasz bezpośrednio”); testy na dry-run albo celu `e2e`, uruchomienie = pozycje operatora po merge'u; (b) faza
+    „przejście całego MVP” to dużo scenariuszy `[E2E]` w jednej fazie — koszt testera, limit faz/IU, seedy wielu flow, zrzuty
+    (6a faza 3); (c) kod prawie bez UI — routing reviewerów i rozmiar PR inne niż w 6a.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3893,7 +3905,53 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA SZABLONU (2026-10-29, 6a pkt 109): PO ETAPIE 6A — BACKLOG SZABLONU PRZED ETAPEM 6B.** Nowa sesja
+**AKTUALNA — SESJA VIBERSI (2026-10-29, 6a pkt 110): ETAP 6B — PREP I PLAN.** Warunek: commit syncu `755a40b` na `main`
+vibersi wypchnięty. Nowa sesja w katalogu vibersi. Operator wkleja:
+
+```
+Kontynuujemy w vibersi: etap 6b (start: produkcja, E2E całego MVP, treści po prawniku, zaproszenia —
+docs/brainstorms/mvp-requirements.md, sekcja etap-6b). Etap 6a zamknięty (PR #14). Maszyneria z szablonu 755a40b
+(HANDOFF 6a pkt 108–110 w workspace-template/docs/reviews/2026-09-19-analiza-pipeline/HANDOFF.md). Przeczytaj pkt 110
+i docs/operator/etap-6b-start-przygotowanie.md. Potwierdź w 3–5 zdaniach.
+
+Cel: (1) /dev-prep etapu 6b — odśwież checklistę po 6a (decyzje z 27.10 zostają; dopisz VITE_GTM_ID z .env.local do builda
+staging/prod; stan przeglądu prawnika i treści R11 zapytaj mnie). (2) /dev-plan etapu 6b, gdy checklista nie ma blokerów
+planowania. W planie: skrypty z celem prod uruchamia tylko operator po merge'u (autopilot testuje dry-run albo cel e2e,
+nigdy prod); faza przejścia całego MVP po mapie funkcji skilla weryfikacja — rozmiar fazy i IU wg uwag plan.mjs sprawdz;
+treści prawne jako pozycja operatora [blokuje: faza N] albo osobna faza po dostarczeniu. Autopilota nie odpalaj — plan
+i gotowe polecenie przekażę sesji szablonu.
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko narzędziem Write/Edit;
+zmian w produkcji (Supabase prod, Coolify, Auth) nie wykonujesz — to pozycje operatora.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) w workspace-template + §8.
+```
+
+**AKTUALNA — SESJA SZABLONU (2026-10-29, 6a pkt 110): CZUWANIE NA ETAP 6B VIBERSI + BACKLOG.** Nowa sesja w katalogu
+workspace-template, równolegle z sesją vibersi. Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main = origin/main 755a40b, zsynchronizowany do vibersi). Etap 6a
+zamknięty (HANDOFF 6a pkt 108–110). Przeczytaj pkt 108–110 i §7 dwa ostatnie wpisy. Potwierdź w 3–5 zdaniach.
+
+Gdy napiszę (plan etapu 6b gotowy, przed autopilotem): przejrzyj w vibersi plan techniczny i docs/active/etap-6b… pod kątem
+maszynerii (plan.mjs sprawdz i gotowosc — rozmiar IU 8/12 i faz, Części PR, [E2E] fazy przejścia całego MVP, seedy, sondy
+serwera) i ryzyk z pkt 110 (skrypty z celem prod poza autopilotem, liczba scenariuszy w jednej fazie, zrzuty), powiedz, co
+poprawić przed startem, i daj polecenie dev-autopilot-wf. Po runie i po /dev-pr: przebieg, STOP-y, telemetria
+(raport --bez-skanu: §4 ucieczki 6b, §6 skille) i wnioski dla szablonu.
+
+Do mojej wiadomości możesz robić backlog z pkt 109 na gałęziach popr/<nazwa> (bez syncu do vibersi w trakcie 6b): (1) 7 propozycji
+do reviewerów z vibersi docs/reviews/propozycje-do-reviewerow.md — tylko przegląd i rekomendacja, wdrożenie za moją zgodą;
+(2) pomiar E5-14 z długością opisu IU na 69 IU etapów 3–6a; (3) ponowienie próbnego zrzutu testera przed porównaniem makiet;
+(4) parser ucieczek: zakresy plik:12-20 i plik:?.
+
+Zasady: jedna sesja; w vibersi tylko odczyt, chyba że poproszę; nie wypisuj wartości z plików .env*; liczby skryptem;
+pliki .md tylko narzędziem Write/Edit; zmiany w szablonie na gałęzi popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: SESJA SZABLONU (2026-10-29, 6a pkt 109): PO ETAPIE 6A — BACKLOG — włączona do sesji czuwania 6b (pkt 110).** Nowa sesja
 w katalogu workspace-template. Warunek: `popr/dev-pr-check-run-i-push` zmergowana (zgoda operatora) i `/sync-template`
 w vibersi zrobiony (w sesji vibersi). Operator wkleja:
 
