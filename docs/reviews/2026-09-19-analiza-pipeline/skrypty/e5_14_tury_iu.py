@@ -7,7 +7,8 @@ Wejscie:
   - plany zadan vibersi docs/plans/*-feat-<zadanie>-plan.md: sekcja `**IU-<n>: …**`, tabela pod `**Pliki:**`
     (Akcja | Plik | Linie dzis → po | …) i liczba punktow `- [` w `**Scenariusze testowe:**`.
 Miary IU: pliki (wiersze tabeli), pliki_nowe (Akcja „Stwórz”), linie_plan (suma „po − dzis” tam, gdzie obie liczby
-sa podane; „—” = brak), scenariusze. Korelacja Spearmana (rangi ze srednia przy remisach) z turami, ctx_max i kosztem.
+sa podane; „—” = brak), scenariusze, opis_zn (znaki sekcji IU od naglowka do nastepnej IU albo `## `; pkt 108–109
+HANDOFF 6a). Uwaga = prog bramki dev-plan (>= 8 scenariuszy albo >= 12 plikow). Korelacja Spearmana (rangi ze srednia przy remisach) z turami, ctx_max i kosztem.
 
 Uzycie: python3 e5_14_tury_iu.py --repo ../../../../../vibersi [--zadania etap-3-konto-i-auth,...] > ../dane/e5-14-tury-iu.txt
 """
@@ -19,7 +20,8 @@ import re
 import statistics
 from collections import defaultdict
 
-ZADANIA = ['etap-3-konto-i-auth', 'etap-4-dodawanie-i-moderacja', 'etap-5-interakcje-i-profil']
+ZADANIA = ['etap-3-konto-i-auth', 'etap-4-dodawanie-i-moderacja', 'etap-5-interakcje-i-profil', 'etap-6a-admin-i-zgody']
+PROG_SCEN, PROG_PLIKOW = 8, 12
 IU = re.compile(r'^- \[[ x]\] \*\*(IU-\d+):')
 LINIE = re.compile(r'^\s*(\d+|—)\s*→\s*(\d+|—)\s*$')
 
@@ -50,11 +52,15 @@ def iu_planu(sciezka):
     for l in open(sciezka, encoding='utf8'):
         m = IU.match(l)
         if m:
-            biezace = wynik.setdefault(m.group(1), {'pliki': 0, 'pliki_nowe': 0, 'linie_plan': 0, 'linie_brak': 0, 'scenariusze': 0})
+            biezace = wynik.setdefault(m.group(1), {'pliki': 0, 'pliki_nowe': 0, 'linie_plan': 0, 'linie_brak': 0, 'scenariusze': 0,
+                                                    'opis_zn': len(l.rstrip('\n'))})
             sekcja = None
             continue
+        if l.startswith('## '):
+            biezace = None
         if biezace is None:
             continue
+        biezace['opis_zn'] += len(l.rstrip('\n'))
         if l.startswith('**'):
             sekcja = l.strip().strip('*').rstrip(':').strip()
             continue
@@ -122,15 +128,39 @@ def main():
                             'wynik': ','.join(sorted({str(p.get('wynik')) for p in proby}))})
     print(f'E5-14 — tury i kontekst builderow vs rozmiar IU z planu (vibersi, {", ".join(zadania)})')
     print(f'IU z rekordem buildera: {len(wiersze)}\n')
-    print(f"{'zadanie':<30} {'IU':<6} {'pliki':>5} {'nowe':>4} {'linie':>6} {'brak':>4} {'scen':>4} {'prob':>4} {'tury':>5} {'ctx_max':>8} {'koszt M':>8} wynik")
+    print(f"{'zadanie':<30} {'IU':<6} {'pliki':>5} {'nowe':>4} {'linie':>6} {'brak':>4} {'scen':>4} {'opis':>6} {'prob':>4} {'tury':>5} {'ctx_max':>8} {'koszt M':>8} wynik")
     for w in sorted(wiersze, key=lambda w: (w['zadanie'], int(w['iu'][3:]))):
         print(f"{w['zadanie']:<30} {w['iu']:<6} {w['pliki']:>5} {w['pliki_nowe']:>4} {w['linie_plan']:>6} {w['linie_brak']:>4} "
-              f"{w['scenariusze']:>4} {w['proby']:>4} {w['tury']:>5} {w['ctx_max'] // 1000:>7}k {w['koszt'] / 1e6:>8.2f} {w['wynik']}")
+              f"{w['scenariusze']:>4} {w['opis_zn']:>6} {w['proby']:>4} {w['tury']:>5} {w['ctx_max'] // 1000:>7}k {w['koszt'] / 1e6:>8.2f} {w['wynik']}")
     print('\nKorelacja Spearmana (n = %d):' % len(wiersze))
-    for miara in ('pliki', 'pliki_nowe', 'linie_plan', 'scenariusze'):
+    for miara in ('pliki', 'pliki_nowe', 'linie_plan', 'scenariusze', 'opis_zn'):
         x = [w[miara] for w in wiersze]
         print(f"  {miara:<12} tury {spearman(x, [w['tury'] for w in wiersze]):+.2f}   ctx_max {spearman(x, [w['ctx_max'] for w in wiersze]):+.2f}"
               f"   koszt {spearman(x, [w['koszt'] for w in wiersze]):+.2f}")
+    uwaga = lambda w: w['scenariusze'] >= PROG_SCEN or w['pliki'] >= PROG_PLIKOW
+    print(f'\nPer zadanie: Spearman opis_zn i scenariusze z turami')
+    for z in zadania:
+        g = [w for w in wiersze if w['zadanie'] == z]
+        if len(g) > 2:
+            t = [w['tury'] for w in g]
+            print(f"  {z:<30} n={len(g):<3} opis_zn {spearman([w['opis_zn'] for w in g], t):+.2f}   scenariusze "
+                  f"{spearman([w['scenariusze'] for w in g], t):+.2f}   pliki {spearman([w['pliki'] for w in g], t):+.2f}")
+    bez = [w for w in wiersze if not uwaga(w)]
+    print(f'\nIU bez uwagi bramki ({PROG_SCEN} scen. / {PROG_PLIKOW} plikow), n = {len(bez)}: czy opis lapie to, czego prog nie lapie')
+    for miara in ('pliki', 'scenariusze', 'opis_zn'):
+        x = [w[miara] for w in bez]
+        print(f"  {miara:<12} tury {spearman(x, [w['tury'] for w in bez]):+.2f}   ctx_max {spearman(x, [w['ctx_max'] for w in bez]):+.2f}"
+              f"   koszt {spearman(x, [w['koszt'] for w in bez]):+.2f}")
+    print('\nTury, ctx_max i koszt wg uwagi bramki i kwartylu opisu (mediana):')
+    kw = statistics.quantiles([w['opis_zn'] for w in wiersze], n=4)
+    for nazwa, g in (('uwaga', [w for w in wiersze if uwaga(w)]),
+                     (f'bez uwagi, opis < {kw[2]:.0f}', [w for w in bez if w['opis_zn'] < kw[2]]),
+                     (f'bez uwagi, opis >= {kw[2]:.0f}', [w for w in bez if w['opis_zn'] >= kw[2]])):
+        if g:
+            print(f"  {nazwa:<26} n={len(g):<3} tury p50 {statistics.median(w['tury'] for w in g):>4.0f}   ctx_max p50 "
+                  f"{statistics.median(w['ctx_max'] for w in g) / 1000:>4.0f}k   koszt p50 {statistics.median(w['koszt'] for w in g) / 1e6:.2f} M")
+    print('  najdrozsze 10 IU (tury): ' + ', '.join(f"{w['zadanie'][:8]} {w['iu']} {w['tury']}{'*' if uwaga(w) else ''} ({w['opis_zn']} zn)"
+                                                  for w in sorted(wiersze, key=lambda w: -w['tury'])[:10]) + '   (* = uwaga)')
     print('\nTury i ctx_max wg liczby plikow IU (mediana; kubelki):')
     for nazwa, od, do in (('1–3', 1, 3), ('4–6', 4, 6), ('7–9', 7, 9), ('10+', 10, 10 ** 6)):
         g = [w for w in wiersze if od <= w['pliki'] <= do]
