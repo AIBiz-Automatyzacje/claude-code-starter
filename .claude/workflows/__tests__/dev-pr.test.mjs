@@ -419,6 +419,18 @@ test('start bez --czesc przy tabeli czesci = STOP z /dev-pr --czesc 1; bez tabel
   assert.doesNotMatch(jeden.prompty[2], /CZESC \d/)
 })
 
+// vibersi etap 6a (2026-10-28): galaz na origin 3 commity za lokalna (smoke, poprawki P3 i krotkiego review) — bramka bez
+// kroku pushu dala STOP („polecenie zabrania mi pushowania”), a PR z origin pokazalby kod bez poprawek.
+test('start jednego PR: gałąź wypychana przed PR bez --force (brak zdalnej albo lokalna przed), rozjazd z origin = STOP', async () => {
+  const { prompty } = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: '', galazZadania: true }, POMIAR(140), START_OK])
+  const bramka = prompty[2]
+  assert.match(bramka, /GALAZ NA GITHUBIE[\s\S]*`git push -u origin <galaz>`[\s\S]*bez --force/)
+  assert.match(bramka, /zdalna ma commity, ktorych lokalna nie ma[\s\S]*STOP/)
+  assert.match(bramka, /blad pushu = bramka STOP/i)
+  assert.doesNotMatch(bramka, /Nie pushuj, nie mergeuj/)
+  assert.ok(bramka.indexOf('GALAZ NA GITHUBIE') < bramka.indexOf('STAN PULL REQUESTA'), 'push przed odczytem i utworzeniem PR')
+})
+
 test('start --czesc: brak galezi zadania, walidacja FAIL po rebase, push false = STOP; null agentow = BLAD; zla nazwa zadania = BLAD bez agentow', async () => {
   const bezGalezi = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: '', galazZadania: false }])
   assert.equal(bezGalezi.wynik.powod, 'brak lokalnej gałęzi feature/etap-3 — tabela części i commity cięcia są na niej (git fetch, git switch feature/etap-3)')
