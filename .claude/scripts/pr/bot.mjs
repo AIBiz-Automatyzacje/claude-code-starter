@@ -1,5 +1,6 @@
 // Czekanie na recenzje bota CodeRabbit (PLAN-POPRAWY P18): stan bota z pola strukturalnego, nie z tekstu komentarza.
-// Zrodlo prawdy = status commita `CodeRabbit` na czubku (pending „Review in progress” → success „Review completed”).
+// Zrodlo prawdy = status commita `CodeRabbit` na czubku (pending „Review in progress” → success „Review completed”) albo
+// check-run `CodeRabbit` — od vibersi PR #14 (2026-10-29) bot raportuje tylko check-run, statusu commita nie ustawia.
 // Tekst „Reviewing files that changed…” to staly element informacji o recenzji w podsumowaniu bota — nie znaczy „w toku”.
 // Znaczniki komentarzy czytamy tylko przy braku statusu: bot bez recenzji (pauza, pominiecie, awaria) statusu nie ustawia.
 
@@ -24,12 +25,31 @@ const ZNACZNIKI = /** @type {const} */ ([
 
 /**
  * @typedef {{ context: string, state: string, description?: string | null, created_at: string }} Status
+ * @typedef {{ name: string, status: string, conclusion: string | null, started_at: string, completed_at: string | null, output?: { title?: string | null } }} Przebieg
  * @typedef {{ login: string, updated_at: string, body: string }} Komentarz
  * @typedef {{ login: string, commit_id: string, submitted_at: string }} Recenzja
  * @typedef {{ number: number, state: string, headRefOid: string }} StanPr
  * @typedef {'gotowa' | 'blad' | 'pauza' | 'pominieta' | 'pr-zamkniety' | 'limit' | 'blad-gh'} StanBota
  * @typedef {{ stan: StanBota, powod: string, recenzja?: 'jest' | 'brak' }} Rozstrzygniecie
  */
+
+/** Wynik zakonczonego check-runu → stan statusu; `skipped` bez statusu (pominiecie rozstrzyga znacznik w komentarzu). */
+const STAN_PRZEBIEGU = /** @type {Record<string, string>} */ ({
+  success: 'success', neutral: 'success', failure: 'failure', timed_out: 'failure', action_required: 'failure', cancelled: 'error', stale: 'error',
+})
+
+/**
+ * Check-run bota jako status commita: w toku = pending od startu, zakonczony = stan z `conclusion` od chwili konca.
+ * @param {Przebieg} przebieg
+ * @returns {Status | null} null dla cudzego check-runu i wyniku bez stanu (skipped)
+ */
+export function statusZPrzebiegu(przebieg) {
+  if (przebieg.name !== KONTEKST_STATUSU) return null
+  const opis = przebieg.output?.title ?? null
+  if (przebieg.status !== 'completed') return { context: KONTEKST_STATUSU, state: 'pending', description: opis, created_at: przebieg.started_at }
+  const stan = STAN_PRZEBIEGU[przebieg.conclusion ?? '']
+  return stan ? { context: KONTEKST_STATUSU, state: stan, description: opis, created_at: przebieg.completed_at ?? przebieg.started_at } : null
+}
 
 /**
  * Najnowszy status kontekstu bota (API zwraca historie: kazda zmiana stanu to nowy wpis).

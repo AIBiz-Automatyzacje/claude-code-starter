@@ -1,0 +1,45 @@
+{
+  "_zrodlo": "vibersi PR #14 (2026-10-29): CodeRabbit raportuje check-run zamiast statusu commita; gh api commits/<sha>/check-runs i pulls/14/reviews",
+  "czubek": "5644667e24602586a8b5e5458501697febc09bbd",
+  "statusy": [],
+  "checkRuns": [
+    {
+      "name": "CodeRabbit",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-29T06:36:41Z",
+      "completed_at": "2026-10-29T06:44:54Z",
+      "output": {
+        "title": "Finished"
+      },
+      "app": {
+        "slug": "coderabbitai"
+      }
+    }
+  ],
+  "recenzje": [
+    {
+      "login": "coderabbitai[bot]",
+      "commit_id": "7a7f7f4a543fc9267fa6744f267b961f46e5cfee",
+      "submitted_at": "2026-10-28T23:25:20Z"
+    },
+    {
+      "login": "AIBiz-Automatyzacje",
+      "commit_id": "5644667e24602586a8b5e5458501697febc09bbd",
+      "submitted_at": "2026-10-29T06:36:22Z"
+    },
+    {
+      "login": "coderabbitai[bot]",
+      "commit_id": "5644667e24602586a8b5e5458501697febc09bbd",
+      "submitted_at": "2026-10-29T06:44:49Z"
+    },
+    {
+      "login": "coderabbitai[bot]",
+      "commit_id": "5644667e24602586a8b5e5458501697febc09bbd",
+      "submitted_at": "2026-10-29T06:45:28Z"
+    }
+  ],
+  "commity": {
+    "5644667e24602586a8b5e5458501697febc09bbd": "2026-10-29T06:36:16Z"
+  }
+}

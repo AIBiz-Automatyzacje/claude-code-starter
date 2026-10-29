@@ -16,7 +16,7 @@ import { execFile } from 'node:child_process'
 import { setTimeout as spij } from 'node:timers/promises'
 import { parseArgs, promisify } from 'node:util'
 
-import { czekajNaBota } from './bot.mjs'
+import { czekajNaBota, statusZPrzebiegu } from './bot.mjs'
 
 const KOD_ZLYCH_ARGUMENTOW = 2
 const LIMIT_MIN_DOMYSLNY = 20
@@ -63,7 +63,10 @@ function zrodloGh(numer) {
       // Stan laczny: najnowszy wpis na kontekst — bez stronicowania historii wszystkich kontekstow.
       const statusy = JSON.parse(await gh(['api', `repos/{owner}/{repo}/commits/${sha}/status`, '--jq', '.statuses']))
       if (!Array.isArray(statusy)) throw new Error('gh api status: brak tablicy statuses')
-      return statusy
+      // Od vibersi PR #14 CodeRabbit raportuje check-run zamiast statusu — oba zrodla w jednej liscie statusow.
+      const przebiegi = JSON.parse(await gh(['api', `repos/{owner}/{repo}/commits/${sha}/check-runs`, '--jq', '.check_runs']))
+      if (!Array.isArray(przebiegi)) throw new Error('gh api check-runs: brak tablicy check_runs')
+      return [...statusy, ...przebiegi.map(statusZPrzebiegu).filter((s) => s !== null)]
     },
     /** @param {number} nr */
     async komentarze(nr) {

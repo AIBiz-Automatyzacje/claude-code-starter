@@ -11,13 +11,14 @@ import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import test, { describe } from 'node:test'
 
-import { czekajNaBota, KARENCJA_ODPYTAN, recenzjaCzubka, rozstrzygnij, znacznikSpecjalny } from '../bot.mjs'
+import { czekajNaBota, KARENCJA_ODPYTAN, recenzjaCzubka, rozstrzygnij, statusZPrzebiegu, znacznikSpecjalny } from '../bot.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = join(KATALOG, '..', 'czekaj-na-bota.mjs')
 const VIBERSI = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'vibersi-pr1.json'), 'utf8'))
 const OFERTY = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'oferty-znaczniki.json'), 'utf8'))
 const VIBERSI_PR2 = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'vibersi-pr2.json'), 'utf8'))
+const VIBERSI_PR14 = JSON.parse(readFileSync(join(KATALOG, 'fixtures', 'vibersi-pr14.json'), 'utf8'))
 const CZUBEK_1 = 'b1addf5f71787812fcee6d404163701cbeceb2a3'
 const CZUBEK_2 = '4d2bbb8688686cb0b8c0f034b15e43d1de62f74d'
 const PR_OTWARTY = { number: 1, state: 'OPEN', headRefOid: CZUBEK_2 }
@@ -250,10 +251,10 @@ describe('pozostale stany koncowe', () => {
 /**
  * Atrapa `gh` w PATH: odpowiedzi jak prawdziwe gh po `--jq` (statusy = tablica, komentarze i recenzje = jeden obiekt na linie).
  * Nieznana flaga konczy sie bledem jak w gh 2.83 (`--compact-output` nie istnieje w `gh api`).
- * @param {{ statusy: object[], komentarze: object[], dataCommita: string, recenzje?: object[] }} odpowiedzi
+ * @param {{ statusy: object[], komentarze: object[], dataCommita: string, recenzje?: object[], checkRuns?: object[] }} odpowiedzi
  * @param {string[]} argumentyCli
  */
-function uruchomZAtrapa({ statusy, komentarze, dataCommita, recenzje = [] }, argumentyCli) {
+function uruchomZAtrapa({ statusy, komentarze, dataCommita, recenzje = [], checkRuns = [] }, argumentyCli) {
   const katalog = mkdtempSync(join(tmpdir(), 'czekaj-na-bota-'))
   try {
     const ndjson = komentarze.map((k) => JSON.stringify(k)).join('\n') + '\n'
@@ -265,6 +266,7 @@ function uruchomZAtrapa({ statusy, komentarze, dataCommita, recenzje = [] }, arg
       'if (a.includes("--compact-output")) { process.stderr.write("unknown flag: --compact-output"); process.exit(1) }',
       `if (a.startsWith("pr view 1 --json")) w(${JSON.stringify(JSON.stringify(PR_OTWARTY))})`,
       `else if (a.includes("/commits/${CZUBEK_2}/status --jq .statuses")) w(${JSON.stringify(JSON.stringify(statusy))})`,
+      `else if (a.includes("/commits/${CZUBEK_2}/check-runs --jq .check_runs")) w(${JSON.stringify(JSON.stringify(checkRuns))})`,
       `else if (a.includes("/commits/${CZUBEK_2} --jq")) w(${JSON.stringify(dataCommita + '\n')})`,
       `else if (a.includes("/issues/1/comments")) w(${JSON.stringify(ndjson)})`,
       `else if (a.includes("/pulls/1/reviews?per_page=100 --jq .[] | {login: .user.login, commit_id, submitted_at}")) w(${JSON.stringify(recenzjeNdjson)})`,
@@ -329,4 +331,37 @@ test('skill /dev-pr: gotowa z recenzja: brak nie odsyla do kroku 2 przy recenzja
   assert.match(skill, /`\{stan, powod, sha, minuty, pr, recenzja\}`/)
   assert.match(skill, /`recenzja: brak` znaczy, że 2 min po statusie recenzji czubka nie było[\s\S]*`recenzjaAktualna: false` z kroku 3 nie odsyła wtedy do kroku 2/)
   assert.match(skill, /`recenzjaAktualna: false` przy `recenzja: jest` → recenzja nie dotyczy czubka gałęzi\. Wróć do kroku 2/)
+})
+
+// vibersi PR #14 (2026-10-29): CodeRabbit przestal ustawiac status commita (PR #12, #13 z 26.10 go maja) i raportuje check-run
+// aplikacji `coderabbitai`. Skrypt czytal tylko statusy — obie tury /dev-pr skonczyly sie limitem 20 min przy gotowej recenzji.
+describe('vibersi PR #14 — check-run CodeRabbit zamiast statusu commita', () => {
+  const [przebieg] = VIBERSI_PR14.checkRuns
+  const wToku = { ...przebieg, status: 'in_progress', conclusion: null, completed_at: null, output: { title: 'Review in progress' } }
+
+  test('check-run → status: w toku = pending od startu, zakonczony wg conclusion od konca; skipped i cudzy check-run = brak statusu', () => {
+    assert.deepEqual(statusZPrzebiegu(przebieg), { context: 'CodeRabbit', state: 'success', description: 'Finished', created_at: '2026-10-29T06:44:54Z' })
+    assert.deepEqual(statusZPrzebiegu(wToku), { context: 'CodeRabbit', state: 'pending', description: 'Review in progress', created_at: '2026-10-29T06:36:41Z' })
+    const zakonczony = (/** @type {string} */ conclusion) => statusZPrzebiegu({ ...przebieg, conclusion })?.state
+    assert.deepEqual(['neutral', 'failure', 'timed_out', 'action_required', 'cancelled', 'stale'].map(zakonczony), ['success', 'failure', 'failure', 'failure', 'error', 'error'])
+    assert.equal(statusZPrzebiegu({ ...przebieg, conclusion: 'skipped' }), null, 'pominieta recenzja rozstrzyga znacznik w komentarzu')
+    assert.equal(statusZPrzebiegu({ ...przebieg, name: 'build' }), null)
+  })
+
+  test('czekanie na check-run: gotowa z recenzja czubka w pierwszym odpytaniu po zakonczeniu (06:44:54, recenzja 06:44:49)', async () => {
+    const statusy = [wToku, przebieg].map((r) => ({ ...statusZPrzebiegu(r), sha: VIBERSI_PR14.czubek }))
+    const os = odtworzenie({ start: '2026-10-29T06:37:00Z', pr: { number: 14, state: 'OPEN', headRefOid: VIBERSI_PR14.czubek }, statusy, recenzje: VIBERSI_PR14.recenzje, commity: VIBERSI_PR14.commity })
+    const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
+    assert.deepEqual([wynik.stan, wynik.recenzja, wynik.sha, wynik.minuty], ['gotowa', 'jest', VIBERSI_PR14.czubek, 8])
+    assert.equal(os.odpytania.komentarze, 0, 'pending z check-runu = bot pracuje, znacznikow nie czytamy')
+  })
+
+  test('CLI: bez statusu commita, z check-runem success → jedna linia „gotowa” (zapytanie check-runs przez gh)', () => {
+    const recenzje = VIBERSI_PR14.recenzje.map((/** @type {any} */ r) => ({ ...r, commit_id: r.commit_id === VIBERSI_PR14.czubek ? CZUBEK_2 : r.commit_id }))
+    const wynik = uruchomZAtrapa({ statusy: [], checkRuns: VIBERSI_PR14.checkRuns, komentarze: [], dataCommita: VIBERSI_PR14.commity[VIBERSI_PR14.czubek], recenzje }, ['--pr', '1', '--co-s', '0.01', '--limit-min', '0.05'])
+    assert.equal(wynik.status, 0, String(wynik.stderr))
+    const zdarzenie = jednoZdarzenie(wynik)
+    assert.deepEqual([zdarzenie.stan, zdarzenie.recenzja, zdarzenie.sha], ['gotowa', 'jest', CZUBEK_2])
+    assert.equal(String(wynik.stderr), '')
+  })
 })
