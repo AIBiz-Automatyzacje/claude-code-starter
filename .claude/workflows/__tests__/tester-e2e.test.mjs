@@ -131,7 +131,7 @@ test('tester: zrzut z limitem 30 s; przerwany = close + probny zrzut about:blank
   assert.match(regula, /Każdy zrzut robisz z limitem 30 s: `perl -e 'alarm 30; exec @ARGV' agent-browser screenshot <plik>`/)
   assert.match(regula, /PASS i FAIL dowodzą asercje ze snapshotu, `get text` i skryptów/)
   assert.match(regula, /`agent-browser close`[^\n]*próbny zrzut[^\n]*`agent-browser open about:blank`/)
-  assert.match(regula, /Próbny zrzut przerwany: do końca fazy nie robisz zrzutów, a ten i kolejne scenariusze odgrywasz dalej na snapshotach i `get text`/)
+  assert.match(regula, /Próbny zrzut przerwany: do końca scenariuszy fazy nie robisz zrzutów, a ten i kolejne scenariusze odgrywasz dalej na snapshotach i `get text`/)
   assert.match(regula, /SKIP z przyczyną `harness` i tym dowodem dostaje tylko scenariusz, którego asercji nie da się rozstrzygnąć/)
   assert.doesNotMatch(regula, /ten scenariusz i pozostałe scenariusze fazy dostają wpis SKIP/, 'pad probnego zrzutu nie konczy E2E fazy')
   assert.match(regula, /z ponownym seedem, gdy scenariusz go ma/)
@@ -145,6 +145,19 @@ test('tester: zrzut z limitem 30 s; przerwany = close + probny zrzut about:blank
   assert.match(tester, /wpis PASS z przyczyną `nie-dotyczy` i dowodem \(asercja, ścieżka zrzutu albo „zrzut niedostępny”\)/)
   assert.match(tester, /`harness` \([^)]*zawieszony zrzut bez rozstrzygniętych asercji\)/)
   assert.equal(PRZYCZYNY_SKIP.harness, 'manual')
+})
+
+// HANDOFF 6a pkt 108: faza 3 — probny zrzut padl o 21:02 i 9 porownan z makieta poszlo do smoke'u, a w fazie 6 zrzuty
+// dzialaly. Przed porownaniem z makieta tester ponawia probny zrzut raz; zapisany = zrzuty makiet normalnie.
+test('tester: przed porownaniem z makieta po padzie probnego zrzutu — jedno ponowienie probnego; zapisany = zrzuty makiet', () => {
+  const makiety = tester.slice(tester.indexOf('### Makiety'))
+  const ponowienie = makiety.split('\n').find((l) => l.includes('ponów próbny zrzut')) ?? ''
+  assert.match(ponowienie, /próbny zrzut przerwany wcześniej w tej fazie/)
+  assert.match(ponowienie, /`agent-browser close`[^\n]*`agent-browser open about:blank`[^\n]*`perl -e 'alarm 30; exec @ARGV' agent-browser screenshot "\$Z\/visual-diff\/probny\.png"`/)
+  assert.match(ponowienie, /jeden raz/)
+  assert.match(ponowienie, /Zapisany: zrzuty ekranów makiet robisz według punktów niżej/)
+  assert.match(ponowienie, /Przerwany: każdy ekran idzie do człowieka jak w trybie `bez-przegladarki`/)
+  assert.ok(makiety.indexOf('ponów próbny zrzut') < makiety.indexOf('zapisz zrzut jako'), 'ponowienie przed zrzutem makiety')
 })
 
 // P22 A3: `cd <zadanie> && agent-browser screenshot x.png` zapisal x.png w korzeniu repo — demon agent-browser liczy sciezke
