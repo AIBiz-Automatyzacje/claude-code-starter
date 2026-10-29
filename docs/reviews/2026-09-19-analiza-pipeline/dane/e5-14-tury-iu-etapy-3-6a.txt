@@ -1,0 +1,109 @@
+E5-14 — tury i kontekst builderow vs rozmiar IU z planu (vibersi, etap-3-konto-i-auth, etap-4-dodawanie-i-moderacja, etap-5-interakcje-i-profil, etap-6a-admin-i-zgody)
+IU z rekordem buildera: 69
+
+zadanie                        IU     pliki nowe  linie brak scen   opis prob  tury  ctx_max  koszt M wynik
+etap-3-konto-i-auth            IU-1       8    4    235    5    6   8124    1    77     264k     2.16 ok
+etap-3-konto-i-auth            IU-2       4    2    141    1    2   3046    1    38     133k     0.72 ok
+etap-3-konto-i-auth            IU-3      15    8   1000    1    8   7025    1    59     220k     1.64 ok
+etap-3-konto-i-auth            IU-4      12    6   1116    0    6   5155    1    65     216k     1.66 ok
+etap-3-konto-i-auth            IU-5       8    3    527    0    6   4806    1    40     178k     1.10 ok
+etap-3-konto-i-auth            IU-6      17    8   1395    1   11  10754    1    99     352k     3.72 ok
+etap-3-konto-i-auth            IU-7       7    2    550    0    7   4791    1    55     243k     1.62 ok
+etap-3-konto-i-auth            IU-8       7    4    680    1    8   6220    1    81     276k     2.46 ok
+etap-3-konto-i-auth            IU-9      12    8    834    3    9   7462    1    79     302k     2.49 ok
+etap-3-konto-i-auth            IU-10      4    2    293    1    4   3864    1    42     179k     1.01 ok
+etap-3-konto-i-auth            IU-11      8    5    954    0    9   7064    1    60     278k     1.90 ok
+etap-3-konto-i-auth            IU-12     17    4    551    2    6   7091    1    73     262k     2.16 ok
+etap-3-konto-i-auth            IU-13      2    1    105    0    3   3046    1    16      85k     0.28 ok
+etap-4-dodawanie-i-moderacja   IU-1       7    4    165    4    7   8477    1    48     240k     1.59 ok
+etap-4-dodawanie-i-moderacja   IU-2       3    2    260    0    4   2643    1    39      95k     0.55 ok
+etap-4-dodawanie-i-moderacja   IU-3      10    3    842    0    6   4926    1    58     211k     1.59 ok
+etap-4-dodawanie-i-moderacja   IU-4       3    1    208    0    3   1872    1    22      91k     0.36 ok
+etap-4-dodawanie-i-moderacja   IU-5       7    3    646    0    4   3303    1    35     118k     0.70 ok
+etap-4-dodawanie-i-moderacja   IU-6      11    6   1065    0    4   4440    1    63     186k     1.36 ok
+etap-4-dodawanie-i-moderacja   IU-7      12    2    256    0    4   3888    1    63     174k     1.28 ok
+etap-4-dodawanie-i-moderacja   IU-8       9    7   1170    0    5   6035    1    62     200k     1.51 ok
+etap-4-dodawanie-i-moderacja   IU-9       3    2    450    0    4   2553    1    38     140k     0.77 ok
+etap-4-dodawanie-i-moderacja   IU-10     12    6   1072    0    7   6782    1    82     298k     2.47 ok
+etap-4-dodawanie-i-moderacja   IU-11     10    6    900    1    7   5649    1    80     226k     1.87 ok
+etap-4-dodawanie-i-moderacja   IU-12      6    4    325    2    4   2916    1    36     144k     0.74 ok
+etap-4-dodawanie-i-moderacja   IU-13      4    0    224    0    3   2154    1    46     144k     0.85 ok
+etap-4-dodawanie-i-moderacja   IU-14     10    6    997    0    7   4998    1    71     227k     1.71 ok
+etap-5-interakcje-i-profil     IU-1       5    3     90    4    4   3640    1    51     158k     1.00 ok
+etap-5-interakcje-i-profil     IU-2       4    1      0    4    7   5667    1    55     245k     1.64 ok
+etap-5-interakcje-i-profil     IU-3       4    1      0    4    8   7244    1   101     329k     3.25 ok
+etap-5-interakcje-i-profil     IU-4      24    4    867    0    7   6613    1   100     246k     2.51 ok
+etap-5-interakcje-i-profil     IU-5       5    1    247    1    3   2566    1    29     112k     0.56 ok
+etap-5-interakcje-i-profil     IU-6      15    5    610    1    5   3946    1    60     155k     1.15 ok
+etap-5-interakcje-i-profil     IU-7       7    4    685    0    7   3551    1    44     204k     1.17 ok
+etap-5-interakcje-i-profil     IU-8      17    7   1482    0    8   5229    1    99     262k     2.50 ok
+etap-5-interakcje-i-profil     IU-9       6    4    431    0    3   2674    1    42     158k     0.98 ok
+etap-5-interakcje-i-profil     IU-10     15    5    851    1    7   6067    1   106     298k     2.95 ok
+etap-5-interakcje-i-profil     IU-11     16    4    877    0    7   6009    1    98     303k     2.79 ok
+etap-5-interakcje-i-profil     IU-12      8    3    779    0    6   3004    1    48     196k     1.26 ok
+etap-5-interakcje-i-profil     IU-13     14    6   1119    0    6   3377    1    59     184k     1.33 ok
+etap-5-interakcje-i-profil     IU-14      8    4    914    1    7   5719    1    92     304k     2.69 ok
+etap-5-interakcje-i-profil     IU-15      5    3    515    0    5   3082    1    51     191k     1.22 ok
+etap-5-interakcje-i-profil     IU-16      7    2    565    0    6   5027    1    66     208k     1.55 ok
+etap-5-interakcje-i-profil     IU-17     11    4   1127    0    6   6158    1    48     178k     1.18 ok
+etap-5-interakcje-i-profil     IU-18      9    2    664    0    4   2782    1    96     252k     2.32 ok
+etap-5-interakcje-i-profil     IU-19      8    5    754    1    7   5005    1    78     263k     2.17 ok
+etap-5-interakcje-i-profil     IU-20      3    1    160    0    3   2308    1    32      83k     0.39 ok
+etap-5-interakcje-i-profil     IU-21      9    1    367    0    5   2610    1    38     126k     0.67 ok
+etap-5-interakcje-i-profil     IU-22     11    4    627    0    6   3897    1    59     198k     1.32 ok
+etap-5-interakcje-i-profil     IU-23     14    2    517    0    5   5176    1   102     312k     3.08 ok
+etap-5-interakcje-i-profil     IU-24      2    0     30    0    2   2273    1    11      54k     0.15 ok
+etap-6a-admin-i-zgody          IU-1       6    4     80    5    6   6655    1    82     287k     2.45 ok
+etap-6a-admin-i-zgody          IU-2       4    1      0    4    8   7024    1    65     262k     1.89 ok
+etap-6a-admin-i-zgody          IU-3      11    4   1042    0    5   4936    1    60     183k     1.30 ok
+etap-6a-admin-i-zgody          IU-4       2    0    225    0    4   3154    1    26      95k     0.43 ok
+etap-6a-admin-i-zgody          IU-5       5    0    249    0    3   2447    1    36     125k     0.66 ok
+etap-6a-admin-i-zgody          IU-6      12    3    525    0    4   3776    1    54     179k     1.21 ok
+etap-6a-admin-i-zgody          IU-7       6    3    640    0    4   3605    1    41     122k     0.71 ok
+etap-6a-admin-i-zgody          IU-8       9    3   1015    0    9   6661    1    72     257k     2.12 ok
+etap-6a-admin-i-zgody          IU-9       5    3    508    0    5   3883    1    40     151k     0.84 ok
+etap-6a-admin-i-zgody          IU-10      4    0    194    0    4   2757    1    32     108k     0.54 ok
+etap-6a-admin-i-zgody          IU-11      2    0    111    0    3   2021    1    29      74k     0.34 ok
+etap-6a-admin-i-zgody          IU-12      2    0     32    0    1   1791    1    14      51k     0.16 ok
+etap-6a-admin-i-zgody          IU-13      9    2    188    2    2   2825    1    34      87k     0.47 ok
+etap-6a-admin-i-zgody          IU-14      7    1    326    0    4   4283    1    33     111k     0.56 ok
+etap-6a-admin-i-zgody          IU-15      2    0     49    0    3   1606    1    23      68k     0.27 ok
+etap-6a-admin-i-zgody          IU-16      9    3    423    0    3   4827    1    34      85k     0.45 ok
+etap-6a-admin-i-zgody          IU-17     11    0    311    0    4   4168    1    51     141k     0.87 ok
+etap-6a-admin-i-zgody          IU-18      8    2    403    0    4   3712    1    31     107k     0.55 ok
+
+Korelacja Spearmana (n = 69):
+  pliki        tury +0.68   ctx_max +0.57   koszt +0.64
+  pliki_nowe   tury +0.64   ctx_max +0.62   koszt +0.64
+  linie_plan   tury +0.56   ctx_max +0.51   koszt +0.55
+  scenariusze  tury +0.77   ctx_max +0.87   koszt +0.85
+  opis_zn      tury +0.77   ctx_max +0.83   koszt +0.83
+
+Per zadanie: Spearman opis_zn i scenariusze z turami
+  etap-3-konto-i-auth            n=13  opis_zn +0.87   scenariusze +0.73   pliki +0.65
+  etap-4-dodawanie-i-moderacja   n=14  opis_zn +0.73   scenariusze +0.70   pliki +0.84
+  etap-5-interakcje-i-profil     n=24  opis_zn +0.77   scenariusze +0.65   pliki +0.60
+  etap-6a-admin-i-zgody          n=18  opis_zn +0.81   scenariusze +0.74   pliki +0.61
+
+IU bez uwagi bramki (8 scen. / 12 plikow), n = 49: czy opis lapie to, czego prog nie lapie
+  pliki        tury +0.65   ctx_max +0.55   koszt +0.61
+  scenariusze  tury +0.75   ctx_max +0.84   koszt +0.82
+  opis_zn      tury +0.72   ctx_max +0.74   koszt +0.75
+
+Tury, ctx_max i koszt wg uwagi bramki i kwartylu opisu (mediana):
+  uwaga                      n=20  tury p50   76   ctx_max p50  263k   koszt p50 2.31 M
+  bez uwagi, opis < 6022     n=44  tury p50   40   ctx_max p50  143k   koszt p50 0.81 M
+  bez uwagi, opis >= 6022    n=5   tury p50   62   ctx_max p50  240k   koszt p50 1.59 M
+  najdrozsze 10 IU (tury): etap-5-i IU-10 106* (6067 zn), etap-5-i IU-23 102* (5176 zn), etap-5-i IU-3 101* (7244 zn), etap-5-i IU-4 100* (6613 zn), etap-3-k IU-6 99* (10754 zn), etap-5-i IU-8 99* (5229 zn), etap-5-i IU-11 98* (6009 zn), etap-5-i IU-18 96 (2782 zn), etap-5-i IU-14 92 (5719 zn), etap-4-d IU-10 82* (6782 zn)   (* = uwaga)
+
+Tury i ctx_max wg liczby plikow IU (mediana; kubelki):
+  pliki 1–3   n=10  tury p50    24   ctx_max p50   84k   ctx_max max  140k   proba > 1: 0
+  pliki 4–6   n=16  tury p50    42   ctx_max p50  155k   ctx_max max  330k   proba > 1: 0
+  pliki 7–9   n=20  tury p50    52   ctx_max p50  206k   ctx_max max  304k   proba > 1: 0
+  pliki 10+   n=23  tury p50    65   ctx_max p50  221k   ctx_max max  353k   proba > 1: 0
+
+Tury i ctx_max wg scenariuszy testowych IU (mediana; kubelki):
+  scen. 1–3   n=14  tury p50    30   ctx_max p50   87k   ctx_max max  158k
+  scen. 4–6   n=34  tury p50    51   ctx_max p50  179k   ctx_max max  313k
+  scen. 7–9   n=20  tury p50    78   ctx_max p50  263k   ctx_max max  330k
+  scen. 10+   n=1   tury p50    99   ctx_max p50  353k   ctx_max max  353k
