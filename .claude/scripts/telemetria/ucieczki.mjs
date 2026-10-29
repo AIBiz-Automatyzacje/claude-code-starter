@@ -16,6 +16,8 @@ const NAGLOWEK_REVIEW = /^### (P[123]) · \w+ · `([^`:]+):(\d+)`/
 const WPIS_KNOWN_ISSUES = /^- \S+ \[(P[123])(?:\/([\w-]+))?\] ([^\s:]+):(\d+)/
 // Review zapisuje os nazwa reviewera (`_zrodlo`), bot — os ze slownika OSIE_UWAG dev-pr-wf.js (spec, test).
 const OS_BOTA = new Map([['spec-compliance', 'spec'], ['test-coverage', 'test']])
+// Pierwsze miejsce `plik:linia` albo `plik:od-do` w polu watku; reszta (prefiks `(recenzja ogolna)`, dopiski w nawiasie) to opis.
+const MIEJSCE_WATKU = /(?:^|\s)([^\s:()]+):(\d+)(?:-\d+)?(?=$|[\s,;)])/
 
 /**
  * @typedef {{ zrodlo: string, waga: string, os: string | null, plik: string, linia: number }} Finding
@@ -35,6 +37,16 @@ export function findingiRaportow(raporty) {
     const k = wiersz.match(WPIS_KNOWN_ISSUES)
     return k ? [{ zrodlo: nazwa, waga: k[1], os: k[2] ? OS_BOTA.get(k[2]) ?? k[2] : null, plik: k[3], linia: Number(k[4]) }] : []
   }))
+}
+
+/**
+ * Plik i linia watku z pola `plik` etapu zbierz dev-pr; zakres daje pierwsza linie (blame jednej linii wystarczy, bo bot
+ * komentuje blok jednej zmiany). `plik:?`, sam plik i `(recenzja ogolna)` bez miejsca — null.
+ * @param {string} pole @returns {{ plik: string, linia: number } | null}
+ */
+export function miejsceWatku(pole) {
+  const m = pole.match(MIEJSCE_WATKU)
+  return m ? { plik: m[1], linia: Number(m[2]) } : null
 }
 
 /** @param {string} tekst */
@@ -70,18 +82,18 @@ function dopasujFinding(watek, findingi) {
 }
 
 /**
- * @param {{ plik: string, os: string | null }} watek plik jako `sciezka:linia` (z etapu zbierz dev-pr)
+ * @param {{ plik: string, os: string | null }} watek plik jako `sciezka:linia` albo `sciezka:od-do` z dopiskami (z etapu zbierz dev-pr)
  * @param {Blame | null} blame null = linia bez blame (recenzja ogolna, plik usuniety, commit nieosiagalny)
  * @param {{ findingi: Finding[], zadanie: string, czasArchiwum: number | null }} kontekst
  * @returns {Ucieczka}
  */
 export function kubelekWatku(watek, blame, kontekst) {
-  const m = watek.plik.match(/^(.+):(\d+)$/)
+  const m = miejsceWatku(watek.plik)
   if (!m || !blame) return { kubelek: 'nieustalone', pochodzenie: 'nieustalone', znane: null }
   const pochodzenie = pochodzenieKodu(blame, kontekst.zadanie, kontekst.czasArchiwum)
   // Finding review dotyczy linii tylko wtedy, gdy kod istnial w czasie review — linia z fixa, tury PR albo smoke'u to nowy kod.
   const znane = pochodzenie === 'kod-buildu' || pochodzenie === 'sprzed-zadania'
-    ? dopasujFinding({ plik: m[1], linia: Number(m[2]), os: watek.os }, kontekst.findingi)
+    ? dopasujFinding({ ...m, os: watek.os }, kontekst.findingi)
     : null
   const opis = znane ? `${znane.zrodlo} ${znane.waga}${znane.os ? `/${znane.os}` : ''} ${znane.plik}:${znane.linia}` : null
   if (znane) return { kubelek: znane.waga === 'P3' || znane.zrodlo === 'known-issues.md' ? 'review-P3' : 'review-P1P2', pochodzenie, znane: opis }
@@ -96,8 +108,8 @@ export function kubelekWatku(watek, blame, kontekst) {
  */
 export function oznaczUcieczki(klasy, kontekst) {
   return klasy.map((k) => {
-    const m = (k.plik ?? '').match(/^(.+):(\d+)$/)
-    const blame = m ? kontekst.blame(m[1], Number(m[2])) : null
+    const m = miejsceWatku(k.plik ?? '')
+    const blame = m ? kontekst.blame(m.plik, m.linia) : null
     return { ...k, ucieczka: kubelekWatku({ plik: k.plik ?? '', os: k.os }, blame, kontekst) }
   })
 }
