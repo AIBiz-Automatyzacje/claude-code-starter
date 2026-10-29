@@ -98,6 +98,9 @@ z known-issues, a etap 6 widzi je w archiwum zadania.
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "start", zadanie, czesc}})
 ```
 
+Etap wypycha bieżącą gałąź przed utworzeniem PR (`git push -u`, bez `--force`), gdy na origin jej nie ma albo jest za
+lokalną — commity smoke'u i poprawek po archiwizacji trafiają do PR. Origin z commitami, których lokalna gałąź nie ma = STOP.
+
 `czesc` przekazujesz tylko z `--czesc`. Workflow czyta tabelę „Części PR” z podsumowania na gałęzi `feature/<zadanie>`
 i przygotowuje gałąź części: część nieostatnia = gałąź `feature/<zadanie>-czN` od commitu cięcia (od części 2 jej commity
 idą rebase'em na `origin/main`), część ostatnia = `git rebase --onto origin/main <cięcie>` gałęzi zadania, typecheck i testy,
@@ -152,7 +155,8 @@ Po turze napraw z `push: false` nie uruchamiaj skryptu: commit nie dotarł na Gi
 „tura <N> niewypchnięta” z commitem tury, **koniec bez zmian w kodzie**. Wyjątek: tura bez commita (sama odpowiedź w wątkach
 `odrzuć`, np. `KOLEJNA TURA (tylko odpowiedzi)`) nie ma czego recenzować — przechodzisz od razu do kroku 3.
 
-Skrypt czyta status commita `CodeRabbit` na tym czubku. Tekst komentarzy bota nie mówi, czy recenzja trwa: fraza
+Skrypt czyta status commita albo check-run `CodeRabbit` na tym czubku (od 29.10.2026 bot raportuje tylko check-run).
+Tekst komentarzy bota nie mówi, czy recenzja trwa: fraza
 „Reviewing files that changed…” zostaje w podsumowaniu także po zakończonej recenzji. Bot ustawia status success przed
 publikacją recenzji, więc po success skrypt czeka jeszcze na recenzję bota z `commit_id` = czubek, najwyżej 2 min od statusu.
 Skrypt wypisuje jedną linię JSON `{stan, powod, sha, minuty, pr, recenzja}` (`recenzja` tylko przy `gotowa`):

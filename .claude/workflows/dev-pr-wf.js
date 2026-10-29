@@ -782,6 +782,12 @@ BRAMKA (wszystkie trzy warunki musza byc spelnione; ktorykolwiek niespelniony =>
    nie wiesz, czy naleza do tego zadania).
 3. Zadanie istnieje: katalog \`docs/completed/${zadanie}\` ALBO \`docs/active/${zadanie}\`. Brak obu = STOP.
 
+GALAZ NA GITHUBIE (po bramce; PR i recenzja bota dotycza czubka na origin, a po archiwizacji zostaja lokalne commity smoke'u
+i poprawek): \`git fetch origin\`, potem porownaj biezaca galaz z \`origin/<galaz>\` (\`git rev-list --left-right --count\`).
+- brak galezi zdalnej albo lokalna przed zdalna (zdalna w historii lokalnej) => \`git push -u origin <galaz>\`, bez --force;
+- zdalna ma commity, ktorych lokalna nie ma (rozjazd albo lokalna za zdalna) => bramka STOP z oboma SHA, bez pushu;
+- rowne => nic. Blad pushu = bramka STOP z trescia bledu.
+
 STAN PULL REQUESTA:
 \`gh pr view --json number,state,mergeable,mergeStateStatus,headRefOid,url\` dla biezacej galezi.
 - Pull request ISTNIEJE => zwroc jego dane, prUtworzony=false.
@@ -797,7 +803,7 @@ STAN PULL REQUESTA:
      NIGDY przez stdin — patrz blok gh nizej.
   c) Odczytaj stan nowego PR tym samym \`gh pr view --json ...\` i zwroc prUtworzony=true.
 
-Nie pushuj, nie mergeuj, nie zmieniaj kodu. Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
+Poza krokiem GALAZ NA GITHUBIE nie pushujesz; nie mergeujesz i nie zmieniasz kodu. Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
     { schema: START, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:start:${zadanie}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Bramka wejscia zwrocila null (agent padl) — sprobuj ponownie albo sprawdz `gh auth status`.' }
