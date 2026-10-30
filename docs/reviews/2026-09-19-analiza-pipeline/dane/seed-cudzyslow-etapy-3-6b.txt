@@ -1,0 +1,146 @@
+etap-3-konto-i-auth:203	reset-hasla-krok-1	seed-nowy	tekst-ui	„Zaloguj się”	reset-hasla-seed.sql
+etap-3-konto-i-auth:203	reset-hasla-krok-1	seed-nowy	tekst-ui	„Nie pamiętasz hasła?”	reset-hasla-seed.sql
+etap-3-konto-i-auth:203	reset-hasla-krok-1	seed-nowy	tekst-ui	„Wyślij link”	reset-hasla-seed.sql
+etap-3-konto-i-auth:203	reset-hasla-krok-1	seed-nowy	tekst-ui	„Sprawdź skrzynkę”	reset-hasla-seed.sql
+etap-3-konto-i-auth:228	reset-hasla	seed-nowy	tekst-ui	„Nie pamiętasz hasła?”	reset-hasla-seed.sql
+etap-3-konto-i-auth:228	reset-hasla	seed-nowy	dane	„Nowe-haslo-2026”	reset-hasla-seed.sql
+etap-3-konto-i-auth:228	reset-hasla	seed-nowy	tekst-ui	„Zapisz i zaloguj”	reset-hasla-seed.sql
+etap-3-konto-i-auth:228	reset-hasla	seed-nowy	tekst-ui	„Hasło zmienione. Jesteś zalogowany.”	reset-hasla-seed.sql
+## etap-3-konto-i-auth: alarm_dane=1, alarm_seed-nowy=8, alarm_tekst-ui=7, cytaty=11, e2e=17, e2e_z_seedem=3, w_seedzie=3
+etap-4-dodawanie-i-moderacja:224	moje-projekty-statusy	seed-nowy	dane	„Powód: Zrzuty nie pokazują apki — dodaj zrzuty ekranu z działania.”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:224	moje-projekty-statusy	seed-nowy	tekst-ui	„Zmiany czekają na akceptację”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:225	moje-projekty-usun	seed-nowy	tekst-ui	„Usuń”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:225	moje-projekty-usun	seed-nowy	tekst-ui	„Usuń projekt”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:225	moje-projekty-usun	seed-nowy	tekst-ui	„Projekt usunięty.”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:226	edycja-opublikowanego	seed-nowy	tekst-ui	„Edytuj”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:226	edycja-opublikowanego	seed-nowy	dane	„Po zapisaniu zmiany trafią do akceptacji…”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:226	edycja-opublikowanego	seed-nowy	tekst-ui	„Zmiany czekają na akceptację”	moje-projekty-seed.sql
+etap-4-dodawanie-i-moderacja:280	kolejka-akceptuj	seed-nowy	tekst-ui	„Akceptuj”	etap-4-moderacja-seed.sql
+etap-4-dodawanie-i-moderacja:281	kolejka-odrzuc-zmiane	seed-nowy	tekst-ui	„Co się zmieniło”	etap-4-moderacja-seed.sql
+etap-4-dodawanie-i-moderacja:281	kolejka-odrzuc-zmiane	seed-nowy	tekst-ui	„Odrzuć”	etap-4-moderacja-seed.sql
+etap-4-dodawanie-i-moderacja:281	kolejka-odrzuc-zmiane	seed-nowy	tekst-ui	„Za mało informacji”	etap-4-moderacja-seed.sql
+etap-4-dodawanie-i-moderacja:281	kolejka-odrzuc-zmiane	seed-nowy	tekst-ui	„Odrzuć”	etap-4-moderacja-seed.sql
+## etap-4-dodawanie-i-moderacja: alarm_dane=2, alarm_seed-nowy=13, alarm_tekst-ui=11, cytaty=21, e2e=8, e2e_z_seedem=5, w_seedzie=8
+etap-5-interakcje-i-profil:224	glos-gosc-limit	seed-nowy	tekst-ui	„Załóż konto, żeby głosować dalej”	glosy-zapisane-seed.sql
+etap-5-interakcje-i-profil:225	glos-przeniesienie	seed-nowy	tekst-ui	„Mam konto — zaloguj się”	glosy-zapisane-seed.sql
+etap-5-interakcje-i-profil:225	glos-przeniesienie	seed-nowy	dane	„Głos na {nazwa} policzony. Twoje wcześniejsze głosy są już na koncie.”	glosy-zapisane-seed.sql
+etap-5-interakcje-i-profil:251	zapisane-lista	seed-nowy	tekst-ui	„Zobacz zapisane”	glosy-zapisane-seed.sql
+etap-5-interakcje-i-profil:251	zapisane-lista	seed-nowy	tekst-ui	„Projekt nie jest już dostępny w katalogu.”	glosy-zapisane-seed.sql
+etap-5-interakcje-i-profil:252	zapisz-gosc	seed-nowy	tekst-ui	„Zapisano.”	glosy-zapisane-seed.sql
+etap-5-interakcje-i-profil:316	komentarz-dodaj	seed-nowy	dane	„E2E komentarz <czas>”	komentarze-seed.sql
+etap-5-interakcje-i-profil:316	komentarz-dodaj	seed-nowy	tekst-ui	„Wyślij”	komentarze-seed.sql
+etap-5-interakcje-i-profil:316	komentarz-dodaj	seed-nowy	tekst-ui	„Komentarz dodany. Twórca dostanie powiadomienie.”	komentarze-seed.sql
+etap-5-interakcje-i-profil:317	komentarz-gosc-logowanie	seed-nowy	tekst-ui	„Zaloguj się, żeby skomentować”	komentarze-seed.sql
+etap-5-interakcje-i-profil:317	komentarz-gosc-logowanie	seed-nowy	tekst-ui	„Twój tekst zostanie w polu.”	komentarze-seed.sql
+etap-5-interakcje-i-profil:317	komentarz-gosc-logowanie	seed-nowy	tekst-ui	„Wyślij”	komentarze-seed.sql
+etap-5-interakcje-i-profil:331	komentarz-usun-z-odpowiedzia	seed-nowy	tekst-ui	„Usuń”	komentarze-seed.sql
+etap-5-interakcje-i-profil:331	komentarz-usun-z-odpowiedzia	seed-nowy	tekst-ui	„Usuń komentarz”	komentarze-seed.sql
+etap-5-interakcje-i-profil:410	powiadomienia-panel	seed-nowy	dane	„3 nowe komentarze pod …”	powiadomienia-seed.sql
+etap-5-interakcje-i-profil:410	powiadomienia-panel	seed-nowy	dane	„Projekt … odrzucony”	powiadomienia-seed.sql
+## etap-5-interakcje-i-profil: alarm_dane=4, alarm_seed-nowy=16, alarm_tekst-ui=12, cytaty=20, e2e=17, e2e_z_seedem=8, w_seedzie=4
+etap-6a-admin-i-zgody:155	admin-zgloszenia-ukryj	seed-nowy	dane	„Komentarz pod Rondo”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:155	admin-zgloszenia-ukryj	seed-nowy	tekst-ui	„Spam lub reklama”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:155	admin-zgloszenia-ukryj	seed-nowy	tekst-ui	„Komentarz ukryty.”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:156	admin-usun-projekt	seed-nowy	tekst-ui	„Usuń”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:156	admin-usun-projekt	seed-nowy	tekst-ui	„Link nie działa”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:156	admin-usun-projekt	seed-nowy	tekst-ui	„Usuń projekt”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:156	admin-usun-projekt	seed-nowy	tekst-ui	„Projekt usunięty.”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:157	admin-odrzuc-zgloszenie	seed-nowy	tekst-ui	„Odrzuć zgłoszenie”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:157	admin-odrzuc-zgloszenie	seed-nowy	tekst-ui	„Zgłoszenie odrzucone.”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:172	admin-wyroznione	seed-nowy	tekst-ui	„Wyróżnione”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:172	admin-wyroznione	seed-nowy	dane	„{projekt} wyróżniony.”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:172	admin-wyroznione	seed-nowy	dane	„Ręcznie: 2 z 3”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:172	admin-wyroznione	seed-nowy	tekst-ui	„Wyróżnione”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:203	powiadomienie-moderacji	seed-nowy	dane	„Projekt {nazwa ukrytego projektu seeda} ukryty”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:203	powiadomienie-moderacji	seed-nowy	dane	„Powód: Link do apki nie działa albo prowadzi gdzie indziej. …”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:203	powiadomienie-moderacji	seed-nowy	tekst-ui	„Moje projekty”	etap-6a-admin-seed.sql
+etap-6a-admin-i-zgody:299	analityka-datalayer	seed-z-planu	dane	„Otwórz apkę ↗”	katalog-seed.sql
+## etap-6a-admin-i-zgody: alarm_dane=6, alarm_seed-nowy=16, alarm_seed-z-planu=1, alarm_tekst-ui=11, cytaty=21, e2e=8, e2e_z_seedem=6, w_seedzie=4
+etap-6b-start:123	baner-spolecznosci	seed-z-planu	tekst-ui	„Budujesz apki z AI? Nie rób tego sam.”	katalog-seed.sql
+etap-6b-start:123	baner-spolecznosci	seed-z-planu	tekst-ui	„Dołącz do społeczności”	katalog-seed.sql
+etap-6b-start:201	strona-glowna-hero	seed-z-planu	dane	„… w tym tygodniu”	katalog-seed.sql
+etap-6b-start:201	strona-glowna-hero	seed-z-planu	dane	„Zbuduj projekt →”	katalog-seed.sql
+etap-6b-start:201	strona-glowna-hero	seed-z-planu	tekst-ui	„Przeglądaj projekty ↓”	katalog-seed.sql
+etap-6b-start:201	strona-glowna-hero	seed-z-planu	tekst-ui	„Wszystkie projekty”	katalog-seed.sql
+etap-6b-start:202	lista-filtr-kategorii	seed-z-planu	tekst-ui	„Gry i rozrywka”	katalog-seed.sql
+etap-6b-start:202	lista-filtr-kategorii	seed-z-planu	tekst-ui	„Gry i rozrywka”	katalog-seed.sql
+etap-6b-start:203	lista-pusta-kategoria	seed-z-planu	dane	„Jedzenie i zdrowie”	katalog-seed.sql
+etap-6b-start:203	lista-pusta-kategoria	seed-z-planu	dane	„W „Jedzenie i zdrowie” jeszcze pusto”	katalog-seed.sql
+etap-6b-start:203	lista-pusta-kategoria	seed-z-planu	tekst-ui	„+ Dodaj projekt”	katalog-seed.sql
+etap-6b-start:203	lista-pusta-kategoria	seed-z-planu	tekst-ui	„Zobacz wszystkie projekty”	katalog-seed.sql
+etap-6b-start:204	lista-pokaz-kolejne	seed-z-planu	tekst-ui	„Wyświetlono X z Y projektów”	katalog-seed.sql
+etap-6b-start:204	lista-pokaz-kolejne	seed-z-planu	tekst-ui	„Pokaż kolejne”	katalog-seed.sql
+etap-6b-start:205	lista-siatka-top	seed-z-planu	tekst-ui	„Siatka”	katalog-seed.sql
+etap-6b-start:206	lista-powrot-z-projektu	seed-z-planu	tekst-ui	„Pokaż kolejne”	katalog-seed.sql
+etap-6b-start:207	strona-projektu	seed-z-planu	tekst-ui	„O projekcie”	katalog-seed.sql
+etap-6b-start:207	strona-projektu	seed-z-planu	tekst-ui	„Więcej z kategorii”	katalog-seed.sql
+etap-6b-start:207	strona-projektu	seed-z-planu	dane	„Otwórz apkę ↗”	katalog-seed.sql
+etap-6b-start:209	projekt-udostepnij	seed-z-planu	tekst-ui	„Udostępnij projekt”	katalog-seed.sql
+etap-6b-start:209	projekt-udostepnij	seed-z-planu	tekst-ui	„Link skopiowany”	katalog-seed.sql
+etap-6b-start:218	reset-hasla-krok-1	seed-z-planu	tekst-ui	„Zaloguj się”	reset-hasla-seed.sql
+etap-6b-start:218	reset-hasla-krok-1	seed-z-planu	tekst-ui	„Nie pamiętasz hasła?”	reset-hasla-seed.sql
+etap-6b-start:218	reset-hasla-krok-1	seed-z-planu	tekst-ui	„Wyślij link”	reset-hasla-seed.sql
+etap-6b-start:218	reset-hasla-krok-1	seed-z-planu	tekst-ui	„Sprawdź skrzynkę”	reset-hasla-seed.sql
+etap-6b-start:221	reset-hasla	seed-z-planu	tekst-ui	„Nie pamiętasz hasła?”	reset-hasla-seed.sql
+etap-6b-start:221	reset-hasla	seed-z-planu	dane	„Nowe-haslo-2026”	reset-hasla-seed.sql
+etap-6b-start:221	reset-hasla	seed-z-planu	tekst-ui	„Zapisz i zaloguj”	reset-hasla-seed.sql
+etap-6b-start:221	reset-hasla	seed-z-planu	tekst-ui	„Hasło zmienione. Jesteś zalogowany.”	reset-hasla-seed.sql
+etap-6b-start:228	moje-projekty-statusy	seed-z-planu	dane	„Powód: Zrzuty nie pokazują apki — dodaj zrzuty ekranu z działania.”	moje-projekty-seed.sql
+etap-6b-start:228	moje-projekty-statusy	seed-z-planu	tekst-ui	„Zmiany czekają na akceptację”	moje-projekty-seed.sql
+etap-6b-start:229	moje-projekty-usun	seed-z-planu	tekst-ui	„Usuń”	moje-projekty-seed.sql
+etap-6b-start:229	moje-projekty-usun	seed-z-planu	tekst-ui	„Usuń projekt”	moje-projekty-seed.sql
+etap-6b-start:229	moje-projekty-usun	seed-z-planu	tekst-ui	„Projekt usunięty.”	moje-projekty-seed.sql
+etap-6b-start:230	edycja-opublikowanego	seed-z-planu	tekst-ui	„Edytuj”	moje-projekty-seed.sql
+etap-6b-start:230	edycja-opublikowanego	seed-z-planu	dane	„Po zapisaniu zmiany trafią do akceptacji…”	moje-projekty-seed.sql
+etap-6b-start:230	edycja-opublikowanego	seed-z-planu	tekst-ui	„Zmiany czekają na akceptację”	moje-projekty-seed.sql
+etap-6b-start:231	kolejka-akceptuj	seed-z-planu	tekst-ui	„Akceptuj”	etap-4-moderacja-seed.sql
+etap-6b-start:232	kolejka-odrzuc-zmiane	seed-z-planu	tekst-ui	„Co się zmieniło”	etap-4-moderacja-seed.sql
+etap-6b-start:232	kolejka-odrzuc-zmiane	seed-z-planu	tekst-ui	„Odrzuć”	etap-4-moderacja-seed.sql
+etap-6b-start:232	kolejka-odrzuc-zmiane	seed-z-planu	tekst-ui	„Za mało informacji”	etap-4-moderacja-seed.sql
+etap-6b-start:232	kolejka-odrzuc-zmiane	seed-z-planu	tekst-ui	„Odrzuć”	etap-4-moderacja-seed.sql
+etap-6b-start:233	glos-gosc-limit	seed-z-planu	tekst-ui	„Załóż konto, żeby głosować dalej”	glosy-zapisane-seed.sql
+etap-6b-start:234	glos-przeniesienie	seed-z-planu	tekst-ui	„Mam konto — zaloguj się”	glosy-zapisane-seed.sql
+etap-6b-start:234	glos-przeniesienie	seed-z-planu	dane	„Głos na {nazwa} policzony. Twoje wcześniejsze głosy są już na koncie.”	glosy-zapisane-seed.sql
+etap-6b-start:235	zapisane-lista	seed-z-planu	tekst-ui	„Zobacz zapisane”	glosy-zapisane-seed.sql
+etap-6b-start:235	zapisane-lista	seed-z-planu	tekst-ui	„Projekt nie jest już dostępny w katalogu.”	glosy-zapisane-seed.sql
+etap-6b-start:236	zapisz-gosc	seed-z-planu	tekst-ui	„Zapisano.”	glosy-zapisane-seed.sql
+etap-6b-start:237	komentarz-dodaj	seed-z-planu	dane	„E2E komentarz <czas>”	komentarze-seed.sql
+etap-6b-start:237	komentarz-dodaj	seed-z-planu	tekst-ui	„Wyślij”	komentarze-seed.sql
+etap-6b-start:237	komentarz-dodaj	seed-z-planu	tekst-ui	„Komentarz dodany. Twórca dostanie powiadomienie.”	komentarze-seed.sql
+etap-6b-start:238	komentarz-gosc-logowanie	seed-z-planu	tekst-ui	„Zaloguj się, żeby skomentować”	komentarze-seed.sql
+etap-6b-start:238	komentarz-gosc-logowanie	seed-z-planu	tekst-ui	„Twój tekst zostanie w polu.”	komentarze-seed.sql
+etap-6b-start:238	komentarz-gosc-logowanie	seed-z-planu	tekst-ui	„Wyślij”	komentarze-seed.sql
+etap-6b-start:239	komentarz-usun-z-odpowiedzia	seed-z-planu	tekst-ui	„Usuń”	komentarze-seed.sql
+etap-6b-start:239	komentarz-usun-z-odpowiedzia	seed-z-planu	tekst-ui	„Usuń komentarz”	komentarze-seed.sql
+etap-6b-start:241	powiadomienia-panel	seed-z-planu	dane	„3 nowe komentarze pod …”	powiadomienia-seed.sql
+etap-6b-start:241	powiadomienia-panel	seed-z-planu	dane	„Projekt … odrzucony”	powiadomienia-seed.sql
+etap-6b-start:246	admin-zgloszenia-ukryj	seed-z-planu	dane	„Komentarz pod Rondo”	etap-6a-admin-seed.sql
+etap-6b-start:246	admin-zgloszenia-ukryj	seed-z-planu	tekst-ui	„Spam lub reklama”	etap-6a-admin-seed.sql
+etap-6b-start:246	admin-zgloszenia-ukryj	seed-z-planu	tekst-ui	„Komentarz ukryty.”	etap-6a-admin-seed.sql
+etap-6b-start:247	admin-usun-projekt	seed-z-planu	tekst-ui	„Usuń”	etap-6a-admin-seed.sql
+etap-6b-start:247	admin-usun-projekt	seed-z-planu	tekst-ui	„Link nie działa”	etap-6a-admin-seed.sql
+etap-6b-start:247	admin-usun-projekt	seed-z-planu	tekst-ui	„Usuń projekt”	etap-6a-admin-seed.sql
+etap-6b-start:247	admin-usun-projekt	seed-z-planu	tekst-ui	„Projekt usunięty.”	etap-6a-admin-seed.sql
+etap-6b-start:248	admin-odrzuc-zgloszenie	seed-z-planu	tekst-ui	„Odrzuć zgłoszenie”	etap-6a-admin-seed.sql
+etap-6b-start:248	admin-odrzuc-zgloszenie	seed-z-planu	tekst-ui	„Zgłoszenie odrzucone.”	etap-6a-admin-seed.sql
+etap-6b-start:249	admin-wyroznione	seed-z-planu	tekst-ui	„Wyróżnione”	etap-6a-admin-seed.sql
+etap-6b-start:249	admin-wyroznione	seed-z-planu	dane	„{projekt} wyróżniony.”	etap-6a-admin-seed.sql
+etap-6b-start:249	admin-wyroznione	seed-z-planu	dane	„Ręcznie: 2 z 3”	etap-6a-admin-seed.sql
+etap-6b-start:249	admin-wyroznione	seed-z-planu	tekst-ui	„Wyróżnione”	etap-6a-admin-seed.sql
+etap-6b-start:250	powiadomienie-moderacji	seed-z-planu	dane	„Projekt {nazwa ukrytego projektu seeda} ukryty”	etap-6a-admin-seed.sql
+etap-6b-start:250	powiadomienie-moderacji	seed-z-planu	dane	„Powód: Link do apki nie działa albo prowadzi gdzie indziej. …”	etap-6a-admin-seed.sql
+etap-6b-start:250	powiadomienie-moderacji	seed-z-planu	tekst-ui	„Moje projekty”	etap-6a-admin-seed.sql
+etap-6b-start:251	analityka-datalayer	seed-z-planu	dane	„Otwórz apkę ↗”	katalog-seed.sql
+## etap-6b-start: alarm_dane=18, alarm_seed-z-planu=75, alarm_tekst-ui=57, cytaty=97, e2e=60, e2e_z_seedem=32, w_seedzie=22
+## SUMA: alarm_dane=31, alarm_seed-nowy=53, alarm_seed-z-planu=76, alarm_tekst-ui=98, cytaty=170, e2e=110, e2e_z_seedem=54, w_seedzie=41
+WASKI etap-3-konto-i-auth:228	reset-hasla	seed-nowy	dane	„Nowe-haslo-2026”	reset-hasla-seed.sql
+WASKI etap-6a-admin-i-zgody:155	admin-zgloszenia-ukryj	seed-nowy	dane	„Komentarz pod Rondo”	etap-6a-admin-seed.sql
+WASKI etap-6a-admin-i-zgody:299	analityka-datalayer	seed-z-planu	dane	„Otwórz apkę ↗”	katalog-seed.sql
+WASKI etap-6b-start:201	strona-glowna-hero	seed-z-planu	dane	„Zbuduj projekt →”	katalog-seed.sql
+WASKI etap-6b-start:203	lista-pusta-kategoria	seed-z-planu	dane	„Jedzenie i zdrowie”	katalog-seed.sql
+WASKI etap-6b-start:203	lista-pusta-kategoria	seed-z-planu	dane	„W „Jedzenie i zdrowie” jeszcze pusto”	katalog-seed.sql
+WASKI etap-6b-start:207	strona-projektu	seed-z-planu	dane	„Otwórz apkę ↗”	katalog-seed.sql
+WASKI etap-6b-start:221	reset-hasla	seed-z-planu	dane	„Nowe-haslo-2026”	reset-hasla-seed.sql
+WASKI etap-6b-start:246	admin-zgloszenia-ukryj	seed-z-planu	dane	„Komentarz pod Rondo”	etap-6a-admin-seed.sql
+WASKI etap-6b-start:251	analityka-datalayer	seed-z-planu	dane	„Otwórz apkę ↗”	katalog-seed.sql
+alarmy wariantu waskiego: 10
