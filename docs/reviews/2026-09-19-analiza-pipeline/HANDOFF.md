@@ -3510,6 +3510,30 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     6a (correctness) i 6b (security) do plików ról; (c) waga: fałszywy sukces skryptu sprawdzającego cel `prod` to P2, nie P3
     (konfiguruj.sh przeszedł jako P3 test-coverage); (d) kandydat do bramki planu: nazwy w cudzysłowie ze scenariusza z seedem
     muszą występować w tym seedzie (3 z 4 porażek fazy 5); (e) porcje po 10 wystarczają (porcje 5–6 ~90 tur) — próg bez zmian.
+112. **DECYZJE PO 6B: PROPOZYCJE 6A/6B, WAGA FAŁSZYWEGO SUKCESU PROD, POMIAR BRAMKI SEEDA (2026-10-30, sesja szablonu).**
+    Trzy gałęzie od main `3c1c8d7`, NIEZMERGOWANE (czekają na zgodę operatora). (1) `popr/propozycje-6a-6b` (`64ca698`):
+    correctness :30 (gałęzie widoku) — wyzwalacz także `data === undefined`, cztery stany zapytania, „dane i błąd
+    odświeżenia” bez komunikatu i ponowienia = P2; security :30 (klucz testowy dostawcy) — skrypt z sekretem dostawcy:
+    kontrola u dostawcy przed zapisem (`siteverify`), sam prefiks albo sukces z odczytu własnych flag = P2. Liczby poleceń
+    bez zmian (19 / 33); test treści w `reviewer-prompt.test.mjs` pada na starych plikach ról. (2) `popr/waga-falszywy-
+    sukces-prod` (`a7e0a59`): pozycje wagi correctness i test-coverage — fałszywy sukces skryptu celu `prod` = P2, nie P3.
+    **Korekta tezy:** `jq -e` na pustym wejściu kończy się kodem 4 (nie 0); kod 0 i pusty rozjazd daje `jq -r` bez kontroli
+    kształtu — tak było w `konfiguruj.sh:56`; przykład w plikach ról opisuje `jq -r`. Vibersi naprawiło to w PR #16
+    (`e6c8c82`); compound PR #16 dał propozycję correctness ← spojnosc-dwoch-systemow (strażnik `jq` na pustym ciele, `null`,
+    sklejonych obiektach) z wagą **P3** — sprzeczna z decyzją (2), niewdrożona, do decyzji. Gałęzie (1) i (2) mają konflikt
+    w ogonie `reviewer-prompt.test.mjs` (oba dopisują test) — przy merge'u zostawić oba. Testy: reviewer-prompt + warstwa-
+    stała + doctor 82/82 na każdej z gałęzi (1) i (2). (3) `popr/pomiar-seed-cudzyslow` (`39d00c5`, tylko dane i skrypt,
+    bez kodu bramki): `skrypty/seed_cudzyslow.py`, `seed_cudzyslow_waski.py`, `dane/seed-cudzyslow-etapy-3-6b.txt`. Plany
+    = wersja zadań z commitu inicjalizacji planu (reflog vibersi: `30a75c5`, `d3d9005`, `0c94f2a`, `597fc36`, `f998a00`).
+    110 `[E2E]`, 54 z seedem, 170 cytatów „…”, 41 w seedzie, **129 alarmów, 2 prawdziwe** (jeden scenariusz,
+    `admin-zgloszenia-ukryj` „Komentarz pod Rondo” w planie 6a i 6b — nazwa z atrapy testu `src/test/atrapa-zgloszen-
+    admina.tsx`, nie z seeda); fałszywe: 98 tekst UI dosłownie w `src/`, 21 szablony UI z `{…}`/`…`, 8 inne (hasło wpisywane,
+    etykieta ze strzałką, nazwa kategorii z migracji). 53 alarmy dotyczą seeda tworzonego w etapie — bramka planu ich nie
+    sprawdzi (w 6a „Rondo” był takim przypadkiem). Wariant wąski (fraza w atrapach testów, brak w `src/` i seedzie): 10
+    alarmów, 2 prawdziwe. **Korekta pkt 111 (d):** reguła łapie 1 z 4 porażek fazy 5, nie 3 — `lista-pusta-kategoria`
+    to nadmiar wierszy innych seedów, `okno-powitania` brakujący krok, `profil-404` port. **Rekomendacja:** bramki nie
+    budować (precyzja 1,6 %, wąska 20 %; koszt porażki: 1 SKIP testera i jedna poprawka w fixie); ewentualnie jedno zdanie
+    w dev-plan/mapie funkcji „nazwy danych w scenariuszu z seedem bierz z seeda, nie z atrap testów” — za zgodą operatora.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3949,11 +3973,36 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   `$CLAUDE_JOB_DIR/tmp` daje 6 czerwonych testów `templates/bramki/__tests__/konfiguracje.test.mjs` także na czystym main
   (ścieżka poza repo) — pełny bieg po scaleniu rób w katalogu repo. `srodowisko.test.mjs` bywa czerwony raz w pełnym biegu
   i zielony w powtórce (3/3) — powtórz plik, zanim uznasz regresję.
+- 6a pkt 112 (2026-10-30): tezę o zachowaniu narzędzia z wpisu HANDOFF (np. „`jq -e` na pustym → 0”) sprawdź jednym
+  poleceniem, zanim wpiszesz ją do pliku roli — `jq -e` daje 4, kod 0 daje `jq -r`. Wzorzec regex `[^.]*` w teście treści
+  pęka na skrócie „np.” w pozycji — przykład stawiaj po wadze, nie między wyzwalaczem a wagą. Liczbę „N z M porażek łapie
+  reguła” licz na liniach scenariuszy przed fixem (reflog, commit inicjalizacji planu), nie z pamięci przebiegu.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA SZABLONU (2026-10-30, 6a pkt 111): PO ETAPIE 6B — DECYZJE I POPRAWKI.** Nowa sesja w katalogu
+**AKTUALNA — SESJA SZABLONU (2026-10-30, 6a pkt 112): MERGE DECYZJI PO 6B I SYNC.** Warunek: zgoda operatora na merge
+gałęzi z pkt 112 (jeśli dana w tej samej sesji co pkt 112 — ta instrukcja niepotrzebna). Nowa sesja w katalogu
 workspace-template. Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 112). Przeczytaj pkt 112 i §7 ostatni
+wpis. Potwierdź w 3–5 zdaniach.
+
+Decyzje: (1) merge popr/propozycje-6a-6b i popr/waga-falszywy-sukces-prod do main (konflikt w ogonie
+reviewer-prompt.test.mjs — zostaw oba testy), pełny bieg testów w katalogu repo, push. (2) popr/pomiar-seed-cudzyslow —
+merge samych danych; bramki seeda nie budujemy [albo: dopisz zdanie do dev-plan/mapy funkcji — moja decyzja]. (3) Propozycja
+z PR #16 vibersi (correctness ← spojnosc-dwoch-systemow, strażnik jq, waga P3) — [wdrożyć z wagą P2 do pozycji wagi /
+pominąć, bo pokrywa ją (2)]. Potem /sync-template w vibersi zrobię ja w sesji vibersi.
+Odłożone bez zmian: popr/e2e-ekran, 19 propozycji bramek z docs/solutions. Odrzucone: jscpd, ast-grep.
+
+Zasady: jedna sesja; w vibersi tylko odczyt; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko
+narzędziem Write/Edit; zmiany na gałęziach popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: SESJA SZABLONU (2026-10-30, 6a pkt 111): PO ETAPIE 6B — DECYZJE I POPRAWKI — wykonana (pkt 112).** Nowa sesja
+w katalogu workspace-template. Operator wkleja:
 
 ```
 Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 111). Etap 6b vibersi zamknięty
