@@ -209,3 +209,13 @@ test('waga (6a pkt 111): falszywy sukces skryptu celu prod to P2, nie P3 — cor
   assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
   assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
 })
+
+// 6a pkt 113: propozycja compoundu vibersi PR #16 (correctness ← spojnosc-dwoch-systemow, strażnik jq) wpieta w pozycje
+// o parserach — wejscie puste, null, sklejone obiekty, kontrola ksztaltu; P2 dla celu prod, P3 poza nim.
+test('correctness (PR #16 vibersi): straznik jq na odpowiedzi HTTP w pozycji o parserach — puste cialo, null, sklejone obiekty', () => {
+  const parsery = pozycja(rola('correctness-reviewer'), /^- \(wyrażenie regularne, ręczny parser albo `jq`/)
+  assert.match(parsery, /pustego ciała, `null` i dwóch sklejonych obiektów/)
+  assert.match(parsery, /jq -se 'length == 1/)
+  assert.match(parsery, /P2 w skrypcie celu `prod`/)
+  assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
+})
