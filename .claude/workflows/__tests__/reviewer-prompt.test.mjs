@@ -184,3 +184,16 @@ test('correctness (E5-12): PATCH z migawki, cykl zycia + jednorazowy znacznik, b
   assert.match(pozycja(tresc, /^- \(zapis do pamięci podręcznej/), /kursor[^.]*mutacj/)
   assert.equal(liczbaPolecen(tresc), 19)
 })
+
+// 6a pkt 111 (1): propozycje compoundu vibersi etapow 6a i 6b wpiete w istniejace pozycje — liczba polecen bez zmian.
+test('correctness (6a): cztery stany zapytania w pozycji o galeziach widoku; security (6b): sekret dostawcy sprawdzany u dostawcy w pozycji o kluczu testowym', () => {
+  const galezie = pozycja(rola('correctness-reviewer'), /^- \(komponent z rozgałęzieniem renderowania/)
+  assert.match(galezie, /data === undefined/)
+  assert.match(galezie, /cztery stany[^.]*dane i błąd odświeżenia/)
+  assert.match(galezie, /stara lista bez komunikatu błędu i bez ponowienia[^.]*P2/)
+  assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
+  const sekrety = pozycja(rola('security-sentinel'), /^- Przeszukaj diff fazy pod kątem sekretów/)
+  assert.match(sekrety, /przed zapisem pyta dostawcę/)
+  assert.match(sekrety, /sam prefiks[^.]*P2/)
+  assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
+})
