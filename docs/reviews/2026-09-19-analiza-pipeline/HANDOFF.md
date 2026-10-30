@@ -3956,15 +3956,21 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 workspace-template. Operator wkleja:
 
 ```
-Kontynuujemy pracę nad szablonem (workspace-template, main = de79a68 + HANDOFF pkt 111). Etap 6b vibersi zamknięty
+Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 111). Etap 6b vibersi zamknięty
 (PR #15, HANDOFF 6a pkt 111). Przeczytaj pkt 111 i §7 ostatni wpis. Potwierdź w 3–5 zdaniach.
 
-Cel (kolejność i zgoda moja): (a) merge popr/e2e-ekran (blokada ekranu na czas serwera E2E); (b) propozycje do reviewerów
-z vibersi docs/reviews/propozycje-do-reviewerow.md — 6a correctness (cztery stany zapytania) i 6b security (sekret dostawcy
-sprawdzany u dostawcy) — wpięcie w istniejące pozycje plików ról; (c) waga w test-coverage/correctness: fałszywy sukces
-skryptu sprawdzającego cel prod = P2; (d) kandydat do bramki plan.mjs: nazwy w cudzysłowie ze scenariusza [E2E] z seedem
-muszą występować w seedzie — najpierw pomiar na planach etapów 3–6b, ile fałszywych alarmów. Potem /sync-template do vibersi
-przed kolejnym etapem (robi sesja vibersi).
+Decyzje z pkt 111 (zatwierdzone, robimy po kolei, każda na osobnej gałęzi popr/<nazwa>, merge za moją zgodą):
+(1) Propozycje do reviewerów z vibersi docs/reviews/propozycje-do-reviewerow.md: 6a correctness (cztery stany zapytania,
+„dane + błąd odświeżenia”) i 6b security (sekret dostawcy sprawdzany u dostawcy przed zapisem, nie samym prefiksem) —
+dopisz do ISTNIEJĄCYCH pozycji plików ról (correctness: pozycja o gałęziach widoku; security: pozycja o kluczu testowym
+dostawcy), bez nowych pozycji, z testem treści jak przy P27 S2.
+(2) Waga: fałszywy sukces skryptu sprawdzającego cel prod (PASS bez sprawdzenia, np. jq -e na pustej odpowiedzi) = P2,
+nie P3 — w test-coverage i correctness; przykład z vibersi konfiguruj.sh (PR #15 zmergowany z tym P3 otwartym).
+(3) Kandydat do bramki plan.mjs: nazwy w cudzysłowie ze scenariusza [E2E] z seedem muszą występować w tym seedzie (3 z 4
+porażek fazy 5 etapu 6b). NAJPIERW pomiar skryptem na planach vibersi etapów 3–6b: ile trafień prawdziwych, ile fałszywych
+alarmów (teksty UI w cudzysłowie, których seed nie zawiera z natury). Wynik i rekomendacja przed jakimkolwiek kodem bramki.
+Odłożone (nie ruszaj bez mojej wiadomości): popr/e2e-ekran (czeka na test flag Chrome przy wygaszonym ekranie, wygaszenie
+ekranu tylko za moją zgodą), 19 propozycji bramek z vibersi docs/solutions (szczebel lint/kod). Odrzucone: jscpd, ast-grep.
 
 Zasady: jedna sesja; w vibersi tylko odczyt; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko
 narzędziem Write/Edit; zmiany na gałęziach popr/<nazwa>, merge za moją zgodą.
@@ -3988,8 +3994,10 @@ z .env.local, gdy staging i prod mają go w argumentach builda (sprawdź bez wyp
 
 Zasady: jedna sesja; nie wypisuj wartości z plików .env*; zmiany w produkcji wykonuję ja — Ty dajesz polecenia i
 sprawdzasz wyniki. Styl: krótko; wniosek na początku.
-Na koniec: wpis HANDOFF 6a (kolejny numer) w workspace-template + §8.
+Na koniec: krótkie podsumowanie do przekazania sesji szablonu — co poprawione (PR), które kroki smoke'u po merge'u
+zrobione, co zostało otwarte i czy coś w maszynerii (skrypty .claude/, /dev-pr, smoke) działało inaczej niż powinno.
 ```
+(Sesja vibersi nie pisze do repo szablonu — podsumowanie operator wkleja sesji szablonu, która robi wpis HANDOFF.)
 
 **Historia: SESJA VIBERSI (2026-10-29, 6a pkt 110): ETAP 6B — PREP I PLAN — wykonana (pkt 111).** Warunek: commit syncu `755a40b` na `main`
 vibersi wypchnięty. Nowa sesja w katalogu vibersi. Operator wkleja:
