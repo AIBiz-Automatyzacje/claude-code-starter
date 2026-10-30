@@ -3540,6 +3540,21 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     Pełny bieg w katalogu repo: `npm test` 1329/1329, typecheck i lint czyste. Push main `de79a68..10d940a`. Otwarte:
     propozycja PR #16 vibersi (correctness, strażnik `jq`, waga P3 — sprzeczna z wagą P2 z pkt 112 (2)) bez decyzji;
     `/sync-template` w vibersi — w sesji vibersi. Odłożone bez zmian: `popr/e2e-ekran`, 19 propozycji bramek.
+114. **PROPOZYCJA PR #16 VIBERSI — STRAŻNIK `jq` (2026-10-30, ta sama sesja co pkt 112–113).** Decyzja operatora po
+    rekomendacji: wdrożyć, nie pomijać — pozycja wagi z pkt 112 (2) mówi, jak ważyć, a nie każe sprawdzać pustego ciała.
+    `popr/jq-pusty-odczyt` (`19db84b`, **NIEZMERGOWANA**, czeka na zgodę operatora): correctness :23 (parsery) — wyzwalacz
+    także `jq` na odpowiedzi HTTP w skrypcie; dla każdego strażnika `jq -e`/`jq -r` wynik dla pustego ciała, `null`
+    i sklejonych `{..}{..}`; brak kontroli kształtu `jq -se 'length == 1 and (.[0] | type == "object" and length > 0)'`
+    = P2 w skrypcie celu `prod`, P3 poza nim (waga z propozycji podniesiona zgodnie z pkt 112 (2)). Sprawdzone poleceniem:
+    ta kontrola daje kod 1 dla `''`, `null`, `{}`, sklejonych obiektów i 0 dla jednego niepustego obiektu. Liczba poleceń
+    bez zmian (19); test treści pada na starym pliku roli; `npm test` 1330/1330 (pierwszy bieg: 1 czerwony
+    `sync-template.test.mjs` „skill usunięty w szablonie znika z projektu” — 3/3 zielony w powtórce, drugi pełny bieg
+    zielony; niestabilny jak `srodowisko.test.mjs` z §7), lint czysty. Operator zrobi `/sync-template` w vibersi sam po
+    swojej fazie — po merge'u tej gałęzi wejdzie razem z pkt 113. **Kolejka po tej sesji (rekomendacja):** (a) merge
+    `popr/jq-pusty-odczyt` + push; (b) smoke produkcji vibersi po merge'u 6b (sesja vibersi); (c) `popr/e2e-ekran` — test
+    zrzutu przy wygaszonym ekranie (~5 min, tylko za zgodą operatora), potem merge przed etapem 7; (d) 19 propozycji bramek
+    z `docs/solutions` vibersi — najpierw przegląd i ranking po liczbie ucieczek, które bramka by złapała (pomiar seeda:
+    intuicyjna bramka miała precyzję 1,6 %), kod dopiero po decyzji.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3983,12 +3998,33 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   poleceniem, zanim wpiszesz ją do pliku roli — `jq -e` daje 4, kod 0 daje `jq -r`. Wzorzec regex `[^.]*` w teście treści
   pęka na skrócie „np.” w pozycji — przykład stawiaj po wadze, nie między wyzwalaczem a wagą. Liczbę „N z M porażek łapie
   reguła” licz na liniach scenariuszy przed fixem (reflog, commit inicjalizacji planu), nie z pamięci przebiegu.
+- 6a pkt 113–114 (2026-10-30): `sed '/^=======$/d'` przy rozwiązywaniu konfliktu dwóch dopisanych testów zgubił wspólne
+  `})` zamykające pierwszy test (było poza znacznikami) — po zdjęciu znaczników obejrzyj granicę obu bloków przed biegiem.
+  `sync-template.test.mjs` bywa czerwony raz w pełnym biegu — powtórz plik, zanim uznasz regresję.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA VIBERSI (2026-10-30, 6a pkt 113): SYNC MASZYNERII.** Main szablonu `10d940a` wypchnięty. W sesji
-vibersi operator uruchamia `/sync-template` (pliki ról correctness, security, test-coverage + test treści) i commituje sync.
-Propozycję PR #16 (strażnik `jq`, P3) operator rozstrzyga w kolejnej sesji szablonu — pkt 113.
+**AKTUALNA — SESJA SZABLONU (2026-10-30, 6a pkt 114): MERGE STRAŻNIKA `jq` I KOLEJKA.** Nowa sesja w katalogu
+workspace-template. Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 114). Przeczytaj pkt 112–114 i §7
+ostatni wpis. Potwierdź w 3–5 zdaniach.
+
+(1) Merge popr/jq-pusty-odczyt (19db84b) do main, pełny bieg testów w katalogu repo, push. /sync-template w vibersi
+robię sam po swojej fazie.
+(2) Potem kolejka z pkt 114: [e2e-ekran — test przy wygaszonym ekranie, zgoda: tak/nie] / [przegląd i ranking
+19 propozycji bramek z vibersi docs/solutions — bez kodu] — moja decyzja.
+
+Zasady: jedna sesja; w vibersi tylko odczyt; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko
+narzędziem Write/Edit; zmiany na gałęziach popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: SESJA VIBERSI (2026-10-30, 6a pkt 113): SYNC MASZYNERII — operator robi `/sync-template` sam po swojej fazie;
+po merge'u `popr/jq-pusty-odczyt` sync obejmie też pkt 114.** Main szablonu `10d940a` wypchnięty. W sesji vibersi operator
+uruchamia `/sync-template` (pliki ról correctness, security, test-coverage + test treści) i commituje sync.
 
 **Historia: SESJA SZABLONU (2026-10-30, 6a pkt 112): MERGE DECYZJI PO 6B I SYNC — wykonana w tej samej sesji (pkt 113).**
 Nowa sesja w katalogu workspace-template. Operator wkleja:
