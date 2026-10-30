@@ -3469,6 +3469,47 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     bazy nie zmieniasz bezpośrednio”); testy na dry-run albo celu `e2e`, uruchomienie = pozycje operatora po merge'u; (b) faza
     „przejście całego MVP” to dużo scenariuszy `[E2E]` w jednej fazie — koszt testera, limit faz/IU, seedy wielu flow, zrzuty
     (6a faza 3); (c) kod prawie bez UI — routing reviewerów i rozmiar PR inne niż w 6a.
+111. **ETAP 6B VIBERSI: BACKLOG, PORCJE TESTERA, RUN, PR #15 (2026-10-29/30, jedna sesja szablonu).** (1) **Backlog pkt 109**
+    (gałęzie, zmergowane do main `de79a68` i wypchnięte za zgodą operatora razem z (2)): propozycje do reviewerów — liczba „7
+    niewdrożonych” z pkt 109 była błędna: 7 propozycji etapu 5 jest w plikach ról od P27 S2 (26.10, `4313685`, `53cfd4f`,
+    `8c7babb`); plik vibersi nie ma znacznika „wdrożone”. Niewdrożona tylko propozycja 6a (cztery stany zapytania, „dane + błąd
+    odświeżenia”) — rekomendacja: dopisać do pozycji correctness o gałęziach widoku, bez bramki kodu; czeka na decyzję.
+    `popr/e5-14-opis-iu`: E5-14 na 69 IU etapów 3–6a z `opis_zn` — opis ↔ tury +0,77, ctx +0,83, koszt +0,83, tyle co
+    scenariusze (opis ↔ scenariusze +0,84, cząstkowa opis|scen +0,37–0,41); bez uwagi bramki i z opisem ≥ 6022 zn (Q3) n=5,
+    tury p50 62 vs 40 — próg bez zmian, wrócić z danymi kolejnych etapów (`dane/e5-14-tury-iu-etapy-3-6a.txt`).
+    `popr/tester-ponowienie-probnego`: po padzie próbnego zrzutu tester przed makietami ponawia próbny zrzut raz.
+    `popr/ucieczki-zakresy`: `miejsceWatku` czyta `plik:12-20`, prefiks `(recenzja ogolna)` i dopiski; wątki z linią do blame
+    w telemetrii 201 → 214 z 216. (2) **Przegląd planu 6b** (`2026-10-29-001-feat-etap-6b-start-plan.md`, 5 faz, 9 IU, 60 `[E2E]`):
+    `sprawdz` i `gotowosc` ok; uwagi IU-3 (14 plików), IU-4 (13), IU-9 (55 scenariuszy) — IU-3/4 zostawione. Główne ryzyko:
+    review woła jednego testera na wszystkie `[E2E]` fazy, a faza 5 miała 55 (dotąd ≤ 6 na fazę, ≤ 57 tur, ~100k) → operator
+    wybrał wariant w szablonie: **porcje testera** (`popr/tester-porcje`, `2a2bb88`): powyżej `MAKS_SCENARIUSZY_TESTERA` = 10
+    kolejni testerzy po kolei (wspólna baza e2e, seedy, limiter), równe porcje (55 → 9/9/9/9/9/10), retry każdej porcji, SKIP
+    `srodowisko` kończy porcje, globalny retry tylko bez porcji; plik roli: porcja odgrywa swój zakres, makiety i runner w porcji 1.
+    Skrypty z celem `prod` w planie bez uwag (atrapa `curl`, `POTWIERDZ_PROD`, sekret ze stdin, uruchomienie w checkliście).
+    Ref `vibersi-prod` operator założył przed startem (bez STOP-u przed fazą 4). (3) **Run** `wf_416c6f3e-20c` (18:20–21:06
+    lokalnie, 9966 s): 5/5 faz, 0 STOP, 0 P1, 16,4 M, **1,82 M/IU** (6a 2,27; IU-9 nietypowa — builder zmieniał tylko skill).
+    Fix w fazach 1, 4, 5. **Porcje w fazie 5:** 6 testerów, 37–93 tury, ctx 76–127k, 0 retry, 65 min, 4,84 M; 51 PASS / 3 FAIL /
+    1 SKIP — wszystkie z rozjazdu opisu scenariusza lub mapy funkcji z seedem (wiersz „Komentarz pod Rondo” nieistniejący, port
+    5174 zamiast 5175, krok checkboxa regulaminu, 14 projektów cudzych seedów w „pustej” kategorii); fix przeniósł projekty
+    7 seedów innych etapów do `hobby-i-podroze`. **Zrzuty:** fazy 3 i 5 bez zrzutów (rAF 0 klatek/s, 7 makiet do smoke'u),
+    ponowienie próbnego nie pomogło. Przyczyna z `pmset -g log`: ekran wyłączony 18:30–21:37, bez `caffeinate -d` (0 asercji
+    PreventUserIdleDisplaySleep). **Korekta pkt 108:** faza 6 etapu 6a (23:05) NIE była przy wyłączonym ekranie — ekran
+    świecił 21:20–23:42; obie awarie zrzutów wypadły przy zgaszonym ekranie. → `popr/e2e-ekran` (`81a0df4`, NIEZMERGOWANA):
+    start serwera E2E uruchamia blokadę pilnującą PID-u serwera — macOS `caffeinate -d -i -w`, Windows PowerShell
+    z `SetThreadExecutionState(0x80000003)` + `Wait-Process` (nieuruchomione na prawdziwym Windowsie; reszta E2E i tak wymaga
+    `lsof`/`ps`), Linux bez blokady; plik roli testera: przy zawieszonym zrzucie finding OPERATOR z `pmset`. Testy 1333.
+    (4) **PR #15** (squash `e0b4ae2`, 30.10, 2 tury): bot 2 wątki, 1 P1/P2 = **0,8 na 100 plików** (etapy 1–6a: 1,0 / 0 / 0,8 /
+    0,9 / 1,2 / 0); ucieczki: review-P3 1 (P1/P2: `wlacz.sh:51` — sekret Turnstile prod sprawdzany tylko prefiksem, Major; review
+    fazy 4 miało go jako P3 spec-compliance z odwrotną tezą „prefiks wykracza poza IU-7”), nieustalone 1. Compound: propozycja
+    security-sentinel ← walidacja-granicy-api (sekret dostawcy sprawdzany u dostawcy przed zapisem). Przed PR naprawione:
+    `env -u` proxy/CA + `--noproxy '*'` w `cel-supabase.sh`. **Zmergowane z otwartym P3:** `konfiguruj.sh:56` — pusta odpowiedź
+    GET kontrolnego daje PASS (sprawdzone: jq na pustym pliku → kod 0, rozjazd pusty); operator nie może ufać temu PASS do
+    poprawki. Telemetria (raport ze skanem, 29–30.10, z main): §5 dev-autopilot OK 1, dev-pr OK 18, STOP brak; §6 dev-plan
+    2,7 M / 4 wiad., dev-prep 2,3 M / 13, makieta 145k / 1, sync 69k. `VITE_GTM_ID` nadal w `.env.local` vibersi (build prod
+    ma go w argumentach checklisty). **Wnioski dla szablonu (decyzje operatora):** (a) merge `popr/e2e-ekran`; (b) propozycja
+    6a (correctness) i 6b (security) do plików ról; (c) waga: fałszywy sukces skryptu sprawdzającego cel `prod` to P2, nie P3
+    (konfiguruj.sh przeszedł jako P3 test-coverage); (d) kandydat do bramki planu: nazwy w cudzysłowie ze scenariusza z seedem
+    muszą występować w tym seedzie (3 z 4 porażek fazy 5); (e) porcje po 10 wystarczają (porcje 5–6 ~90 tur) — próg bez zmian.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3902,10 +3943,55 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
   przy skanie (blame) zamrażaj przy odczycie, bo podbicie `WERSJA_REKORDU` liczy go na nowo po squash-merge'u i gc. Raport
   telemetrii bez `--bez-skanu` dopisuje rekordy do `~/.claude/telemetry/pipeline.jsonl` — z gałęzi przed merge'em tylko
   `--bez-skanu`, a sprawdzenie nowego kodu: wywołanie `rekordyRunu`/`epizodySesji` w skrypcie bez zapisu.
+- 6a pkt 111 (2026-10-30): przyczynę zależną od stanu maszyny (ekran, uśpienie, sieć) sprawdzaj w logu systemu (`pmset -g log
+  | grep "Display is turned"`) dla OBU przypadków — działającego i niedziałającego — zanim ją wykluczysz; pkt 108 odrzucił
+  „wyłączony ekran” na podstawie fazy, w której ekran w rzeczywistości świecił. Próbne scalenie gałęzi w worktree pod
+  `$CLAUDE_JOB_DIR/tmp` daje 6 czerwonych testów `templates/bramki/__tests__/konfiguracje.test.mjs` także na czystym main
+  (ścieżka poza repo) — pełny bieg po scaleniu rób w katalogu repo. `srodowisko.test.mjs` bywa czerwony raz w pełnym biegu
+  i zielony w powtórce (3/3) — powtórz plik, zanim uznasz regresję.
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA VIBERSI (2026-10-29, 6a pkt 110): ETAP 6B — PREP I PLAN.** Warunek: commit syncu `755a40b` na `main`
+**AKTUALNA — SESJA SZABLONU (2026-10-30, 6a pkt 111): PO ETAPIE 6B — DECYZJE I POPRAWKI.** Nowa sesja w katalogu
+workspace-template. Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, main = de79a68 + HANDOFF pkt 111). Etap 6b vibersi zamknięty
+(PR #15, HANDOFF 6a pkt 111). Przeczytaj pkt 111 i §7 ostatni wpis. Potwierdź w 3–5 zdaniach.
+
+Cel (kolejność i zgoda moja): (a) merge popr/e2e-ekran (blokada ekranu na czas serwera E2E); (b) propozycje do reviewerów
+z vibersi docs/reviews/propozycje-do-reviewerow.md — 6a correctness (cztery stany zapytania) i 6b security (sekret dostawcy
+sprawdzany u dostawcy) — wpięcie w istniejące pozycje plików ról; (c) waga w test-coverage/correctness: fałszywy sukces
+skryptu sprawdzającego cel prod = P2; (d) kandydat do bramki plan.mjs: nazwy w cudzysłowie ze scenariusza [E2E] z seedem
+muszą występować w seedzie — najpierw pomiar na planach etapów 3–6b, ile fałszywych alarmów. Potem /sync-template do vibersi
+przed kolejnym etapem (robi sesja vibersi).
+
+Zasady: jedna sesja; w vibersi tylko odczyt; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko
+narzędziem Write/Edit; zmiany na gałęziach popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**AKTUALNA — SESJA VIBERSI (2026-10-30, 6a pkt 111): PO MERGE'U 6B — PRODUKCJA.** Nowa sesja w katalogu vibersi, `main`
+po PR #15. Operator wkleja:
+
+```
+Kontynuujemy w vibersi po merge'u etapu 6b (PR #15). Przeczytaj docs/operator/2026-10-29-etap-6b-start-smoke.md (pozycje
+po merge'u) i docs/completed/etap-6b-start/known-issues.md. Potwierdź w 3–5 zdaniach.
+
+Najpierw mała poprawka na gałęzi fix/konfiguruj-pusty-odczyt (PR przez /dev-pr): scripts/supabase-auth/konfiguruj.sh —
+pusta albo nie-obiektowa odpowiedź GET kontrolnego daje dziś PASS (jq na pustym wejściu kończy się kodem 0); filtr z
+`type == "object"` i test w konfiguruj.test.mjs z odpowiedzią "" i "{}" → kod 1. Dopiero po merge'u prowadź mnie przez
+pozycje smoke'u po merge'u w kolejności z planu (migracja dev ze stagingiem, wgraj.sh dev/e2e, db push prod, SMTP Resend,
+konfiguruj.sh prod, wlacz.sh prod, wgraj.sh prod, OAuth, Coolify pelny, smoke produkcji). Przy okazji: VITE_GTM_ID usuń
+z .env.local, gdy staging i prod mają go w argumentach builda (sprawdź bez wypisywania wartości).
+
+Zasady: jedna sesja; nie wypisuj wartości z plików .env*; zmiany w produkcji wykonuję ja — Ty dajesz polecenia i
+sprawdzasz wyniki. Styl: krótko; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) w workspace-template + §8.
+```
+
+**Historia: SESJA VIBERSI (2026-10-29, 6a pkt 110): ETAP 6B — PREP I PLAN — wykonana (pkt 111).** Warunek: commit syncu `755a40b` na `main`
 vibersi wypchnięty. Nowa sesja w katalogu vibersi. Operator wkleja:
 
 ```
@@ -3927,7 +4013,7 @@ Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na p
 Na koniec: wpis HANDOFF 6a (kolejny numer) w workspace-template + §8.
 ```
 
-**AKTUALNA — SESJA SZABLONU (2026-10-29, 6a pkt 110): CZUWANIE NA ETAP 6B VIBERSI + BACKLOG.** Nowa sesja w katalogu
+**Historia: SESJA SZABLONU (2026-10-29, 6a pkt 110): CZUWANIE NA ETAP 6B VIBERSI + BACKLOG — wykonana (pkt 111).** Nowa sesja w katalogu
 workspace-template, równolegle z sesją vibersi. Operator wkleja:
 
 ```
