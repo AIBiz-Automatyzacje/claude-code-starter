@@ -3534,6 +3534,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     to nadmiar wierszy innych seedów, `okno-powitania` brakujący krok, `profil-404` port. **Rekomendacja:** bramki nie
     budować (precyzja 1,6 %, wąska 20 %; koszt porażki: 1 SKIP testera i jedna poprawka w fixie); ewentualnie jedno zdanie
     w dev-plan/mapie funkcji „nazwy danych w scenariuszu z seedem bierz z seeda, nie z atrap testów” — za zgodą operatora.
+113. **MERGE DECYZJI PO 6B (2026-10-30, ta sama sesja co pkt 112).** Za zgodą operatora: merge `popr/propozycje-6a-6b`
+    (`cf9e1b7`), `popr/waga-falszywy-sukces-prod` (`da59c34`, konflikt w ogonie `reviewer-prompt.test.mjs` — oba testy
+    zostały) i `popr/pomiar-seed-cudzyslow` (`10d940a`, same dane — **bramki seeda nie budujemy, zdania w dev-plan też nie**).
+    Pełny bieg w katalogu repo: `npm test` 1329/1329, typecheck i lint czyste. Push main `de79a68..10d940a`. Otwarte:
+    propozycja PR #16 vibersi (correctness, strażnik `jq`, waga P3 — sprzeczna z wagą P2 z pkt 112 (2)) bez decyzji;
+    `/sync-template` w vibersi — w sesji vibersi. Odłożone bez zmian: `popr/e2e-ekran`, 19 propozycji bramek.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -3980,9 +3986,12 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA SZABLONU (2026-10-30, 6a pkt 112): MERGE DECYZJI PO 6B I SYNC.** Warunek: zgoda operatora na merge
-gałęzi z pkt 112 (jeśli dana w tej samej sesji co pkt 112 — ta instrukcja niepotrzebna). Nowa sesja w katalogu
-workspace-template. Operator wkleja:
+**AKTUALNA — SESJA VIBERSI (2026-10-30, 6a pkt 113): SYNC MASZYNERII.** Main szablonu `10d940a` wypchnięty. W sesji
+vibersi operator uruchamia `/sync-template` (pliki ról correctness, security, test-coverage + test treści) i commituje sync.
+Propozycję PR #16 (strażnik `jq`, P3) operator rozstrzyga w kolejnej sesji szablonu — pkt 113.
+
+**Historia: SESJA SZABLONU (2026-10-30, 6a pkt 112): MERGE DECYZJI PO 6B I SYNC — wykonana w tej samej sesji (pkt 113).**
+Nowa sesja w katalogu workspace-template. Operator wkleja:
 
 ```
 Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 112). Przeczytaj pkt 112 i §7 ostatni
