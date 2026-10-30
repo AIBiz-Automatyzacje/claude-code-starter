@@ -197,3 +197,15 @@ test('correctness (6a): cztery stany zapytania w pozycji o galeziach widoku; sec
   assert.match(sekrety, /sam prefiks[^.]*P2/)
   assert.equal(liczbaPolecen(rola('security-sentinel')), 33)
 })
+
+// 6a pkt 111 (2): falszywy sukces skryptu celu prod (vibersi konfiguruj.sh, PR #15 zmergowany z otwartym P3) = P2 w wadze
+// correctness i test-coverage — w istniejacych pozycjach wagi, liczba polecen bez zmian.
+test('waga (6a pkt 111): falszywy sukces skryptu celu prod to P2, nie P3 — correctness i test-coverage', () => {
+  const kod = pozycja(rola('correctness-reviewer'), /^- Nadaj P1/)
+  assert.match(kod, /[Ff]ałszywy sukces skryptu[^.]*`prod`[^.]*P2, nie P3/)
+  assert.match(kod, /jq -r[^.]*pusty rozjazd/)
+  const testy = pozycja(rola('test-coverage-reviewer'), /^- Nadaj P1/)
+  assert.match(testy, /pustej albo niepoprawnej odpowiedzi[^.]*`prod`[^.]*P2, nie P3/)
+  assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
+  assert.equal(liczbaPolecen(rola('test-coverage-reviewer')), 18)
+})
