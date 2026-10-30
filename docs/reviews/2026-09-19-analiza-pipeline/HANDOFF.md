@@ -3554,7 +3554,9 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     `popr/jq-pusty-odczyt` + push; (b) smoke produkcji vibersi po merge'u 6b (sesja vibersi); (c) `popr/e2e-ekran` — test
     zrzutu przy wygaszonym ekranie (~5 min, tylko za zgodą operatora), potem merge przed etapem 7; (d) 19 propozycji bramek
     z `docs/solutions` vibersi — najpierw przegląd i ranking po liczbie ucieczek, które bramka by złapała (pomiar seeda:
-    intuicyjna bramka miała precyzję 1,6 %), kod dopiero po decyzji.
+    intuicyjna bramka miała precyzję 1,6 %), kod dopiero po decyzji. **Dopisek:** za zgodą operatora w tej samej sesji
+    (a) wykonane — merge `1e65ff9`, `npm test` 1330/1330, typecheck i lint czyste, push. Instrukcja §8 „MERGE STRAŻNIKA
+    `jq`” — jej punkt (1) już zrobiony; nowa sesja zaczyna od punktu (2).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -4011,9 +4013,9 @@ workspace-template. Operator wkleja:
 Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 114). Przeczytaj pkt 112–114 i §7
 ostatni wpis. Potwierdź w 3–5 zdaniach.
 
-(1) Merge popr/jq-pusty-odczyt (19db84b) do main, pełny bieg testów w katalogu repo, push. /sync-template w vibersi
-robię sam po swojej fazie.
-(2) Potem kolejka z pkt 114: [e2e-ekran — test przy wygaszonym ekranie, zgoda: tak/nie] / [przegląd i ranking
+(1) popr/jq-pusty-odczyt już w main (1e65ff9, pkt 114 dopisek) — nic do zrobienia. /sync-template w vibersi robię sam
+po swojej fazie.
+(2) Kolejka z pkt 114: [e2e-ekran — test przy wygaszonym ekranie, zgoda: tak/nie] / [przegląd i ranking
 19 propozycji bramek z vibersi docs/solutions — bez kodu] — moja decyzja.
 
 Zasady: jedna sesja; w vibersi tylko odczyt; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko
