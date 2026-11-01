@@ -3575,7 +3575,9 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     komponent stanu listy (1, ale klasa z 6 dokumentami i trzy strony admina z tym wzorcem); reszta po 0–1.
     **Rekomendacja:** żadnej bramki w szablonie teraz — bramka łapiąca 1 ucieczkę nie zwraca kosztu (pomiar seeda: precyzja 1,6 %); wrócić do (1)–(3), gdy któraś klasa da drugą
     ucieczkę tym samym mechanizmem. Otwarte: merge `popr/fetch-odczyt-ciala` + push; `popr/e2e-ekran` — decyzja operatora;
-    `/sync-template` w vibersi robi operator.
+    `/sync-template` w vibersi robi operator. **Dopisek:** za zgodą operatora w tej samej sesji merge `69e7b79`, `npm test`
+    1331/1331, typecheck i lint czyste, push. Instrukcja §8 „MERGE ODCZYTU CIAŁA” — jej punkt (1) już zrobiony; nowa sesja
+    zaczyna od punktu (2).
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
