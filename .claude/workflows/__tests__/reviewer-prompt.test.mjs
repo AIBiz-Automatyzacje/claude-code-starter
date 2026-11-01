@@ -219,3 +219,14 @@ test('correctness (PR #16 vibersi): straznik jq na odpowiedzi HTTP w pozycji o p
   assert.match(parsery, /P2 w skrypcie celu `prod`/)
   assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
 })
+
+// 6a pkt 115: propozycja compoundu vibersi PR #20 (correctness ← sciezka-bledu, przerwany odczyt ciala 429) wpieta
+// w pozycje o limitach czasu wywolan sieci — odczyt ciala pod tym samym AbortSignal nie moze zmienic wyniku statusu.
+test('correctness (PR #20 vibersi): przerwany odczyt ciala po fetch z AbortSignal.timeout w pozycji o limitach czasu', () => {
+  const siec = pozycja(rola('correctness-reviewer'), /^- Dla każdego wywołania sieci i klienta bazy/)
+  assert.match(siec, /pod tym samym `AbortSignal\.timeout`/)
+  assert.match(siec, /`TimeoutError`\/`AbortError`, `TypeError`/)
+  assert.match(siec, /429 → `'limit'` zamienione na ogólny `'blad'`/)
+  assert.match(siec, /strumień ciała rzuca `DOMException`, to finding P2/)
+  assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
+})
