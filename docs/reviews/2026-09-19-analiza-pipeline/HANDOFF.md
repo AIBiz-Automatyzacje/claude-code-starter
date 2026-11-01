@@ -3557,6 +3557,25 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
     intuicyjna bramka miała precyzję 1,6 %), kod dopiero po decyzji. **Dopisek:** za zgodą operatora w tej samej sesji
     (a) wykonane — merge `1e65ff9`, `npm test` 1330/1330, typecheck i lint czyste, push. Instrukcja §8 „MERGE STRAŻNIKA
     `jq`” — jej punkt (1) już zrobiony; nowa sesja zaczyna od punktu (2).
+115. **PROPOZYCJA PR #20 VIBERSI — PRZERWANY ODCZYT CIAŁA 429; RANKING BRAMEK (2026-11-01, sesja szablonu).** Decyzja
+    operatora: wdrożyć. `popr/fetch-odczyt-ciala` (`d04a0f6`, **NIEZMERGOWANA**, czeka na zgodę operatora): correctness
+    :19 (limit czasu wywołań sieci) — gdy wynik wybiera status HTTP, a ciało czytane osobno pod tym samym
+    `AbortSignal.timeout`, dla każdego `await` odczytu ciała: który `catch` łapie `TimeoutError`/`AbortError`/`TypeError`
+    i jaki wynik zwraca funkcja; wynik inny niż rozstrzygnięty statusem (429 → `'limit'` zamienione na `'blad'`) albo brak
+    testu z `Response`, którego strumień rzuca `DOMException` = P2. Bez nowej pozycji (19 poleceń); test treści pada na
+    starym pliku roli; `npm test` 1331/1331, typecheck i lint czyste. **Ranking bramek (skrypt nad frontmatter
+    `docs/solutions` vibersi, 39 dokumentów: 19 `regula`, 13 `kod`, 7 `lint` — propozycji bramek jest dziś 20, nie 19:
+    doszedł lint `.user_metadata` z PR #19).** Wniosek: „suma ucieczek klasy” w propozycjach compoundu to liczba dokumentów
+    klasy, a nie ucieczek, które złapie jedna bramka. `sciezka-bledu` (6 dokumentów: PR #3, #5, #6, #10, #14, #20) to
+    6 różnych mechanizmów; jej dwie propozycje `kod` (unia stanu wejścia efektu — PR #10; wspólny komponent stanu listy —
+    PR #14) łapią po 1, a „wspólny helper odczytu ciała” z PR #20 łapie tylko PR #20 (dokument sam ma `szczebel: regula`).
+    Każda z 20 bramek ma 0–2 ucieczki; jedyna z 2 to `bodyLimit` liczony ze stałych walidatora (`wartosc-graniczna`,
+    PR #9 tury 1 i 2). Kolejność, gdyby budować: (1) `bodyLimit` ze stałych (2 ucieczki, mechaniczna); (2) lint
+    `.user_metadata` poza modułem z parserem (1, `no-restricted-syntax`, prawie bez fałszywych alarmów); (3) wspólny
+    komponent stanu listy (1, ale klasa z 6 dokumentami i trzy strony admina z tym wzorcem); reszta po 0–1.
+    **Rekomendacja:** żadnej bramki w szablonie teraz — bramka łapiąca 1 ucieczkę nie zwraca kosztu (pomiar seeda: precyzja 1,6 %); wrócić do (1)–(3), gdy któraś klasa da drugą
+    ucieczkę tym samym mechanizmem. Otwarte: merge `popr/fetch-odczyt-ciala` + push; `popr/e2e-ekran` — decyzja operatora;
+    `/sync-template` w vibersi robi operator.
 
 ## 7. Uwagi techniczne, żeby nie powtarzać błędów tej sesji
 
@@ -4003,10 +4022,33 @@ co najwyżej liczba w telemetrii, zero STOP-ów; (2) warstwa REFERENCYJNA bez li
 - 6a pkt 113–114 (2026-10-30): `sed '/^=======$/d'` przy rozwiązywaniu konfliktu dwóch dopisanych testów zgubił wspólne
   `})` zamykające pierwszy test (było poza znacznikami) — po zdjęciu znaczników obejrzyj granicę obu bloków przed biegiem.
   `sync-template.test.mjs` bywa czerwony raz w pełnym biegu — powtórz plik, zanim uznasz regresję.
+- 6a pkt 115 (2026-11-01): „suma ucieczek klasy N — kandydat do bramki” w propozycji compoundu to liczba dokumentów klasy,
+  nie liczba ucieczek, które złapie jedna bramka — klasa `sciezka-bledu` ma 6 różnych mechanizmów, a każda z jej bramek
+  łapie 1. Ranking licz per bramka (frontmatter `szczebel`, `zrodlo`), nie per klasa. `$CLAUDE_JOB_DIR` bywa pusty —
+  pliki robocze w katalogu scratchpad sesji (inaczej zapis do `/` na read-only).
 
 ## 8. Instrukcja startowa następnej sesji (operator wkleja ją jako pierwszą wiadomość)
 
-**AKTUALNA — SESJA SZABLONU (2026-10-30, 6a pkt 114): MERGE STRAŻNIKA `jq` I KOLEJKA.** Nowa sesja w katalogu
+**AKTUALNA — SESJA SZABLONU (2026-11-01, 6a pkt 115): MERGE ODCZYTU CIAŁA I KOLEJKA.** Nowa sesja w katalogu
+workspace-template. Operator wkleja:
+
+```
+Kontynuujemy pracę nad szablonem (workspace-template, lokalny main z HANDOFF pkt 115). Przeczytaj pkt 115 i §7
+ostatni wpis. Potwierdź w 3–5 zdaniach.
+
+(1) popr/fetch-odczyt-ciala — [merge do main, pełny bieg testów w katalogu repo, push / jeszcze nie]. /sync-template
+w vibersi robię sam po swojej fazie.
+(2) Ranking bramek z pkt 115 — [nie budujemy żadnej (rekomendacja) / buduj (1) bodyLimit ze stałych walidatora —
+najpierw plan bez kodu].
+(3) [e2e-ekran — test przy wygaszonym ekranie, zgoda: tak/nie] — moja decyzja.
+
+Zasady: jedna sesja; w vibersi tylko odczyt; nie wypisuj wartości z plików .env*; liczby skryptem; pliki .md tylko
+narzędziem Write/Edit; zmiany na gałęziach popr/<nazwa>, merge za moją zgodą.
+Styl: krótko; problem → przyczyna → co robimy → co mi to da; wniosek na początku.
+Na koniec: wpis HANDOFF 6a (kolejny numer) + §8.
+```
+
+**Historia: SESJA SZABLONU (2026-10-30, 6a pkt 114): MERGE STRAŻNIKA `jq` I KOLEJKA — wykonana (pkt 115).** Nowa sesja w katalogu
 workspace-template. Operator wkleja:
 
 ```
