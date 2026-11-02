@@ -110,7 +110,7 @@ Zrób one-time setup środowiska E2E wg .claude/templates/e2e-env/README.md:
 5. Sprawdź `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie <dowolne zadanie z [E2E]>` i że serwer
    z `E2E_START` (domyślnie `<pm> run dev -- --mode e2e --port 5174`) celuje w bazę e2e (otwórz E2E_URL,
    zaloguj kontem testowym).
-6. Na koniec smoke: curl do URL projektu e2e + `supabase db push --db-url ...`
+6. Na koniec smoke: curl do URL projektu e2e + `supabase db push --db-url ... --include-all --yes`
    na pustą bazę (zaaplikuje WSZYSTKIE migracje od zera — to też test, czy
    łańcuch migracji jest kompletny!) i pokaż mi raport co działa, a co wymaga
    mojej ręki.
@@ -169,9 +169,12 @@ bojowy tej fazy.
   autopilot go użyje i ostrzeże w logu — flow mogą gadać z bazą dev. Ubij własny dev server przed runem
   (albo trzymaj go na innym porcie niż `E2E_URL`).
 - **Reset danych**: db-sync nie robi `db reset` — czyszczenie zostawione seedom
-  (idempotencja). Gdy baza e2e „zgnije", zresetuj ręcznie: `supabase db reset --db-url ...`.
+  (idempotencja). Gdy baza e2e „zgnije", zresetuj ręcznie: `supabase db reset --db-url ... --yes`.
 - **Connection string „direct" jest IPv6-only** — w sieci bez IPv6 psql/db push wiszą na
   timeout. Używaj session poolera (IPv4, port 5432, wspiera migracje) — wzór w `.env.e2e.example`.
+- **Supabase CLI 3** (od 2026-11-02): zmiana hostowanej bazy bez terminala (agent, CI) wymaga `--yes`, `echo Y |`
+  nic nie potwierdza; `--db-url` działa w v2 i v3 (w v3 z ostrzeżeniem, usunięte w v4 — zamiennik `--remote=<url>`);
+  `--password` przy URL bazy kończy się błędem — hasło idzie w URL. Przewodnik: https://supabase.com/docs/guides/local-development/cli/migrating-to-v3
 - **Stary Supabase CLI potrafi mieć zepsute tworzenie projektu** (np. 2.67.1 — wybór regionu);
   przy dziwnych błędach najpierw `brew upgrade supabase`.
 - **Seedy muszą wstawiać WSZYSTKO, czego flow potrzebuje** — świeża baza e2e nie ma danych
