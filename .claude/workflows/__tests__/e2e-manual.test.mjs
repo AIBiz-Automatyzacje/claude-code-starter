@@ -122,9 +122,9 @@ test('restart fazy: obcy serwer na porcie = martwe w tej fazie z przyczyna dla t
   // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
   const e2ePrompt = new Function('SKILL_WERYFIKACJI', 'BLOK_DLUGIE_KOMENDY', 'BLOK_LIMIT_P3', 'mapaBlok', 'rereviewBlok', `${wytnij(review, 'function e2ePrompt(', '\n}\n')}
   return e2ePrompt`)('S', '', '', () => '', () => '')
-  assert.match(e2ePrompt('z', 4, [], 'bez-przegladarki', null, detal), /Tryb: bez-przegladarki\.\nPrzyczyna trybu bez-przegladarki \(powod wpisow SKIP zamiast ogolnego\): na porcie 5174 dziala serwer spoza pipeline'u — PID 3814/)
-  assert.doesNotMatch(e2ePrompt('z', 4, [], 'przegladarka', null, detal), /Przyczyna trybu/)
-  assert.doesNotMatch(e2ePrompt('z', 4, [], 'bez-przegladarki', null, null), /Przyczyna trybu/)
+  assert.match(e2ePrompt('z', 4, [], 'bez-interakcji', null, detal), /Tryb: bez-interakcji\.\nPrzyczyna trybu bez-interakcji \(powod wpisow SKIP zamiast ogolnego\): na porcie 5174 dziala serwer spoza pipeline'u — PID 3814/)
+  assert.doesNotMatch(e2ePrompt('z', 4, [], 'interaktywny', null, detal), /Przyczyna trybu/)
+  assert.doesNotMatch(e2ePrompt('z', 4, [], 'bez-interakcji', null, null), /Przyczyna trybu/)
   assert.match(review, /e2ePrompt\(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki\), zEffortem/)
   assert.match(tester, /albo przyczyną trybu podaną w poleceniu, bez findingu[^\n]*obcy serwer na porcie E2E, sprawdzeń HTTP nie robisz/)
   assert.match(tester, /przy obcym serwerze na porcie E2E preflightu nie robisz/)
@@ -243,7 +243,7 @@ test('w trakcie: fix przy srodowisku niedostepnym przenosi flow na [Manual] skry
   assert.match(martwe, /SRODOWISKO E2E NIEDOSTEPNE W TYM RUNIE \(martwe\)/)
   // Srodowisko gotowe, ale re-run padl na srodowisku albo limicie w trakcie fixa — tez [Manual], nie STOP completion-gate.
   const gotowe = fixPrompt(ZADANIE, 2, [], 'gotowe')
-  assert.match(gotowe, /re-uruchom scenariusz w przegladarce/)
+  assert.match(gotowe, /re-uruchom scenariusz narzedziem jazdy wg \.claude\/stack\/fix-e2e\.md/)
   assert.match(gotowe, /Ponowne odegranie niewykonalne nie z winy kodu/)
   // Kod fazy polozyl serwer (FAIL z ogonem logu): po naprawie fix uruchamia serwer od nowa, potem odgrywa scenariusz.
   assert.match(gotowe, /node \.claude\/scripts\/e2e\/e2e\.mjs start --zadanie docs\/active\/zadanie-x/)
@@ -304,6 +304,6 @@ test('fix: finding wizualny — opis ekranu z katalogu makiet planu zadania (ekr
   assert.match(p, /bez tego pliku — sekcja ekranu w `<katalog>\/SPEC\.md` \(`grep -n '<ekran>'`, potem `sed -n`\)/)
   assert.match(p, /PNG makiety i zrzutu\npodajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read/)
   assert.match(p, /\(rzad 1–3 tys\. tokenow na obraz\)/)
-  assert.match(p, /`agent-browser snapshot -i` \(elementy i teksty\) i `agent-browser get box <ref>` \/ `get styles <ref>`/)
+  assert.match(p, /bez zrzutu\nwg \.claude\/stack\/fix-e2e\.md, sekcja „Sprawdzenie poprawki wizualnej”/)
   assert.doesNotMatch(p, /docs\/plans\/\*-figma|otworz PNG|z PNG makiety/)
 })

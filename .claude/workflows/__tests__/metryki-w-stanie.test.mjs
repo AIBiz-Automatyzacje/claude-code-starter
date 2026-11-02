@@ -110,6 +110,16 @@ test('skrotPrzebiegu na przebiegu ze STARSZEGO runu daje null, nie zero', () => 
   assert.equal(s.tiery, null)
 })
 
+// Szwy stackowe (IU-1.2): tryb testera nie nazywa narzedzia jazdy. Stan zadania wznowionego po syncu ma dawne nazwy.
+test('skrotPrzebiegu mapuje dawne nazwy trybu testera E2E na nowe, nowe i null przepuszcza', () => {
+  const tryb = (/** @type {string | null} */ t) => skrotPrzebiegu({ ...PRZEBIEG_Z_REVIEW, e2eTryb: t }).e2eTryb
+  assert.equal(tryb('przegladarka'), 'interaktywny')
+  assert.equal(tryb('bez-przegladarki'), 'bez-interakcji')
+  assert.equal(tryb('interaktywny'), 'interaktywny')
+  assert.equal(tryb('pominiety'), 'pominiety')
+  assert.equal(tryb(null), null)
+})
+
 test('METRYKI_FAZY dopuszcza KAZDY klucz, ktory produkuje skrotPrzebiegu', () => {
   const wyprodukowane = Object.keys(skrotPrzebiegu(PRZEBIEG_Z_REVIEW))
   const dopuszczone = Object.keys(METRYKI_FAZY.properties.przebieg.properties)

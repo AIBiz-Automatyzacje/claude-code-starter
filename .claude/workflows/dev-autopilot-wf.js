@@ -28,22 +28,24 @@ const BLOK_DLUGIE_KOMENDY = `
 === DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
 (1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
 (2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
-(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
-    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+(3) Zimny runner testow po inwalidacji cache (zmiana zaleznosci lub configu) potrafi MILCZEC przed pierwszym
+    outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+STACK: runner testow, pliki inwalidujace jego cache, reporter strumieniowy i sygnatury flake'ow infrastruktury
+TEGO projektu sa w .claude/stack/walidacja.md, sekcje „Zimny runner” i „Flake infrastruktury” — przeczytaj je
+PRZED pierwszym uruchomieniem testow.
 REGULY:
-- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+- Komenda mogaca trwac >100s (runner testow po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
   Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
   (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
 - NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
-- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
-  traktuj jako ZIMNY (pelna procedura tla powyzej).
-- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
-  wiec chroni WARM suite'y w oknie 180-600s.
+- Po zmianie package.json / lockfile / configu runnera albo builda (lista w sekcji „Zimny runner”) przez kogokolwiek
+  w tym runie: pierwszy bieg testow traktuj jako ZIMNY (pelna procedura tla powyzej).
+- Runner uruchamiaj z reporterem strumieniowym z sekcji „Zimny runner”: strumieniowany stdout W TRAKCIE foreground
+  Bash resetuje watchdog, wiec chroni WARM suite'y w oknie 180-600s.
   NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
-- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
-  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
-  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
-  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera (sygnatury w sekcji „Flake infrastruktury”)
+  — re-runuj TEN plik w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra,
+  NIE defekt: odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
   Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
 === KONIEC BLOKU DLUGICH KOMEND ===`
 
@@ -86,7 +88,8 @@ const METRYKI_FAZY = {
         // Poza `required` SWIADOMIE (2026-07-30): stany zapisane przed ta zmiana maja `przebieg` BEZ tego
         // pola, a bootstrap-agent przepisuje `metryki` 1:1 przez ten schemat. W `required` wywalilby
         // wznowienie starego zadania na walidacji. null = przebieg ze starszego runu.
-        e2eTryb: { type: ['string', 'null'], description: 'tryb testera E2E: przegladarka | bez-przegladarki | pominiety' },
+        // Dawne wartosci z runow przed szwami stacku (przegladarka, bez-przegladarki) skrotPrzebiegu mapuje na nowe.
+        e2eTryb: { type: ['string', 'null'], description: 'tryb testera E2E: interaktywny | bez-interakcji | pominiety' },
         znalezione: { type: 'integer' },
         poDedupJs: { type: 'integer' },
         poDedupSem: { type: 'integer' },
@@ -395,7 +398,7 @@ const VALIDATION_RESULT = {
     typecheck: { type: 'string', enum: ['PASS', 'FAIL', 'SKIPPED'] },
     lint: { type: 'string', enum: ['PASS', 'FAIL', 'SKIPPED'] },
     testy: { type: 'string', description: 'PASS/FAIL z liczbami X/Y (+ adnotacje flake-infra)' },
-    build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'vite build (lub build z package.json)' },
+    build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'krok build wg .claude/stack/walidacja.md (skrypt build z package.json)' },
     testyZmodyfikowane: { type: 'array', items: { type: 'string' }, description: 'pliki *.test.* ze ZMIENIONYMI istniejacymi asercjami w commitach fixa (poprawki po review / kontrola diffu naprawczego) — sygnal test-weakeningu' },
     e2eNieuruchomione: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] wciaz NIEZAZNACZONYCH w planie zadania, ktore NIGDY nie przebiegly (bez suffixu "(FAIL:") — wymusza wynik=FAIL (completion-gate). Nie zalezy od istnienia .env.e2e: zrodlem prawdy o wymaganiu E2E jest plan, nie repo' },
     e2eFail: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] z suffixem "(FAIL:" — flow przebiegl i padl na znanym defekcie (known-issues); wymusza wynik=FAIL, ale z inna instrukcja dla operatora (napraw kod, NIE zmieniaj na [Manual])' },
@@ -537,21 +540,20 @@ Nie modyfikuj plikow i nie commituj. Zwroc {wynik, sha, komenda, bledy}.`
 
 function warmupPrompt(sciezka) {
   return `Jestes rozgrzewka cache testowego pipeline'u dev-autopilot (folder zadania: ${sciezka}).
-CEL: zbudowac cache transformacji vitest (node_modules/.vite / optimizeDeps) PRZED fazami implementacji,
+CEL: zbudowac cache transformacji runnera testow PRZED fazami implementacji,
 zeby zaden pozniejszy agent nie trafil na zimny, milczacy bieg transform/prebundle.
 ${BLOK_DLUGIE_KOMENDY}
 
-1. Wykryj runner: przeczytaj package.json. Rozgrzewka dotyczy WYLACZNIE vitest. Brak vitest
-   (inny runner lub brak testow) -> zwroc {status:"zbedne", detal:"<powod>"} i ZAKONCZ.
-2. Wybierz JEDEN test komponentu z najciezszym setupem: szukaj *.test.tsx importujacego
-   komponenty React (src/components/, src/features/, src/pages/ — transform JSX + jsdom + ciezkie
-   zaleznosci sa najdrozsze). Jesli W CALYM repo nie ma zadnego testu komponentu
-   (projekt greenfield): utworz TYMCZASOWY plik .autopilot-warmup.test.tsx w katalogu testowym
-   projektu z trywialnym renderem <div>warmup</div> (przez @testing-library/react) i 1 asercja — to JEDYNY
-   wyjatek od zakazu modyfikacji plikow; USUN go w kroku 5.
+Runner, plik testu i komende biegu tego stacku podaje .claude/stack/walidacja.md, sekcja „Rozgrzewka cache” —
+przeczytaj ja przed krokiem 1.
+1. Wykryj runner: przeczytaj package.json. Rozgrzewka dotyczy WYLACZNIE runnera z sekcji „Rozgrzewka cache”. Brak tego
+   runnera (inny runner lub brak testow) -> zwroc {status:"zbedne", detal:"<powod>"} i ZAKONCZ.
+2. Wybierz JEDEN test z najciezszym setupem wg sekcji „Rozgrzewka cache”. Jesli W CALYM repo nie ma zadnego takiego testu
+   (projekt greenfield): utworz TYMCZASOWY test wg tej sekcji — to JEDYNY wyjatek od zakazu modyfikacji plikow;
+   USUN go w kroku 5.
 3. BIEG ZIMNY — OBOWIAZKOWO przez tlo (komenda moze milczec dlugo na zimnym cache, foreground NIE dokonczy):
-   uruchom \`<pm> vitest run <plik> --reporter=dot > /tmp/autopilot-warmup.log 2>&1\` przez Bash
-   z run_in_background (pm z lockfile: bun.lockb->bunx, pnpm->pnpm, yarn->yarn, npm->npx).
+   uruchom komende biegu z sekcji „Rozgrzewka cache” z przekierowaniem \`> /tmp/autopilot-warmup.log 2>&1\` przez Bash
+   z run_in_background.
    POLLUJ co ~45-60s: \`tail -5 /tmp/autopilot-warmup.log\` + sprawdzenie czy proces zyje.
    Czekaj do zakonczenia (budzet ~25 min). Zanotuj laczny czas jako czasZimnySek.
    WYNIK testu (pass/fail asercji) jest NIEISTOTNY — liczy sie ukonczenie procesu (= zapis cache).
@@ -683,8 +685,8 @@ KLASYFIKUJ kazdy finding przed naprawa:
 - Typ TEST (brakujacy test): NIE ruszaj kodu produkcyjnego, napisz test (min 1 asercja, nie assertion-free)
   zgodnie z planem w docs/plans/ -> uruchom -> odznacz.
 - Typ E2E (weryfikacja E2E): napraw przyczyne (takze: NAPISZ brakujacy seed e2e/seeds/<flow>-seed.sql wg IU,
-  gdy finding mowi "brak seeda") -> re-uruchom scenariusz w przegladarce (agent-browser: open URL, snapshot,
-  click, screenshot; przed odegraniem zaaplikuj seed flow przez psql na "$SUPABASE_E2E_DB_URL") -> odznacz
+  gdy finding mowi "brak seeda") -> re-uruchom scenariusz narzedziem jazdy wg .claude/stack/fix-e2e.md, sekcja
+  „Ponowne odegranie scenariusza” (przed odegraniem zaaplikuj seed flow przez psql na "$SUPABASE_E2E_DB_URL") -> odznacz
   DOPIERO po PASS (nie na "naprawilem kod"). Zrodlowy checkbox identyfikuj TOLERANCYJNIE: NAJPIERW po
   identyfikatorze flow (pierwszy backtick w linii = ten z linii "checkbox:" opisu findingu), FALLBACK po tresci
   po normalizacji (bez markera, bez suffixow) dla linii bez identyfikatora — nie po literalnym "[E2E]".
@@ -711,8 +713,8 @@ wyglad docelowy bierzesz z opisu ekranu w planie tego zadania. Katalog makiet = 
 (\`grep -m1 'SPEC.md' ${sciezka}/*-plan.md\`); opis ekranu = \`<katalog>/ekrany/<ekran>.md\` (wymiary, odstepy, kolory, tokeny,
 teksty), a bez tego pliku — sekcja ekranu w \`<katalog>/SPEC.md\` (\`grep -n '<ekran>'\`, potem \`sed -n\`). PNG makiety i zrzutu
 podajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read: obraz zostaje w kontekscie kazdej kolejnej tury
-(rzad 1–3 tys. tokenow na obraz), a opis ekranu ma te same wymiary i teksty. Poprawke sprawdzasz w aplikacji bez zrzutu:
-\`agent-browser snapshot -i\` (elementy i teksty) i \`agent-browser get box <ref>\` / \`get styles <ref>\` (wymiary, kolory).
+(rzad 1–3 tys. tokenow na obraz), a opis ekranu ma te same wymiary i teksty. Poprawke sprawdzasz w aplikacji bez zrzutu
+wg .claude/stack/fix-e2e.md, sekcja „Sprawdzenie poprawki wizualnej” (elementy, teksty, wymiary, kolory).
 
 ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
 napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
@@ -986,8 +988,8 @@ ${BLOK_DLUGIE_KOMENDY}
 
 KROK 1 — odkryj komendy (NIE zgaduj): przeczytaj package.json scripts (typecheck/lint/test/build/check),
 wykryj package manager (bun.lockb->bun, pnpm-lock->pnpm, yarn.lock->yarn, package-lock->npm).
-Brak skryptu typecheck -> sprobuj tsc --noEmit jesli jest tsconfig.json. Build: skrypt build z package.json
-(zwykle \`vite build\`). Brak skryptu build -> ustaw build="n/a".
+Brak skryptu typecheck -> sprobuj tsc --noEmit jesli jest tsconfig.json. Build: krok build wg .claude/stack/walidacja.md,
+sekcja „Runner testów i build”. Brak skryptu build -> ustaw build="n/a".
 
 KROK 2 — uruchom w kolejnosci: typecheck -> lint (jesli jest) -> test (pelny suite, wg BLOKU
 DLUGICH KOMEND: tlo + polling; flake infra obsluz wg procedury z bloku i DOKONCZ lancuch) -> build.
@@ -1358,11 +1360,13 @@ let compound = null
 // Jedna funkcja, zeby stan i telemetria mialy IDENTYCZNY kształt niezaleznie od zrodla.
 function skrotPrzebiegu(p) {
   if (!p) return null
+  // Tryb testera E2E do szwow stacku (IU-1.2) nazywal narzedzie jazdy; stan wznowionego zadania moze miec dawne nazwy.
+  const TRYB_E2E_DAWNY = { przegladarka: 'interaktywny', 'bez-przegladarki': 'bez-interakcji' }
   return {
     pominieci: (p.pominieci || []).map((x) => (typeof x === 'string' ? x : x.key)),
     // null = przebieg ze STARSZEGO stanu, ktory tego pola nie zna (patrz METRYKI_FAZY) — konsument
     // telemetrii ma widziec brak danych, nie zgadywany tryb.
-    e2eTryb: p.e2eTryb || null,
+    e2eTryb: TRYB_E2E_DAWNY[p.e2eTryb] || p.e2eTryb || null,
     znalezione: p.znalezione,
     poDedupJs: p.poDedupJs,
     poDedupSem: p.poDedupSem,

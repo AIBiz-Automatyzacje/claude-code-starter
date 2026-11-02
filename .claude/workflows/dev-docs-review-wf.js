@@ -15,22 +15,24 @@ const BLOK_DLUGIE_KOMENDY = `
 === DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
 (1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
 (2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
-(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
-    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+(3) Zimny runner testow po inwalidacji cache (zmiana zaleznosci lub configu) potrafi MILCZEC przed pierwszym
+    outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+STACK: runner testow, pliki inwalidujace jego cache, reporter strumieniowy i sygnatury flake'ow infrastruktury
+TEGO projektu sa w .claude/stack/walidacja.md, sekcje „Zimny runner” i „Flake infrastruktury” — przeczytaj je
+PRZED pierwszym uruchomieniem testow.
 REGULY:
-- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+- Komenda mogaca trwac >100s (runner testow po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
   Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
   (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
 - NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
-- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
-  traktuj jako ZIMNY (pelna procedura tla powyzej).
-- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
-  wiec chroni WARM suite'y w oknie 180-600s.
+- Po zmianie package.json / lockfile / configu runnera albo builda (lista w sekcji „Zimny runner”) przez kogokolwiek
+  w tym runie: pierwszy bieg testow traktuj jako ZIMNY (pelna procedura tla powyzej).
+- Runner uruchamiaj z reporterem strumieniowym z sekcji „Zimny runner”: strumieniowany stdout W TRAKCIE foreground
+  Bash resetuje watchdog, wiec chroni WARM suite'y w oknie 180-600s.
   NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
-- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
-  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
-  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
-  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera (sygnatury w sekcji „Flake infrastruktury”)
+  — re-runuj TEN plik w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra,
+  NIE defekt: odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
   Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
 === KONIEC BLOKU DLUGICH KOMEND ===`
 
@@ -252,14 +254,14 @@ const KONTEKST = {
       type: 'object',
       additionalProperties: false,
       properties: {
-        ui: { type: 'boolean', description: 'faza tyka warstwy prezentacji: komponenty, style, HTML, szablony, public/' },
+        ui: { type: 'boolean', description: 'faza tyka warstwy prezentacji: sciezki UI wg .claude/stack/buildery.md, sekcja „Ścieżki warstw”' },
         dane: { type: 'boolean', description: 'faza tyka danych/IO: SQL, migracje, zapytania, fetch/HTTP, cache, petle po rekordach, praca na plikach' },
         typowanie: { type: 'boolean', description: 'w diffie sa pliki .ts/.tsx ALBO projekt ma tsconfig.json (statyczne typowanie w gre)' },
         nowyModul: { type: 'boolean', description: 'faza dodaje nowy modul/plik zrodlowy albo przesuwa granice warstw (nie: edycja istniejacego pliku)' },
       },
       required: ['ui', 'dane', 'typowanie', 'nowyModul'],
     },
-    e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych przegladarki/agent-browser (0 gdy brak)' },
+    e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych srodowiska E2E i narzedzia jazdy testera (0 gdy brak)' },
     // Druga, niezalezna od checkboxow praca testera: visual diff z makietami (sekcja Makiety w feature-tester-e2e.md).
     figmaScreens: { type: 'boolean', description: 'czy plik kontekstu zadania ma niepuste pole figma_screens (mapa ekran -> mockup) — tester robi wtedy visual diff nawet bez checkboxow [E2E]' },
     // Metadane artefaktow — NIGDY tresc diffu (przez wynik agenta zapasowego przeszlaby jako jego tokeny wyjsciowe).
@@ -451,11 +453,11 @@ ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(po
 
 // Polecenie testera E2E: parametry wywolania i tryb. Procedura (scenariusze, seedy vs kontrakt migracji, srodowisko,
 // przyczyny SKIP, makiety) jest w pliku roli `feature-tester-e2e.md` — jedno zrodlo (P14), bo dwie kopie rozjezdzaly sie.
-// Tryb `bez-przegladarki` = orkiestrator zglosil, ze srodowisko E2E nie dziala (sekcja trybu w pliku roli).
+// Tryb `bez-interakcji` = orkiestrator zglosil, ze srodowisko E2E nie dziala (sekcja trybu w pliku roli).
 const SKILL_WERYFIKACJI = '.claude/skills/weryfikacja/SKILL.md'
 
 function e2ePrompt(sciezka, faza, poprzednie, tryb, kontekst, przyczyna, porcja = null) {
-  const powod = tryb === 'bez-przegladarki' && przyczyna ? `Przyczyna trybu bez-przegladarki (powod wpisow SKIP zamiast ogolnego): ${przyczyna}\n` : ''
+  const powod = tryb === 'bez-interakcji' && przyczyna ? `Przyczyna trybu bez-interakcji (powod wpisow SKIP zamiast ogolnego): ${przyczyna}\n` : ''
   const zakres = porcja ? `Porcja ${porcja.nr} z ${porcja.z}: scenariusze ${porcja.od}–${porcja.do} listy skryptu (pozycja o porcji w pliku roli).\n` : ''
   return `Test E2E fazy ${faza} zadania w folderze ${sciezka}. Tryb: ${tryb}.
 ${zakres}${powod}Skill weryfikacji projektu: ${SKILL_WERYFIKACJI} (gdy istnieje — sekcje Drive i Evidence oraz mapa-funkcji.md obok).
@@ -560,7 +562,7 @@ function przebiegBlok(p) {
 }
 
 // Ostrzezenie o niepotwierdzonych checkboxach wisi na `e2eTryb`, a NIE na `aktywni.includes('e2e')`
-// (2026-07-30). W trybie `bez-przegladarki` tester JEST w `aktywni`, ale przegladarki nie tknal — warunek
+// (2026-07-30). W trybie `bez-interakcji` tester JEST w `aktywni`, ale przegladarki nie tknal — warunek
 // "tester nie odpalil" przepuscilby wtedy scribe'a do odznaczania browserowych checkboxow bez zadnego
 // przebiegu, cicho kasujac gwarancje z poprzedniego audytu. Pytanie jest wiec "czy tester MIAL PRZEGLADARKE".
 function scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone) {
@@ -728,16 +730,16 @@ const WARUNKI = {
 // status srodowiska decyduje, CZYM moze to robic. Obserwacja z runu rownolegle-joby (faza 1): tester
 // przywolany bez srodowiska (e2eSrodowisko: "pominieto") dal 1 passed / 1 failed / 3 skipped — czesc tej
 // pracy zrobilby scribe za darmo, ale ten jeden fail byl realny. Wiec: ograniczamy zakres i MIERZYMY.
-//   'przegladarka'     = domena obecna + srodowisko gotowe ALBO nieznane (standalone) -> jak dotad,
-//   'bez-przegladarki' = domena obecna, ale srodowisko ZNANE i != 'gotowe' -> tylko HTTP/CLI,
+//   'interaktywny'     = domena obecna + srodowisko gotowe ALBO nieznane (standalone) -> jak dotad,
+//   'bez-interakcji'   = domena obecna, ale srodowisko ZNANE i != 'gotowe' -> tylko HTTP/CLI,
 //   'pominiety'        = brak warstwy UI i zero browserowych checkboxow -> tester nie startuje.
 // Domena: checkboxy [E2E] albo makiety Figmy do visual diffu (sekcja Makiety w feature-tester-e2e.md wisi na `figma_screens`).
-// Do 2026-09-02 warunkiem bylo `warstwy.ui` — 10 z 18 uruchomien testera szlo w tryb `przegladarka` przy
+// Do 2026-09-02 warunkiem bylo `warstwy.ui` — 10 z 18 uruchomien testera szlo w tryb `interaktywny` przy
 // `e2eCheckboxy: 0`. Gdy liczba jest NIEZNANA (brak dossier), wracamy do `warstwy.ui` — bez faktow nie wycinamy testera.
 function trybTesteraE2e(warstwy, e2eLiczbaZnana, e2eCheckboxy, figmaScreens, srodowiskoE2E) {
   const domenaE2E = !warstwy || (e2eLiczbaZnana ? (e2eCheckboxy > 0 || figmaScreens) : warstwy.ui)
   if (!domenaE2E) return 'pominiety'
-  return (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-przegladarki' : 'przegladarka'
+  return (srodowiskoE2E !== undefined && srodowiskoE2E !== 'gotowe') ? 'bez-interakcji' : 'interaktywny'
 }
 
 // Routing v2 (2026-07-26) — DOMENOWY, nie ilosciowy: reviewer odpala sie, gdy jego domena jest w fazie OBECNA
@@ -861,7 +863,7 @@ if (e2eAktywny && !porcjeE2e && brakPrzebiegow(wyniki[indeksE2e])) {
   const powod = wyniki[indeksE2e] ? 'zwrocil wynik BEZ zadnego wpisu przebiegi[]' : 'zwrocil null (watchdog/API)'
   log(`Tester E2E fazy ${faza} ${powod} (checkboxy [E2E]: ${e2eLiczbaZnana ? e2eCheckboxy : 'liczba nieznana — brak dossier'}) — ponawiam raz`)
   wyniki[indeksE2e] = await agent(
-    `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki)}\n\n(Ponowna proba — poprzedni przebieg ${powod}. Kazdy scenariusz z listy skryptu dostaje wpis w przebiegi; scenariusz, ktory milczy w przegladarce, prowadzisz w tle z logiem postepu.)`,
+    `${e2ePrompt(sciezka, faza, poprzE2e, e2eTryb, kontekst, przyczynaBezPrzegladarki)}\n\n(Ponowna proba — poprzedni przebieg ${powod}. Kazdy scenariusz z listy skryptu dostaje wpis w przebiegi; scenariusz, ktory milczy w narzedziu jazdy, prowadzisz w tle z logiem postepu.)`,
     zEffortem({ schema: E2E_RESULT, agentType: 'feature-tester-e2e', label: 'review:e2e:retry', phase: 'Review' }, tiery.reviewer)
   )
 }
@@ -972,9 +974,9 @@ function komendaKsiegowania(sciezka, faza, przebiegi, testerFail) {
 // bez niej `slice` ucinal po kolejnosci reviewerow, czyli wyciszal zawsze tych samych ostatnich.
 const etykietyZrodel = [...aktywni.map((r) => r.key), ...(e2eTryb !== 'pominiety' ? ['e2e'] : [])]
 const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _zrodlo: etykietyZrodel[i] || '?' })) : []))
-// Wejscie = przebiegi testera (P14: pole przyczyny, nie tekst findingow). Tylko w trybie `przegladarka` — w `bez-przegladarki`
+// Wejscie = przebiegi testera (P14: pole przyczyny, nie tekst findingow). Tylko w trybie `interaktywny` — w `bez-interakcji`
 // SKIP srodowiska jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria w trakcie runu.
-const blokerSrodowiska = e2eTryb === 'przegladarka'
+const blokerSrodowiska = e2eTryb === 'interaktywny'
   ? wykryjBlokerSrodowiska(e2ePrzebiegi)
   : null
 if (blokerSrodowiska) {

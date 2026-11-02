@@ -15,22 +15,24 @@ const BLOK_DLUGIE_KOMENDY = `
 === DLUGIE KOMENDY (przeczytaj ZANIM uruchomisz testy/buildy — prawa srodowiska, nie sugestie) ===
 (1) Runtime zabija subagenta po ~180s bez zadnego outputu ("agent stalled"); po 6 killach pada CALY run.
 (2) Pojedyncze foreground Bash ma limit 600s (domyslnie 120s) — dluzszej komendy NIE dokonczysz.
-(3) Zimny vitest po inwalidacji cache (Vite optimizeDeps / zmiana zaleznosci lub configu) potrafi MILCZEC
-    przez faze transform/prebundle PRZED pierwszym outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+(3) Zimny runner testow po inwalidacji cache (zmiana zaleznosci lub configu) potrafi MILCZEC przed pierwszym
+    outputem reportera — cisza to nie zwis; zaden reporter nie pomaga.
+STACK: runner testow, pliki inwalidujace jego cache, reporter strumieniowy i sygnatury flake'ow infrastruktury
+TEGO projektu sa w .claude/stack/walidacja.md, sekcje „Zimny runner” i „Flake infrastruktury” — przeczytaj je
+PRZED pierwszym uruchomieniem testow.
 REGULY:
-- Komenda mogaca trwac >100s (vitest po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
+- Komenda mogaca trwac >100s (runner testow po zmianie zaleznosci/configu, pelny suite, build): uruchom przez
   Bash z run_in_background i przekierowaniem do pliku logu, potem POLLUJ krotkim Bash co ~45-60s
   (tail loga / sprawdzenie procesu) az do zakonczenia. Kazda sonda = znak zycia dla watchdoga.
 - NIGDY nie podnos timeoutu foreground zamiast isc w tlo — 180s ciszy zabija CIEBIE, nie komende.
-- Po zmianie package.json / lockfile / vite.config / vitest.config przez kogokolwiek w tym runie: pierwszy vitest
-  traktuj jako ZIMNY (pelna procedura tla powyzej).
-- vitest uruchamiaj z --reporter=dot: strumieniowany stdout W TRAKCIE foreground Bash resetuje watchdog,
-  wiec chroni WARM suite'y w oknie 180-600s.
+- Po zmianie package.json / lockfile / configu runnera albo builda (lista w sekcji „Zimny runner”) przez kogokolwiek
+  w tym runie: pierwszy bieg testow traktuj jako ZIMNY (pelna procedura tla powyzej).
+- Runner uruchamiaj z reporterem strumieniowym z sekcji „Zimny runner”: strumieniowany stdout W TRAKCIE foreground
+  Bash resetuje watchdog, wiec chroni WARM suite'y w oknie 180-600s.
   NIE chroni: zimnego cache (transform milczy do konca) ani komend >600s (twardy limit Bash).
-- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera ([vitest-worker]: Timeout
-  calling "fetch", "Timeout calling", worker terminated, ENOMEM, heap out of memory) — re-runuj TEN plik
-  w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra, NIE defekt:
-  odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
+- FLAKE INFRA: gdy pelny suite zglosi na pliku blad infrastruktury workera (sygnatury w sekcji „Flake infrastruktury”)
+  — re-runuj TEN plik w izolacji (procedura OSOBNO dla kazdego takiego pliku). PASS w izolacji = flake infra,
+  NIE defekt: odnotuj "flake-infra: <plik> (PASS w izolacji)" i NIE traktuj jako FAIL. FAIL w izolacji = realny defekt.
   Po obsludze flake'ow DOKONCZ przerwany lancuch walidacji (kolejne kroki, np. build).
 === KONIEC BLOKU DLUGICH KOMEND ===`
 
@@ -118,14 +120,14 @@ const DOSSIER = {
       type: 'object',
       additionalProperties: false,
       properties: {
-        ui: { type: 'boolean', description: 'faza tyka warstwy prezentacji: komponenty, style, HTML, szablony, public/' },
+        ui: { type: 'boolean', description: 'faza tyka warstwy prezentacji: sciezki UI wg .claude/stack/buildery.md, sekcja „Ścieżki warstw”' },
         dane: { type: 'boolean', description: 'faza tyka danych/IO: SQL, migracje, zapytania, fetch/HTTP, cache, petle po rekordach, praca na plikach' },
         typowanie: { type: 'boolean', description: 'w diffie sa pliki .ts/.tsx ALBO projekt ma tsconfig.json (statyczne typowanie w gre)' },
         nowyModul: { type: 'boolean', description: 'faza dodaje nowy modul/plik zrodlowy albo przesuwa granice warstw (nie: edycja istniejacego pliku)' },
       },
       required: ['ui', 'dane', 'typowanie', 'nowyModul'],
     },
-    e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych przegladarki/agent-browser (0 gdy brak)' },
+    e2eCheckboxy: { type: 'integer', description: 'liczba NIEZAZNACZONYCH checkboxow [E2E] tej fazy (prefiksy Test: ORAZ Weryfikacja:) wymagajacych srodowiska E2E i narzedzia jazdy testera (0 gdy brak)' },
     figmaScreens: { type: 'boolean', description: 'czy plik kontekstu zadania ma niepuste pole figma_screens (mapa ekran -> mockup) — tester robi wtedy visual diff nawet bez checkboxow [E2E]' },
     diffPlik: { type: 'string', description: 'sciezka zrzutu diffu fazy (pusty string gdy zrzut sie nie udal)' },
     ctxPlik: { type: 'string', description: 'sciezka dossier fazy (pusty string gdy zapis sie nie udal)' },
@@ -234,8 +236,9 @@ Faza do wykonania: ${faza}
    oznaczone "[E2E]"/"[Manual]", oraz wszystkie checkboxy w sekcjach "## Do poprawy po review fazy N"
    i "## Operator checklist faza N" (obsluguje je review/fix, nie buildery).
 4. Wybierz strategie: serial (IU zalezne / wspolne pliki) lub parallel (IU niezalezne).
-   Jesli ktorykolwiek IU dodaje nowa zaleznosc (biblioteka, config vite/vitest) — preferuj serial:
-   rownolegle zimne vitesty po inwalidacji cache duplikuja ~16-min prace i ryzykuja watchdog-kill.
+   Jesli ktorykolwiek IU dodaje nowa zaleznosc (biblioteka, config runnera testow albo builda) — preferuj serial:
+   rownolegle zimne biegi runnera po inwalidacji cache duplikuja wielominutowa prace i ryzykuja watchdog-kill
+   (czas zimnego biegu tego stacku: .claude/stack/walidacja.md, sekcja „Zimny runner”).
    Jesli ktorykolwiek IU ma migracje bazy albo generuje typy bazy — strategia serial: buildery danych stosuja migracje
    na jednej lokalnej bazie i nadpisuja ten sam plik typow.
    Jesli IU korzysta z pliku, ktory tworzy inny IU tej fazy (hook, serwis, schemat, typy) — strategia serial i IU tworzacy
@@ -334,10 +337,10 @@ ${podsumowanieIU}
 
 1. System-Wide Test Check: typecheck bez nowych bledow,
    istniejace testy przechodza, nowe testy pokrywaja happy path + error case, checkboxy "Test:" napisane i przechodza,
-   importy nie lamia modulow, build (vite build) przechodzi. Komendy z package.json.
+   importy nie lamia modulow, build (krok build wg .claude/stack/walidacja.md) przechodzi. Komendy z package.json.
    Checkbox "Test:" tej fazy bez napisanego testu — napisz ten test przed zamknieciem fazy ("Test: [E2E]" pomijasz,
    patrz punkt 2). Kazde sprawdzenie z odpowiedzia "nie" naprawiasz przed commitem.
-   UWAGA: jesli ktorykolwiek builder raportowal dodanie zaleznosci — pierwszy vitest jest ZIMNY (procedura tla z bloku).
+   UWAGA: jesli ktorykolwiek builder raportowal dodanie zaleznosci — pierwszy bieg testow jest ZIMNY (procedura tla z bloku).
 1a. BRAMKI MECHANICZNE (po punkcie 1, przed commitem — skrypt czyta drzewo robocze):
    \`node .claude/scripts/bramki/bramki.mjs --baza ${baza} > ${plikBramek}; echo "kod: $?"\`, potem Read ${plikBramek}.
    Kod 0 = bez porazek, 1 = sa porazki. Wynik (JSON w pliku): {bramka: {status, sekundy, trafienia: [{plik, linia, regula,
@@ -364,7 +367,7 @@ ${podsumowanieIU}
 ${BLOK_DLUGIE_KOMENDY}
 2. Aktualizuj ${sciezka}/*-zadania.md: oznacz ukonczone checkboxy [x] (NIE ruszaj "Weryfikacja:" ANI zadnego
    checkboxa z markerem [E2E]/[Manual] — "Test: [E2E]" to URUCHOMIENIE flow przez testera review, nie jego
-   napisanie; odznacza go scribe review po PASS w przegladarce. Napisany seed e2e/seeds/*.sql odhaczasz WYLACZNIE
+   napisanie; odznacza go scribe review po PASS testera E2E. Napisany seed e2e/seeds/*.sql odhaczasz WYLACZNIE
    w checkboxie implementacyjnym "Stwórz (e2e seed):").
 3. Aktualizuj ${sciezka}/*-kontekst.md: zmiany i decyzje tej fazy dopisz do sekcji \`## Dziennik\`
    (jedna sekcja, chronologicznie) plus "Ostatnia aktualizacja". Odchylenia i nastepne kroki builderow z listy raportow dopisz do \`## Dziennik\` (linia na IU), bo to jedyny zapis pracy, ktora builder zostawil poza jednostka. NIE zakladaj w tym pliku sekcji
