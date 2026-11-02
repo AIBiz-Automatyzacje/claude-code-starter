@@ -72,6 +72,20 @@ test('tryb szybki: znacznik po ostatniej zmianie plikow = nic do czytania', () =
   })
 })
 
+// 02.11: pelny skan padal na stercie Node — wszystkie transkrypty projektu naraz w pamieci. Sesje czytane po jednej; cwd
+// projektu nadal z pierwszej sesji, ktora go ma, a epizody wszystkich sesji trafiaja do rekordow.
+test('epizody skilli: sesja bez cwd przed sesja z cwd — projekt z drugiej sesji, epizody bez zmian', () => {
+  zFixture(({ projekty, plik, bledy }) => {
+    writeFileSync(join(projekty, '-Users-u-Kodowanie-projekt', 'sesja-0.jsonl'), `${JSON.stringify({ type: 'summary', summary: 'x' })}\n`)
+    const wynik = zbierzWszystko({ projekty, plik, bledy, terazMs: TERAZ, szybko: false, sesjeWToku: new Set(), pominSesje: new Set() })
+    const r = odczytajRekordy(plik).ostatnie
+    assert.equal(r.get('skill|u1')?.projekt, 'projekt')
+    assert.equal(r.get('skill|u1')?.subagenci_jedn, 126)
+    assert.equal(r.get('skill|u2')?.otwarty, true)
+    assert.equal(wynik?.bledow, 0)
+  })
+})
+
 // P22 F1: vibersi etap 4 — cwd pierwszego agenta runu autopilota = docs/active/<zadanie> (agent zrobil cd), rekordy dostaly
 // projekt „etap-4-dodawanie-i-moderacja”, a `raport.mjs --projekt vibersi` dawal 0 runow. Projekt = katalog repo (z .git).
 test('projekt = katalog repo nad cwd agenta (podkatalog zadania, takze juz usuniety); pole repo; bez repo — cwd sesji', () => {

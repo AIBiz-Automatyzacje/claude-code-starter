@@ -130,6 +130,25 @@ function kosztySubagentow(katalogSesji) {
 }
 
 /**
+ * Epizody skilli i cwd sesji jednego projektu. Sesje czytane po jednej: z kazdej zostaja epizody (liczniki i usage), nie
+ * wpisy — wszystkie transkrypty projektu naraz przekraczaly sterte Node (3,2 GB sesji glownych jednego projektu, 02.11).
+ * @param {Array<{ sesja: string, plik: string }>} lista
+ * @returns {{ cwd: unknown, epizody: ReturnType<typeof scalEpizody> }}
+ */
+function epizodyProjektu(lista) {
+  /** @type {unknown} */
+  let cwd
+  /** @type {ReturnType<typeof epizodySesji>} */
+  const epizody = []
+  for (const s of lista) {
+    const wpisy = czytajJsonl(s.plik).wpisy
+    cwd ??= wpisy.find((w) => typeof w.cwd === 'string')?.cwd
+    for (const e of epizodySesji(wpisy, s.sesja)) epizody.push(e)
+  }
+  return { cwd, epizody: scalEpizody(epizody) }
+}
+
+/**
  * @param {OpcjeZbierania} op
  * @returns {{ rekordy: Array<Record<string, unknown> & { klucz: string, typ: string }>, sesji: number }}
  */
@@ -138,10 +157,8 @@ function rekordySkilli(op) {
     .filter((s) => !op.szybko || op.znacznikMs === undefined || mtime(s.plik) > op.znacznikMs - ZAPAS_ZNACZNIKA_MS)
   const rekordy = []
   for (const [slug, lista] of Map.groupBy(sesje, (s) => s.slug)) {
-    const wpisy = lista.map((s) => ({ s, wpisy: czytajJsonl(s.plik).wpisy }))
-    const cwd = wpisy.flatMap((x) => x.wpisy).find((w) => typeof w.cwd === 'string')?.cwd
+    const { cwd, epizody } = epizodyProjektu(lista)
     const repo = katalogRepo(typeof cwd === 'string' ? cwd : null)
-    const epizody = scalEpizody(wpisy.flatMap(({ s, wpisy: w }) => epizodySesji(w, s.sesja)))
     /** @type {Map<string, Map<string, number>>} */
     const kosztyPerSesja = new Map()
     for (const e of epizody) {
