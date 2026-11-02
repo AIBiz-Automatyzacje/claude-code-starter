@@ -3,6 +3,7 @@
 // cytowanych w solution) → agent dopisuje klase ze slownika i poprawia regule/wzorce → zastosowanie z walidacja
 // jak przy compoundzie. Czego nie da sie zapisac, trafia na liste odrzutow dla operatora.
 
+import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { posix, join } from 'node:path'
 
@@ -211,4 +212,22 @@ export function archiwizuj(projekt, tekst, odrzuty, dzis) {
     '',
   ].join('\n'))
   return { plik, odrzuty: plikOdrzutow }
+}
+
+// Pliki poza docs/, ktore po konwersji nadal wskazuja stary plik (claude-cron 02.11: .coderabbit.yaml kierowal bota do
+// usunietego pliku). docs/ pomijamy: wpisy, archiwum i raporty cytuja go jako historie. Bez repo git — znane miejsca.
+const ZNANE_ODWOLANIA = ['.coderabbit.yaml', 'CLAUDE.md', 'AGENTS.md']
+
+/** @param {string} projekt @returns {string[]} "plik:linia" */
+export function odwolaniaDoStaregoPliku(projekt) {
+  try {
+    const wynik = execFileSync('git', ['grep', '--untracked', '-n', '-F', PLIK_LEARNED_PATTERNS, '--', '.', ':(exclude)docs/**'],
+      { cwd: projekt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    return wynik.split('\n').filter(Boolean).map((l) => l.split(':').slice(0, 2).join(':'))
+  } catch (e) {
+    // git grep bez trafien konczy sie kodem 1 — to wynik, nie blad; inny kod (brak repo) = sprawdzenie znanych plikow.
+    if (/** @type {{ status?: number }} */ (e).status === 1) return []
+    return ZNANE_ODWOLANIA.filter((p) => existsSync(join(projekt, p)))
+      .flatMap((p) => readFileSync(join(projekt, p), 'utf8').split('\n').flatMap((l, i) => (l.includes(PLIK_LEARNED_PATTERNS) ? [`${p}:${i + 1}`] : [])))
+  }
 }

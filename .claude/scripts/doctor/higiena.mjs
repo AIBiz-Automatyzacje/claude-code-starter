@@ -18,6 +18,8 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'n
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { pozycjaBajtuSterujacego } from '../wiedza/walidacja.mjs'
+
 /** @typedef {{ element: string, stan: 'OK' | 'UWAGA' | 'nie dotyczy', szczegol: string, instalacja: string }} Wiersz */
 
 export const STARA_WIEDZA = '.claude/rules/learned-patterns.md'
@@ -27,12 +29,7 @@ export const ELEMENT_KONTEKSTU = 'kontekst startowy agenta'
 const KATALOGI_MASZYNERII = ['agents', 'commands', 'hooks', 'rules', 'skills', 'workflows']
 // Skille wlasne projektu (np. weryfikacja z /weryfikacja-setup) sa w porzadku; te nazwy to stary zestaw showcase.
 const STARE_SKILLE = /^\.claude\/skills\/(skill-rules\.json|skill-developer\/)/
-// Bajty ponizej spacji poza tabulatorem, LF i CR.
-const DOZWOLONE_STERUJACE = new Set([0x09, 0x0a, 0x0d])
 const POKAZ_NAJWYZEJ = 6
-
-/** @param {Buffer} tresc @returns {boolean} */
-const maBajtSterujacy = (tresc) => tresc.some((b) => b < 0x20 && !DOZWOLONE_STERUJACE.has(b))
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string | null} */
 function git(projekt, argumenty) {
@@ -153,7 +150,7 @@ export function bajtySterujace(projekt) {
   const pliki = ['CLAUDE.md', 'docs/learned-patterns.md', 'docs/CONCEPTS.md']
     .concat(plikiRekurencyjnie(join(projekt, 'docs/solutions')).filter((n) => n.endsWith('.md')).map((n) => `docs/solutions/${n}`))
     .filter((p) => existsSync(join(projekt, p)) && statSync(join(projekt, p)).isFile())
-  const zle = pliki.filter((p) => maBajtSterujacy(readFileSync(join(projekt, p))))
+  const zle = pliki.filter((p) => pozycjaBajtuSterujacego(readFileSync(join(projekt, p))) >= 0)
   if (!zle.length) return { element, stan: 'OK', szczegol: `${pliki.length} plikow bez bajtow sterujacych`, instalacja: '—' }
   return {
     element, stan: 'UWAGA',

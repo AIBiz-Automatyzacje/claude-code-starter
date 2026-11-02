@@ -24,6 +24,15 @@ const KONIEC_ZDANIA = /[.!?…]+(?=\s|$)/g
 
 /** @typedef {import('./frontmatter.mjs').Pola} Pola */
 
+// Bajty ponizej spacji poza tabulatorem, LF i CR. Plik z takim bajtem git widzi jako binarny, a ripgrep (Grep agentow) pomija —
+// wpis wiedzy znika z wyszukiwania (claude-cron 02.11: NUL wklejony zamiast zapisu \x00 w przykladzie regexu).
+const DOZWOLONE_STERUJACE = new Set([0x09, 0x0a, 0x0d])
+
+/** @param {Uint8Array} tresc @returns {number} pozycja pierwszego bajtu sterujacego albo -1 */
+export function pozycjaBajtuSterujacego(tresc) {
+  return tresc.findIndex((b) => b < 0x20 && !DOZWOLONE_STERUJACE.has(b))
+}
+
 /** @param {string} tekst @returns {number} */
 export function liczZdania(tekst) {
   const czysty = tekst.replace(/`[^`]*`/g, 'X').replace(SKROTY, 'X').trim()

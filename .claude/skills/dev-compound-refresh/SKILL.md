@@ -409,8 +409,11 @@ a stary plik idzie do `docs/archiwum/` — przestaje ładować się do każdego 
    `docs/archiwum/learned-patterns-odrzuty-<data>.md`. Bramka indeksu (`indeks.zapisany: false`) zostawia stary plik
    na miejscu: popraw `paths` albo wpisy wg Fazy 1.7 i uruchom `wiedza.mjs indeks --zapisz`, a stary plik przenieś
    dopiero po zapisanym indeksie.
-5. Commit: `git add -A docs/solutions docs/learned-patterns.md docs/archiwum .claude/rules` i
-   `docs(wiedza): konwersja learned-patterns do wiedzy projektu`.
+5. `odwolania` z wyniku `zastosuj` (`plik:linia` spoza `docs/`, które nadal wskazują stary plik): w `.coderabbit.yaml`
+   zamień ścieżkę na `docs/learned-patterns.md` (bez tego bot szuka kontekstu w usuniętym pliku) i dołącz plik do commitu;
+   pozostałe wypisz w raporcie dla operatora — CLAUDE.md nie edytujesz.
+   Commit: `git add -A docs/solutions docs/learned-patterns.md docs/archiwum .claude/rules` (plus `.coderabbit.yaml`, gdy go
+   poprawiłeś) i `docs(wiedza): konwersja learned-patterns do wiedzy projektu`.
 6. Raport: liczba zapisanych reguł, odrzuty z powodami (plik odrzutów — decyzja operatora: dopisać pola ręcznie albo
    pominąć), rozmiar indeksu i koszyk „zawsze”. CLAUDE.md projektu nie edytujesz — linię wskazującą indeks dopisuje
    operator wg README szablonu.

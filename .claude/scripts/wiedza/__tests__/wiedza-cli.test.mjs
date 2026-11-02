@@ -55,6 +55,17 @@ test('sprawdz: solution bez pol wiedzy = kod 1 z bledami (compound nie zapisuje)
   })
 })
 
+// claude-cron 02.11: NUL w przykladzie regexu — git widzial wpis jako binarny, ripgrep go pomijal.
+test('sprawdz: kompletne pola, ale bajt NUL w tresci = kod 1 z pozycja bajtu; tabulator i CRLF przechodza', () => {
+  wRepo((repo) => {
+    zapisz(repo, { 'docs/solutions/a/nul.md': `${solution(POLA)}\nregex [\u0000-\u001f]\n`, 'docs/solutions/a/tab.md': `${solution(POLA)}\nkol\twart\r\n` })
+    const w = uruchom(repo, ['sprawdz', 'docs/solutions/a/nul.md', 'docs/solutions/a/tab.md'])
+    assert.equal(w.kod, 1)
+    assert.match(w.json.pliki[0].bledy.at(-1), /^bajt sterujacy 0x00 na pozycji \d+ — ripgrep pomija plik/)
+    assert.deepEqual(w.json.pliki[1].bledy, [])
+  })
+})
+
 test('indeks --zapisz: zapis docs/learned-patterns.md; bramka koszyka zawsze = kod 1 i stary indeks zostaje', () => {
   wRepo((repo) => {
     zapisz(repo, { 'docs/solutions/a/ok.md': solution(POLA), 'docs/solutions/a/zly.md': solution({ ...POLA, klasa: 'inna' }) })
@@ -136,6 +147,8 @@ test('konwersja przygotuj → zastosuj: pola w solutions, indeks, stary plik i o
     zapisz(repo, {
       '.claude/rules/learned-patterns.md': '# Learned Patterns\n\n- **Blad zapisu pokazuj uzytkownikowi**: toast zamiast ciszy.\n  Source: docs/solutions/a/zapis.md\n- **Bez zrodla**: x.\n',
       'docs/solutions/a/zapis.md': '---\ntitle: "zapis"\ndate: 2026-08-01\nseverity: high\n---\n\nPlik `src/lib/zapis.ts`.\n',
+      '.coderabbit.yaml': 'reviews:\n  instructions: .claude/rules/learned-patterns.md\n',
+      'docs/plans/stary-plan.md': 'Regula z .claude/rules/learned-patterns.md\n',
     })
     const k = uruchom(repo, ['konwersja', 'przygotuj'])
     assert.equal(k.kod, 0)
@@ -151,6 +164,8 @@ test('konwersja przygotuj → zastosuj: pola w solutions, indeks, stary plik i o
     assert.match(readFileSync(join(repo, 'docs/learned-patterns.md'), 'utf8'), /\| sciezka-bledu \| Blad zapisu pokazuj uzytkownikowi\. \| `src\/lib\/\*\*` \| wysoka \|/)
     assert.deepEqual(z.json.archiwum, { plik: 'docs/archiwum/learned-patterns-2026-10-04.md', odrzuty: 'docs/archiwum/learned-patterns-odrzuty-2026-10-04.md' })
     assert.equal(existsSync(join(repo, '.claude/rules/learned-patterns.md')), false)
+    // claude-cron 02.11: .coderabbit.yaml dalej wskazywal usuniety plik; docs/ cytuje go jako historie — bez wpisu.
+    assert.deepEqual(z.json.odwolania, ['.coderabbit.yaml:2'])
   })
 })
 

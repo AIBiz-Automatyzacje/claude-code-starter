@@ -18,8 +18,8 @@ import { parseArgs } from 'node:util'
 
 import { czytajFrontmatter } from './frontmatter.mjs'
 import { PLIK_INDEKSU, generujIndeks } from './indeks.mjs'
-import { PLIK_LEARNED_PATTERNS, archiwizuj, kandydaci, zastosuj } from './konwersja.mjs'
-import { walidujWpis } from './walidacja.mjs'
+import { PLIK_LEARNED_PATTERNS, archiwizuj, kandydaci, odwolaniaDoStaregoPliku, zastosuj } from './konwersja.mjs'
+import { pozycjaBajtuSterujacego, walidujWpis } from './walidacja.mjs'
 import { pole, plikiRepo, wczytajWpisy } from './wpisy.mjs'
 import { MAKS_WYCINEK_ZN, wycinek } from './wycinek.mjs'
 import { zapobieganie } from './zapobieganie.mjs'
@@ -49,8 +49,13 @@ function sprawdz(projekt, pliki) {
   const repo = plikiRepo(projekt)
   const wyniki = pliki.map((plik) => {
     if (!existsSync(join(projekt, plik))) return { plik, ok: false, bledy: ['plik nie istnieje'] }
-    const pola = czytajFrontmatter(readFileSync(join(projekt, plik), 'utf8'))?.pola ?? {}
-    return { plik, ...walidujWpis(pola, repo) }
+    const surowy = readFileSync(join(projekt, plik))
+    const pola = czytajFrontmatter(surowy.toString('utf8'))?.pola ?? {}
+    const wynik = walidujWpis(pola, repo)
+    const bajt = pozycjaBajtuSterujacego(surowy)
+    if (bajt < 0) return { plik, ...wynik }
+    const blad = `bajt sterujacy 0x${(surowy[bajt] ?? 0).toString(16).padStart(2, '0')} na pozycji ${bajt} — ripgrep pomija plik; zapisz go tekstowo (np. \\x00)`
+    return { plik, ok: false, bledy: [...wynik.bledy, blad] }
   })
   zakoncz({ ok: wyniki.every((w) => w.ok), pliki: wyniki }, wyniki.every((w) => w.ok))
 }
@@ -112,7 +117,7 @@ function konwersja(projekt, etap, plikPropozycji, data) {
   const wynik = zastosuj(projekt, tekst, propozycje, plikiRepo(projekt), dzis)
   const ind = indeks(projekt, true)
   const archiwum = ind.wynik.zapisany ? archiwizuj(projekt, tekst, wynik.odrzuty, dzis) : null
-  zakoncz({ ...wynik, indeks: ind.wynik, archiwum }, ind.ok && !wynik.odrzuty.length)
+  zakoncz({ ...wynik, indeks: ind.wynik, archiwum, odwolania: archiwum ? odwolaniaDoStaregoPliku(projekt) : [] }, ind.ok && !wynik.odrzuty.length)
 }
 
 /** @type {{ values: Record<string, string | boolean | undefined>, positionals: string[] }} */
