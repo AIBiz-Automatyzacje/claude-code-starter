@@ -17,6 +17,10 @@
 #   TEMPLATE_LOCAL_SRC  lokalna ścieżka do źródła zamiast klonowania (do testów)
 #   PROJECT_DIR         katalog projektu docelowego (domyślnie: $CLAUDE_PROJECT_DIR / git toplevel / pwd)
 
+# Caly skrypt w bloku { …; exit; }: bash parsuje blok w calosci przed wykonaniem. Bez niego sync, ktory podmienia ten plik
+# (szablon zmienil sync-template.sh), konczyl skrypt z nowej tresci od starego offsetu — blad skladni, pliki podmienione,
+# marker wersji i manifest nie (dashboard 02.11). `exit` przed `}` nie pozwala czytac pliku dalej po podmianie.
+{
 set -euo pipefail
 
 REPO_URL="${TEMPLATE_REPO_URL:-https://github.com/AIBiz-Automatyzacje/claude-code-starter.git}"
@@ -303,3 +307,5 @@ echo "NOWA SESJA: .claude/ się zmieniło — otwórz nową sesję Claude Code p
 runner_testow
 higiena_projektu
 doctor_pierwszej_instalacji
+exit
+}

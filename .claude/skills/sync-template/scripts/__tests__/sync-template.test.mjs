@@ -216,3 +216,31 @@ test('sync: vitest bez configu → linia RUNNER TESTÓW z poprawka; z configiem 
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+// Dashboard 02.11: sync podmienil wlasny sync-template.sh w trakcie dzialania. Bash czyta skrypt kawalkami, wiec dokonczyl go z
+// nowej tresci od starego offsetu — blad skladni w linii 311, pliki podmienione, marker wersji i manifest nie. Skrypt projektu
+// musi byc w calosci sparsowany przed wykonaniem.
+test('sync podmieniajacy wlasny skrypt w projekcie konczy sie poprawnie: marker wersji, manifest, APPLIED', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  const wzgledna = join('.claude', 'skills', 'sync-template', 'scripts', 'sync-template.sh')
+  try {
+    const tresc = readFileSync(SKRYPT, 'utf8')
+    mkdirSync(dirname(join(zrodlo, wzgledna)), { recursive: true })
+    // Nowa wersja w szablonie: krotki dopisek na poczatku przesuwa offsety calej reszty pliku.
+    writeFileSync(join(zrodlo, wzgledna), tresc.replace('#!/usr/bin/env bash\n', '#!/usr/bin/env bash\n# v2\n'))
+    git(zrodlo, ['add', '.'])
+    git(zrodlo, ['commit', '-q', '-m', 'nowa wersja skryptu'])
+    mkdirSync(dirname(join(projekt, wzgledna)), { recursive: true })
+    writeFileSync(join(projekt, wzgledna), tresc)
+    const w = spawnSync('bash', [join(projekt, wzgledna)], { encoding: 'utf8', env: { ...process.env, TEMPLATE_LOCAL_SRC: zrodlo, PROJECT_DIR: projekt } })
+    assert.equal(w.status, 0, w.stdout + w.stderr)
+    assert.doesNotMatch(w.stderr, /syntax error|błąd składni/i)
+    assert.match(w.stdout, /APPLIED: zaaplikowano zmiany\./)
+    assert.equal(readFileSync(join(projekt, '.claude', '.template-version'), 'utf8').trim(), git(zrodlo, ['rev-parse', 'HEAD']))
+    assert.match(readFileSync(join(projekt, wzgledna), 'utf8'), /^#!\/usr\/bin\/env bash\n# v2\n/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})

@@ -82,6 +82,10 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
   Przekaż userowi stderr z git i zasugeruj `gh auth login` / sprawdzenie sieci.
   **Nie** ponawiaj w kółko tej samej komendy.
 - `BŁĄD: brak 'git' w PATH` → git nie jest zainstalowany; zgłoś to userowi.
+- `syntax error` w `sync-template.sh` (kod wyjścia bywa 0) albo brak linii `APPLIED`/`STATUS` → sync podmienił własny skrypt
+  w trakcie działania: pliki są już nowe, a marker wersji i manifest nie. Uruchom skrypt **ponownie** (ten sam, już nowy) —
+  zaktualizuje marker i manifest, pliki ma identyczne. Od wersji z blokiem `{ …; exit; }` skrypt jest parsowany w całości
+  przed wykonaniem; błąd może się zdarzyć tylko raz, przy przejściu ze starszej kopii.
 - `BŁĄD: workflow(y) w szablonie nie parsują się` → w **szablonie** jest plik
   `.claude/workflows/*.js`, którego runtime by nie zarejestrował. Skrypt nie
   zaaplikował **niczego**, projekt jest nietknięty. To defekt po stronie szablonu, nie
