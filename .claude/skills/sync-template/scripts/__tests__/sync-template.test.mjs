@@ -167,6 +167,27 @@ test('pierwszy sync projektu, ktory ma juz identyczne .claude/ (skopiowane reczn
   }
 })
 
+// 02.11: claude-cron i dashboard mialy aktualny szablon, a stara baze wiedzy w .claude/rules/ — sync o tym milczal.
+test('sync: stara baza wiedzy w projekcie → linia HIGIENA z naprawa przy kazdym syncu (takze UP_TO_DATE); pierwsza instalacja — bez linii', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    mkdirSync(join(zrodlo, '.claude', 'scripts', 'doctor'), { recursive: true })
+    execFileSync('cp', [resolve(dirname(SKRYPT), '..', '..', '..', 'scripts', 'doctor', 'higiena.mjs'), join(zrodlo, '.claude', 'scripts', 'doctor')])
+    git(zrodlo, ['add', '.'])
+    git(zrodlo, ['commit', '-q', '-m', 'higiena'])
+    mkdirSync(join(projekt, '.claude', 'rules'), { recursive: true })
+    writeFileSync(join(projekt, '.claude', 'rules', 'learned-patterns.md'), '# Learned Patterns\n')
+    assert.doesNotMatch(sync(zrodlo, projekt), /HIGIENA:/, 'pierwsza instalacja: te same wiersze daje tabela doctora')
+    assert.match(sync(zrodlo, projekt), /STATUS: UP_TO_DATE[\s\S]*HIGIENA: wiedza projektu — stara baza wiedzy .* — naprawa: \/dev-compound-refresh --konwersja/)
+    rmSync(join(projekt, '.claude', 'rules', 'learned-patterns.md'))
+    assert.doesNotMatch(sync(zrodlo, projekt), /HIGIENA: wiedza projektu/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
 // P22 A1: kazdy sync (nie tylko pierwszy) podpowiada wykluczenie .claude/** w configu runnera testow, gdy go brak —
 // linia z gotowa poprawka; projekt z configiem z include tests/ — bez linii.
 test('sync: vitest bez configu → linia RUNNER TESTÓW z poprawka; z configiem — bez linii', () => {

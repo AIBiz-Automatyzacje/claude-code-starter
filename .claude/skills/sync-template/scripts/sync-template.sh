@@ -86,6 +86,19 @@ runner_testow() {
   echo "RUNNER TESTÓW: $szczegol — poprawka: $poprawka"
 }
 
+# Higiena projektu (02.11) — przy każdym syncu: sync przenosi tylko maszynerię .claude/, a stara baza wiedzy, przerośnięty
+# CLAUDE.md, pozostałości starego zestawu czy bajt NUL w wiedzy przechodziły niezauważone. Linia tylko przy problemie, z naprawą.
+# Pierwsza instalacja pokazuje te same wiersze w tabeli doctora.
+higiena_projektu() {
+  local skrypt="$PROJECT_DIR/$MANAGED_ROOT/scripts/doctor/higiena.mjs" wynik element stan szczegol naprawa
+  [[ -n "$LOCAL_SHA" && -f "$skrypt" ]] && command -v node >/dev/null 2>&1 || return 0
+  wynik="$(node "$skrypt" "$PROJECT_DIR" 2>/dev/null)" || return 0
+  while IFS=$'\t' read -r element stan szczegol naprawa; do
+    [[ "$stan" == UWAGA ]] && echo "HIGIENA: $element — $szczegol — naprawa: $naprawa"
+  done <<< "$wynik"
+  return 0
+}
+
 
 # --- Przygotuj źródło (klon albo lokalna ścieżka) ---
 TMP_CLONE=""
@@ -125,6 +138,7 @@ if [[ "$FORCE" -eq 0 && -n "$LOCAL_SHA" && "$LOCAL_SHA" == "$UPSTREAM_SHA" ]]; t
   echo "SHA: $UPSTREAM_SHA"
   echo "Szablon jest aktualny — brak zmian w workflow do zaciągnięcia."
   runner_testow
+  higiena_projektu
   exit 0
 fi
 
@@ -203,6 +217,7 @@ if [[ "${#ADD[@]}" -eq 0 && "${#UPDATE[@]}" -eq 0 && "${#REMOVE[@]}" -eq 0 ]]; t
   zapisz_hashe
   echo "APPLIED: brak różnic w plikach — zaktualizowano tylko marker wersji."
   runner_testow
+  higiena_projektu
   doctor_pierwszej_instalacji
   exit 0
 fi
@@ -286,4 +301,5 @@ fi
 # N2: instrukcje i skille są buforowane w sesji — autopilot w sesji sprzed syncu działałby na starej maszynerii.
 echo "NOWA SESJA: .claude/ się zmieniło — otwórz nową sesję Claude Code przed /dev-autopilot-wf (bieżąca sesja ma w pamięci starą maszynerię)."
 runner_testow
+higiena_projektu
 doctor_pierwszej_instalacji

@@ -316,13 +316,14 @@ Skrypt zapisuje `docs/active/<zadanie>/<zadanie>-plan.md`, `-kontekst.md` i `-za
 node .claude/scripts/plan/plan.mjs gotowosc docs/active/<zadanie>
 ```
 
-Wynik ma pięć pozycji, każdą wypisujesz w handoffie:
+Wynik ma sześć pozycji, każdą wypisujesz w handoffie:
 
 - `plan` — błędy strukturalne planu technicznego (po 6.2 zwykle puste);
 - `e2e` — scenariusze `[E2E]` i makiety `figma_screens` vs środowisko: to samo sprawdzenie co bootstrap autopilota (`.env.e2e` w `.gitignore`, klucze bazy e2e, baza inna niż dev, `migrations.sum`, `agent-browser doctor`), bez startu serwera. Brak `.env.e2e` przy scenariuszach albo pozycja w `bledy` zatrzyma autopilota przed fazą 1 → setup albo poprawka wg `.claude/templates/e2e-env/README.md` (jednorazowo, ~30 min); przy scenariuszach druga droga to opt-out `[E2E]` → `[Manual]` w planie i ponowne `generuj --nadpisz`. Zadanie z samymi makietami bez `.env.e2e` przechodzi (porównanie z makietą idzie bez przeglądarki do operatora), a przy błędnym `.env.e2e` naprawiasz plik. `uwagi` (brak skilla weryfikacji projektu) nie blokują startu — wypisz je z komendą `/weryfikacja-setup`;
 - `przygotowanie` — `blokujace` (`[blokuje: planowanie]`, `[blokuje: faza 1]`, marker bez numeru) zatrzymują start: wypisz je z liniami i podaj drogi (odhaczyć albo świadomie usunąć marker); `odroczone` (fazy ≥ 2) generator wpisał do `## Blokery operatora per faza` w planie zadania, a autopilot zatrzyma się przed fazą N, dopóki pozycja jest nieodhaczona w checkliście — operator robi ją po fazie, która ją umożliwia, odhacza, commituje checklistę i odpala świeży run;
 - `git` — branch `feature/<zadanie>` i czyste drzewo; autopilot nie przełącza brancha i zatrzymuje się na brudnym drzewie;
-- `testy` — runner testów projektu (vitest, jest) nie zbiera testów maszynerii z `.claude/**`; `ok: false` = autopilot zatrzyma się na `npm test` na starcie → wpisz do configu `poprawka` i zacommituj.
+- `testy` — runner testów projektu (vitest, jest) nie zbiera testów maszynerii z `.claude/**`; `ok: false` = autopilot zatrzyma się na `npm test` na starcie → wpisz do configu `poprawka` i zacommituj;
+- `higiena` — nie blokuje, ale każdą `uwagi` wypisz z komendą przed startem: stara baza wiedzy w `.claude/rules/learned-patterns.md` (`/dev-compound-refresh --konwersja`) albo kontekst startowy agenta ponad próg (CLAUDE.md + reguły bez `paths:`) kosztują każdego agenta każdej fazy. Operator decyduje, czy porządkuje przed autopilotem; pełna lista kontroli jest w doctorze (`bash .claude/scripts/doctor/doctor.sh`).
 
 Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignore` po setupie e2e) zmienia śledzone pliki: zacommituj je jawnymi ścieżkami (`git add <ścieżki> && git commit -m "docs(<zadanie>): przygotowanie operatora"`) i uruchom `gotowosc` ponownie. Autopilota nie uruchamiasz przy czerwonej bramce.
 
@@ -349,6 +350,7 @@ Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera 
    - Przygotowanie: <brak / ścieżka: blokujące start B → STOP albo OK; odroczone do faz ≥ 2: K (w planie zadania)>
    - Git: <OK / brudne pozycje>
    - Testy: <OK / nie dotyczy / szczegół + poprawka configu>
+   - Higiena: <OK / uwagi z komendą — nie blokują>
 
 ➡️ Następny krok: autopilot w tej sesji:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<zadanie>" })

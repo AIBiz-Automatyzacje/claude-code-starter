@@ -168,12 +168,13 @@ test('Coolify i Dockerfile → coolify i docker jako UWAGA, nie blokuja', () => 
 
   plik(s.projekt, '.env.example', '# W Coolify oznacz jako zmienna builda\n')
   plik(s.projekt, 'Dockerfile', 'FROM node:22-alpine\n')
+  plik(s.projekt, '.coderabbit.yaml', 'reviews: {}\n') // bez niego higiena dodaje trzecia uwage (CodeRabbit)
   const w = doctor(s)
   assert.equal(w.status, 0, w.stdout)
   assert.equal(wiersz(w.stdout, 'coolify')[1], 'UWAGA')
   assert.match(wiersz(w.stdout, 'coolify')[3], /install_coolify_cli\.sh/)
   assert.equal(wiersz(w.stdout, 'docker')[1], 'UWAGA')
-  assert.match(w.stdout, /uwagi: 2/)
+  assert.match(w.stdout, /uwagi: 2\)/)
 }))
 
 test('coolify z komunikatem o aktualizacji → w tabeli sama wersja', () => zSrodowiskiem((s) => {

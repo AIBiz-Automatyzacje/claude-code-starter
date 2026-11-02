@@ -156,6 +156,19 @@ test('gotowosc: STOP na E2E bez .env.e2e, blokerze startu, cudzej galezi i brudn
   })
 })
 
+// 02.11: dashboard ruszal autopilotem ze stara baza wiedzy w .claude/rules/ i ~110k zn kontekstu na agenta — nikt tego nie widzial.
+test('gotowosc: stara baza wiedzy i przerosniety kontekst startowy = uwagi higieny z komenda, bez blokady startu', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  assert.deepEqual(gotowosc(k, ZADANIE).higiena, { ok: true, uwagi: [] })
+  mkdirSync(join(k, '.claude/rules'), { recursive: true })
+  writeFileSync(join(k, '.claude/rules/learned-patterns.md'), 'r'.repeat(25_000))
+  const w = gotowosc(k, ZADANIE)
+  assert.equal(w.higiena.uwagi.length, 2)
+  assert.match(w.higiena.uwagi[0] ?? '', /^wiedza projektu: .* → \/dev-compound-refresh --konwersja/)
+  assert.match(w.higiena.uwagi[1] ?? '', /^kontekst startowy agenta: 25\s000 zn/)
+  assert.deepEqual([w.higiena.ok, w.git.brudne.length > 0], [true, true], 'higiena nie zmienia ok — tu blokuje juz brudne drzewo')
+}))
+
 // P22 A1: runner testow projektu zbierajacy .claude/** (live-10-demo: vitest run bez configu) wychodzi w bramce, nie w bootstrapie.
 test('gotowosc: vitest bez configu → testy.ok false z poprawka i STOP; config z include tests/ → ok', () => wRepo((k) => {
   writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))

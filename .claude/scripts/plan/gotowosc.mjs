@@ -9,6 +9,7 @@ import { basename, join } from 'node:path'
 
 import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
+import { kontekstStartowy, wiedzaProjektu } from '../doctor/higiena.mjs'
 import { sprawdzRunnerTestow } from '../doctor/runner-testow.mjs'
 import { gotowoscAdvisors } from '../e2e/advisors.mjs'
 import { bledySrodowiska, envE2e, NARZEDZIA, uwagaProxyZdrowia, uwagaSerweraApi } from '../e2e/srodowisko.mjs'
@@ -25,8 +26,20 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   e2e: { ok: boolean, scenariusze: number, figmaScreens: boolean, envE2e: boolean, bledy: string[], uwagi: string[] },
  *   przygotowanie: { ok: boolean, sciezka: string | null, blokujace: Bloker[], odroczone: Bloker[] },
  *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] },
- *   testy: { ok: boolean, runner: string | null, szczegol: string, poprawka: string } }} Gotowosc
+ *   testy: { ok: boolean, runner: string | null, szczegol: string, poprawka: string },
+ *   higiena: { ok: true, uwagi: string[] } }} Gotowosc
  */
+
+/**
+ * Higiena przed autopilotem (02.11): niezrobiona konwersja wiedzy i przerosniety kontekst startowy agenta nie blokuja runu, ale
+ * kosztuja kazdego agenta kazdej fazy — operator widzi je tu, zanim odpali autopilota, takze bez synchronizacji szablonu.
+ * @param {string} projekt @returns {Gotowosc['higiena']}
+ */
+function higienaZadania(projekt) {
+  const uwagi = [wiedzaProjektu(projekt), kontekstStartowy(projekt)].filter((w) => w.stan === 'UWAGA')
+    .map((w) => `${w.element}: ${w.szczegol} → ${w.instalacja}`)
+  return { ok: true, uwagi }
+}
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string} */
 function git(projekt, argumenty) {
@@ -123,6 +136,7 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     przygotowanie: { ok: !prep?.blokujace.length, sciezka: prep?.sciezka ?? null, blokujace: prep?.blokujace ?? [], odroczone: prep?.odroczone ?? [] },
     git: { ok: galaz === wymagana && !brudne.length, galaz, wymagana, brudne },
     testy: testyProjektu(projekt),
+    higiena: higienaZadania(projekt),
   }
   return {
     ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok,

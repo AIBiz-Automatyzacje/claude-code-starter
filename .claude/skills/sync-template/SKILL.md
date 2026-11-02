@@ -65,6 +65,11 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
   projektu zbiera testy maszynerii z `.claude/**` i autopilot zatrzyma się na `npm test` na starcie.
   Przekaż userowi linię z poprawką (wpis `exclude` w pliku configu, który podaje) i zaproponuj, że ją
   wpiszesz i zacommitujesz. Sync i tak się udał.
+- `HIGIENA: <element> — <szczegół> — naprawa: <komenda>` (każdy sync, także `UP_TO_DATE`) → rzecz, której sync nie
+  przenosi, a która kosztuje albo psuje pipeline: stara baza wiedzy w `.claude/rules/learned-patterns.md`, kontekst startowy
+  agenta ponad próg (CLAUDE.md + reguły bez `paths:`), pozostałości starego zestawu w `.claude/`, hook wskazujący usunięty
+  plik, `.claude/.backups/` albo `CLAUDE.md` w podkatalogach poza `.gitignore`, bajt sterujący w wiedzy, brak albo nieaktualny
+  `.coderabbit.yaml`. Wypisz każdą linię z naprawą jako listę do decyzji usera — sam niczego nie naprawiasz. Sync i tak się udał.
 - `--- DOCTOR (pierwsza instalacja) ---` + tabela + `DOCTOR_KOD: <n>` → pierwsza instalacja
   szablonu w projekcie. Pokaż userowi tabelę. `DOCTOR_KOD: 0` = wszystkie obowiązkowe narzędzia są;
   inny kod = wypisz wiersze `BRAK` z komendami z kolumny „Instalacja" i powiedz, że bez nich run

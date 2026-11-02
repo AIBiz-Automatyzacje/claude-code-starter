@@ -195,6 +195,24 @@ sprawdz_zapis_hookow() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Higiena projektu (02.11): stara baza wiedzy, kontekst startowy agenta, pozostałości starego zestawu w .claude/, hooki
+# wskazujące usunięte pliki, pliki maszynerii poza .gitignore, bajty sterujące w wiedzy, CodeRabbit. /sync-template przenosi
+# tylko maszynerię .claude/, więc te rzeczy przechodziły niezauważone. Wiersze TSV z higiena.mjs; problem = UWAGA z naprawą.
+sprawdz_higiene() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "higiena projektu" UWAGA "nie sprawdzono (brak node)" "brew install node"
+    return
+  fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/higiena.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "higiena projektu" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "node .claude/scripts/doctor/higiena.mjs ."
+    return
+  fi
+  while IFS=$'\t' read -r element stan szczegol instalacja; do
+    [[ -n "$element" ]] && wiersz "$element" "$stan" "$szczegol" "$instalacja"
+  done <<< "$wynik"
+}
+
 # Advisors Supabase (P17) — lint bazy e2e po migracjach fazy: ref z .env.e2e i token Management API, przez node
 # (wiersz TSV z advisors.mjs). Brak to UWAGA: run idzie dalej, security sprawdza migracje ręcznie.
 sprawdz_advisors() {
@@ -285,6 +303,7 @@ sprawdz_zapis_hookow
 sprawdz_advisors
 sprawdz_port_e2e
 sprawdz_warstwe
+sprawdz_higiene
 sprawdz_telemetrie
 echo
 
