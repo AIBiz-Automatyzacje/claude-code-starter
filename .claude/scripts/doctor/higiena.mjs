@@ -28,7 +28,7 @@ export const ELEMENT_WIEDZY = 'wiedza projektu'
 export const ELEMENT_KONTEKSTU = 'kontekst startowy agenta'
 const KATALOGI_MASZYNERII = ['agents', 'commands', 'hooks', 'rules', 'skills', 'workflows']
 // Skille wlasne projektu (np. weryfikacja z /weryfikacja-setup) sa w porzadku; te nazwy to stary zestaw showcase.
-const STARE_SKILLE = /^\.claude\/skills\/(skill-rules\.json|skill-developer\/)/
+const STARE_SKILLE = /^\.claude\/skills\/(skill-rules\.json|skill-developer\/|skill-rules-manager\/)/
 const POKAZ_NAJWYZEJ = 6
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string | null} */
