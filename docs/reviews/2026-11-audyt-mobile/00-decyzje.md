@@ -11,7 +11,9 @@ i zaleca `permissions: all: allow`, które na iOS 26.4 nie działa; skille Supab
 Z mobile przechodzi **wiedza** (34 adaptacje pipeline'u, ~60 reguł RN, lekcje projektów), a **forma** (agenci, skille
 wspólne, workflowy) przychodzi z rdzenia web. To potwierdza architekturę planu: rdzeń + nakładka.
 
-## Decyzje (rekomendacja → do potwierdzenia)
+## Decyzje
+
+**Status (2026-11-02):** D6–D10 zaakceptowane przez operatora; D11–D25 przyjęte wg rekomendacji.
 
 Kluczowe — wymagają Twojego zdania:
 

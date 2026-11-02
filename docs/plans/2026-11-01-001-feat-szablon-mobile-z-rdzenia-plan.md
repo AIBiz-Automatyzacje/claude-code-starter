@@ -156,6 +156,26 @@ agentów badawczych, każde twierdzenie z linkiem; mechaniczne diffy skryptem. W
 `docs/reviews/2026-11-audyt-mobile/` z raportem per ścieżka i jedną tabelą decyzji, potem decyzje operatora i aktualizacja
 Etapów 1–5 tego planu. Szacunek: 3–4 sesje.
 
+**Status: zakończony 2026-11-02.** Raporty A0.1–A0.7 i zbiorcze decyzje: `docs/reviews/2026-11-audyt-mobile/`
+(`00-decyzje.md`). Wniosek: z mobile przechodzi wiedza (34 adaptacje pipeline'u, ~60 reguł RN, 112 lekcji projektów),
+forma (agenci, skille wspólne, workflowy) przychodzi z rdzenia. Decyzje D6–D10 zaakceptowane przez operatora,
+D11–D25 przyjęte wg rekomendacji (sekcja „Decyzje”).
+
+### Poprawki poprzedzające (osobna gałąź `popr/*`, przed Etapem 1)
+
+- Supabase CLI 3.0.0 (2026-11-02): nieinteraktywny `db push` wymaga `--yes`, `--db-url` przestarzałe — db-sync
+  w `dev-autopilot-wf.js:597`, `templates/e2e-env`, doctor (przypięcie v2 albo przejście na składnię v3, potwierdzone na v3).
+- Błędy w skillach web z A0.3 §4.4 i A0.5 §3: limit Realtime 100 kanałów, `@sentry/deno` 11 z integracją `Deno.serve`,
+  przykład `supabase-dev-guidelines/auth-patterns.md` vs zależność efektu na `user?.id`.
+
+### Spike Expo SDK 58 (jedna sesja, przed Etapem 2, poza repo szablonu)
+
+Świeży projekt Expo SDK 58: Uniwind (D7: `TextInput` + `className`, line-height, `translate` w %, `boxShadow` na Androidzie,
+`rem` vs „1 pt Figma = 1 px”); jest-expo + RNTL 14 na Expo Router (D8); `tsconfig` rdzenia (`verbatimModuleSyntax`,
+`erasableSyntaxOnly`) z `expo/tsconfig.base`; `AbortSignal.timeout` w RN 0.88/Hermes; alternatywa dla swapu `.env.local`
+(D13); reguła `deny` dla `@expo/agent-cli feedback` w trybie autopilota (D6); `expo:*` przez narzędzie `Skill` w builderze.
+Wynik: notatka z PASS/FAIL per punkt → korekty `rules/stack.md` mobile i Etapu 2.
+
 ### Etap 1 — Szwy w rdzeniu (repo web, zachowanie web bez zmian)
 
 Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dostają identyczne zachowanie.
@@ -172,16 +192,28 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - IU-1.4 Skille i reguły: dev-plan, dev-docs-complete, dev-prep, dev-compound, weryfikacja-setup — fragmenty stackowe do
   `references/` w slocie; `rules/coding-rules.md` → rdzeń + `rules/stack.md` (React DOM/Vite).
 - IU-1.5 Strażnik słów stacku w CI (test z listą wyjątków) + test „każdy slot istnieje w wariancie web”.
+- IU-1.6 Testy CI plików ról (`szkielet-buildera`, `warstwa-stala`, `klasy-rol`, `odczyt-zakresami`, `tester-e2e`)
+  rozdzielić na asercje rdzenia i asercje stacku — dziś wymagają literalnie m.in. `vitest related --run` (D22, A0.7).
+- IU-1.7 Slot danych `.claude/stack/profil.json` (D15) dla skryptów i hooków: klucze env (`VITE_*`/`EXPO_PUBLIC_*`), wzorzec
+  seedów (`plan/pola-iu.mjs`, `plan/walidacja-planu.mjs`), globy źródeł (`error-handling-reminder.sh`), komenda testów.
+- IU-1.8 Kontrakt adaptera E2E z politykami per stack: obcy proces na porcie (`stop` | `zastap`, D11), bloker środowiska
+  w trakcie runu (`manual-restart` | `stop-rebuild`, D12); login canary kontem e2e w rdzeniu (D16).
+- IU-1.9 Reguły: `coding-rules.md` → rdzeń (~93%) + `rules/stack.md` web (`React.lazy`, size-limit); 8 reguł dostaje
+  neutralne brzmienie z odesłaniem do `stack.md` (m.in. `AbortSignal.timeout`, wykrywanie React Compilera, położenie
+  testów vs Expo Router, przypinanie wersji vs `npx expo install`); 6 nowych reguł rdzenia i 3 rozszerzenia z lekcji
+  projektów (A0.5 §1, §4).
 - Odbiór: pełne testy maszynerii zielone, diff zachowania zerowy (porównanie wygenerowanych promptów przed/po dla vibersi),
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
-- IU-2.1 Buildery `feature-builder-ui|data|fullstack` w wersji RN — treść z `feature-builder-mobile-*` dopasowana do
-  **nowego kontraktu** builderów web (format zwrotu, test padający bez poprawki, granice IU, dossier). Warianty `-figma`
-  z pluginem figma (jak web), lokalny `figma-design-to-code` usunięty.
-- IU-2.2 Tester `feature-tester-e2e` w wersji Maestro — kontrakt wyniku identyczny jak web (PASS/FAIL/SKIP + przyczyna +
-  dowód, format `ksiegowanie.mjs`), procedura z `mobile-e2e-maestro`; zrzut porównywany z makietą przez `takeScreenshot`.
+- IU-2.1 Buildery `feature-builder-ui|data|fullstack` (+ `-figma`, D23) w wersji RN — **napisane od nowa na szkielecie
+  web** (schemat zwrotu, `tools:`, `completed` + `odchylenia`, granice IU, dossier; A0.7 §5). Zasady RN idą do
+  `rules/stack.md`, `rn-expo-guidelines` i skilli, nie do agentów. `tools:` z narzędziem `Skill` (ładowanie `expo:*` na
+  żądanie); preload: `rn-expo-guidelines`, `ux-ui-guidelines-mobile`, skill silnika stylowania (D6, D7).
+- IU-2.2 Tester `feature-tester-e2e` w wersji Maestro — schemat wyniku web bez zmian: pole `przyczyna`, SKIP środowiskowy
+  bez findingu OPERATOR, `flow` z linii także przy braku pliku (→ `scenariusz-niewykonalny`, D17), nie bootuje urządzeń
+  i nie pisze do `.maestro/`; `--test-output-dir` w folderze zadania (Maestro ≥ 2.8), dowody z `takeScreenshot`.
 - IU-2.3 Adapter E2E `scripts/e2e/adapter.mjs` dla Expo: logika z promptu env-up mobile (`dev-autopilot-wf.js` mobile
   l.463–701) **przeniesiona do skryptu** — swap `EXPO_PUBLIC_*` w `.env.local` z rollbackiem, Metro z PID na :8081,
   emulator iOS-first z fallbackiem Android, świeżość dev-clienta, canary `.maestro/_canary.yaml`, seedy `.maestro/*-seed.sql`.
@@ -189,17 +221,24 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - IU-2.4 Bramka natywna po fazie (prebuild / pod install przy zmianie warstwy natywnej, mobile l.1184–1242) jako slot
   `stack/po-fazie.md` + skrypt; rdzeń woła slot, web ma pusty.
 - IU-2.5 Sloty tekstowe: `buildery.md` (routing po `app/`, `components/`, `lib/`, `supabase/`), `walidacja.md`
-  (`expo-doctor`, jest/vitest, „nie eas build”), `plan-e2e.md` (Maestro, emulator), `fix-e2e.md`.
+  (jest-expo + RNTL 14 + Jest 30 — D8, rozgrzewka, „nie eas build”), `plan-e2e.md` (Maestro, emulator, plik flow jako
+  deliverable buildera — D17), `fix-e2e.md`. `expo-doctor` jako bramka w `scripts/bramki/` (D14).
 - IU-2.6 `weryfikacja-setup` wariant Maestro (Launch = dev-client + Metro, Drive = flow Maestro, Evidence = screenshoty)
-  — wchłania `e2e-setup`.
-- IU-2.7 Skille: dodać `expo-*`, `eas-*`, `mobile-e2e-maestro`, `ux-ui-guidelines-mobile`; usunąć (`usun.txt`) agent-browser,
-  tailwind-react-guidelines, ux-ui-guidelines, coolify-manager, makieta + `scripts/makieta` (decyzja D2), `templates/e2e-env` web.
-- IU-2.8 Reguły/hooki/settings: `rules/stack.md` RN (anti-patterny z hooka jako reguły), `mobile-anti-pattern-check.sh`
-  w `settings.patch.json`, `learned-patterns` Maestro → `docs/learned-patterns.md` (format weba), bramki: eslint RN
-  (`eslint-plugin-react-native` / `expo` config), bez size-limit.
-- IU-2.9 Warianty mobile wspólnych skilli: `security`, `sentry-integration`, `supabase-dev-guidelines`, `dev-prep` —
-  wziąć **aktualną wersję web** i nanieść różnice mobile (secure-store, deep link OAuth, `@sentry/react-native`, konsole sklepów).
-  Jeśli różnica to kilka akapitów — rdzeń + `references/mobile.md` w slocie zamiast pełnej kopii skilla.
+  — wchłania `e2e-setup` (D24; zostaje wiedza o dev-clientcie, pułapki 6–8, 10, 11, para `EXPO_PUBLIC_E2E_TEST_USER_*`).
+- IU-2.7 Skille (D6, D7): plugin `expo@expo-plugins` w `settings.patch.json` (MCP Expo wyłączony — D19, `deny` dla
+  `@expo/agent-cli feedback`, bramka „plugin zainstalowany” w doctorze); lokalnie: hub stosu (przemianowany z
+  `expo-overview`), skill Uniwind (przypięta kopia oficjalnego skilla autorów z audytem świeżości), nowy
+  `rn-expo-guidelines` (A0.4 §7), `mobile-e2e-maestro` i `ux-ui-guidelines-mobile` po poprawkach P1/P2 z A0.3.
+  Usunąć (`usun.txt`): agent-browser, tailwind-react-guidelines, ux-ui-guidelines, coolify-manager, makieta +
+  `scripts/makieta` (D2), `templates/e2e-env` web; nie przenosić `expo-tailwind-setup` (wadliwy pin NativeWind v5 preview).
+- IU-2.8 Reguły/hooki/settings: `rules/stack.md` mobile z projektu w A0.5 §2 (~60 reguł, 10 grup; korekta po spike'u);
+  `mobile-anti-pattern-check.sh` naprawiony i rozszerzony (D25) w `settings.patch.json`; `learned-patterns.md` **nie**
+  przechodzi do szablonu (D21 — indeks projektu); bramki: `eslint-plugin-jest` zamiast `@vitest/eslint-plugin`, runner
+  jest dla Strykera, reguła lokalna rozpoznaje `jest.mocked`, bez size-limit.
+- IU-2.9 Wspólne skille `security`, `sentry-integration`, `supabase-dev-guidelines`, `dev-prep` — rdzeń = aktualna
+  wersja web, różnice mobile (10–14 akapitów na skill wg A0.3) w `references/stack.md` (D20), z poprawkami P1 z A0.3.
+  Storage sesji: domyślny wariant Supabase, `LargeSecureStore` jako opcja (D9). Płatności: IAP/RevenueCat zamiast
+  Stripe Checkout dla treści cyfrowych (D10).
 - Odbiór: `zbuduj.mjs expo` daje `.claude/`, na którym przechodzą testy rdzenia + testy nakładki.
 
 ### Etap 3 — Budowanie i publikacja
@@ -216,28 +255,40 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 
 ### Etap 4 — Pilot na projekcie mobile
 
+- Przed syncem każdego projektu: konwersja jego `.claude/rules/learned-patterns.md` (gramywpadla 49 reguł, Nawykometr 7)
+  do `docs/solutions/` / reguł projektu i commit — inaczej sync usunie edytowany plik (D21). Sprawdzić, czy projekt stoi
+  na wadliwym NativeWind v5 preview + nightly `react-native-css`.
 - `Nawykometr` (dziś na mobile `6fbd49d`): `/sync-template --dry-run`, potem sync; doctor; jedno małe zadanie przez
   `/dev-plan` → autopilot → smoke → `/dev-pr`. Sprawdzić: env-up na emulatorze, tester Maestro, księgowanie [E2E], bramka natywna.
 - Wnioski → poprawki w `stacks/expo/` (publikują się same). Potem `gramywpadla` (dziś `23e0d92`, starszy — najpierw dry-run).
 
 ### Etap 5 — Świeżość skilli technicznych Expo
 
-- Zależnie od decyzji A0.2: przy pluginie `expo@expo-plugins` świeżość zapewnia upstream (nakładka deklaruje plugin
-  w `settings.patch.json`, jak `figma` na webie). Przy kopii: skrypt `stacks/expo/odswiez-expo-skills.sh` (klon płytki,
-  podmiana 1:1, raport różnic) i wpis w `ZRODLA-SZABLONU.md`, odpalany ręcznie albo raz w miesiącu przez cron w CI z PR-em.
-- Własne skille mobile (A0.3/A0.4) wchodzą do cyklicznego audytu świeżości razem z webowymi.
+- Skille `expo:*` z pluginu (D6) — świeżość zapewnia upstream; w `ZRODLA-SZABLONU.md` wpis o pluginie i decyzji
+  o przypięciu wersji (źródło `git-subdir` z `sha` we własnym marketplace vs żywa wersja — do rozstrzygnięcia w Etapie 3).
+- Skill Uniwind: przypięta kopia oficjalnego skilla autorów, odświeżana procedurą jak agent-browser.
+- Własne skille mobile (`rn-expo-guidelines`, `mobile-e2e-maestro`, `ux-ui-guidelines-mobile`, `references/stack.md`
+  skilli wspólnych) wchodzą do cyklicznego audytu świeżości razem z webowymi.
 
-## Decyzje do potwierdzenia
+## Decyzje
 
-- **D1** Nakładka Expo w `claude-code-starter/stacks/expo/` (rekomendacja), a nie w repo mobile.
+Przyjęte (operator, 2026-11-01/02):
+- **D1** Jedno repo: nakładka Expo w `claude-code-starter/stacks/expo/`, wynik publikowany do `workspace-template-mobile`.
+- **D3** Wspólne nazwy ról agentów (`feature-builder-ui` itd.) w obu wariantach zamiast `feature-builder-mobile-*`.
+- **D5** Kolejność: Etap 0 (audyt, zakończony) → poprawki poprzedzające i spike → Etap 1 → reszta.
+- **D6–D10** (zaakceptowane 2026-11-02): skille Expo z oficjalnego pluginu + lokalny hub i skill stylowania; stylowanie
+  Tailwind v4 przez `className` na Uniwind (po spike'u SDK 58, NativeWind v5 jako zapas); testy jest-expo + RNTL 14 +
+  Jest 30; storage sesji domyślny Supabase + `LargeSecureStore` jako opcja; IAP/RevenueCat zamiast Stripe Checkout dla
+  treści cyfrowych.
+- **D11–D25** — przyjęte wg rekomendacji z `docs/reviews/2026-11-audyt-mobile/00-decyzje.md` (polityki adaptera E2E,
+  swap `.env.local` po sprawdzeniu alternatywy, `expo-doctor` jako bramka, `profil.json`, login canary w rdzeniu,
+  `[E2E]` z plikiem flow, fixture smoke RN, MCP Expo wyłączony, `references/stack.md`, `learned-patterns` poza szablonem,
+  podział testów CI ról, warianty `-figma`, `e2e-setup` → `weryfikacja-setup`, naprawa hooka).
+
+Do potwierdzenia przed Etapem 2–3:
 - **D2** `makieta` w mobile: usunąć na start (proxy z iframe nie obsłuży aplikacji natywnej); ewentualny wariant „zrzut z
   emulatora obok makiety” jako osobne zadanie po pilocie.
-- **D3** Wspólne nazwy ról agentów (`feature-builder-ui` itd.) w obu wariantach zamiast `feature-builder-mobile-*`.
 - **D4** Publikacja automatyczna przy każdym pushu na `main` (rekomendacja) vs. ręczna komenda po paczce zmian.
-- **D5** Kolejność: Etap 0 (audyt) → Etap 1 (szwy) → reszta. Audyt nie zmienia kodu, więc może iść równolegle z
-  przygotowaniem Etapu 1, ale sloty projektujemy dopiero z jego wynikami.
-- **D6** Skille Expo z oficjalnego pluginu upstream zamiast kopii (do potwierdzenia próbą A0.2).
-- **D7** Stylowanie mobile: NativeWind dalej domyślny mimo wycofania skilla upstream? (rozstrzyga A0.4).
 
 ## Ryzyka
 
@@ -251,5 +302,5 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 
 ## Szacunek
 
-Etap 0: 3–4 sesje. Etap 1: 3–4 sesje (największe ryzyko). Etap 2: 3–4 sesje. Etap 3: 1 sesja. Etap 4: 1–2 sesje z emulatorem. Etap 5: pół sesji.
+Etap 0: zrobiony. Poprawki poprzedzające: pół sesji. Spike: 1 sesja. Etap 1: 3–4 sesje (największe ryzyko). Etap 2: 3–4 sesje. Etap 3: 1 sesja. Etap 4: 1–2 sesje z emulatorem. Etap 5: pół sesji.
 Wykonanie ręczne sesjami na gałęziach `popr/*` (jak P22–P27), commit per IU — nie autopilotem, bo zmieniamy sam autopilot.
