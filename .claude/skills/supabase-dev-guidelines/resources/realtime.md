@@ -183,15 +183,17 @@ const channel = supabase.channel('room:' + userId, {
 ```typescript
 function useOnlineUsers() {
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-    const { user } = useAuth();
+    const { auth } = useAuth();
+    // Zależność efektu to identyfikator, nie obiekt — nowa sesja po TOKEN_REFRESHED nie restartuje kanału.
+    const userId = auth.status === 'zalogowany' ? auth.session.user.id : null;
 
     useEffect(() => {
-        if (!user) return;
+        if (!userId) return;
 
         const channel = supabase.channel('online-users', {
             config: {
                 presence: {
-                    key: user.id,
+                    key: userId,
                 },
             },
         });
@@ -211,7 +213,7 @@ function useOnlineUsers() {
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
                     await channel.track({
-                        user_id: user.id,
+                        user_id: userId,
                         online_at: new Date().toISOString(),
                     });
                 }
@@ -220,7 +222,7 @@ function useOnlineUsers() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user]);
+    }, [userId]);
 
     return onlineUsers;
 }

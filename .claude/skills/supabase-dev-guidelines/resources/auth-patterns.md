@@ -113,54 +113,40 @@ const handleSignIn = async (email: string, password: string) => {
 // hooks/useAuth.ts
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { User, Session } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
+
+// Stan jako unia dyskryminowana, nie flagi `isLoading` + `user` (coding-rules: Type safety).
+type AuthState =
+    | { status: 'ladowanie' }
+    | { status: 'gosc' }
+    | { status: 'zalogowany'; session: Session };
 
 interface AuthContextValue {
-    user: User | null;
-    session: Session | null;
-    isLoading: boolean;
-    authProvider: {
-        provider: string;
-        isOAuth: boolean;
-    } | null;
+    auth: AuthState;
     signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [auth, setAuth] = useState<AuthState>({ status: 'ladowanie' });
 
     useEffect(() => {
-        // Pobierz bieżącą sesję
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setIsLoading(false);
+        // Jedno źródło stanu: onAuthStateChange zaczyna od zdarzenia INITIAL_SESSION, więc osobne
+        // getSession() jest zbędne — dwa źródła async zapisujące ten sam stan ścigają się
+        // (wynik getSession po SIGNED_OUT przywraca wylogowaną sesję).
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setAuth(session ? { status: 'zalogowany', session } : { status: 'gosc' });
         });
-
-        // Słuchaj zmian sesji
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (_event, session) => {
-                setSession(session);
-                setUser(session?.user ?? null);
-            }
-        );
-
         return () => subscription.unsubscribe();
     }, []);
-
-    // Wykryj providera OAuth
-    const authProvider = user ? detectAuthProvider(user) : null;
 
     const signOut = async () => {
         await supabase.auth.signOut();
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, isLoading, authProvider, signOut }}>
+        <AuthContext.Provider value={{ auth, signOut }}>
             {children}
         </AuthContext.Provider>
     );
@@ -173,6 +159,15 @@ export function useAuth() {
     }
     return context;
 }
+
+// Konsumenci: zależność efektu to identyfikator, nie obiekt sesji ani użytkownika — Supabase tworzy
+// nowy obiekt sesji przy każdym odświeżeniu tokenu (TOKEN_REFRESHED, ok. co godzinę), więc efekt
+// zależny od obiektu uruchamia się ponownie bez zmiany użytkownika.
+//   const { auth } = useAuth();
+//   const userId = auth.status === 'zalogowany' ? auth.session.user.id : null;
+//   useEffect(() => { /* pobranie danych użytkownika */ }, [userId]);
+// Hook danych przy `userId === null` zwraca stan pusty już w renderze — czyszczenie w efekcie
+// spóźnia się o jeden render i pokazuje dane poprzedniego użytkownika.
 
 // Helper do wykrywania providera
 function detectAuthProvider(user: User) {
@@ -189,22 +184,25 @@ function detectAuthProvider(user: User) {
 ### Użycie
 ```typescript
 function MyComponent() {
-    const { user, isLoading, authProvider, signOut } = useAuth();
+    const { auth, signOut } = useAuth();
 
-    if (isLoading) {
+    if (auth.status === 'ladowanie') {
         return <LoadingSpinner />;
     }
 
-    if (!user) {
+    if (auth.status === 'gosc') {
         return <LoginPrompt />;
     }
+
+    const { user } = auth.session;
+    const authProvider = detectAuthProvider(user);
 
     return (
         <div>
             <p>Zalogowany jako: {user.email}</p>
-            <p>Provider: {authProvider?.provider}</p>
+            <p>Provider: {authProvider.provider}</p>
 
-            {authProvider?.isOAuth && (
+            {authProvider.isOAuth && (
                 <p>Zarządzaj kontem w ustawieniach {authProvider.provider}</p>
             )}
 
@@ -549,13 +547,15 @@ export function useProfile() {
 ### ProfileSettings
 ```typescript
 function ProfileSettings() {
-    const { user, authProvider } = useAuth();
+    const { auth } = useAuth();
     const { changePassword, changeEmail, deleteAccount } = useProfile();
+    if (auth.status !== 'zalogowany') return null; // trasa chroniona — gość tu nie trafia
+    const authProvider = detectAuthProvider(auth.session.user);
 
     return (
         <div className="space-y-6">
             {/* Zmiana hasła - tylko dla email users */}
-            {!authProvider?.isOAuth && (
+            {!authProvider.isOAuth && (
                 <Card>
                     <CardHeader>
                         <CardTitle>Zmiana hasła</CardTitle>
@@ -567,7 +567,7 @@ function ProfileSettings() {
             )}
 
             {/* Zmiana emaila - tylko dla email users */}
-            {!authProvider?.isOAuth && (
+            {!authProvider.isOAuth && (
                 <Card>
                     <CardHeader>
                         <CardTitle>Zmiana adresu email</CardTitle>
