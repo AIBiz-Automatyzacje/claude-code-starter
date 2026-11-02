@@ -173,19 +173,19 @@ test('gotowosc: stara baza wiedzy i przerosniety kontekst startowy = uwagi higie
 test('gotowosc: vitest bez configu → testy.ok false z poprawka i STOP; config z include tests/ → ok', () => wRepo((k) => {
   writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
   zadanieNaGalezi(k)
-  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([zle.ok, zle.testy.ok, zle.testy.runner, zle.git.ok], [false, false, 'vitest', true])
   assert.match(zle.testy.poprawka, /exclude: \[\.\.\.configDefaults\.exclude, '\.claude\/\*\*'\]/)
   writeFileSync(join(k, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
   git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'add', '-A'])
   git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'test: config'])
-  const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([dobre.ok, dobre.testy.ok], [true, true])
 }))
 
 test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i agent-browser to STOP; brak skilla weryfikacji = uwaga', () => wRepo((k) => {
   zadanieNaGalezi(k)
-  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'chrome: fail' }) } })
+  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'chrome: fail' }) } })
   assert.deepEqual([zle.ok, zle.e2e.ok, zle.e2e.envE2e], [false, false, true])
   assert.equal(zle.e2e.bledy.length, 2)
   assert.match(zle.e2e.bledy[0], /\.env\.e2e nie jest w \.gitignore/)
@@ -195,12 +195,12 @@ test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i 
     'brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup',
     'advisors nie pobiegnie: brak ref projektu e2e: ani SUPABASE_E2E_DB_URL, ani VITE_SUPABASE_URL w .env.e2e nie wskazuje projektu Supabase — dopisz SUPABASE_E2E_PROJECT_REF',
   ])
-  const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([dobre.ok, dobre.e2e.ok, dobre.e2e.bledy], [true, true, []])
   mkdirSync(join(k, '.claude/skills/weryfikacja'), { recursive: true })
   writeFileSync(join(k, '.claude/skills/weryfikacja/SKILL.md'), '# W\n')
   writeFileSync(join(k, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\n')
-  const sprawne = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }) }
+  const sprawne = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
   assert.deepEqual(gotowosc(k, ZADANIE, { narzedzia: sprawne, srodowisko: {} }).e2e.uwagi, ['advisors nie pobiegnie: brak SUPABASE_ACCESS_TOKEN — Supabase → Account → Access Tokens, wpis SUPABASE_ACCESS_TOKEN=<token> w .env.e2e'])
   const zTokenem = gotowosc(k, ZADANIE, { narzedzia: sprawne, srodowisko: { SUPABASE_ACCESS_TOKEN: 't' } })
   assert.deepEqual([zTokenem.e2e.ok, zTokenem.e2e.uwagi], [true, []], 'advisors to uwaga, nie bloker; z tokenem i ref znika')
@@ -211,12 +211,12 @@ test('gotowosc: zadanie z samymi makietami figma_screens sprawdza srodowisko jak
   const zadania = join(k, ZADANIE, 'publikacja-ofert-zadania.md')
   writeFileSync(zadania, readFileSync(zadania, 'utf8').replace(/\[E2E\]/g, '[Manual]'))
   writeFileSync(join(k, ZADANIE, 'publikacja-ofert-kontekst.md'), '# K\n\n## Designerski kontekst\n\n- Screeny referencyjne: docs/plans/publikacja-ofert-figma/lista-ofert.png\n')
-  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: true, detal: '' }) } })
+  const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([zle.e2e.ok, zle.e2e.scenariusze, zle.e2e.figmaScreens], [false, 0, true])
   assert.match(zle.e2e.bledy.join('\n'), /\.env\.e2e nie jest w \.gitignore/)
   assert.ok(!zle.e2e.uwagi.some((u) => /skilla weryfikacji/.test(u)), 'bez scenariuszy [E2E] skill weryfikacji nie jest potrzebny')
   rmSync(join(k, '.env.e2e'))
-  const bezEnv = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'x' }) } })
+  const bezEnv = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'x' }) } })
   assert.deepEqual([bezEnv.e2e.ok, bezEnv.e2e.bledy], [true, []])
 }))
 

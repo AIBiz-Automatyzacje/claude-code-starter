@@ -20,6 +20,10 @@
     {
       "plik": ".claude/stack/plan-e2e.md",
       "opis": "Format linii [E2E] w planie, seedy, granice narzędzia jazdy, serwer aplikacji w scenariuszu."
+    },
+    {
+      "plik": ".claude/scripts/e2e/adapter.mjs",
+      "opis": "Adapter E2E (slot plikowy): domyślny port i komenda startu, port serwera deweloperskiego, narzędzie jazdy, próbny zrzut, uwagi planowania."
     }
   ]
 }

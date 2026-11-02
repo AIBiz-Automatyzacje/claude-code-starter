@@ -1,10 +1,11 @@
 // Srodowisko E2E projektu (P14): parametry z `.env.e2e`, sprawdzenie przed startem autopilota (sekcja Doctor) oraz start
 // serwera aplikacji (proces serwera: serwer.mjs). Wczesniej ten przepis byl rozsiany po promptach env-up, env-down i testera
 // (Vite, port 5173, Supabase na sztywno); projekt z innym serwerem albo bez Supabase nie mial jak z niego skorzystac.
+// To, co zalezy od stacku (domyslny port i komenda startu, narzedzie jazdy testera, probny zrzut), daje adapter.mjs.
 //
-// Parametry `.env.e2e` (wszystkie opcjonalne, domyslne = dev server Vite):
-//   E2E_URL            adres aplikacji (domyslnie http://localhost:5174 — obok domyslnego 5173 dev servera Vite, P19)
-//   E2E_START          komenda startu (domyslnie `<pm> run dev -- --mode e2e --port <port> --strictPort`)
+// Parametry `.env.e2e` (wszystkie opcjonalne, domyslne z adaptera stacku):
+//   E2E_URL            adres aplikacji (domyslnie http://localhost:<DOMYSLNY_PORT adaptera>)
+//   E2E_START          komenda startu (domyslnie komendaStartu adaptera)
 //   E2E_HEALTH         adres sondy zdrowia (domyslnie E2E_URL; odpowiedz < 500 = dziala)
 //   E2E_HEALTH_TRESC   tekst, ktory musi byc w odpowiedzi sondy (P25 A2: aplikacja z serwerem API — trasa zdrowia serwera
 //                      zamiast strony, bo fallback SPA odpowiada 200 na kazdej sciezce)
@@ -13,37 +14,29 @@
 
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
+import { adresHttp, HOSTY_LOKALNE } from './adres.mjs'
+import { DOMYSLNY_PORT, komendaStartu, NARZEDZIE_JAZDY, probnyZrzut, sprawdzNarzedzie } from './adapter.mjs'
 
 export const PLIK_ENV = '.env.e2e'
 // Klucze bazy e2e; grupa = zamienniki. Klucz klienta: publishable (sb_publishable_…) albo legacy anon, ktory Supabase
 // wycofuje do konca 2026 — projekt z nowymi kluczami dostawal STOP na starcie mimo kompletnego .env.e2e.
 export const KLUCZE_BAZY = [['VITE_SUPABASE_URL'], ['VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_ANON_KEY'], ['SUPABASE_E2E_DB_URL'],
   ['SUPABASE_E2E_SERVICE_ROLE_KEY'], ['E2E_TEST_EMAIL'], ['E2E_TEST_PASSWORD']]
-// 5174, nie 5173: zwykly `pnpm dev` zajmuje 5173 i start E2E zastawal go jako serwer aplikacji (vibersi etap 2, P19).
-export const DOMYSLNY_PORT = 5174
-export const PORT_DEV_VITE = 5173
-const HOSTY_LOKALNE = ['localhost', '127.0.0.1', '[::1]', '0.0.0.0']
 const LIMIT_STARTU_SEK = 90
 // Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
 // z serwerem w tle, ale bez wyniku JSON.
 // Przed startem serwera biegnie probny zrzut (do 30 s) i zamkniecie jego sesji (do 10 s) — zapas 60 s do limitu Basha.
 const MAKS_STARTU_SEK = 500
-// Probny zrzut na starcie (P19): vibersi etap 2, faza 6 — `agent-browser screenshot` wisial nawet na about:blank, tester obszedl
-// go Playwrightem (971 s). Limit jak w regule testera: zrzut dluzszy niz 30 s = harness niesprawny.
-export const LIMIT_ZRZUTU_SEK = 30
-const LIMIT_ZAMKNIECIA_MS = 10_000
-const SESJA_PROBY = ['--session', 'e2e-proba']
 
 /**
  * @typedef {{ url: string, zdrowie: string, zdrowieTresc: string | null, port: number, lokalny: boolean, start: string, limitSek: number, log: string, pid: string,
  *   bazaE2e: boolean, odcisk: string, blad: string | null }} Konfiguracja
  * @typedef {{ ok: boolean, detal: string }} WynikNarzedzia
- * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, agentBrowser: () => WynikNarzedzia, zrzut?: () => WynikNarzedzia }} Narzedzia
+ * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, narzedzieJazdy: () => WynikNarzedzia, zrzut?: () => WynikNarzedzia }} Narzedzia
  */
 
 /** @param {string} tresc @returns {Record<string, string>} */
@@ -71,100 +64,6 @@ export function menedzerPakietow(projekt) {
   if (existsSync(join(projekt, 'pnpm-lock.yaml'))) return 'pnpm'
   if (existsSync(join(projekt, 'yarn.lock'))) return 'yarn'
   return 'npm'
-}
-
-// Uklady repo z serwerem API obok SPA (P27 S1 (12)): `server/` (vibersi), `api/`, monorepo `apps/api/`.
-const KATALOGI_SERWERA = ['server', 'api', 'apps/api']
-// Czlon nazwy skryptu `server` albo `api` miedzy dwukropkami (`dev:server`, `api:build`), nie fragment slowa (`observer`, `rapid`).
-const SKRYPT_SERWERA = /(?:^|:)(?:server|api)(?::|$)/
-
-/** @param {string} projekt @returns {boolean} katalog z KATALOGI_SERWERA albo skrypt package.json z czlonem `server`/`api` (`build:server`, `dev:api`) */
-function maSerwerApi(projekt) {
-  if (KATALOGI_SERWERA.some((k) => existsSync(join(projekt, k)))) return true
-  const pakiet = join(projekt, 'package.json')
-  if (!existsSync(pakiet)) return false
-  /** @type {unknown} */
-  let manifest
-  try {
-    manifest = JSON.parse(readFileSync(pakiet, 'utf8'))
-  } catch (e) {
-    // Zly package.json zglasza runner testow (gotowosc.testy); tu tylko brak sygnalu o serwerze, bramka nie pada.
-    if (e instanceof SyntaxError) return false
-    throw e
-  }
-  const scripts = manifest && typeof manifest === 'object' && 'scripts' in manifest ? manifest.scripts : null
-  return !!scripts && typeof scripts === 'object' && Object.keys(scripts).some((nazwa) => SKRYPT_SERWERA.test(nazwa))
-}
-
-/**
- * Uwaga przy planowaniu (P25 A2): aplikacja z serwerem API, a sonda E2E bez E2E_HEALTH_TRESC — sam Vite przechodzi sonde
- * fallbackiem SPA, a zapisy przez /api dostaja w E2E 404 (vibersi etapy 4–5).
- * @param {string} projekt @param {Record<string, string>} env @returns {string | null}
- */
-export function uwagaSerweraApi(projekt, env) {
-  if (env.E2E_HEALTH_TRESC || !maSerwerApi(projekt)) return null
-  return `projekt ma serwer API (server/, api/, apps/api/ albo skrypt *:server, *:api), a sonda E2E nie sprawdza treści — sam Vite odpowiada 200 na każdej ścieżce, więc start bez serwera przejdzie sondę i zapisy przez /api dostaną 404; ustaw E2E_START na skrypt startu obu procesów oraz E2E_HEALTH na trasę zdrowia serwera z E2E_HEALTH_TRESC (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
-}
-
-const PLIKI_VITE = ['vite.config.ts', 'vite.config.mts', 'vite.config.js', 'vite.config.mjs', 'vite.config.cjs']
-
-/** @param {URL} a @param {URL} b @returns {boolean} ten sam serwer: port i host (localhost, 127.0.0.1, [::1] to jeden host) */
-function tenSamSerwer(a, b) {
-  const host = (/** @type {URL} */ u) => (HOSTY_LOKALNE.includes(u.hostname) ? 'lokalny' : u.hostname)
-  return a.protocol === b.protocol && a.port === b.port && host(a) === host(b)
-}
-
-/**
- * Klucze proxy z vite.config (napisy w cudzyslowie z dwukropkiem za nimi, po `proxy:`), bez komentarzy. Klucz z `^` to wyrazenie
- * regularne Vite, pozostale — prefiks sciezki. Proxy z wywolania albo zmiennej (vibersi etap 6a: `proxy: proxySerweraE2e(...)`
- * z tablicy tras) nie ma kluczy w tekscie — kandydatem jest wtedy kazdy napis-sciezka w pliku.
- * @param {string} tresc @returns {string[]}
- */
-function kluczeProxy(tresc) {
-  const bezKomentarzy = tresc.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1')
-  const proxy = /\bproxy\s*:\s*(\{)?/.exec(bezKomentarzy)
-  if (!proxy) return []
-  if (!proxy[1]) return [...bezKomentarzy.matchAll(/['"`](\^?\/[^'"`\s]*)['"`]/g)].map((m) => m[1])
-  return [...bezKomentarzy.slice(proxy.index).matchAll(/['"`](\^?\/[^'"`\s]*)['"`]\s*:/g)].map((m) => m[1])
-}
-
-/** @param {string} klucz @param {string} sciezka @returns {boolean} klucz proxy Vite kieruje te sciezke na serwer */
-function kluczPokrywa(klucz, sciezka) {
-  if (klucz.startsWith('^')) {
-    try {
-      return new RegExp(klucz).test(sciezka)
-    } catch (e) {
-      // Klucz, ktorego nie da sie skompilowac, Vite tez odrzuci — nie pokrywa sciezki (uwaga zostaje).
-      if (e instanceof SyntaxError) return false
-      throw e
-    }
-  }
-  const prefiks = klucz.replace(/\/$/, '')
-  return !!prefiks && (sciezka === prefiks || sciezka.startsWith(`${prefiks}/`))
-}
-
-/**
- * Uwaga przy planowaniu (P27 (1), vibersi etap 5): sonda E2E_HEALTH z E2E_HEALTH_TRESC na porcie Vite (serwer E2E_URL), a jej
- * sciezki nie pokrywa zaden klucz proxy w vite.config.* — Vite odpowiada fallbackiem SPA i sonda daje STOP startu. Bez tresci
- * sonda przechodzi na kazdej trasie aplikacji (brak sprawdzenia serwera zglasza uwagaSerweraApi).
- * @param {string} projekt @param {Record<string, string>} env @returns {string | null}
- */
-export function uwagaProxyZdrowia(projekt, env) {
-  if (!env.E2E_HEALTH_TRESC) return null
-  const zdrowie = env.E2E_HEALTH ? adresHttp(env.E2E_HEALTH) : null
-  const url = adresHttp(env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`)
-  if (!zdrowie || !url || !tenSamSerwer(zdrowie, url) || zdrowie.pathname === '/') return null
-  const plik = PLIKI_VITE.find((p) => existsSync(join(projekt, p)))
-  if (!plik) return null
-  const sciezka = zdrowie.pathname.replace(/\/$/, '')
-  if (kluczeProxy(readFileSync(join(projekt, plik), 'utf8')).some((k) => kluczPokrywa(k, sciezka))) return null
-  return `ścieżki ${sciezka} z E2E_HEALTH nie ma w trasach proxy ${plik} — Vite odpowie na nią fallbackiem SPA (index.html), więc sonda z E2E_HEALTH_TRESC da STOP startu; dodaj ${sciezka} do tras proxy Vite obok /api albo ustaw E2E_HEALTH na port serwera (.claude/templates/e2e-env/README.md, sekcja „Aplikacja z osobnym serwerem API”)`
-}
-
-/** @param {string} url @returns {URL | null} adres http(s) albo null (zapis bez schematu parsuje sie jako schemat `localhost:`) */
-function adresHttp(url) {
-  const u = URL.canParse(url) ? new URL(url) : null
-  return u && (u.protocol === 'http:' || u.protocol === 'https:') ? u : null
 }
 
 /** @param {string} klucz @param {string} url @returns {string} */
@@ -204,7 +103,7 @@ export function konfiguracja(projekt, env) {
     zdrowieTresc: env.E2E_HEALTH_TRESC || null,
     port: Number(port),
     lokalny: !adres || HOSTY_LOKALNE.includes(adres.hostname),
-    start: env.E2E_START || `${menedzerPakietow(projekt)} run dev -- --mode e2e --port ${port} --strictPort`,
+    start: env.E2E_START || komendaStartu(menedzerPakietow(projekt), port),
     limitSek: Math.min(Number(env.E2E_START_TIMEOUT) > 0 ? Number(env.E2E_START_TIMEOUT) : LIMIT_STARTU_SEK, MAKS_STARTU_SEK),
     log: `/tmp/autopilot-e2e-${nazwa}.log`,
     pid: `/tmp/autopilot-e2e-${nazwa}.pid`,
@@ -218,34 +117,19 @@ export function konfiguracja(projekt, env) {
 /** @type {Narzedzia} */
 export const NARZEDZIA = {
   czyIgnorowany: (projekt, plik) => spawnSync('git', ['check-ignore', '-q', plik], { cwd: projekt }).status === 0,
-  agentBrowser: () => {
-    const w = spawnSync('agent-browser', ['doctor', '--offline', '--quick'], { encoding: 'utf8' })
-    if (w.error) return { ok: false, detal: `brak agent-browser (${w.error.message})` }
-    return { ok: w.status === 0, detal: (w.stdout || '').split('\n').filter((l) => /\bfail\b/.test(l)).join('; ') || `kod ${w.status}` }
-  },
-  // Probny zrzut about:blank w osobnej sesji agent-browser (sesji testera nie dotyka), z limitem na open + screenshot.
-  zrzut: () => {
-    const plik = join(tmpdir(), `autopilot-e2e-proba-${process.pid}.png`)
-    const termin = Date.now() + LIMIT_ZRZUTU_SEK * 1000
-    const krok = (/** @type {string[]} */ a) => spawnSync('agent-browser', [...SESJA_PROBY, ...a], { encoding: 'utf8', timeout: Math.max(termin - Date.now(), 1), killSignal: 'SIGKILL' })
-    const otwarcie = krok(['open', 'about:blank'])
-    const zrzut = otwarcie.status === 0 && !otwarcie.error ? krok(['screenshot', plik]) : otwarcie
-    spawnSync('agent-browser', [...SESJA_PROBY, 'close'], { timeout: LIMIT_ZAMKNIECIA_MS, killSignal: 'SIGKILL' })
-    rmSync(plik, { force: true })
-    if (zrzut.error) return { ok: false, detal: zrzut.error.message.includes('ETIMEDOUT') ? `nie skonczyl sie w ${LIMIT_ZRZUTU_SEK} s` : zrzut.error.message }
-    return zrzut.status === 0 ? { ok: true, detal: '' } : { ok: false, detal: `kod ${zrzut.status}: ${(zrzut.stderr || zrzut.stdout || '').trim().split('\n').pop()}` }
-  },
+  narzedzieJazdy: sprawdzNarzedzie,
+  zrzut: probnyZrzut,
 }
 
 /**
- * Sprawdzenie srodowiska bez startu serwera: plik w .gitignore, klucze bazy e2e, guard tozsamosci, suma migracji, agent-browser.
+ * Sprawdzenie srodowiska bez startu serwera: plik w .gitignore, klucze bazy e2e, guard tozsamosci, suma migracji, narzedzie jazdy.
  * Kazdy blad niesie wlasna naprawe — trafia 1:1 do STOP-u autopilota.
  * @param {string} projekt
  * @param {Record<string, string>} env
- * @param {{ przegladarka: boolean, narzedzia?: Narzedzia }} opcje przegladarka: czy zadanie potrzebuje agent-browser
+ * @param {{ jazda: boolean, narzedzia?: Narzedzia }} opcje jazda: czy zadanie potrzebuje narzedzia jazdy testera
  * @returns {string[]}
  */
-export function bledySrodowiska(projekt, env, { przegladarka, narzedzia = NARZEDZIA }) {
+export function bledySrodowiska(projekt, env, { jazda, narzedzia = NARZEDZIA }) {
   const konf = konfiguracja(projekt, env)
   const bledy = []
   if (!narzedzia.czyIgnorowany(projekt, PLIK_ENV)) bledy.push(`${PLIK_ENV} nie jest w .gitignore — dopisz go (plik zawiera sekrety)`)
@@ -268,9 +152,10 @@ export function bledySrodowiska(projekt, env, { przegladarka, narzedzia = NARZED
     const suma = bramkaMigrationsSum(projekt)
     if (suma.status === 'porazka') bledy.push(`migrations.sum: ${suma.trafienia.map((t) => `${t.plik} — ${t.opis}`).join('; ')} — wypchnieta migracja nie moze trafic do bazy e2e`)
   }
-  if (przegladarka) {
-    const ab = narzedzia.agentBrowser()
-    if (!ab.ok) bledy.push(`agent-browser nie dziala: ${ab.detal} — instalacja: npm i -g agent-browser && agent-browser install; diagnoza: agent-browser doctor`)
+  if (jazda) {
+    const { nazwa, instalacja, diagnoza } = NARZEDZIE_JAZDY
+    const wynik = narzedzia.narzedzieJazdy()
+    if (!wynik.ok) bledy.push(`${nazwa} nie dziala: ${wynik.detal} — instalacja: ${instalacja}; diagnoza: ${diagnoza}`)
   }
   return bledy
 }

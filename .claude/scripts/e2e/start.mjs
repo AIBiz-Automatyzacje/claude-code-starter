@@ -20,9 +20,10 @@ import { join } from 'node:path'
 
 import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
+import { naprawaZrzutu, opisProbyZrzutu } from './adapter.mjs'
 import { doOdegrania, liczE2e } from './scenariusze.mjs'
 import { naprawaObcego, opisObcego, stanPortu, uruchomSerwer } from './serwer.mjs'
-import { bledySrodowiska, envE2e, konfiguracja, LIMIT_ZRZUTU_SEK, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
+import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
 
 /**
  * @typedef {'pominieto' | 'brak-srodowiska' | 'niepowodzenie' | 'gotowe' | 'odroczone'} StatusE2e
@@ -94,7 +95,7 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     if (!env || !konf?.bazaE2e) return { ...wynik, bazaE2e: false, detal }
     // Baza e2e bez scenariuszy (P17): db-sync i advisors biegna takze w zadaniu bez przegladarki (zadanie backendowe z migracjami),
     // ale po guardzie tozsamosci, bo db-sync wgrywa migracje. Blad wylacza baze bez STOP-u — przegladarki zadanie nie potrzebuje.
-    const bledy = bledySrodowiska(projekt, env, { przegladarka: false, narzedzia })
+    const bledy = bledySrodowiska(projekt, env, { jazda: false, narzedzia })
     return { ...wynik, bazaE2e: !bledy.length, bledy, detal: bledy.length ? `${detal}; baza e2e wylaczona (db-sync i advisors nie pobiegna): ${bledy.join('; ')}` : `${detal}; baza e2e sprawna — db-sync i advisors po migracjach faz` }
   }
   if ((!env || !konf) && scenariusze === null) {
@@ -109,7 +110,7 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
       naprawa: `Setup srodowiska wg .claude/templates/e2e-env/README.md (${PLIK_ENV} w korzeniu repo, w .gitignore). Swiadomy opt-out: zmien marker [E2E] na [Manual] w pliku zadan — scenariusz wykonasz recznie w smoke'u operatora. Sprawdzenie bez startu: ${komendaSprawdzenia(sciezka)}`,
     }
   }
-  const bledy = bledySrodowiska(projekt, env, { przegladarka: true, narzedzia })
+  const bledy = bledySrodowiska(projekt, env, { jazda: true, narzedzia })
   if (bledy.length) {
     return { ...wynik, status: 'niepowodzenie', bledy, detal: bledy.join('; '), naprawa: `Popraw: ${bledy.join('; ')}. Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
   }
@@ -121,8 +122,8 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
   // Probny zrzut przed startem serwera (P19): zawieszony zrzut w trakcie runu kosztowal faze 971 s obejscia.
   const zrzut = (narzedzia.zrzut ?? NARZEDZIA.zrzut)?.()
   if (zrzut && !zrzut.ok) {
-    const blad = `probny zrzut agent-browser (about:blank, limit ${LIMIT_ZRZUTU_SEK} s): ${zrzut.detal}`
-    return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `Zamknij sesje przegladarki (\`agent-browser close --all\`), sprawdz \`agent-browser doctor\` i zrzut recznie: \`agent-browser open about:blank && agent-browser screenshot /tmp/proba.png\`. Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
+    const blad = `${opisProbyZrzutu}: ${zrzut.detal}`
+    return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${naprawaZrzutu} Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
   }
   const serwer = await uruchomSerwer(projekt, konf, env)
   if (serwer.obcy) {

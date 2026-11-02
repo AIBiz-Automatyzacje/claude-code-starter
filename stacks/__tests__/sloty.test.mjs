@@ -20,11 +20,14 @@ const czytaj = (sciezka) => readFileSync(resolve(KORZEN, sciezka), 'utf8')
 const rejestr = JSON.parse(czytaj('stacks/sloty.json'))
 const pliki = rejestr.sloty.map((s) => s.plik)
 
-test('rejestr: każdy slot ma ścieżkę w .claude/stack/ i opis, bez powtórzeń', () => {
+// Slot tekstowy leży w .claude/stack/; slot plikowy to moduł rdzenia, który nakładka podmienia w całości (adapter E2E).
+const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|scripts\/[a-z0-9-]+\/adapter\.mjs)$/
+
+test('rejestr: każdy slot ma ścieżkę slotu tekstowego albo plikowego i opis, bez powtórzeń', () => {
   assert.ok(Array.isArray(rejestr.sloty) && rejestr.sloty.length > 0)
   for (const slot of rejestr.sloty) {
     assert.deepEqual(Object.keys(slot).sort(), ['opis', 'plik'], `pola slotu ${slot.plik}`)
-    assert.match(slot.plik, /^\.claude\/stack\/[a-z0-9-]+\.md$/)
+    assert.match(slot.plik, SLOT)
     assert.ok(slot.opis.trim().length > 0, `opis slotu ${slot.plik}`)
   }
   assert.equal(new Set(pliki).size, pliki.length, 'zdublowany slot')
@@ -36,11 +39,16 @@ test('rejestr ma sloty tekstowe z IU-1.1', () => {
   }
 })
 
-test('każdy slot z rejestru ma wariant web w .claude/stack/: niepusty, z nagłówkiem', () => {
+test('każdy slot z rejestru ma wariant web: tekstowy z nagłówkiem, plikowy z komentarzem o kontrakcie', () => {
   for (const plik of pliki) {
     assert.ok(existsSync(resolve(KORZEN, plik)), `brak pliku ${plik}`)
-    assert.match(czytaj(plik), /^# \S/, `${plik} zaczyna się nagłówkiem`)
+    if (plik.endsWith('.md')) assert.match(czytaj(plik), /^# \S/, `${plik} zaczyna się nagłówkiem`)
+    else assert.match(czytaj(plik), /^\/\/ .*slot plikowy/i, `${plik} zaczyna się opisem slotu`)
   }
+})
+
+test('rejestr ma adapter E2E (IU-1.3)', () => {
+  assert.ok(pliki.includes('.claude/scripts/e2e/adapter.mjs'))
 })
 
 test('w .claude/stack/ nie ma plików spoza rejestru', () => {
@@ -61,4 +69,14 @@ test('sloty web niosą treść stacku web', () => {
     const tresc = czytaj(`${KATALOG_SLOTOW}/${nazwa}.md`)
     for (const fraza of frazy) assert.ok(tresc.includes(fraza), `${nazwa}.md: brak „${fraza}”`)
   }
+})
+
+test('adapter E2E web: Vite na 5174 obok 5173, agent-browser, uwagi o proxy Vite', async () => {
+  const a = await import(resolve(KORZEN, '.claude/scripts/e2e/adapter.mjs'))
+  assert.equal(a.DOMYSLNY_PORT, 5174)
+  assert.equal(a.PORT_DEV, 5173)
+  assert.equal(a.komendaStartu('pnpm', 5174), 'pnpm run dev -- --mode e2e --port 5174 --strictPort')
+  assert.deepEqual(a.NARZEDZIE_JAZDY, { nazwa: 'agent-browser', instalacja: 'npm install -g agent-browser && agent-browser install', diagnoza: 'agent-browser doctor' })
+  assert.equal(a.LIMIT_ZRZUTU_SEK, 30)
+  assert.match(a.naprawaZrzutu, /agent-browser close --all/)
 })
