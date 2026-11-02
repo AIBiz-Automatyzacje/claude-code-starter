@@ -201,7 +201,7 @@ Kluczowe sekcje:
 project_id = "my-project"
 
 [db]
-major_version = 15
+major_version = 15   # musi zgadzać się z bazą zdalną: SHOW server_version; (przykład)
 
 [auth]
 site_url = "http://localhost:3000"

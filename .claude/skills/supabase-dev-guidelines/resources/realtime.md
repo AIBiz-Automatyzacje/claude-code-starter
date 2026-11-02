@@ -364,8 +364,8 @@ useEffect(() => {
 
 ### Limity Supabase
 
-- Max 200 concurrent connections per project (Free tier)
-- Max 500 channels per connection
+- Równoległe połączenia na projekt: 200 (Free), 500 (Pro), 10 000 (Pro bez limitu wydatków, Team)
+- Max 100 kanałów na połączenie — na każdym planie (https://supabase.com/docs/guides/realtime/limits, stan 2026-11)
 - RLS policies musza przepuszczac SELECT
 
 ### Optymalizacje

@@ -7,9 +7,11 @@ Szczegółowe wzorce integracji Sentry z Supabase Edge Functions (Deno runtime).
 > Supabase Edge Runtime działa dziś na Deno 2.x, a `@sentry/deno` (aktualnie 10.x, wymaga
 > Deno >= 2.0) wspiera `captureException`, `withScope`, `flush` i `beforeSend`. Handler
 > piszemy jako `export default { fetch: withSupabase(...) }` (oficjalny wzorzec Supabase,
-> `Deno.serve` to legacy). **Dokumentacja `@sentry/deno` nie ma integracji ani wrappera
-> dla fetch-handlera / `Deno.serve`** (sprawdzone 2026-08: docs.sentry.io/platforms/javascript/guides/deno/
-> i lista integracji) — instrumentację robimy ręcznie: `try/catch` w handlerze,
+> `Deno.serve` to legacy). `@sentry/deno` ma `denoServeIntegration` (instrumentacja `Deno.serve`,
+> sesje requestów); jej działania z naszym wzorcem handlera na Edge Runtime nie potwierdziliśmy, a linia 11.x wymaga
+> Deno ≥ 2.8.3 (changelog getsentry/sentry-javascript, 11.0.0: „require deno >=2.8.3”), czego
+> Edge Runtime nie spełnia (`deno_core` 0.324 w Cargo.toml supabase/edge-runtime, stan 2026-11) —
+> zostajemy na `@^10` i instrumentację robimy ręcznie: `try/catch` w handlerze,
 > `captureException` w `withScope`, `await flush()` przed `Response`. Dokładnie tak robi to
 > oficjalny przykład Supabase (docs/guides/functions/examples/sentry-monitoring), który też
 > zostawia `defaultIntegrations: false`, bo bez tego nie ma gwarancji scope separation między
@@ -45,11 +47,11 @@ import * as Sentry from 'npm:@sentry/deno@^10';
 
 **Uwagi:**
 - `npm:@sentry/deno@^10` to aktualny zalecany import (stary `deno.land/x/sentry` jest deprecated).
-  Pin: aktualna 10.70.0 (npm, 2026-08). Przykład w dokumentacji Supabase używa jeszcze `@^8` —
+  Pin: najnowsza z linii 10 to 10.78.0 (npm, 2026-11; `latest` to już 11.x — nie podbijaj, wymaga Deno ≥ 2.8.3). Przykład w dokumentacji Supabase używa jeszcze `@^8` —
   używaj `@^10`, spójnie z `@sentry/react` v10. Przy podbiciu majora sprawdź changelog
   (getsentry/sentry-javascript) pod kątem `sendDefaultPii` → `dataCollection` i zmian w `beforeSend`
-- Wymaga Deno >= 2.0 — Supabase Edge Runtime spełnia ten wymóg. Brak integracji dla
-  fetch-handlera — patrz `defaultIntegrations: false` i ręczny `try/catch` niżej
+- Linia 10 wymaga Deno >= 2.0 — Supabase Edge Runtime spełnia ten wymóg. Na `denoServeIntegration`
+  przy handlerze `export default { fetch }` nie polegamy (niepotwierdzone na Edge Runtime) — patrz `defaultIntegrations: false` i ręczny `try/catch` niżej
 
 ---
 

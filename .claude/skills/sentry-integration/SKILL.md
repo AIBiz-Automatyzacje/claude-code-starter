@@ -10,7 +10,7 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 > **Stan SDK**
 >
 > - **React SDK:** v10+ (funkcyjne integracje, React 19 error hooks) ✅
-> - **Edge Functions:** `npm:@sentry/deno@^10` na Deno 2.x, handler `export default { fetch: withSupabase(...) }` ⚠️ — `@sentry/deno` nie ma integracji dla fetch-handlera, więc błędy łapiesz ręcznie (`try/catch` → `captureError`); ustaw `defaultIntegrations: false` (tak robi oficjalny przykład Supabase), używaj `withScope` dla izolacji i `await flush()` przed `Response`
+> - **Edge Functions:** `npm:@sentry/deno@^10` na Deno 2.x, handler `export default { fetch: withSupabase(...) }` ⚠️ — `denoServeIntegration` z `@sentry/deno` instrumentuje `Deno.serve`, ale jej działania z handlerem `export default { fetch }` na Edge Runtime nie potwierdziliśmy, więc błędy łapiesz ręcznie (`try/catch` → `captureError`); nie podbijaj do v11 (wymaga Deno ≥ 2.8.3, Edge Runtime jest na starszej linii Deno 2.x); ustaw `defaultIntegrations: false` (tak robi oficjalny przykład Supabase), używaj `withScope` dla izolacji i `await flush()` przed `Response`
 
 ## Table of Contents
 
@@ -40,7 +40,7 @@ Kompleksowy przewodnik integracji Sentry error tracking i performance monitoring
 
 `@sentry/deno` (v10) działa na Supabase Edge Runtime (Deno 2.x) ze wsparciem `beforeSend`.
 Handler piszemy jako `export default { fetch: withSupabase(...) }` (`Deno.serve` to legacy), a
-`@sentry/deno` nie ma integracji dla fetch-handlera — instrumentacja jest ręczna (`try/catch`).
+`denoServeIntegration` dotyczy `Deno.serve`, a v11 wymaga Deno ≥ 2.8.3, którego Edge Runtime nie ma — instrumentacja jest ręczna (`try/catch`).
 Oficjalny przykład Supabase ustawia `defaultIntegrations: false` na Edge Runtime, bo bez tego nie
 ma gwarancji scope separation między requestami w tym samym isolate. Nadal stosuj:
 
