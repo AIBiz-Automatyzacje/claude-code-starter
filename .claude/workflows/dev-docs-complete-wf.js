@@ -193,8 +193,9 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
 2. Scenariusze z markerem [Manual] (z *-zadania.md i z planu technicznego wskazanego w "Plan techniczny:").
 3. Findingi typu OPERATOR z review-faza-*.md — tylko jako wzbogacenie krokow pozycji z (1); pozycja spoza (1)
    wchodzi wylacznie, gdy w zadaniach nie ma jej wcale (dopasowanie po IU-K / pliku / ekranie). Warunki
-   srodowiskowe (dev server w trybie e2e, seedy na projekt e2e) NIE sa pozycjami smoke'u: uruchomienie apki
-   to tylko check "aplikacja wstaje (dev server)" w sekcji 0; kroki pod przebieg E2E pomin calkowicie
+   srodowiskowe (serwer aplikacji w trybie e2e, seedy na projekt e2e) NIE sa pozycjami smoke'u: uruchomienie apki
+   to tylko check startu aplikacji w sekcji 0 (tresc: .claude/skills/dev-docs-complete/references/stack.md,
+   sekcja „Smoke operatora”); kroki pod przebieg E2E pomin calkowicie
    (smoke leci na projekcie GLOWNYM, nie e2e).
 4. Otwarte wpisy z docs/active/${nazwaZadania}/known-issues.md (jesli plik istnieje) i otwarte [P1]/[P2] z
    "## Do poprawy po review fazy N". Z known-issues sekcje "## P3 faza N" pomin — nity zostaja w known-issues

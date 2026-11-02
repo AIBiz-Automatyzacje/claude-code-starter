@@ -92,11 +92,8 @@ date: YYYY-MM-DD
 category: kategoria
 severity: low | medium | high | critical
 stack:
-  - React
-  - TypeScript
-  - Supabase
-  - Tailwind
-  - Vite
+  - Technologia
+  - Technologia
 tags:
   - tag1
   - tag2
@@ -106,7 +103,7 @@ klasa: klasa-ze-slownika
 regula: "Rób X, nie Y — jedno albo dwa zdania."
 regula_krotka: "Ta sama reguła w jednym zdaniu, ≤ 160 zn."
 paths:
-  - src/lib/**
+  - katalog/**
 waga: wysoka | srednia | niska
 szczebel: kod | lint | regula
 szczebel_powod: "Jedno zdanie: dlaczego ten szczebel, a nie wyższy."
@@ -153,7 +150,7 @@ Krok po kroku z przykładami kodu:
 Dodatkowe informacje o okolicznościach, środowisku, wersji.
 ```
 
-Dostosuj sekcje `stack` i `tags` do faktycznego stosu technologicznego problemu. Nie wstawiaj pełnego stacka jeśli problem dotyczy tylko jednej technologii.
+Dostosuj sekcje `stack` i `tags` do faktycznego stosu technologicznego problemu (technologie stacku i przykład `paths`: `references/stack.md`, sekcja „Pola wpisu”). Nie wstawiaj pełnego stacka jeśli problem dotyczy tylko jednej technologii.
 
 Pola od `klasa` do `ucieczki` wypełniasz i sprawdzasz wg sekcji **Pola wiedzy** niżej, zanim przejdziesz dalej.
 

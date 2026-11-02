@@ -19,3 +19,5 @@ Nazwy ról (`feature-builder-ui`, `feature-builder-data`, `feature-builder-fulls
   `src/features/`, `src/pages/`, `*.css`.
 - Dane (pure-data): `src/lib/`, `src/hooks/`, `supabase/`, testy i konfiguracja.
 - Flaga warstwy prezentacji w review fazy: komponenty, style, HTML, szablony, `public/`.
+- Stała czytana przez serwer i klienta (rejestr stałych planu): moduł bez Reacta (`src/config/…`, `src/lib/…`),
+  nie `src/components/`, `src/pages/` ani `src/hooks/`.

@@ -90,8 +90,11 @@ test('przykład planu: bez wiersza Stwórz wydzielanego modułu i z plikiem pona
   assert.match(sprawdz(zaDuzy).bledy.join('\n'), /karta-klienta\.tsx` po zmianie 380 linii > 360/)
 })
 
-test('tabela builderów w SKILL.md: bazowe nazwy z walidacji i Skills in play = skills: z frontmattera agenta', () => {
-  const wiersze = [...SKILL_MD.matchAll(/^\|[^|]+\| `(feature-builder-[\w-]+)` \| ([^|]+) \|$/gm)]
+// Tabela builderów jest w slocie stacku .claude/stack/buildery.md (IU-1.4), SKILL.md do niej odsyła.
+test('tabela builderów w slocie stacku: bazowe nazwy z walidacji i Skills in play = skills: z frontmattera agenta', () => {
+  assert.match(SKILL_MD, /`\.claude\/stack\/buildery\.md`, sekcja „Tabela builderów”/)
+  const tabela = readFileSync(join(REPO, '.claude/stack/buildery.md'), 'utf8')
+  const wiersze = [...tabela.matchAll(/^\|[^|]+\| `(feature-builder-[\w-]+)` \| ([^|]+) \|$/gm)]
   assert.deepEqual(wiersze.map((w) => w[1]).sort(), [...BUILDERZY].sort())
   for (const [, builder, skille] of wiersze) {
     const agent = readFileSync(join(REPO, '.claude/agents', `${builder}.md`), 'utf8')
@@ -119,7 +122,7 @@ test('SKILL.md: handoff ma zdanie dla agentów workflow z opisu autopilota', () 
 
 test('SKILL.md: wskazane pliki references/ istnieją', () => {
   const pliki = [...new Set([...SKILL_MD.matchAll(/`(references\/[\w.-]+)`/g)].map((m) => m[1]))]
-  assert.deepEqual(pliki.sort(), ['references/kontekst-designerski.md', 'references/przygotowanie-operatora.md', 'references/szablon-planu.md'])
+  assert.deepEqual(pliki.sort(), ['references/kontekst-designerski.md', 'references/przygotowanie-operatora.md', 'references/stack.md', 'references/szablon-planu.md'])
   for (const p of pliki) assert.ok(existsSync(join(SKILL, p)), p)
 })
 
@@ -184,8 +187,10 @@ test('SKILL.md 3.4b: wysyłki maili/SMS fazy kontra limit usługi na projekcie e
 
 // P27 (2) (vibersi etap 5): scenariusz o statusie HTTP i meta trasy renderowanej przez serwer odpytywal port Vite, ktory na
 // kazdej sciezce odpowiada 200 i index.html — wynik zawsze „zgodny” albo `curl` na [Manual].
-test('SKILL.md 3.4b i README e2e-env: status HTTP i meta trasy serwera — port serwera albo trasa z listy proxy, nigdy port Vite', () => {
-  const p34b = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b'), SKILL_MD.indexOf('#### 3.5'))
+// Treść stacku z 3.4b jest w slocie .claude/stack/plan-e2e.md (IU-1.4), 3.4b odsyła do sekcji „Serwer aplikacji w scenariuszu”.
+test('slot plan-e2e i README e2e-env: status HTTP i meta trasy serwera — port serwera albo trasa z listy proxy, nigdy port Vite', () => {
+  assert.match(SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b'), SKILL_MD.indexOf('#### 3.5')), /`\.claude\/stack\/plan-e2e\.md`, sekcja „Serwer aplikacji w scenariuszu”/)
+  const p34b = readFileSync(join(REPO, '.claude/stack/plan-e2e.md'), 'utf8')
   assert.match(p34b, /status HTTP albo meta \(`<title>`, `og:\*`\) trasy renderowanej przez serwer/)
   assert.match(p34b, /port serwera albo trasa z listy proxy Vite, nigdy port Vite/)
   const readme = readFileSync(join(REPO, '.claude/templates/e2e-env/README.md'), 'utf8')

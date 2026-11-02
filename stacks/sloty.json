@@ -22,6 +22,26 @@
       "opis": "Format linii [E2E] w planie, seedy, granice narzędzia jazdy, serwer aplikacji w scenariuszu."
     },
     {
+      "plik": ".claude/skills/dev-plan/references/stack.md",
+      "opis": "dev-plan: przykłady stacku do przygotowania operatora (klucze klienta, assety, start aplikacji w trybie e2e)."
+    },
+    {
+      "plik": ".claude/skills/dev-docs-complete/references/stack.md",
+      "opis": "dev-docs-complete: wstawki smoke'u operatora (narzędzie jazdy, czego automat nie sprawdzi, klasa błędów, start aplikacji)."
+    },
+    {
+      "plik": ".claude/skills/dev-prep/references/stack.md",
+      "opis": "dev-prep: katalogi ekranów i assetów, start serwera API w E2E, pole wymiarów ekranu w makietach."
+    },
+    {
+      "plik": ".claude/skills/dev-compound/references/stack.md",
+      "opis": "dev-compound: technologie stacku i przykład paths we wpisie docs/solutions/."
+    },
+    {
+      "plik": ".claude/skills/weryfikacja-setup/references/stack.md",
+      "opis": "weryfikacja-setup: komendy narzędzia jazdy w przejściu na żywo (Drive, Evidence, zamknięcie)."
+    },
+    {
       "plik": ".claude/scripts/e2e/adapter.mjs",
       "opis": "Adapter E2E (slot plikowy): domyślny port i komenda startu, port serwera deweloperskiego, narzędzie jazdy, próbny zrzut, uwagi planowania."
     }

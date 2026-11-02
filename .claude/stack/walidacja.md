@@ -7,6 +7,7 @@ są w rdzeniu i obowiązują niezależnie od tego pliku.
 ## Runner testów i build
 
 - Runner testów: vitest. Komendy bierzesz z `scripts` w `package.json` (typecheck, lint, test, build).
+- Test jednego pliku (np. pozycja `Weryfikacja` w planie): `pnpm vitest run <ścieżka>`.
 - Krok build: skrypt `build` z `package.json` (zwykle `vite build`); brak skryptu build → build = `n/a`.
 - Domknięcie fazy sprawdza, że build (`vite build`) przechodzi.
 

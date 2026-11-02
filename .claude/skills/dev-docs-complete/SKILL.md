@@ -21,12 +21,12 @@ Datę do plików bierz z `date +%F`.
 
 3. **Smoke operatora** — dokument `docs/operator/<YYYY-MM-DD>-$ARGUMENTS-smoke.md` (w trybie autopilota robi to faza „Smoke operatora" w `dev-docs-complete-wf.js` — nie generuj drugi raz, jeśli już istnieje na dziś).
 
-   Cel: po zielonym automacie (typecheck, testy, E2E w przeglądarce) człowiek dostaje listę **wyłącznie tego, czego automat nie mógł sprawdzić**. Nie jest to kopia zadań ani podsumowanie — każdy punkt to coś do zrobienia na ekranie/urządzeniu z konkretnym oczekiwanym wynikiem.
+   Cel: po zielonym automacie (typecheck, testy, E2E narzędziem jazdy stacku) człowiek dostaje listę **wyłącznie tego, czego automat nie mógł sprawdzić**. Nie jest to kopia zadań ani podsumowanie — każdy punkt to coś do zrobienia na ekranie/urządzeniu z konkretnym oczekiwanym wynikiem.
 
    **Źródła (zbierz tylko z nich, nic nie wymyślaj):**
    1. niezaznaczone checkboxy z `## Operator checklist faza N` w `*-zadania.md` (wszystkie fazy),
    2. scenariusze `[Manual]` z `*-zadania.md` i z planu technicznego (ścieżka w `Plan techniczny:`),
-   3. findingi typu OPERATOR z `review-faza-*.md` (poza fix: natywne okna przeglądarki, fizyczne urządzenie, warunki środowiskowe),
+   3. findingi typu OPERATOR z `review-faza-*.md` (poza fix: natywne okna, których narzędzie jazdy nie obsłuży, fizyczne urządzenie, warunki środowiskowe),
    4. otwarte wpisy z `docs/active/$ARGUMENTS/known-issues.md` (jeśli istnieje) oraz otwarte `[P1]`/`[P2]` z `## Do poprawy po review fazy N`. Sekcje `## P3 faza N` w known-issues pomiń — nity zostają w known-issues (opis PR, bot), smoke ich nie sprawdza. „Otwarte" = poza sekcją `## Zamkniete`; gdy sekcji nie ma, pomiń wpisy, które same lub późniejsza faza oznaczają jako ZAMKNIĘTY/naprawione/zweryfikowane — ale jeśli zamknięto tylko bloker, a sama weryfikacja (np. przebieg E2E w przeglądarce) pozostała, wpisz ją jako checkbox do wykonania, nie jako „znany problem". Z obu źródeł bierz **wyłącznie** wpisy opisujące zachowanie na ekranie/urządzeniu lub flow do ręcznego przejścia; notatki środowiskowe (`.env.local`, projekt Supabase, restart dev servera), dane testowe i pułapki narzędziowe pomiń,
    4b. scenariusze `[E2E]` przeniesione w trakcie runu na `[Manual]` (środowisko padło, limit zewnętrzny, harness, pad testera — automat ich nie wykonał): `node .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/$ARGUMENTS` (JSON: pozycje z fazą, treścią, przyczyną i powodem) → sekcja `## E2E do odegrania ręcznie (środowisko w trakcie runu)` na początku dokumentu, po czerwonych flagach; jeden checkbox na pozycję z powodem. To nie jest czerwona flaga — run świadomie oddał je człowiekowi; w sekcjach ekranów ich nie powtarzaj.
    5. **czerwona flaga:** niezaznaczone `[E2E]` (`grep -nE '^- \[ \].*\[E2E\]' docs/active/$ARGUMENTS/*-zadania.md | grep -vE 'Operator:|\[P[123]\]'` — ten sam grep co completion-gate autopilota; kopie `Operator:` w Operator checklist i pozycje findingów `[P1]/[P2]/[P3]` w „Do poprawy" nie są scenariuszami; brak trafień = exit 1, to nie błąd). Rozdziel: linie z suffixem `(FAIL:` → sekcja `## ⚠️ E2E przebiegło i padło (znany defekt)` z odesłaniem do known-issues (**nie** radź zmiany na `[Manual]` — ukryłaby znany defekt); pozostałe → `## ⚠️ E2E nieuruchomione`. Obie sekcje na początku dokumentu.
@@ -35,7 +35,7 @@ Datę do plików bierz z `date +%F`.
    **Hierarchia stanu i dedup** (źródła się nakładają — scribe review kopiuje każdy finding OPERATOR do `## Operator checklist faza N`, a `[Manual]` z IU też tam ląduje):
    - `## Operator checklist faza N` w `*-zadania.md` jest **jedynym źródłem stanu**. Pozycja `[x]` tam = temat zamknięty: pomiń jej odpowiednik w raporcie review (finding OPERATOR o tym samym IU/pliku/temacie), w `[Manual]` planu i w known-issues. Źródła (2)–(4) służą do wzbogacenia kroków/oczekiwanego wyniku pozycji z (1); pozycja spoza (1) wchodzi tylko, gdy w zadaniach nie ma jej wcale (dopasowanie po IU-K / pliku / ekranie).
    - Każdy temat raz: `Test [Manual]` z IU, jego kopia w Operator checklist i wzmianka w findingu OPERATOR = **jeden** checkbox w sekcji ekranu; kroki scal, nie powielaj.
-   - Warunki środowiskowe z findingów OPERATOR nie są pozycjami smoke'u: konieczność restartu dev servera po zmianie `.env` ląduje wyłącznie jako check w „0. Przygotowanie"; kroki stricte pod przebieg E2E (seedy na projekt e2e, dev server w trybie `--mode e2e`) **nigdy** nie wchodzą do smoke'u — kolidują z sekcją 0 (smoke leci na projekcie głównym).
+   - Warunki środowiskowe z findingów OPERATOR nie są pozycjami smoke'u: konieczność restartu dev servera po zmianie `.env` ląduje wyłącznie jako check w „0. Przygotowanie"; kroki stricte pod przebieg E2E (seedy na projekt e2e, start aplikacji w trybie e2e) **nigdy** nie wchodzą do smoke'u — kolidują z sekcją 0 (smoke leci na projekcie głównym).
    - **W całym pliku żadnych wartości haseł/tokenów/kluczy** — także gdy cytujesz known-issues lub review; zastąp nazwą zmiennej (`E2E_TEST_PASSWORD`) lub frazą `<hasło w .env.e2e>`. E-mail konta testowego może zostać.
 
    **Punkty wizualne** czyta narzędzie makiet (`/makieta`). Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”. Przed pierwszym punktem wizualnym smoke'u stoi zdanie „Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.”. Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik> --pola`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.
@@ -49,7 +49,7 @@ Datę do plików bierz z `date +%F`.
    - Nazwa zmiennej z hasłem konta testowego: wyłącznie nazwy — `grep -oE '^[A-Z0-9_]*(PASSWORD|PASS|HASLO)[A-Z0-9_]*=' .env .env.local .env.e2e 2>/dev/null | cut -d= -f1 | sort -u`; brak → „konto testowe: patrz `.env.example`", nie zgaduj. **Zakaz `cat`/Read całego `.env*`.**
    - Jeśli w projekcie istnieje wcześniejszy `docs/operator/*-smoke.md` — trzymaj się jego układu sekcji.
 
-   **Układ pliku:**
+   **Układ pliku** (wstawki zależne od stacku — narzędzie jazdy, czego automat nie sprawdzi, przykład klasy błędów, start aplikacji w sekcji 0 — bierzesz z `references/stack.md`, sekcja „Smoke operatora”):
 
    ```markdown
    # Smoke operatora — <tytuł zadania> (<ID wymagań, np. R1–R14>)
@@ -57,19 +57,17 @@ Datę do plików bierz z `date +%F`.
    Branch: `feature/<zadanie>` · Utworzono: YYYY-MM-DD
    Status: **do przejścia** — odhaczaj `[ ]` → `[x]` w miarę przechodzenia.
 
-   Automat (typecheck, <N> testów, <M> scenariuszy E2E w przeglądarce) jest zielony. Ta lista pokrywa
-   **wyłącznie to, czego automat nie mógł sprawdzić**: wygląd na prawdziwym ekranie, natywne
-   okna przeglądarki (file picker, print, powiadomienia), odczucie animacji, responsywność na realnym urządzeniu.
+   Automat (typecheck, <N> testów, <M> scenariuszy E2E <narzędzie jazdy ze slotu>) jest zielony. Ta lista pokrywa
+   **wyłącznie to, czego automat nie mógł sprawdzić**: <czego automat nie sprawdzi — ze slotu>.
 
    Dlaczego to nie jest formalność: <1–3 zdania o klasie błędów niewidocznych w testach w tym stacku,
-   np. Tailwind cicho ignoruje nieistniejące klasy; scroll i overflow zachowują się inaczej na realnym
-   urządzeniu dotykowym niż w emulowanym viewporcie — z indeksu wiedzy `docs/learned-patterns.md` / known-issues projektu, jeśli są>.
+   przykład klasy ze slotu stacku — z indeksu wiedzy `docs/learned-patterns.md` / known-issues projektu, jeśli są>.
 
    ## ⚠️ E2E przebiegło i padło (znany defekt)   ← tylko gdy są linie z suffixem `(FAIL:`
-   - [ ] [E2E] <treść checkboxa> — defekt opisany w `docs/completed/<zadanie>/known-issues.md` (faza N); napraw kod i uruchom scenariusz ponownie (tester agent-browser w review autopilota). NIE zmieniaj na `[Manual]`.
+   - [ ] [E2E] <treść checkboxa> — defekt opisany w `docs/completed/<zadanie>/known-issues.md` (faza N); napraw kod i uruchom scenariusz ponownie (tester E2E w review autopilota). NIE zmieniaj na `[Manual]`.
 
    ## ⚠️ E2E nieuruchomione   ← tylko gdy źródło (5) ma linie bez suffixu `(FAIL:`
-   - [ ] [E2E] <treść checkboxa> — uruchom scenariusz przez testera agent-browser na środowisku `.env.e2e` albo wykonaj ręcznie i oznacz `[Manual]` w zadaniach
+   - [ ] [E2E] <treść checkboxa> — uruchom scenariusz przez testera E2E na środowisku `.env.e2e` albo wykonaj ręcznie i oznacz `[Manual]` w zadaniach
 
    ## E2E do odegrania ręcznie (środowisko w trakcie runu)   ← tylko gdy źródło (4b) ma pozycje
    - [ ] <scenariusz i oczekiwany stan z linii> — automat nie wykonał: <przyczyna>: <powód>
@@ -77,7 +75,7 @@ Datę do plików bierz z `date +%F`.
    ## 0. Przygotowanie (5 min)
    > ⚠️ Sprawdź projekt Supabase PRZED startem: `.env`/`.env.local` ma wskazywać projekt <GŁÓWNY/dev> (marker: nazwa projektu / pierwsze znaki ref), NIE środowisko E2E (<ref e2e>) — na e2e backend jest pusty.
    - [ ] `grep -oE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local` → wskazuje <marker>
-   - [ ] Dev server uruchomiony (`<pm> run dev`), aplikacja otwiera się na localhost:5173
+   - [ ] <start aplikacji ze slotu stacku>
    - [ ] Zaloguj się kontem testowym (<nazwa zmiennej z hasłem — NIGDY wartość>)
    **Co będzie potrzebne w trakcie:** <dane/stany: konto z danymi, drugie konto, rekordy testowe…>
 

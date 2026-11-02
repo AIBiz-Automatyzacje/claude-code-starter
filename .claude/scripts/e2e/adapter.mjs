@@ -11,6 +11,7 @@
 //   probnyZrzut()               WynikNarzedzia: narzedzie robi zrzut przed startem serwera
 //   LIMIT_ZRZUTU_SEK, opisProbyZrzutu, naprawaZrzutu — limit i teksty STOP-u probnego zrzutu
 //   uwagiPlanowania(projekt, env) string[] — uwagi stacku do bramki gotowosci /dev-plan
+//   SZKIELET_WERYFIKACJI        teksty sekcji Doctor, Drive, Evidence i Cleanup w szkielecie skilla weryfikacji (szkielet.mjs)
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
@@ -147,4 +148,21 @@ export function uwagaProxyZdrowia(projekt, env) {
 /** @param {string} projekt @param {Record<string, string>} env @returns {string[]} */
 export function uwagiPlanowania(projekt, env) {
   return [uwagaSerweraApi(projekt, env), uwagaProxyZdrowia(projekt, env)].filter((u) => u !== null)
+}
+
+// Szkielet skilla weryfikacji projektu (szkielet.mjs, /weryfikacja-setup): komendy narzedzia jazdy w sekcjach skilla.
+export const SZKIELET_WERYFIKACJI = {
+  domyslneParametry: 'domyślne (Vite)',
+  doctor: '`agent-browser doctor`',
+  drive: 'Przeglądarka: skill `agent-browser` — `open <url>` → `snapshot -i` → akcja na refie → `snapshot -i` po każdej zmianie strony.',
+  /** @param {number} testId liczba atrybutow data-testid w kodzie @returns {string} */
+  selektory: (testId) => (testId
+    ? `Selektory: kod ma ${testId} atrybutów \`data-testid\` — przy niejednoznacznym snapshotcie szukaj po nich (\`agent-browser find testid <id> click\`).`
+    : 'Selektory: kod nie ma atrybutów `data-testid` — elementy wskazuj rolą i etykietą ze snapshotu.'),
+  evidence: [
+    'Dowód scenariusza = akcja + stan po akcji + skutek uboczny. Stan: asercja w snapshotcie albo `agent-browser get text` i zrzut',
+    '`agent-browser screenshot "$(git rev-parse --show-toplevel)/<folder zadania>/<flow>.png"` (ścieżka bezwzględna: demon agent-browser',
+    'rozwiązuje względną od swojego katalogu startowego). Skutek uboczny (zapis, wysyłka): odpowiedź HTTP (`curl -sS`) albo wiersz bazy e2e.',
+  ].join('\n'),
+  cleanup: '`agent-browser close` zamyka przeglądarkę.',
 }
