@@ -172,8 +172,11 @@ test('sync: stara baza wiedzy w projekcie → linia HIGIENA z naprawa przy kazdy
   const zrodlo = zrodloSzablonu()
   const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
   try {
+    const skrypty = resolve(dirname(SKRYPT), '..', '..', '..', 'scripts')
     mkdirSync(join(zrodlo, '.claude', 'scripts', 'doctor'), { recursive: true })
-    execFileSync('cp', [resolve(dirname(SKRYPT), '..', '..', '..', 'scripts', 'doctor', 'higiena.mjs'), join(zrodlo, '.claude', 'scripts', 'doctor')])
+    execFileSync('cp', [join(skrypty, 'doctor', 'higiena.mjs'), join(zrodlo, '.claude', 'scripts', 'doctor')])
+    // higiena importuje wspolny detektor bajtow z wiedza/walidacja.mjs (a ten slownik klas) — szablon niesie caly katalog.
+    execFileSync('cp', ['-R', join(skrypty, 'wiedza'), join(zrodlo, '.claude', 'scripts', 'wiedza')])
     git(zrodlo, ['add', '.'])
     git(zrodlo, ['commit', '-q', '-m', 'higiena'])
     mkdirSync(join(projekt, '.claude', 'rules'), { recursive: true })
