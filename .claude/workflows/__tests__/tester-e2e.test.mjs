@@ -36,10 +36,10 @@ const ZADANIE = 'docs/active/zadanie-x'
 const MAKS_WLASNEJ_TRESCI = 700
 
 test('e2ePrompt: parametry wywolania i tryb, bez procedury', () => {
-  const p = e2ePrompt(ZADANIE, 2, [], 'bez-przegladarki', {})
+  const p = e2ePrompt(ZADANIE, 2, [], 'bez-interakcji', {})
   assert.match(p, /fazy 2/)
   assert.match(p, /docs\/active\/zadanie-x/)
-  assert.match(p, /Tryb: bez-przegladarki/)
+  assert.match(p, /Tryb: bez-interakcji/)
   assert.match(p, /\.claude\/skills\/weryfikacja\/SKILL\.md/)
   for (const blok of ['<DLUGIE>', '<P3>', '<MAPA>', '<REREVIEW>']) assert.ok(p.includes(blok), `brak bloku wspolnego ${blok}`)
   const wlasna = p.replace(/<DLUGIE>|<P3>|<MAPA>|<REREVIEW>/g, '')
@@ -47,7 +47,7 @@ test('e2ePrompt: parametry wywolania i tryb, bez procedury', () => {
   for (const procedura of [/curl/, /e2e\.mjs stan/, /agent-browser doctor/, /psql/, /run-all\.sh/, /figma_screens/, /limit-zewnetrzny/]) {
     assert.doesNotMatch(wlasna, procedura, `procedura w prompcie: ${procedura}`)
   }
-  assert.match(e2ePrompt(ZADANIE, 1, [], 'przegladarka', {}), /Tryb: przegladarka/)
+  assert.match(e2ePrompt(ZADANIE, 1, [], 'interaktywny', {}), /Tryb: interaktywny/)
 })
 
 test('review-wf: blok trybu bez przegladarki przeniesiony do pliku roli; sciezka skilla = kopia stalej skryptu', () => {
@@ -74,7 +74,7 @@ test('plik roli: scenariusze ze skryptu (oba prefiksy), srodowisko i pad serwera
   assert.match(tester, /`"zyje": true`[^.]*watcher/)
   assert.match(tester, /serwer aplikacji padł/)
   assert.match(tester, /`srodowisko`[^.]*bez findingu/)
-  assert.match(tester, /W trybie `bez-przegladarki`/)
+  assert.match(tester, /W trybie `bez-interakcji`/)
   assert.match(tester, /agent-browser doctor --offline --quick/)
   assert.match(tester, /E2E_TEST_EMAIL/)
 })
@@ -108,13 +108,13 @@ test('plik roli: makiety — visual-diff z findingiem OPERATOR; w trybie bez prz
   assert.match(sekcja, /figma_screens/)
   assert.match(sekcja, /visual-diff\/<ekran>-actual\.png/)
   assert.match(sekcja, /Operator: \[Manual\] <ekran>: visual review — Operator action:/)
-  assert.match(sekcja, /W trybie `bez-przegladarki` zrzutu nie robisz, a każdy ekran z `figma_screens`[^\n]*finding OPERATOR P3/)
+  assert.match(sekcja, /W trybie `bez-interakcji` zrzutu nie robisz, a każdy ekran z `figma_screens`[^\n]*finding OPERATOR P3/)
   assert.match(tester, /Przy zerze scenariuszy i bez makiet `figma_screens`/)
 })
 
 test('plik roli: doctor agent-browser tylko w trybie przegladarka (bez przegladarki zostaja sprawdzenia HTTP)', () => {
-  assert.match(tester, /W trybie `przegladarka` zacznij od preflightu: `agent-browser doctor --offline --quick`/)
-  assert.match(tester, /W trybie `bez-przegladarki`[^\n]*`curl -sS`/)
+  assert.match(tester, /W trybie `interaktywny` zacznij od preflightu: `agent-browser doctor --offline --quick`/)
+  assert.match(tester, /W trybie `bez-interakcji`[^\n]*`curl -sS`/)
 })
 
 test('plik roli: finding seeda kontra migracja ma linie checkbox: scenariusza, ktory uzywa seeda (fix odznacza po PASS)', () => {
@@ -156,7 +156,7 @@ test('tester: przed porownaniem z makieta po padzie probnego zrzutu — jedno po
   assert.match(ponowienie, /`agent-browser close`[^\n]*`agent-browser open about:blank`[^\n]*`perl -e 'alarm 30; exec @ARGV' agent-browser screenshot "\$Z\/visual-diff\/probny\.png"`/)
   assert.match(ponowienie, /jeden raz/)
   assert.match(ponowienie, /Zapisany: zrzuty ekranów makiet robisz według punktów niżej/)
-  assert.match(ponowienie, /Przerwany: każdy ekran idzie do człowieka jak w trybie `bez-przegladarki`/)
+  assert.match(ponowienie, /Przerwany: każdy ekran idzie do człowieka jak w trybie `bez-interakcji`/)
   assert.ok(makiety.indexOf('ponów próbny zrzut') < makiety.indexOf('zapisz zrzut jako'), 'ponowienie przed zrzutem makiety')
 })
 

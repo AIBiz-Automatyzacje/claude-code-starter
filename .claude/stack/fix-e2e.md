@@ -6,8 +6,7 @@ wspólna (odznaczanie checkboxów dopiero po PASS, restart serwera `e2e.mjs star
 
 ## Ponowne odegranie scenariusza
 
-Po naprawie przyczyny re-uruchom scenariusz w przeglądarce (agent-browser: open URL, snapshot, click, screenshot);
-przed odegraniem zaaplikuj seed flow przez `psql` na `"$SUPABASE_E2E_DB_URL"`.
+Po naprawie przyczyny re-uruchom scenariusz w przeglądarce (agent-browser: open URL, snapshot, click, screenshot).
 
 ## Sprawdzenie poprawki wizualnej
 

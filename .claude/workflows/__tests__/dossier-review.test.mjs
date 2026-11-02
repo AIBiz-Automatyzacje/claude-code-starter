@@ -85,12 +85,12 @@ test('dossierPrompt: zapasowy agent uruchamia skrypt dossier; --baza tylko z SHA
 test('routingReviewerow: brak dossier = pelny sklad i tester w przegladarce (fail-open)', () => {
   const r = routingReviewerow(null)
   assert.deepEqual(klucze(r), ['security', 'performance', 'code-quality', 'correctness', 'spec-compliance', 'test-coverage'])
-  assert.equal(r.e2eTryb, 'przegladarka')
+  assert.equal(r.e2eTryb, 'interaktywny')
 })
 
 test('routingReviewerow: tryb testera z checkboxow [E2E] i srodowiska; zero checkboxow i makiet = tester pominiety', () => {
-  assert.equal(routingReviewerow({ ...DOSSIER, e2eCheckboxy: 2 }, 'pominieto').e2eTryb, 'bez-przegladarki')
-  assert.equal(routingReviewerow({ ...DOSSIER, e2eCheckboxy: 0, figmaScreens: true }, 'gotowe').e2eTryb, 'przegladarka')
+  assert.equal(routingReviewerow({ ...DOSSIER, e2eCheckboxy: 2 }, 'pominieto').e2eTryb, 'bez-interakcji')
+  assert.equal(routingReviewerow({ ...DOSSIER, e2eCheckboxy: 0, figmaScreens: true }, 'gotowe').e2eTryb, 'interaktywny')
   const r = routingReviewerow(DOSSIER, 'gotowe')
   assert.equal(r.e2eTryb, 'pominiety')
   assert.ok(r.pominieci.some((p) => p.key === 'e2e'))
@@ -119,7 +119,7 @@ test('kontrakt skrypt → routing: faza z fetch w nowym module budzi caly sklad,
   assert.equal(czyDossier(kod), true)
   const r = routingReviewerow(kod)
   assert.deepEqual(klucze(r), ['security', 'performance', 'code-quality', 'correctness', 'spec-compliance', 'test-coverage'])
-  assert.equal(r.e2eTryb, 'przegladarka')
+  assert.equal(r.e2eTryb, 'interaktywny')
 
   const dokumentacja = dossierZeSkryptu({ 'README.md': '# x\n\nWiecej opisu.\n' })
   const rd = routingReviewerow(dokumentacja, 'gotowe')

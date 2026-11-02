@@ -101,7 +101,7 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     return { ...wynik, status: 'brak-srodowiska', detal: `repo nie ma ${PLIK_ENV}`, naprawa: `Setup srodowiska wg .claude/templates/e2e-env/README.md (${PLIK_ENV} w korzeniu repo, w .gitignore). Sprawdzenie: ${komendaSprawdzenia(null)}` }
   }
   if (!env || !konf) {
-    if (!scenariusze) return { ...wynik, detal: `makiety figma_screens bez ${PLIK_ENV} — visual diff bez przegladarki (tester w trybie bez-przegladarki)` }
+    if (!scenariusze) return { ...wynik, detal: `makiety figma_screens bez ${PLIK_ENV} — visual diff bez przegladarki (tester w trybie bez-interakcji)` }
     return {
       ...wynik,
       status: 'brak-srodowiska',

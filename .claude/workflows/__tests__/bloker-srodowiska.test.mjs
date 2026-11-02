@@ -51,7 +51,7 @@ const { wykryjBlokerSrodowiska } = new Function(
 // Odwzorowanie miejsca wywolania z workflowu (filtr trybu nie jest w samej funkcji); test `wiring` pilnuje wywolania.
 /** @param {{ przebiegi: PrzebiegE2e[], e2eTryb: string }} wejscie */
 function wykryjJakWorkflow({ przebiegi, e2eTryb }) {
-  if (e2eTryb !== 'przegladarka') return null
+  if (e2eTryb !== 'interaktywny') return null
   return wykryjBlokerSrodowiska(przebiegi)
 }
 
@@ -72,7 +72,7 @@ const POZYTYWNE = [
 
 for (const p of POZYTYWNE) {
   test(`awaria srodowiska WYKRYTA — ${p.nazwa}`, () => {
-    const wynik = wykryjJakWorkflow({ przebiegi: przebieg(p.dowod), e2eTryb: 'przegladarka' })
+    const wynik = wykryjJakWorkflow({ przebiegi: przebieg(p.dowod), e2eTryb: 'interaktywny' })
     assert.ok(wynik, 'SKIP z przyczyna srodowisko to awaria srodowiska')
     assert.equal(wynik.klasa, p.klasa)
     assert.ok(wynik.dowod.length > 0, 'dowod idzie do logu runu — nie moze byc pusty')
@@ -82,25 +82,25 @@ for (const p of POZYTYWNE) {
 // ── NEGATYWNE ────────────────────────────────────────────────────────────────
 
 test('NIE wykryta — FAIL z ERR_CONNECTION_REFUSED (kod fazy polozyl serwer: finding do fixa, fix restartuje serwer)', () => {
-  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('net::ERR_CONNECTION_REFUSED http://localhost:5173/', 'nie-dotyczy', 'FAIL'), e2eTryb: 'przegladarka' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('net::ERR_CONNECTION_REFUSED http://localhost:5173/', 'nie-dotyczy', 'FAIL'), e2eTryb: 'interaktywny' }), null)
 })
 
 test('NIE wykryta — SKIP harness albo limit z cytowanym bledem sieci uslugi zewnetrznej', () => {
-  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('popup OAuth: net::ERR_NAME_NOT_RESOLVED accounts.google.com', 'harness'), e2eTryb: 'przegladarka' }), null)
-  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('SMTP: connect ECONNREFUSED smtp.example.com:587', 'limit-zewnetrzny'), e2eTryb: 'przegladarka' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('popup OAuth: net::ERR_NAME_NOT_RESOLVED accounts.google.com', 'harness'), e2eTryb: 'interaktywny' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('SMTP: connect ECONNREFUSED smtp.example.com:587', 'limit-zewnetrzny'), e2eTryb: 'interaktywny' }), null)
 })
 
 test('NIE wykryta — SKIP brak-seeda (defekt buildera, idzie do fixa)', () => {
-  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('brak e2e/seeds/logowanie-seed.sql', 'brak-seeda'), e2eTryb: 'przegladarka' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('brak e2e/seeds/logowanie-seed.sql', 'brak-seeda'), e2eTryb: 'interaktywny' }), null)
 })
 
 test('NIE wykryta — tester bez przebiegow albo same PASS', () => {
-  assert.equal(wykryjJakWorkflow({ przebiegi: [], e2eTryb: 'przegladarka' }), null)
-  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('ok', 'nie-dotyczy', 'PASS'), e2eTryb: 'przegladarka' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: [], e2eTryb: 'interaktywny' }), null)
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('ok', 'nie-dotyczy', 'PASS'), e2eTryb: 'interaktywny' }), null)
 })
 
-test('NIE wykryta — tryb bez-przegladarki (SKIP srodowisko jest wtedy oczekiwany)', () => {
-  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('srodowisko E2E niedostepne w tym runie'), e2eTryb: 'bez-przegladarki' }), null)
+test('NIE wykryta — tryb bez-interakcji (SKIP srodowisko jest wtedy oczekiwany)', () => {
+  assert.equal(wykryjJakWorkflow({ przebiegi: przebieg('srodowisko E2E niedostepne w tym runie'), e2eTryb: 'bez-interakcji' }), null)
 })
 
 // ── Kotwica wywolania w workflowie ─────────────────────────────────────────
@@ -108,7 +108,7 @@ test('NIE wykryta — tryb bez-przegladarki (SKIP srodowisko jest wtedy oczekiwa
 test('wiring — detekcja tylko w trybie przegladarki, na przebiegach testera', () => {
   assert.match(
     zrodlo,
-    /const blokerSrodowiska = e2eTryb === 'przegladarka'\s*\n\s*\? wykryjBlokerSrodowiska\(e2ePrzebiegi\)\s*\n\s*: null/,
+    /const blokerSrodowiska = e2eTryb === 'interaktywny'\s*\n\s*\? wykryjBlokerSrodowiska\(e2ePrzebiegi\)\s*\n\s*: null/,
     'detekcja dostaje przebiegi testera i dziala tylko w trybie przegladarki',
   )
 })
