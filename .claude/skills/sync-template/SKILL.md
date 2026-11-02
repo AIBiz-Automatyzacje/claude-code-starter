@@ -66,7 +66,7 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
   Przekaż userowi linię z poprawką (wpis `exclude` w pliku configu, który podaje) i zaproponuj, że ją
   wpiszesz i zacommitujesz. Sync i tak się udał.
 - `HIGIENA: <element> — <szczegół> — naprawa: <komenda>` (każdy sync, także `UP_TO_DATE`) → rzecz, której sync nie
-  przenosi, a która kosztuje albo psuje pipeline: stara baza wiedzy w `.claude/rules/learned-patterns.md`, kontekst startowy
+  przenosi, a która kosztuje albo psuje pipeline: stara baza wiedzy (`learned-patterns.md` w `.claude/rules/`), kontekst startowy
   agenta ponad próg (CLAUDE.md + reguły bez `paths:`), pozostałości starego zestawu w `.claude/`, hook wskazujący usunięty
   plik, `.claude/.backups/` albo `CLAUDE.md` w podkatalogach poza `.gitignore`, bajt sterujący w wiedzy, brak albo nieaktualny
   `.coderabbit.yaml`. Wypisz każdą linię z naprawą jako listę do decyzji usera — sam niczego nie naprawiasz. Sync i tak się udał.
