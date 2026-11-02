@@ -10,14 +10,15 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { uwagaSerweraApi } from '../adapter.mjs'
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
-import { bledySrodowiska, konfiguracja, parsujEnv, uwagaSerweraApi } from '../srodowisko.mjs'
+import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
 import { restartFazy, startE2e } from '../start.mjs'
 
 const ZADANIE = 'docs/active/z'
 const BAZA = 'VITE_SUPABASE_URL=https://e2e.supabase.co\nVITE_SUPABASE_ANON_KEY=a\nSUPABASE_E2E_DB_URL=postgres://x\nSUPABASE_E2E_SERVICE_ROLE_KEY=s\nE2E_TEST_EMAIL=t@x.pl\nE2E_TEST_PASSWORD=p\n'
 /** @type {import('../srodowisko.mjs').Narzedzia} */
-const SPRAWNE = { czyIgnorowany: () => true, agentBrowser: () => ({ ok: true, detal: '' }), zrzut: () => ({ ok: true, detal: '' }) }
+const SPRAWNE = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }), zrzut: () => ({ ok: true, detal: '' }) }
 
 // Sprzatanie po kazdym tescie, takze padnietym: serwer pipeline'u z pliku PID (zatrzymajSerwer zabija tylko nasz proces),
 // log i plik PID w /tmp, katalog projektu.
@@ -107,21 +108,21 @@ test('konfiguracja: domyslnie dev server Vite w trybie e2e na 5174 (5173 = zwykl
 test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, agent-browser — kazdy blad z naprawa', () => {
   const p = projekt({ pliki: { 'supabase/config.toml': '', '.env': 'VITE_SUPABASE_URL=https://e2e.supabase.co\n' } })
   const bledy = bledySrodowiska(p, parsujEnv('VITE_SUPABASE_URL=https://e2e.supabase.co\n'), {
-    przegladarka: true, narzedzia: { czyIgnorowany: () => false, agentBrowser: () => ({ ok: false, detal: 'brak agent-browser' }) },
+    jazda: true, narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'brak agent-browser' }) },
   })
   assert.equal(bledy.length, 4)
   assert.match(bledy[0], /\.env\.e2e nie jest w \.gitignore — dopisz go/)
   assert.match(bledy[1], /dedykowanego projektu Supabase e2e/)
   assert.match(bledy[2], /brak kluczy bazy e2e w \.env\.e2e: VITE_SUPABASE_PUBLISHABLE_KEY \(albo legacy VITE_SUPABASE_ANON_KEY\), SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD/)
-  assert.match(bledy[3], /agent-browser nie dziala: brak agent-browser — instalacja: npm i -g agent-browser/)
+  assert.match(bledy[3], /agent-browser nie dziala: brak agent-browser — instalacja: npm install -g agent-browser/)
   rmSync(p, { recursive: true })
 })
 
 test('sprawdzenie: projekt bez Supabase nie wymaga kluczy bazy; komplet kluczy i inna baza = zero bledow', () => {
   const bez = projekt()
-  assert.deepEqual(bledySrodowiska(bez, {}, { przegladarka: true, narzedzia: SPRAWNE }), [])
+  assert.deepEqual(bledySrodowiska(bez, {}, { jazda: true, narzedzia: SPRAWNE }), [])
   const z = projekt({ pliki: { 'supabase/config.toml': '', '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
-  assert.deepEqual(bledySrodowiska(z, parsujEnv(BAZA), { przegladarka: true, narzedzia: SPRAWNE }), [])
+  assert.deepEqual(bledySrodowiska(z, parsujEnv(BAZA), { jazda: true, narzedzia: SPRAWNE }), [])
   rmSync(bez, { recursive: true })
   rmSync(z, { recursive: true })
 })
@@ -129,16 +130,16 @@ test('sprawdzenie: projekt bez Supabase nie wymaga kluczy bazy; komplet kluczy i
 test('sprawdzenie: klucz klienta bazy e2e = publishable albo legacy anon (Supabase wycofuje anon do konca 2026)', () => {
   const p = projekt({ pliki: { 'supabase/config.toml': '' } })
   const publishable = BAZA.replace('VITE_SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY')
-  assert.deepEqual(bledySrodowiska(p, parsujEnv(publishable), { przegladarka: false, narzedzia: SPRAWNE }), [])
-  assert.deepEqual(bledySrodowiska(p, parsujEnv(BAZA), { przegladarka: false, narzedzia: SPRAWNE }), [])
-  const bez = bledySrodowiska(p, parsujEnv(BAZA.replace('VITE_SUPABASE_ANON_KEY=a\n', '')), { przegladarka: false, narzedzia: SPRAWNE })
+  assert.deepEqual(bledySrodowiska(p, parsujEnv(publishable), { jazda: false, narzedzia: SPRAWNE }), [])
+  assert.deepEqual(bledySrodowiska(p, parsujEnv(BAZA), { jazda: false, narzedzia: SPRAWNE }), [])
+  const bez = bledySrodowiska(p, parsujEnv(BAZA.replace('VITE_SUPABASE_ANON_KEY=a\n', '')), { jazda: false, narzedzia: SPRAWNE })
   assert.deepEqual(bez, ['brak kluczy bazy e2e w .env.e2e: VITE_SUPABASE_PUBLISHABLE_KEY (albo legacy VITE_SUPABASE_ANON_KEY) — szablon: .claude/templates/e2e-env/README.md'])
   rmSync(p, { recursive: true })
 })
 
 test('sprawdzenie: zmieniona wypchnieta migracja (migrations.sum) blokuje baze e2e', () => {
   const p = projekt({ pliki: { 'supabase/migrations/001_a.sql': 'select 2;', 'supabase/migrations.sum': `${'0'.repeat(64)}  001_a.sql\n` } })
-  const bledy = bledySrodowiska(p, parsujEnv(BAZA), { przegladarka: false, narzedzia: SPRAWNE })
+  const bledy = bledySrodowiska(p, parsujEnv(BAZA), { jazda: false, narzedzia: SPRAWNE })
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /^migrations\.sum: supabase\/migrations\/001_a\.sql — migracja zmieniona po zapisie sumy/)
   rmSync(p, { recursive: true })
@@ -239,7 +240,7 @@ test('bez zadania (Doctor i Launch skilla weryfikacji): sprawdzenie zawsze; brak
   writeFileSync(join(p, '.env.e2e'), `E2E_URL=http://127.0.0.1:${port}\n`)
   const ok = await startE2e(p, null, { uruchom: false, narzedzia: SPRAWNE })
   assert.deepEqual([ok.status, ok.serwer], ['gotowe', 'brak'])
-  const blad = await startE2e(p, null, { uruchom: false, narzedzia: { ...SPRAWNE, agentBrowser: () => ({ ok: false, detal: 'chrome: fail' }) } })
+  const blad = await startE2e(p, null, { uruchom: false, narzedzia: { ...SPRAWNE, narzedzieJazdy: () => ({ ok: false, detal: 'chrome: fail' }) } })
   assert.equal(blad.status, 'niepowodzenie')
   assert.match(blad.naprawa, /e2e\.mjs sprawdz$/)
 })
@@ -249,7 +250,7 @@ test('E2E_URL bez schematu albo nie-URL = blad sprawdzenia z naprawa, nie wyjate
   for (const url of ['localhost:5173', 'nie-url', '127.0.0.1:3000']) {
     const konf = konfiguracja(p, { E2E_URL: url })
     assert.match(konf.blad ?? '', /E2E_URL .* — podaj pelny adres http\(s\):\/\//, url)
-    const bledy = bledySrodowiska(p, { E2E_URL: url }, { przegladarka: false, narzedzia: SPRAWNE })
+    const bledy = bledySrodowiska(p, { E2E_URL: url }, { jazda: false, narzedzia: SPRAWNE })
     assert.equal(bledy.length, 1, url)
   }
   rmSync(p, { recursive: true })
@@ -257,7 +258,7 @@ test('E2E_URL bez schematu albo nie-URL = blad sprawdzenia z naprawa, nie wyjate
 
 test('guard tozsamosci dziala takze bez katalogu supabase/ (VITE_SUPABASE_URL w .env.e2e = jak w .env)', () => {
   const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
-  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co' }, { przegladarka: false, narzedzia: SPRAWNE })
+  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /dedykowanego projektu Supabase e2e/)
   rmSync(p, { recursive: true })
@@ -286,17 +287,17 @@ test('wlasny serwer z poprzedniego runu (zywy PID) = uruchomione, nie zastany; s
 
 test('guard tozsamosci: .env ma VITE_SUPABASE_URL, a .env.e2e nie (Vite w trybie e2e doczyta baze dev); porownanie po origin', () => {
   const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
-  const brak = bledySrodowiska(p, { E2E_URL: 'http://localhost:5173' }, { przegladarka: false, narzedzia: SPRAWNE })
+  const brak = bledySrodowiska(p, { E2E_URL: 'http://localhost:5173' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(brak.length, 1)
   assert.match(brak[0], /brak VITE_SUPABASE_URL w \.env\.e2e/)
-  const ukosnik = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co/' }, { przegladarka: false, narzedzia: SPRAWNE })
+  const ukosnik = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co/' }, { jazda: false, narzedzia: SPRAWNE })
   assert.match(ukosnik[0] ?? '', /dedykowanego projektu Supabase e2e/)
   rmSync(p, { recursive: true })
 })
 
 test('E2E_HEALTH bez schematu = blad sprawdzenia (inaczej czekanie przez caly limit startu)', () => {
   const p = projekt()
-  const bledy = bledySrodowiska(p, { E2E_HEALTH: 'localhost:5173/zdrowie' }, { przegladarka: false, narzedzia: SPRAWNE })
+  const bledy = bledySrodowiska(p, { E2E_HEALTH: 'localhost:5173/zdrowie' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /E2E_HEALTH/)
   rmSync(p, { recursive: true })
@@ -440,7 +441,7 @@ test('PID ponownie uzyty przez inny proces uzytkownika (inny czas startu): nie n
 
 test('guard tozsamosci uwzglednia .env.e2e.local (Vite daje mu najwyzszy priorytet)', () => {
   const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n', '.env.e2e.local': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
-  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://e2e.supabase.co' }, { przegladarka: false, narzedzia: SPRAWNE })
+  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://e2e.supabase.co' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /\.env\.e2e\.local/)
 })

@@ -102,17 +102,20 @@ sprawdz_menedzera() {
   fi
 }
 
-# agent-browser musi być w PATH: skill agent-browser i feature-tester-e2e wołają gołe `agent-browser`,
-# więc sama devDependency projektu (node_modules/.bin) w runie go nie znajdzie.
-sprawdz_agent_browser() {
-  local lokalny="$PROJEKT/node_modules/.bin/agent-browser" instalacja="npm install -g agent-browser && agent-browser install"
-  if command -v agent-browser >/dev/null 2>&1; then
-    wiersz agent-browser OK "$(wersja agent-browser --version)" "—"
-  elif [[ -x "$lokalny" ]]; then
-    wiersz agent-browser BRAK "$(wersja "$lokalny" --version) tylko w node_modules/.bin — pipeline woła agent-browser z PATH" "$instalacja"
-  else
-    wiersz agent-browser BRAK "brak w PATH" "$instalacja"
+# Narzędzie jazdy testera E2E z adaptera stacku (e2e/adapter.mjs) musi być w PATH — wiersz liczy narzedzie-jazdy.mjs.
+# Argumenty: katalog projektu albo `--nie-dotyczy <powód>`.
+sprawdz_narzedzie_jazdy() {
+  local wynik element stan szczegol instalacja
+  if ! command -v node >/dev/null 2>&1; then
+    wiersz "narzędzie jazdy E2E" UWAGA "nie sprawdzono (brak node)" "brew install node"
+    return
   fi
+  if ! wynik="$(node "$KATALOG_DOCTORA/narzedzie-jazdy.mjs" "$@" 2>&1)"; then
+    wiersz "narzędzie jazdy E2E" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź .claude/scripts/e2e/adapter.mjs"
+    return
+  fi
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
 ma_hook_z_jq() {
@@ -289,7 +292,7 @@ if [[ -d "$PROJEKT/supabase" ]]; then
 else
   nie_dotyczy supabase "brak katalogu supabase/"
 fi
-if ma_scenariusze_e2e; then sprawdz_agent_browser; else nie_dotyczy agent-browser "brak checkboxów [E2E] w docs/"; fi
+if ma_scenariusze_e2e; then sprawdz_narzedzie_jazdy "$PROJEKT"; else sprawdz_narzedzie_jazdy --nie-dotyczy "brak checkboxów [E2E] w docs/"; fi
 if ma_coolify; then
   narzedzie coolify UWAGA "bash .claude/skills/coolify-manager/scripts/install_coolify_cli.sh" wersja_coolify
 else

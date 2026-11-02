@@ -11,8 +11,9 @@ import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { kontekstStartowy, wiedzaProjektu } from '../doctor/higiena.mjs'
 import { sprawdzRunnerTestow } from '../doctor/runner-testow.mjs'
+import { uwagiPlanowania } from '../e2e/adapter.mjs'
 import { gotowoscAdvisors } from '../e2e/advisors.mjs'
-import { bledySrodowiska, envE2e, NARZEDZIA, uwagaProxyZdrowia, uwagaSerweraApi } from '../e2e/srodowisko.mjs'
+import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
 import { potrzebyZadania } from '../e2e/start.mjs'
 import { KOMENDA_GENERATORA, maSkillWeryfikacji, PLIK_SKILLA } from '../e2e/weryfikacja.mjs'
 import { parsujPlan, poleTekstowe } from './plan-techniczny.mjs'
@@ -60,13 +61,11 @@ function srodowiskoE2e(projekt, katalogZadania, narzedzia) {
   const { scenariusze, figmaScreens } = potrzebyZadania(projekt, katalogZadania)
   const env = envE2e(projekt)
   const potrzebne = scenariusze > 0 || figmaScreens
-  const bledy = potrzebne && env ? bledySrodowiska(projekt, env, { przegladarka: true, narzedzia }) : []
+  const bledy = potrzebne && env ? bledySrodowiska(projekt, env, { jazda: true, narzedzia }) : []
   const uwagi = scenariusze && !maSkillWeryfikacji(projekt)
     ? [`brak skilla weryfikacji projektu (${PLIK_SKILLA}) — tester odegra scenariusze bez mapy funkcji; generator: ${KOMENDA_GENERATORA}`]
     : []
-  for (const uwaga of scenariusze && env ? [uwagaSerweraApi(projekt, env), uwagaProxyZdrowia(projekt, env)] : []) {
-    if (uwaga) uwagi.push(uwaga)
-  }
+  if (scenariusze && env) uwagi.push(...uwagiPlanowania(projekt, env))
   return { ok: !potrzebne || (env ? !bledy.length : scenariusze === 0), scenariusze, figmaScreens, envE2e: !!env, bledy, uwagi }
 }
 
@@ -108,7 +107,7 @@ function testyProjektu(projekt) {
  * @param {string} projekt katalog projektu
  * @param {string} katalogZadania docs/active/<zadanie> wzgledem projektu
  * @param {{ narzedzia?: import('../e2e/srodowisko.mjs').Narzedzia, srodowisko?: Record<string, string | undefined> }} [opcje] narzedzia:
- *   atrapy git check-ignore i agent-browser (testy); srodowisko: zmienne procesu dla tokenu advisors
+ *   atrapy git check-ignore i narzedzia jazdy (testy); srodowisko: zmienne procesu dla tokenu advisors
  * @returns {Gotowosc}
  */
 export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodowisko = process.env } = {}) {
