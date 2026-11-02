@@ -205,6 +205,39 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - Odbiór: pełne testy maszynerii zielone, diff zachowania zerowy (porównanie wygenerowanych promptów przed/po dla vibersi),
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
+**Stan Etapu 1 (2026-11-02, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.4, każda na gałęzi `popr/*`
+zmergowanej `--no-ff` do main, CI zielone do IU-1.3 włącznie:
+
+| IU | Gałąź / merge | Co powstało |
+|---|---|---|
+| 1.1 | `popr/sloty-stacku` / `c9da5c9` | `stacks/sloty.json`, sloty web `.claude/stack/{buildery,walidacja,e2e-srodowisko,fix-e2e,plan-e2e}.md`, test `stacks/__tests__/sloty.test.mjs`; globy `test` i `typecheck` obejmują `stacks/` |
+| 1.2 | `popr/sloty-workflowy` / `33d09d3` | workflowy odsyłają do sekcji slotów (blok długich komend, rozgrzewka, walidacja końcowa, fix E2E, opisy dossier); tryb testera `interaktywny \| bez-interakcji \| pominiety`, `skrotPrzebiegu` mapuje dawne nazwy; test `workflows/__tests__/sloty-stacku.test.mjs` |
+| 1.3 | `popr/adapter-e2e` / `f8a9b53` | `scripts/e2e/adapter.mjs` (slot plikowy: port, komenda startu, narzędzie jazdy, próbny zrzut, uwagi Vite) + `adres.mjs`; `srodowisko`, `start`, `gotowosc`, doctor (`doctor/narzedzie-jazdy.mjs`, `port-e2e`) przez adapter; kontrakt `e2e/__tests__/adapter.test.mjs` |
+| 1.4 | `popr/sloty-skille` / `46faa0e` | `references/stack.md` w dev-plan, dev-docs-complete, dev-prep, dev-compound, weryfikacja-setup (D20); dev-plan odsyła do `buildery.md`/`plan-e2e.md`; `szkielet.mjs` bierze teksty z `SZKIELET_WERYFIKACJI` adaptera; test `workflows/__tests__/sloty-skilli.test.mjs` |
+
+Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
+- Odesłanie w rdzeniu ma postać „`<plik slotu>`, sekcja „<nagłówek ##>””; testy sprawdzają, że nagłówek istnieje.
+  Treść web przenosi się do slotu dosłownie, zasady wspólne zostają w rdzeniu.
+- Sloty: tekstowe w `.claude/stack/` (wspólne dla workflowów i skilli) albo `references/stack.md` skilla; plikowe = moduł
+  podmieniany w całości (`scripts/e2e/adapter.mjs`). Każdy slot jest w `stacks/sloty.json`.
+- Zmiana istniejącego testu tylko przy zamówionej zmianie (przeniesienie treści, nazwy trybu) i z nazwaniem w commicie.
+
+Przesunięcia zakresu względem listy IU wyżej:
+- Podział `coding-rules.md` na rdzeń + `rules/stack.md` (wpisany w IU-1.4) robi IU-1.9 według A0.5 §1.
+- Do IU-1.7 (`profil.json`): strażnik bazy dev i klucze `VITE_*` w `scripts/e2e/srodowisko.mjs` (komunikat „Vite w trybie
+  e2e doczyta bazę dev”) i `e2e/advisors.mjs`, `KOMENDY_CLI` w `plan/walidacja-planu.mjs` (+ lista CLI w prompcie scribe'a
+  `dev-docs-review-wf.js`, zgodność pilnuje `kontrakt-docs-active.test.mjs`), ścieżki `e2e/seeds/` w prompcie execute
+  i `e2e/<etap>-run-all.sh` w schemacie review. `BUILDERZY`/`BUILDERZY_UI` bez zmian (D3).
+- Wyjątki dla strażnika IU-1.5: klasyfikator linii „Weryfikacja:” w `dev-docs-review-wf.js` (listy `vitest`,
+  `agent-browser` obok `symulator`/`emulator`), przykładowy plan `dev-plan/references/szablon-planu.md` (ścieżki `src/…`),
+  etykieta agenta `warmup:vitest` (klucz telemetrii), komentarze z historią vibersi.
+- Zostaje na Etap 2 (IU-2.6): wykrywanie tras routera w `szkielet.mjs`.
+- Uwaga techniczna: glob `test` (`.claude/**/__tests__`) w głównym katalogu łapie też testy z `.claude/worktrees/*` — liczba
+  testów na main jest wtedy wyższa niż w worktree; nic to nie psuje.
+
+Zostało: IU-1.5 (strażnik słów stacku w CI + „każdy slot istnieje w wariancie web”), IU-1.6 (testy ról: rdzeń vs stack),
+IU-1.7 (`profil.json`), IU-1.8 (polityki adaptera E2E, login canary), IU-1.9 (reguły), potem odbiór Etapu 1.
+
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
 - IU-2.1 Buildery `feature-builder-ui|data|fullstack` (+ `-figma`, D23) w wersji RN — **napisane od nowa na szkielecie
