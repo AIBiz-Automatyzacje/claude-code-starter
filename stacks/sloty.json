@@ -1,0 +1,25 @@
+{
+  "opis": "Rejestr slotów stackowych: pliki .claude/stack/, do których rdzeń odsyła po tekst zależny od stacku. .claude/ niesie wariant web; nakładka stacku (stacks/<stack>/) podmienia każdy slot w całości.",
+  "sloty": [
+    {
+      "plik": ".claude/stack/buildery.md",
+      "opis": "Routing IU do builderów po ścieżkach plików, skille builderów, ścieżki warstw UI i danych."
+    },
+    {
+      "plik": ".claude/stack/e2e-srodowisko.md",
+      "opis": "Środowisko E2E stacku: start aplikacji, sonda zdrowia, narzędzie jazdy testera."
+    },
+    {
+      "plik": ".claude/stack/walidacja.md",
+      "opis": "Runner testów, krok build, zimny cache runnera, flake infrastruktury, rozgrzewka cache."
+    },
+    {
+      "plik": ".claude/stack/fix-e2e.md",
+      "opis": "Narzędzie jazdy przy naprawie findingu E2E i sprawdzaniu poprawki wizualnej."
+    },
+    {
+      "plik": ".claude/stack/plan-e2e.md",
+      "opis": "Format linii [E2E] w planie, seedy, granice narzędzia jazdy, serwer aplikacji w scenariuszu."
+    }
+  ]
+}

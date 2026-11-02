@@ -9,7 +9,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
-    "test": "node --test '.claude/**/__tests__/*.test.mjs'"
+    "test": "node --test '.claude/**/__tests__/*.test.mjs' 'stacks/**/__tests__/*.test.mjs'"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
