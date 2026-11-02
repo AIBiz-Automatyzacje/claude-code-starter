@@ -205,7 +205,7 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - Odbiór: pełne testy maszynerii zielone, diff zachowania zerowy (porównanie wygenerowanych promptów przed/po dla vibersi),
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
-**Stan Etapu 1 (2026-11-02, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.4, każda na gałęzi `popr/*`
+**Stan Etapu 1 (2026-11-02, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.5, każda na gałęzi `popr/*`
 zmergowanej `--no-ff` do main, CI zielone do IU-1.3 włącznie:
 
 | IU | Gałąź / merge | Co powstało |
@@ -214,6 +214,7 @@ zmergowanej `--no-ff` do main, CI zielone do IU-1.3 włącznie:
 | 1.2 | `popr/sloty-workflowy` / `33d09d3` | workflowy odsyłają do sekcji slotów (blok długich komend, rozgrzewka, walidacja końcowa, fix E2E, opisy dossier); tryb testera `interaktywny \| bez-interakcji \| pominiety`, `skrotPrzebiegu` mapuje dawne nazwy; test `workflows/__tests__/sloty-stacku.test.mjs` |
 | 1.3 | `popr/adapter-e2e` / `f8a9b53` | `scripts/e2e/adapter.mjs` (slot plikowy: port, komenda startu, narzędzie jazdy, próbny zrzut, uwagi Vite) + `adres.mjs`; `srodowisko`, `start`, `gotowosc`, doctor (`doctor/narzedzie-jazdy.mjs`, `port-e2e`) przez adapter; kontrakt `e2e/__tests__/adapter.test.mjs` |
 | 1.4 | `popr/sloty-skille` / `46faa0e` | `references/stack.md` w dev-plan, dev-docs-complete, dev-prep, dev-compound, weryfikacja-setup (D20); dev-plan odsyła do `buildery.md`/`plan-e2e.md`; `szkielet.mjs` bierze teksty z `SZKIELET_WERYFIKACJI` adaptera; test `workflows/__tests__/sloty-skilli.test.mjs` |
+| 1.5 | `popr/straznik-stacku` / `7f7c2c3` | `stacks/straznik.mjs` + `stacks/straznik.json` (10 słów stacku web, 59 wyjątków: `usun` 6, `podmiana` 8, `przejsciowy` z IU 23, `staly` 22); wyjątek bez trafień zatrzymuje test; drugi strażnik: odesłania rdzenia (`.claude/stack/*`, `references/stack.md`, import adaptera) ⊆ rejestr slotów i każdy slot ma odesłanie; test `stacks/__tests__/straznik.test.mjs` |
 
 Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
 - Odesłanie w rdzeniu ma postać „`<plik slotu>`, sekcja „<nagłówek ##>””; testy sprawdzają, że nagłówek istnieje.
@@ -221,6 +222,8 @@ Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
 - Sloty: tekstowe w `.claude/stack/` (wspólne dla workflowów i skilli) albo `references/stack.md` skilla; plikowe = moduł
   podmieniany w całości (`scripts/e2e/adapter.mjs`). Każdy slot jest w `stacks/sloty.json`.
 - Zmiana istniejącego testu tylko przy zamówionej zmianie (przeniesienie treści, nazwy trybu) i z nazwaniem w commicie.
+- Od IU-1.5 każde IU, które czyści słowa stacku, usuwa albo zawęża swoje wpisy `przejsciowy` w `stacks/straznik.json`
+  (test zatrzymuje się na wyjątku bez trafień); nowy tekst stackowy w rdzeniu idzie do slotu, nie do listy wyjątków.
 
 Przesunięcia zakresu względem listy IU wyżej:
 - Podział `coding-rules.md` na rdzeń + `rules/stack.md` (wpisany w IU-1.4) robi IU-1.9 według A0.5 §1.
@@ -231,11 +234,17 @@ Przesunięcia zakresu względem listy IU wyżej:
 - Wyjątki dla strażnika IU-1.5: klasyfikator linii „Weryfikacja:” w `dev-docs-review-wf.js` (listy `vitest`,
   `agent-browser` obok `symulator`/`emulator`), przykładowy plan `dev-plan/references/szablon-planu.md` (ścieżki `src/…`),
   etykieta agenta `warmup:vitest` (klucz telemetrii), komentarze z historią vibersi.
+  Zrealizowane w `stacks/straznik.json` jako wyjątki `staly`, razem z rozpoznawaniem wielu stacków (vitest/jest w doctorze,
+  sync-template, dev-plan; `dossier/profil.mjs`, bramki warunkowe, coderabbit-setup) i nazwami skilli w telemetrii.
+- Wpisy strażnika bez IU w planie (`"iu": "Etap 2"`): agenci badawczy `best-practices-researcher`,
+  `framework-docs-researcher`, `repo-research-analyst`, `web-research-specialist` (stos web wpisany w treść) oraz fixture
+  `templates/smoke-autopilot` (D18) — do przypisania przy rozpisaniu Etapu 2. Opis `E2E_RESULT.flow` w review
+  („W webie flow nie ma osobnego pliku: agent-browser…”, A0.7 §6 p.3) przypisany do IU-1.6.
 - Zostaje na Etap 2 (IU-2.6): wykrywanie tras routera w `szkielet.mjs`.
 - Uwaga techniczna: glob `test` (`.claude/**/__tests__`) w głównym katalogu łapie też testy z `.claude/worktrees/*` — liczba
   testów na main jest wtedy wyższa niż w worktree; nic to nie psuje.
 
-Zostało: IU-1.5 (strażnik słów stacku w CI + „każdy slot istnieje w wariancie web”), IU-1.6 (testy ról: rdzeń vs stack),
+Zostało: IU-1.6 (testy ról: rdzeń vs stack),
 IU-1.7 (`profil.json`), IU-1.8 (polityki adaptera E2E, login canary), IU-1.9 (reguły), potem odbiór Etapu 1.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
