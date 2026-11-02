@@ -78,6 +78,8 @@ test('bez wersalikow nacisku', () => {
 test('maszyneria odwoluje sie do regul kodu po temacie, nie po numerze sekcji', () => {
   const katalog = resolve(REPO, '.claude')
   const trafienia = readdirSync(katalog, { recursive: true, encoding: 'utf8' })
+    // worktrees/ i .backups/ to kopie repo i backupy syncu, nie maszyneria — inaczej test pada w checkoucie z worktree.
+    .filter((p) => !/^(worktrees|\.backups)\//.test(p))
     .filter((p) => !p.includes('node_modules') && !p.includes('__tests__') && /\.(md|mjs|js|ts|yaml|sh)$/.test(p))
     .flatMap((p) => {
       const tekst = readFileSync(join(katalog, p), 'utf8')
