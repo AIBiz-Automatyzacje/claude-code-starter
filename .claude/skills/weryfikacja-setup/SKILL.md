@@ -32,10 +32,8 @@ nie dostarcza, więc sync-template go nie nadpisze.
 4. **Przejście na żywo** (raz, przed oddaniem):
    - Doctor: `node .claude/scripts/e2e/e2e.mjs sprawdz`. Status inny niż `gotowe` → wynik `blocked` z treścią pola `naprawa`; przejdź do kroku 5.
    - Launch: `node .claude/scripts/e2e/e2e.mjs start` (Bash z limitem 600000 ms — skrypt czeka na odpowiedź serwera).
-   - Drive: skillem `agent-browser` zaloguj się według sekcji Drive i przejdź drogę jednej funkcji z mapy (najnowszy wpis)
-     albo głównego ekranu, gdy mapa jest pusta.
-   - Evidence: asercja oczekiwanego stanu w snapshotcie i zrzut `agent-browser screenshot /tmp/weryfikacja-setup.png`.
-   - Cleanup: `node .claude/scripts/e2e/e2e.mjs stop` i `agent-browser close`.
+   - Drive, Evidence i zamknięcie narzędzia jazdy: komendy stacku z `references/stack.md`, sekcja „Przejście na żywo”.
+   - Cleanup: `node .claude/scripts/e2e/e2e.mjs stop`, potem zamknięcie narzędzia jazdy wg tej samej sekcji.
    - Rozjazd skilla albo mapy z aplikacją (inna etykieta, trasa, krok) poprawiasz w pliku, a wynik to `changed`; wszystko
      zgodne — `clean`.
 

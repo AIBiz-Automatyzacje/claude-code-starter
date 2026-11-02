@@ -9,6 +9,7 @@ import { basename, dirname, join, relative, sep } from 'node:path'
 
 import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
+import { SZKIELET_WERYFIKACJI } from './adapter.mjs'
 import { scalMape, wpisyZPlanu } from './mapa.mjs'
 import { envE2e, konfiguracja, PLIK_ENV } from './srodowisko.mjs'
 import { PLIK_MAPY, PLIK_SKILLA } from './weryfikacja.mjs'
@@ -147,31 +148,27 @@ export function szkieletSkilla(projekt, { wpisowMapy }) {
     `\`node .claude/scripts/e2e/e2e.mjs start\` uruchamia w tle \`${konf.start}\` i czeka, aż \`${konf.zdrowie}\` odpowie kodem < 500`,
     `(limit ${konf.limitSek} s). Adres aplikacji: ${konf.url}. Log serwera: \`${konf.log}\`. Port zajęty przez serwer spoza pipeline’u`,
     '(np. zwykły dev server) zatrzymuje Launch z PID-em i komendą procesu w polu `naprawa` — dev server zostaje na swoim porcie, E2E na osobnym.',
-    env ? '' : `Repo nie ma \`${PLIK_ENV}\`: parametry powyżej są domyślne (Vite). Setup: \`.claude/templates/e2e-env/README.md\`.`, '',
+    env ? '' : `Repo nie ma \`${PLIK_ENV}\`: parametry powyżej są ${SZKIELET_WERYFIKACJI.domyslneParametry}. Setup: \`.claude/templates/e2e-env/README.md\`.`, '',
     '## Doctor', '',
-    `\`node .claude/scripts/e2e/e2e.mjs sprawdz\` — \`${PLIK_ENV}\` w \`.gitignore\`, klucze i guard bazy e2e, \`migrations.sum\`, \`agent-browser doctor\`, adresy.`,
+    `\`node .claude/scripts/e2e/e2e.mjs sprawdz\` — \`${PLIK_ENV}\` w \`.gitignore\`, klucze i guard bazy e2e, \`migrations.sum\`, ${SZKIELET_WERYFIKACJI.doctor}, adresy.`,
     'Status `gotowe` = instancję warto prowadzić; inny status ma gotową naprawę w polu `naprawa`.',
     '`node .claude/scripts/e2e/e2e.mjs stan` — czy serwer uruchomiony przez Launch żyje i ogon jego logu (aplikacja przestała odpowiadać).', '',
     '## Drive', '',
-    'Przeglądarka: skill `agent-browser` — `open <url>` → `snapshot -i` → akcja na refie → `snapshot -i` po każdej zmianie strony.', '',
+    SZKIELET_WERYFIKACJI.drive, '',
     `Trasy z kodu (bez API; względne — segmenty zagnieżdżonego routera): ${trasy.length ? trasy.map((t) => `\`${t}\``).join(', ') : `${ZNACZNIK} trasy aplikacji (router nie dał się odczytać z kodu) -->`}`,
     obcieto ? `${ZNACZNIK} ${obcieto} tras poza listą — dopisz ekrany używane w scenariuszach [E2E] -->` : '', '',
     env?.E2E_TEST_EMAIL
       ? `Logowanie: konto \`E2E_TEST_EMAIL\` / \`E2E_TEST_PASSWORD\` z \`${PLIK_ENV}\` (wartości nie trafiają do logów)${logowanie.length ? ` na ${logowanie.map((t) => `\`${t}\``).join(', ')}` : ''}.`
       : `Logowanie: ${ZNACZNIK} konto testowe i trasa logowania; bez logowania wpisz „nie dotyczy” -->`,
     `${ZNACZNIK} pola formularza logowania i nawigacja do głównych ekranów (etykiety, role, data-testid) -->`, '',
-    testId
-      ? `Selektory: kod ma ${testId} atrybutów \`data-testid\` — przy niejednoznacznym snapshotcie szukaj po nich (\`agent-browser find testid <id> click\`).`
-      : 'Selektory: kod nie ma atrybutów `data-testid` — elementy wskazuj rolą i etykietą ze snapshotu.', '',
+    SZKIELET_WERYFIKACJI.selektory(testId), '',
     '## Evidence', '',
-    'Dowód scenariusza = akcja + stan po akcji + skutek uboczny. Stan: asercja w snapshotcie albo `agent-browser get text` i zrzut',
-    '`agent-browser screenshot "$(git rev-parse --show-toplevel)/<folder zadania>/<flow>.png"` (ścieżka bezwzględna: demon agent-browser',
-    'rozwiązuje względną od swojego katalogu startowego). Skutek uboczny (zapis, wysyłka): odpowiedź HTTP (`curl -sS`) albo wiersz bazy e2e.',
+    SZKIELET_WERYFIKACJI.evidence,
     'Zrzuty leżą w folderze zadania, więc przeżywają Cleanup.', '',
     '## Cleanup', '',
     '`node .claude/scripts/e2e/e2e.mjs stop --zadanie <folder zadania>` zatrzymuje wyłącznie serwer uruchomiony przez Launch (plik PID);',
     'serwer spoza pipeline’u zostaje, a nieśledzone zrzuty z korzenia repo przenosi do folderu zadania.',
-    '`agent-browser close` zamyka przeglądarkę.', '',
+    SZKIELET_WERYFIKACJI.cleanup, '',
     '## Mapa funkcji', '',
     `[mapa-funkcji.md](mapa-funkcji.md) — ${wpisowMapy} wpis(ów): droga użytkownika, dowód działania i pliki kodu funkcji. Archiwizacja zadania`,
     'dopisuje do niej funkcje ze scenariuszy [E2E] planu (`node .claude/scripts/e2e/e2e.mjs mapa --zadanie <docs/active/zadanie>`);',

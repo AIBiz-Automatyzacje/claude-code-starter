@@ -104,7 +104,7 @@ Wykonaj **przed** pisaniem czegokolwiek. Cel: nie zamawiać rzeczy, które już 
 Tą samą regułą ścieżek co `/dev-plan` 1.6 krok A:
 
 - **Dotyka UI** — etap opisuje ekrany, komponenty, layouty, nawigację, stany widoczne dla użytkownika.
-- **Pure-data** — praca zamyka się w `src/lib/`, `src/hooks/`, `supabase/migrations/`, `supabase/functions/`, konfiguracji.
+- **Pure-data** — praca zamyka się w warstwie danych wg `.claude/stack/buildery.md`, sekcja „Ścieżki warstw”, i w konfiguracji.
 
 Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje (wpisz w niej „Etap nie dotyka UI — brak makiet do przygotowania."), pozostałe wypełniasz normalnie.
 
@@ -112,13 +112,13 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 
 | Co sprawdzasz | Po co |
 |---|---|
-| Istniejące route'y / strony (`src/pages/`, `src/features/*/`, router) | ekran, który już istnieje, to zamówienie na **modyfikację** z opisem różnicy — nie na nowy design |
+| Istniejące route'y / strony (katalogi wg `references/stack.md`, sekcja „Skan repo”) | ekran, który już istnieje, to zamówienie na **modyfikację** z opisem różnicy — nie na nowy design |
 | `docs/DESIGN.md` | brak = pozycja w sekcji „Decyzje": design system nie istnieje, projektant nie ma tokenów |
 | `docs/plans/*-figma/SPEC.md` | pokrywający się feature = część makiet już sfetchowana; nie zamawiaj ich ponownie |
 | `.env.example`, `.env.local` (tylko **nazwy** zmiennych — `grep -o '^[A-Z_]*='`) | które klucze już są ustawione, a które trzeba zdobyć |
 | Checklisty wcześniejszych etapów w `docs/operator/` (nazwy wg 0.3) | co dostarczono wcześniej — nie powtarzaj; trzymaj się układu sekcji tamtych plików |
 | `docs/solutions/` | wcześniejsze wnioski o tej domenie |
-| `public/`, `src/assets/` | jakie assety już są |
+| katalogi assetów (`references/stack.md`, sekcja „Skan repo”) | jakie assety już są |
 
 **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
 
@@ -126,7 +126,7 @@ Gdy skan wymaga przeszukania wielu lokalizacji, deleguj przez Agent tool, `subag
 
 #### 1.3 Narzędzia maszyny (doctor)
 
-Uruchom `bash .claude/scripts/doctor/doctor.sh`. Skrypt wylicza z projektu, czego wymaga pipeline (git, gh z logowaniem, node, menedżer z lockfile, supabase CLI przy `supabase/`, agent-browser przy checkboxach `[E2E]`, pluginy projektu, Dynamic Workflows), i wypisuje tabelę z komendą instalacji przy każdym braku.
+Uruchom `bash .claude/scripts/doctor/doctor.sh`. Skrypt wylicza z projektu, czego wymaga pipeline (git, gh z logowaniem, node, menedżer z lockfile, supabase CLI przy `supabase/`, narzędzie jazdy E2E z adaptera stacku przy checkboxach `[E2E]`, pluginy projektu, Dynamic Workflows), i wypisuje tabelę z komendą instalacji przy każdym braku.
 
 - Każdy wiersz `BRAK` przepisz do sekcji 2 jako pozycję z markerem **[blokuje: faza 1]** — run autopilota zatrzymałby się na tym narzędziu, a bramka gotowości `/dev-plan` nie przekaże zadania autopilotowi, dopóki pozycja jest otwarta. „Jak" = komenda z kolumny „Instalacja" (przy runnerze testów: wpis do configu), „Dowód" = `bash .claude/scripts/doctor/doctor.sh` pokazuje `OK` w tym wierszu.
 - Każdy wiersz `UWAGA` przepisz do sekcji 2 bez markera — nie blokuje runu.
@@ -150,7 +150,7 @@ Konta i konsole zewnętrzne (dostawca auth, płatności, monitoring, mapy, store
 
 Dla każdej pozycji: **co**, **po co / co blokuje**, **jak** (gdzie wejść, co kliknąć, do jakiej zmiennej wpisać), **dowód wykonania** (komenda lub obserwacja). Zmienna w pliku env, który już istnieje: sprawdź nazwy kluczy (`grep -oE '^[A-Z0-9_]+=' <plik>`, bez wartości) i napisz „podmień” albo „dopisz”.
 
-**Środowisko E2E aplikacji z osobnym serwerem API.** Gdy etap dodaje albo używa tras serwera aplikacji (`/api/…`, katalog `server/`) i ma scenariusze w przeglądarce, sprawdź `.env.e2e` (nazwy kluczy): `E2E_START` musi uruchamiać serwer i Vite z proxy, a `E2E_HEALTH` z `E2E_HEALTH_TRESC` — sprawdzać trasę serwera. Brak → pozycja wg `.claude/templates/e2e-env/README.md`, sekcja „Aplikacja z osobnym serwerem API”; gdy skrypt startu powstanie dopiero w etapie, numer fazy dopisze `/dev-plan`.
+**Środowisko E2E aplikacji z osobnym serwerem API.** Gdy etap dodaje albo używa tras serwera aplikacji (`/api/…`, katalog `server/`) i ma scenariusze w przeglądarce, sprawdź `.env.e2e` (nazwy kluczy): `E2E_START` musi uruchamiać serwer i aplikację (wg `references/stack.md`, sekcja „Serwer API w E2E”), a `E2E_HEALTH` z `E2E_HEALTH_TRESC` — sprawdzać trasę serwera. Brak → pozycja wg `.claude/templates/e2e-env/README.md`, sekcja „Aplikacja z osobnym serwerem API”; gdy skrypt startu powstanie dopiero w etapie, numer fazy dopisze `/dev-plan`.
 
 Oznacz każdą wartość jako 🔓 publiczną (może iść do repo) albo 🔒 sekret (nigdy do gita) i zamknij dokument sekcją **„Gdzie to ląduje"** — która wartość idzie do `.env`, która do sekretów builda, która do konfiguracji. Sekrety opisuj **nazwą zmiennej**, nigdy wartością.
 
@@ -174,7 +174,7 @@ Dla każdego ekranu/komponentu z etapu:
 - **Status**: `nowy` / `modyfikacja <ścieżka istniejącego pliku>` / `już zaprojektowany (SPEC: <ścieżka>)`.
 - **Co pokazuje** — jedno–dwa zdania z wymagań etapu, nie z wyobraźni.
 - **Stany do zaprojektowania** — te, które etap implikuje: pusty, ładowanie, błąd, brak uprawnień, po sukcesie, walidacja formularza. Brakujący stan pustej listy to najczęstsza dziura, która wychodzi dopiero u buildera.
-- **Breakpointy** — zgodnie z etapem; gdy etap milczy, wpisz „do potwierdzenia" i dodaj pozycję do 2.1.
+- **Wymiary ekranu** (nazwa pola wg `references/stack.md`, sekcja „Makiety”) — zgodnie z etapem; gdy etap milczy, wpisz „do potwierdzenia" i dodaj pozycję do 2.1.
 - **Wymagania z etapu**, które ekran realizuje (`R1`, `#etap-17`) — traceability, którą `/dev-plan` przenosi dalej.
 - **`URL Figma:`** — puste pole do wklejenia po zaprojektowaniu.
 
@@ -228,10 +228,10 @@ Kolejność: <notatka, gdy pozycje zależą od siebie>
 
 Po zaprojektowaniu wklej URL-e — `/dev-plan` weźmie je stąd zamiast pytać.
 
-- [ ] **`<nazwa-ekranu>`** — nowy / modyfikacja `src/pages/<x>.tsx`
+- [ ] **`<nazwa-ekranu>`** — nowy / modyfikacja `<ścieżka ekranu>`
   - Co pokazuje: <1–2 zdania z etapu>
   - Stany: pusty · ładowanie · błąd · <inne z etapu>
-  - Breakpointy: mobile + desktop
+  - <pole wymiarów ekranu>: <wartość>
   - Wymagania: R3, R7
   - URL Figma: _(wklej po zaprojektowaniu)_
 

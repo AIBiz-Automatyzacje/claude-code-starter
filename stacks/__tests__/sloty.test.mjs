@@ -20,8 +20,9 @@ const czytaj = (sciezka) => readFileSync(resolve(KORZEN, sciezka), 'utf8')
 const rejestr = JSON.parse(czytaj('stacks/sloty.json'))
 const pliki = rejestr.sloty.map((s) => s.plik)
 
-// Slot tekstowy leży w .claude/stack/; slot plikowy to moduł rdzenia, który nakładka podmienia w całości (adapter E2E).
-const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|scripts\/[a-z0-9-]+\/adapter\.mjs)$/
+// Slot tekstowy leży w .claude/stack/ (wspólny dla workflowów i skilli) albo w references/stack.md skilla (D20); slot
+// plikowy to moduł rdzenia, który nakładka podmienia w całości (adapter E2E).
+const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|skills\/[a-z0-9-]+\/references\/stack\.md|scripts\/[a-z0-9-]+\/adapter\.mjs)$/
 
 test('rejestr: każdy slot ma ścieżkę slotu tekstowego albo plikowego i opis, bez powtórzeń', () => {
   assert.ok(Array.isArray(rejestr.sloty) && rejestr.sloty.length > 0)
