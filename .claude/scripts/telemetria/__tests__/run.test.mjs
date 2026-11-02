@@ -55,6 +55,10 @@ test('kategoria STOP-u z powodu — prawdziwe komunikaty autopilota', () => {
   assert.equal(kategoriaStopu('walidacja koncowa FAIL'), 'walidacja')
   assert.equal(kategoriaStopu('execute fazy 4 zwrocil "partial": checkbox Test: [Unit] ... flow E2E'), 'execute')
   assert.equal(kategoriaStopu('Drzewo robocze nie jest czyste: `git status --short` pokazuje zmodyfikowany plik'), 'czystosc')
+  // 02.11: dashboard czesc 2 i vibersi poczta-monitoring-limitow — dotad „inne”.
+  assert.equal(kategoriaStopu('Galaz feature/x-cz2 utworzona z 533a9a0. Rebase przerwal sie przy `git rebase --onto origin/main b294156`: "CONFLICT (content): Merge conflict in frontend/src/test/mocks/handlers.ts", "error: could not apply be3f177... refactor(x): bez profilu"'), 'konflikt-rebase')
+  assert.equal(kategoriaStopu('brak pliku docs/decisions/<data>-poczta.md na main — PR zadania niezmergowany'), 'claude-md')
+  assert.equal(kategoriaStopu('krok CLAUDE.md wymaga galezi main z czystym drzewem'), 'claude-md')
   assert.equal(kategoriaStopu('Warunek 3 niespełniony: brak katalogu zadania'), 'bramka-wejscia')
   assert.equal(kategoriaStopu('Warunek 3 niespelniony: w biezacym drzewie roboczym NIE MA katalogu zadania'), 'bramka-wejscia')
   assert.equal(kategoriaStopu('Warunek 2 niespelniony: drzewo robocze nie jest czyste.'), 'czystosc')

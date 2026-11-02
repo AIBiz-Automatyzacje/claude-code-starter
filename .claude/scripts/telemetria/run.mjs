@@ -61,6 +61,9 @@ const DOPISEK_STOP_RUN = ' UWAGA: poza katalogiem zadania'
 /** @type {Array<[RegExp, string]>} */
 const KATEGORIE_STOPU = [
   [/niezacommitowane zmiany|branch mismatch|nie jest czyste/i, 'czystosc'],
+  // 02.11: konflikt rebase'u czesci PR i krok CLAUDE.md lądowaly w „inne” (dashboard czesc 2, vibersi poczta).
+  [/CONFLICT \(|konflikt rebase|rebase przerwal sie/i, 'konflikt-rebase'],
+  [/docs\/decisions\/|krok CLAUDE\.md|bramka CLAUDE\.md/i, 'claude-md'],
   [/^start: srodowisko E2E/, 'E2E-srodowisko'],
   [/^start: /, 'start'],
   [/^warunek \d+ nie ?spe[lł]niony|warunki bramki/i, 'bramka-wejscia'],

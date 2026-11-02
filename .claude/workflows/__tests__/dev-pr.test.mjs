@@ -262,14 +262,54 @@ test('pole claude_md: sciezka spoza docs/decisions albo ze znakami powloki = bra
 test('compound: krok push w prompcie (to samo brzmienie co claude-md), pola push w schemacie, UWAGA w logu bez pusha', () => {
   const compound = wytnij("if (etap === 'compound') {", "\n}\n")
   const claudeMd = wytnij("if (etap === 'claude-md') {", "\n}\n")
-  assert.match(compound, /\n6\. \$\{KROK_PUSH\}/, 'compound pushuje swoj commit')
-  assert.match(claudeMd, /\n4\. \$\{KROK_PUSH\}/, 'claude-md uzywa tego samego kroku push')
+  assert.match(compound, /\n6\. \$\{KROK_CI_GLOWNEJ\}\n7\. \$\{KROK_PUSH\}/, 'compound czeka na CI glownej, potem pushuje swoj commit')
+  assert.match(claudeMd, /\n4\. \$\{KROK_CI_GLOWNEJ\}\n5\. \$\{KROK_PUSH\}/, 'claude-md uzywa tych samych krokow')
   assert.match(wytnij('const KROK_PUSH = `', '"OK".`'), /bez --force i bez innej galezi/)
-  assert.match(compound, /commit null, push false, pushDetal "brak commita"/)
+  assert.match(compound, /commit null, push false, pushDetal "brak commita" i pomin pkt 7 \(pkt 6 robisz\)/)
   assert.match(compound, /if \(wynik\.commit && !wynik\.push\) log\(`\/dev-pr compound: UWAGA — commit \$\{wynik\.commit\} bez pusha/)
   // eslint-disable-next-line no-new-func -- ekstrakcja schematu z pliku workflowu tego repo, nie z inputu
-  const schemat = new Function('WPIS_WIEDZY', `${wytnij('const COMPOUND_PR = {', '\n}\n')} return COMPOUND_PR`)({})
-  for (const pole of ['commit', 'push', 'pushDetal']) assert.ok(schemat.required.includes(pole), `COMPOUND_PR.required: ${pole}`)
+  const schemat = new Function('WPIS_WIEDZY', 'POLE_CI_GLOWNEJ', `${wytnij('const COMPOUND_PR = {', '\n}\n')} return COMPOUND_PR`)({}, {})
+  for (const pole of ['commit', 'ciGlownej', 'push', 'pushDetal']) assert.ok(schemat.required.includes(pole), `COMPOUND_PR.required: ${pole}`)
+})
+
+// Dashboard 02.11: push commita compoundu (PR #104) i commita CLAUDE.md (PR #107) na glowna anulowal przebieg CI i deploy commitu
+// merge'a (concurrency: cancel-in-progress), a raport podawal „deploy ruszyl” bez sprawdzenia.
+test('CI glownej: czekanie na przebiegi czubka glownej przed pushem, push wstrzymany przy przebiegu w toku, wynik w raporcie', async () => {
+  const krok = wytnij('const KROK_CI_GLOWNEJ = `', 'nad success.`')
+  assert.match(krok, /gh run list --branch <glowna> --commit <SHA>/)
+  assert.match(krok, /timeout 540 gh run watch <databaseId>/)
+  assert.match(krok, /inna = ciGlownej "nie-dotyczy"/)
+  assert.match(wytnij('const KROK_PUSH = `', '"OK".`'), /ciGlownej "w-toku" = push false/)
+  const wpisy = { wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: null, push: false, pushDetal: 'brak commita' }
+  for (const ci of ['success', 'cancelled']) {
+    const { wynik } = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [] }, [{ ...wpisy, ciGlownej: ci }])
+    assert.equal(wynik.ciGlownej, ci, 'wynik CI idzie do raportu skilla')
+  }
+})
+
+test('claude-md: brak pliku decyzji przy zmergowanym PR = krok pominiety; niezmergowany = STOP', async () => {
+  const u = { glowna: 'main', naGlownej: true, plikDecyzji: null, poleClaudeMd: null, fakty: [], znPrzed: null, znPo: null, zmiany: '' }
+  const pominiety = await uruchom({ etap: 'claude-md', zadanie: 'poczta' }, [{ ...u, prZmergowany: true }])
+  assert.deepEqual([pominiety.wynik.status, pominiety.wynik.pominiety, pominiety.prompty.length], ['OK', true, 1])
+  assert.match(pominiety.prompty[0], /select\(\.headRefName == "feature\/poczta" or \(\.headRefName \| startswith\("feature\/poczta-cz"\)\)\)/)
+  const stop = await uruchom({ etap: 'claude-md', zadanie: 'poczta' }, [{ ...u, prZmergowany: false }])
+  assert.equal(stop.wynik.status, 'STOP')
+  assert.match(stop.wynik.powod, /PR zadania niezmergowany$/)
+  const bezGh = await uruchom({ etap: 'claude-md', zadanie: 'poczta' }, [{ ...u, prZmergowany: null }])
+  assert.match(bezGh.wynik.powod, /albo nie dalo sie tego sprawdzic \(gh\)$/)
+})
+
+// Dashboard PR #104: bot potwierdzil poprawke parsera, ale watku nie rozwiazal — tura 2 zweryfikowala go bez zmiany kodu.
+test('zbierz: watki potwierdzone przez bota rozwiazane mutacja, poza watki[]; bez potwierdzonych — bez drugiego agenta', async () => {
+  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10 }
+  const z = await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, potwierdzone: [{ id: 'T1', plik: 'a.ts:3' }] }, { rozwiazane: ['T1'], bledy: [] }])
+  assert.equal(z.prompty.length, 2)
+  assert.match(z.prompty[0], /POTWIERDZONE: watek z nasza odpowiedzia o poprawce/)
+  assert.match(z.prompty[1], /resolveReviewThread\(input:\{threadId:\$id\}\)/)
+  assert.match(z.prompty[1], /"id":"T1"/)
+  assert.deepEqual([z.wynik.potwierdzone.rozwiazane, z.wynik.rekomendacja], [['T1'], 'MERGUJ'])
+  const bez = await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, potwierdzone: [] }])
+  assert.deepEqual([bez.prompty.length, bez.wynik.potwierdzone.rozwiazane], [1, []])
 })
 
 // ── PR wieloczesciowy (P20 S2) ────────────────────────────────────────────
@@ -393,7 +433,13 @@ test('start --czesc 1: galaz -cz1 od commitu ciecia bez rebase; konflikt i zla g
   const konflikt = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121),
     { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['e2e/etap-4-moderacja-smoke.sh'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
   assert.equal(konflikt.prompty.length, 3, 'bez agenta tworzacego PR')
-  assert.deepEqual([konflikt.wynik.status, konflikt.wynik.konflikty], ['KONFLIKT', ['e2e/etap-4-moderacja-smoke.sh']])
+  assert.deepEqual([konflikt.wynik.status, konflikt.wynik.konflikty, konflikt.wynik.konfliktyZTur], ['KONFLIKT', ['e2e/etap-4-moderacja-smoke.sh'], []])
+  // Dashboard 02.11: tura PR czesci 1 zmienila handlers.ts, ktory przebudowuje czesc 2 — operator dostaje ten kontekst.
+  assert.match(konflikt.prompty[2], /konfliktyZTur[\s\S]*gh pr list --state merged --head feature\/etap-3-cz1/)
+  assert.doesNotMatch(cz1.prompty[2], /konfliktyZTur/, 'czesc 1 nie ma poprzedniej')
+  const zTur = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121),
+    { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['h.ts'], konfliktyZTur: ['h.ts <- 4555b07 fix(pr): tura 1'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
+  assert.deepEqual(zTur.wynik.konfliktyZTur, ['h.ts <- 4555b07 fix(pr): tura 1'])
   assert.match(konflikt.wynik.naprawa, /git rebase --continue` \(do konca rebase.u\), potem \/dev-pr --czesc 2; albo `git rebase --abort`/)
   const zlaGalaz = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121), { ...PRZYG_OK, galaz: 'main' }])
   assert.deepEqual([zlaGalaz.wynik.status, zlaGalaz.wynik.powod, zlaGalaz.prompty.length], ['STOP', 'biezaca galaz main, oczekiwana feature/etap-3', 3])

@@ -125,7 +125,9 @@ przelicza indeks z drzewa commitu, kontynuuje rebase i przygotowuje część od 
 Tak samo `supabase/migrations.sum`: workflow scala wpisy obu stron (`bramki.mjs --scal-sume`); ta sama migracja z inną sumą
 po obu stronach albo suma niezgodna z migracjami to `KONFLIKT` z powodem.
 
-`status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Zapytaj operatora przez
+`status: "KONFLIKT"` (rebase części) → rebase stoi na konflikcie w plikach `konflikty`. Niepuste `konfliktyZTur` pokaż przed
+pytaniem: commit tury PR poprzedniej części zmienił ten plik (np. poprawka po uwadze bota), a ta część go przebudowuje —
+rozwiązanie to zwykle wersja tej części z naniesioną poprawką tury, gdy fragment przeżył. Zapytaj operatora przez
 `AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
 `git add <pliki>` i `git rebase --continue`; kolejny konflikt — to samo, aż rebase się skończy; potem znów krok 1 z tym samym
 `czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
@@ -176,7 +178,9 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "zbierz", z
 ```
 
 Wołasz go w **każdej** turze, także drugiej i trzeciej. Workflow zwraca `rekomendacja`, `token`, `watki[]` (każdy z `klasa`,
-`uzasadnienie`, `wplywNaProjekt`, `klaster`, `token`), `licznik` i `recenzjaAktualna`. **Pierwszy wiersz** Twojej wiadomości
+`uzasadnienie`, `wplywNaProjekt`, `klaster`, `token`), `licznik`, `recenzjaAktualna` i `potwierdzone` (wątki naprawione we
+wcześniejszej turze, które bot potwierdził, a nie rozwiązał — workflow rozwiązuje je sam; nie trafiają do `watki[]`, więc nie
+dajesz ich do kolejnej tury; `bledy` pokaż operatorowi). **Pierwszy wiersz** Twojej wiadomości
 o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
 
 `recenzjaAktualna: false` przy `recenzja: jest` → recenzja nie dotyczy czubka gałęzi. Wróć do kroku 2 i poczekaj na recenzję
@@ -251,6 +255,12 @@ gałąź (po merge'u to gałąź główna); `push: false` przy niepustym `commit
 Bez merge'u bieżąca gałąź to gałąź PR: commit compoundu trafia do PR i bot robi recenzję przyrostową samych plików wiedzy.
 Chroniona gałąź główna odrzuca push — wtedy `pushDetal` ma błąd, a commit wypychasz przez PR albo ręcznie.
 
+Przed pushem na gałąź główną compound i krok CLAUDE.md **czekają na CI czubka głównej** (do ~36 min): push zaraz po merge'u
+uruchamia CI od nowa, a CI z `concurrency: cancel-in-progress` anulowałby przebieg i deploy commitu merge'a. Wynik wraca jako
+`ciGlownej` i to jedyne źródło linii o CI i deployu w raporcie: `success` = przebieg (z deployem, jeśli projekt go ma) przeszedł;
+`failure` / `cancelled` = deploy commitu merge'a NIE jest potwierdzony — napisz to wprost; `w-toku` = commit niewypchnięty, wypchnij
+po zakończeniu przebiegu; `brak-ci` = repo nie ma CI na push. Nie pisz „deploy ruszył”, gdy `ciGlownej` tego nie mówi.
+
 **Propozycji bramek nie wdrażasz.** Typ albo reguła lint to zmiana kodu projektu — decyzja operatora; zapis zostaje
 w samym solution (`szczebel`, `szczebel_powod`). Do wdrożenia bramki lekcja działa jak reguła (indeks, wycinek); po wdrożeniu
 solution dostaje pole `bramka` (gdzie wdrożona) i wypada z indeksu.
@@ -269,6 +279,8 @@ Wejście: sekcja „Do CLAUDE.md po merge'u” z `docs/decisions/<data>-<zadanie
 merge'u). Workflow wprowadza fakty do CLAUDE.md, liczy przyrost w JS (próg 2000 zn na zadanie), zmienia pole na
 `claude_md: uzgodniono`, commituje na gałęzi głównej i pushuje. Bootstrap autopilota zatrzymuje kolejne zadanie, dopóki
 któryś plik decyzji na gałęzi głównej ma `do-uzgodnienia`. `STOP` → wypisz `powod` i `naprawa`; nie przycinaj CLAUDE.md sam.
+Zadanie zrobione poza `/dev-docs-complete` nie ma pliku decyzji: przy zmergowanym PR workflow zwraca `pominiety: true` — w raporcie
+„CLAUDE.md: nie dotyczy — zadanie bez pliku decyzji”.
 
 **Część nieostatnia** (`czesc` < `czesci`): po merge'u i compoundzie (commit compoundu wypchnięty na główną) kończysz raportem,
 którego ostatnia linia to „Następny krok: /clear, potem /dev-pr --czesc <N+1>”. Kolejnej części nie uruchamiasz w tej sesji:
@@ -284,6 +296,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1>
    Wątki: naprawione <a> · odrzucone z dokumentem decyzji <b> · do operatora <c> · nieruszone <d>
    Walidacja ostatniej tury: PASS/FAIL/BRAK-KOMEND
    Merge: <zmergowany / gotowy do decyzji: lista niespełnionych warunków / --bez-merge>
+   CI po merge'u: <ciGlownej z compoundu albo kroku CLAUDE.md, 1:1; failure/cancelled = „deploy commitu merge'a niepotwierdzony”>
    CLAUDE.md: <uzgodniony (przed → po zn, commit, push) / STOP: powód / nie dotyczy — PR niezmergowany>
 
 <tabela każdej tury z pola `tabela` etapu napraw, w kolejności tur>

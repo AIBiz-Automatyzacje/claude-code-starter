@@ -107,7 +107,8 @@ const PRZYGOTOWANIE = {
     powod: { type: ['string', 'null'], description: 'przy STOP i KONFLIKT: co dokladnie sie stalo' },
     galaz: { type: 'string', description: 'git branch --show-current po przygotowaniu' },
     konflikty: { type: 'array', items: { type: 'string' }, description: 'pliki z konfliktem (git diff --name-only --diff-filter=U)' },
-    rebase: { type: 'string', enum: ['wykonany', 'juz-wykonany', 'nie-dotyczy'] },
+    konfliktyZTur: { type: 'array', items: { type: 'string' }, description: 'przy KONFLIKT w czesci N > 1: "<plik> <- <sha> <temat>" dla commitow tur PR czesci N-1, ktore zmienily plik z konfliktem' },
+    rebase:{ type: 'string', enum: ['wykonany', 'juz-wykonany', 'nie-dotyczy'] },
     walidacja: { type: 'string', enum: ['PASS', 'FAIL', 'BRAK-KOMEND', 'nie-dotyczy'] },
     walidacjaDetal: { type: 'string' },
     push: { type: 'boolean' },
@@ -234,9 +235,19 @@ const ZEBRANE = {
     ciDetal: { type: 'string' },
     plikiPr: { type: ['integer', 'null'], description: 'liczba zmienionych plikow PR (gh pr view --json changedFiles) — mianownik miary jakosci' },
     recenzjaAktualna: { type: 'boolean', description: 'czy pobrana recenzja dotyczy biezacego headRefOid' },
+    potwierdzone: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: { id: { type: 'string' }, plik: { type: 'string' } },
+        required: ['id', 'plik'],
+      },
+      description: 'nierozwiazane watki naprawione w poprzedniej turze, w ktorych ostatni komentarz bota potwierdza poprawke bez nowego zarzutu — NIE ma ich w watki[]',
+    },
     uwagi: { type: ['string', 'null'], description: 'cokolwiek, co operator powinien wiedziec o samym zbieraniu (np. ucieta lista watkow)' },
   },
-  required: ['watki', 'headRefOid', 'mergeable', 'mergeStateStatus', 'ciZielone', 'ciDetal', 'recenzjaAktualna', 'plikiPr'],
+  required: ['watki', 'headRefOid', 'mergeable', 'mergeStateStatus', 'ciZielone', 'ciDetal', 'recenzjaAktualna', 'plikiPr', 'potwierdzone'],
 }
 
 const NAPRAWA = {
@@ -287,6 +298,7 @@ const UZGODNIENIE = {
     glowna: { type: 'string', description: 'domyslna galaz repo' },
     naGlownej: { type: 'boolean', description: 'biezaca galaz = glowna, drzewo czyste poza CLAUDE.md, pull --ff-only bez bledu' },
     plikDecyzji: { type: ['string', 'null'], description: 'docs/decisions/<data>-<zadanie>.md na glownej; null = brak' },
+    prZmergowany: { type: ['boolean', 'null'], description: 'tylko przy plikDecyzji null: czy PR galezi feature/<zadanie> (albo jej czesci -czN) jest zmergowany; null = nie sprawdzono (bez gh)' },
     poleClaudeMd: { type: ['string', 'null'], description: 'wartosc claude_md z frontmattera przed zmiana' },
     fakty: { type: 'array', items: { type: 'string' }, description: "punkty sekcji Do CLAUDE.md po merge'u (bez \"brak\")" },
     znPrzed: { type: ['integer', 'null'], description: 'git show HEAD:CLAUDE.md | wc -m' },
@@ -297,16 +309,23 @@ const UZGODNIENIE = {
   required: ['glowna', 'naGlownej', 'plikDecyzji', 'poleClaudeMd', 'fakty', 'znPrzed', 'znPo', 'zmiany'],
 }
 
+const STANY_CI_GLOWNEJ = ['success', 'failure', 'cancelled', 'w-toku', 'brak-ci', 'nie-dotyczy', 'brak-remote']
+const POLE_CI_GLOWNEJ = {
+  type: 'string', enum: STANY_CI_GLOWNEJ,
+  description: 'wynik kroku CI GLOWNEJ: CI czubka galezi glownej przed pushem (po merge\'u — przebieg i deploy commitu merge\'a)',
+}
+
 const UZGODNIENIE_COMMIT = {
   type: 'object',
   additionalProperties: false,
   properties: {
     pole: { type: ['string', 'null'], description: 'wartosc claude_md w HEAD po commicie' },
     commit: { type: ['string', 'null'] },
+    ciGlownej: POLE_CI_GLOWNEJ,
     push: { type: 'boolean' },
     pushDetal: { type: 'string' },
   },
-  required: ['pole', 'commit', 'push', 'pushDetal'],
+  required: ['pole', 'commit', 'ciGlownej', 'push', 'pushDetal'],
 }
 
 // Pola wiedzy zapisanego solution (PLAN-POPRAWY P10) — kopia z dev-compound-wf.js, nazwy jak we frontmatterze.
@@ -352,17 +371,40 @@ const COMPOUND_PR = {
     plikPropozycji: { type: ['string', 'null'], description: 'docs/reviews/propozycje-do-reviewerow.md, gdy dopisano sekcje' },
     odlozoneZapisane: { type: 'integer', description: 'ile watkow odlozonych dopisano do known-issues.md zadania (E5-5)' },
     commit: { type: ['string', 'null'] },
+    ciGlownej: POLE_CI_GLOWNEJ,
     push: { type: 'boolean' },
     pushDetal: { type: 'string' },
   },
-  required: ['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji', 'commit', 'push', 'pushDetal'],
+  required: ['wpisy', 'odmowy', 'indeks', 'propozycjeDoReviewerow', 'plikPropozycji', 'commit', 'ciGlownej', 'push', 'pushDetal'],
 }
 
 // Push commita artefaktow po etapach claude-md i compound — jedno brzmienie. P20 A4 (vibersi PR #3 i #4): compound
 // commitowal na lokalnym main po \`gh pr merge --delete-branch\` i nie pushowal; nastepny PR wiozl ten commit, a po squashu
 // lokalny main rozjezdzal sie z origin i \`git pull --ff-only\` kroku claude-md dawal STOP.
-const KROK_PUSH = `PUSH: \`git remote\` pusty = push false, pushDetal "brak remote". Inaczej \`git push\`; blad = push false i tresc bledu
+const KROK_PUSH = `PUSH: \`git remote\` pusty = push false, pushDetal "brak remote". ciGlownej "w-toku" = push false, pushDetal "CI commitu
+   <SHA> w toku po ~36 min — push wstrzymany, zeby nie anulowac deployu". Inaczej \`git push\`; blad = push false i tresc bledu
    w pushDetal — bez --force i bez innej galezi. Udany push = pushDetal "OK".`
+
+// Push na glowna zaraz po merge'u uruchamia CI od nowa, a CI z `concurrency: cancel-in-progress` anuluje wtedy przebieg (i deploy)
+// commitu merge'a: dashboard PR #104 (commit compoundu) i PR #107 (commit CLAUDE.md), 02.11. Raport podawal „deploy ruszyl”
+// bez sprawdzenia. Etapy po merge'u czekaja wiec na CI czubka glownej i oddaja jego wynik do raportu (POLE_CI_GLOWNEJ).
+const KROK_CI_GLOWNEJ = `CI GLOWNEJ (przed pushem, takze bez commita do wypchniecia): \`git remote\` pusty = ciGlownej "brak-remote".
+   glowna = \`gh repo view --json defaultBranchRef -q .defaultBranchRef.name\`; \`git branch --show-current\` inna = ciGlownej "nie-dotyczy".
+   Inaczej \`git fetch origin\`, SHA = \`git rev-parse origin/<glowna>\`, przebiegi = \`gh run list --branch <glowna> --commit <SHA>
+   --json databaseId,status,conclusion\`. Pusta lista = \`sleep 30\` i ponownie, najwyzej 4 razy; dalej pusta = "brak-ci". Przebieg ze
+   statusem innym niz completed = \`timeout 540 gh run watch <databaseId> --interval 30 > /dev/null\`, najwyzej 4 razy; dalej w toku =
+   "w-toku". Wszystkie zakonczone = ciGlownej z conclusion; kilka przebiegow — failure albo cancelled wygrywa nad success.`
+
+/** @param {string} nazwaEtapu @param {string | undefined} ci */
+function logCiGlownej(nazwaEtapu, ci) {
+  if (ci === 'failure' || ci === 'cancelled') {
+    log(`/dev-pr ${nazwaEtapu}: UWAGA — CI czubka glownej: ${ci}; deploy commitu merge'a NIE jest potwierdzony — sprawdz przebieg na glownej`)
+  } else if (ci === 'w-toku') {
+    log(`/dev-pr ${nazwaEtapu}: UWAGA — CI czubka glownej nadal w toku; commit niewypchniety, zeby nie anulowac deployu — wypchnij po przebiegu`)
+  } else if (ci) {
+    log(`/dev-pr ${nazwaEtapu}: CI czubka glownej: ${ci}`)
+  }
+}
 
 // Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): operator decyduje o bramce, a do jej
 // wdrozenia (pole `bramka`) lekcja idzie do indeksu i wycinka jak regula. Kopia z dev-compound-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
@@ -700,7 +742,11 @@ i nie rozwiazujesz konfliktow.
    niepusty) = status KONFLIKT z ta lista; rebase w toku bez konfliktow albo brudne drzewo = STOP z powodem.
 ${kroki}
 4. KONFLIKT rebase'u: NIE rozwiazuj go i NIE rob \`git rebase --abort\` — status KONFLIKT, konflikty = \`git diff --name-only --diff-filter=U\`,
-   powod = komunikat gita (bez tresci plikow). Decyzje podejmuje operator.
+   powod = komunikat gita (bez tresci plikow). Decyzje podejmuje operator.${cz.czesc > 1 ? `
+   konfliktyZTur (kontekst dla operatora; dashboard 02.11: tura PR czesci 1 zmienila plik, ktory przebudowuje czesc 2):
+   PR = \`gh pr list --state merged --head ${cz.poprzednia} --json number -q '.[0].number'\`; commity tur = \`gh pr view <PR> --json commits
+   -q '.commits[] | select(.messageHeadline | startswith("fix(pr)")) | .oid'\`; dla kazdego \`gh api repos/{owner}/{repo}/commits/<oid>
+   -q '[.files[].filename]'\`. Plik z konflikty na tej liscie = wpis "<plik> <- <oid 7 zn> <temat commita>". Bez gh albo blad = [].` : ''}
 5. WALIDACJA (tylko gdy rebase=wykonany albo juz-wykonany): typecheck i testy projektu. FAIL = status STOP, powod z detalem, bez pushu.
    Gdy rebase=nie-dotyczy: walidacja=nie-dotyczy (koniec fazy przeszedl walidacje w autopilocie).
 6. PUSH: \`git push --force-with-lease --force-if-includes -u origin ${cz.galaz}\` — nadpisuje zdalna galaz tylko wtedy, gdy jej czubek
@@ -749,9 +795,10 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
     }
     if (!przyg) return { status: 'BLAD', etap, czesc, powod: 'Przygotowanie galezi czesci zwrocilo null — sprawdz `git status` i `git log -1`.' }
     if (przyg.status === 'KONFLIKT') {
-      log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}`)
+      const zTur = przyg.konfliktyZTur || []
+      log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}${zTur.length ? `; pliki zmienione przez tury PR czesci ${cz.czesc - 1}: ${zTur.join('; ')}` : ''}`)
       return {
-        status: 'KONFLIKT', etap, czesc: cz.czesc, czesci: cz.czesci, konflikty: przyg.konflikty, powod: przyg.powod,
+        status: 'KONFLIKT', etap, czesc: cz.czesc, czesci: cz.czesci, konflikty: przyg.konflikty, konfliktyZTur: zTur, powod: przyg.powod,
         naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\` (do konca rebase'u), potem /dev-pr --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
       }
     }
@@ -820,6 +867,37 @@ Poza krokiem GALAZ NA GITHUBIE nie pushujesz; nie mergeujesz i nie zmieniasz kod
 
 // ── Etap: zbierz (Faza 2 — zebranie i klasyfikacja watkow) ────────────────
 
+const ROZWIAZANIE = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    rozwiazane: { type: 'array', items: { type: 'string' }, description: 'id watkow rozwiazanych mutacja resolveReviewThread' },
+    bledy: { type: 'array', items: { type: 'string' }, description: '"<id>: <tresc bledu>" dla watkow, ktorych nie udalo sie rozwiazac' },
+  },
+  required: ['rozwiazane', 'bledy'],
+}
+
+/**
+ * Watki potwierdzone przez bota po naszej poprawce rozwiazujemy od razu — inaczej bramka merge'a widzi je jako otwarte, a kolejna
+ * tura weryfikuje je bez zmiany kodu (dashboard PR #104).
+ * @param {Array<{ id: string, plik: string }>} lista
+ * @returns {Promise<{ rozwiazane: string[], bledy: string[] }>}
+ */
+async function rozwiazPotwierdzone(lista) {
+  if (!lista.length) return { rozwiazane: [], bledy: [] }
+  const r = await agent(
+    `Rozwiaz watki review pull requesta, w ktorych bot potwierdzil nasza poprawke (klasyfikator juz to sprawdzil). Nie odpowiadasz
+w watkach i nie zmieniasz kodu. Dla kazdego id: \`gh api graphql -F id=<id> -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}'\`.
+isResolved true = id do rozwiazane; blad = "<id>: <tresc>" do bledy, bez ponawiania.
+Watki: ${JSON.stringify(lista)}
+Zwroc obiekt zgodny ze schematem.`,
+    { schema: ROZWIAZANIE, agentType: 'klasa-mechaniczny', label: 'pr:rozwiaz-potwierdzone' }
+  )
+  const wynik = r || { rozwiazane: [], bledy: lista.map((w) => `${w.id}: agent padl`) }
+  log(`/dev-pr: watki potwierdzone przez bota po poprawce — rozwiazane ${wynik.rozwiazane.length}/${lista.length}${wynik.bledy.length ? `, bledy: ${wynik.bledy.join('; ')}` : ''}`)
+  return wynik
+}
+
 if (etap === 'zbierz') {
   const wynik = await agent(
     `Jestes klasyfikatorem uwag z code review bota dla pull requesta zadania "${zadanie}" (tura ${tura}).
@@ -842,6 +920,10 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
 
    Przeczytaj ostatni komentarz bota w watku: gdy po naszej odpowiedzi podtrzymuje zarzut, nie klasyfikuj watku jako \`odrzuc\`.
    \`naszaOdpowiedz\` = true, gdy w watku po pierwszym komentarzu bota jest komentarz autora innego niz bot.
+   POTWIERDZONE: watek z nasza odpowiedzia o poprawce („Naprawione w <sha>”), po ktorej OSTATNI komentarz jest bota i potwierdza
+   poprawke bez nowego zarzutu, pytania ani prosby — bot czesto potwierdza, ale watku nie rozwiazuje. Taki watek NIE trafia do
+   watki[], tylko do potwierdzone[] (id, plik): klasyfikowany jako \`napraw\` dawal zbedna ture (dashboard PR #104, tura 2).
+   Bot cos dopytuje albo czesciowo podtrzymuje zarzut = zwykla klasyfikacja w watki[].
 4. Dla kazdego watku wypelnij \`wplywNaProjekt\` — to jest pole, ktore operator czyta przy wyborze.
    Odpowiedz w nim na trzy pytania, konkretnie, nie ogolnikami:
    - czy to KLASA bledu, ktora sie powtorzy (czy zobaczymy to samo w kolejnym pull requescie)?
@@ -865,6 +947,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     { schema: ZEBRANE, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:zbierz:tura-${tura}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Zbieranie watkow zwrocilo null (agent padl).' }
+  const potwierdzone = await rozwiazPotwierdzone(wynik.potwierdzone || [])
 
   // Liczniki w JS (Filar 3: agent nigdy nie liczy tego, co JS wie na pewno).
   const token = tokenTury(tura, wynik.headRefOid)
@@ -894,7 +977,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   log(`/dev-pr tura ${tura}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
   // plikiPr i prNumer ida do wyniku runu — z niego telemetria buduje run.pr (miara: P1/P2 bota na 100 plikow PR);
   // headRefOid — czubek, na ktorym telemetria liczy blame linii watku (ucieczki do bota, E5-20).
-  return { status: 'OK', etap, tura, rekomendacja: rek, token, watki, licznik, klastry, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null, headRefOid: wynik.headRefOid ?? null }
+  return { status: 'OK', etap, tura, rekomendacja: rek, token, watki, licznik, klastry, potwierdzone, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null, headRefOid: wynik.headRefOid ?? null }
 }
 
 // ── Etap: napraw (Faza 4 — naprawa, odpowiedzi, commit, push) ─────────────
@@ -1054,7 +1137,9 @@ nastepny krok, po bramce rozmiaru liczonej w orkiestratorze.
    \`git rev-parse --verify --quiet refs/heads/main\` zwraca SHA, inaczej master. naGlownej = false (i koniec, nic nie zmieniaj),
    gdy \`git branch --show-current\` to inna galaz albo \`git status --porcelain\` ma linie inne niz CLAUDE.md. Gdy \`git remote\`
    jest niepusty: \`git pull --ff-only\`; blad = naGlownej false i tresc bledu w uwagi.
-2. PLIK DECYZJI: \`ls docs/decisions/*-${zadanie}.md\`. Brak = plikDecyzji null i koniec. poleClaudeMd = wartosc linii
+2. PLIK DECYZJI: \`ls docs/decisions/*-${zadanie}.md\`. Brak = plikDecyzji null, prZmergowany = \`gh pr list --state merged --limit 200
+   --json headRefName -q '[.[] | select(.headRefName == "feature/${zadanie}" or (.headRefName | startswith("feature/${zadanie}-cz")))] | length'\`
+   wieksze od 0 (bez gh albo blad = null) i koniec. Przy pliku decyzji prZmergowany = null. poleClaudeMd = wartosc linii
    \`claude_md:\` z frontmattera. Wartosc "uzgodniono" = koniec bez zmian (krok juz wykonany).
 3. FAKTY: punkty sekcji "## Do CLAUDE.md po merge'u" do fakty[] (punkt "brak" pomin).
 4. znPrzed = \`git show HEAD:CLAUDE.md | wc -m\` (brak CLAUDE.md w HEAD = 0).
@@ -1075,8 +1160,15 @@ Zwroc obiekt zgodny ze schematem.`,
   if (!u.naGlownej) {
     return { status: 'STOP', etap, powod: `krok CLAUDE.md wymaga galezi ${u.glowna} z czystym drzewem${u.uwagi ? ` (${u.uwagi})` : ''}`, naprawa: `\`git switch ${u.glowna} && git pull --ff-only\`, potem ${ponow}` }
   }
+  // Zadanie zrobione poza archiwizacja /dev-docs-complete (vibersi poczta-monitoring-limitow, 01.11) nie ma pliku decyzji, a PR
+  // jest zmergowany: STOP z rada „po merge'u ponow” prowadzil w petle. Nie ma faktow do uzgodnienia — krok pominiety.
+  if (!u.plikDecyzji && u.prZmergowany === true) {
+    const powod = `zadanie bez pliku docs/decisions/ (PR zmergowany, zadanie poza archiwizacja /dev-docs-complete) — brak faktow do uzgodnienia`
+    log(`/dev-pr: krok CLAUDE.md pominiety — ${powod}`)
+    return { status: 'OK', etap, pominiety: true, powod }
+  }
   if (!u.plikDecyzji) {
-    return { status: 'STOP', etap, powod: `brak pliku docs/decisions/<data>-${zadanie}.md na ${u.glowna} — PR niezmergowany albo zadanie sprzed docs/decisions/`, naprawa: `Po merge'u PR: ${ponow}` }
+    return { status: 'STOP', etap, powod: `brak pliku docs/decisions/<data>-${zadanie}.md na ${u.glowna} — PR zadania niezmergowany${u.prZmergowany === null ? ' albo nie dalo sie tego sprawdzic (gh)' : ''}`, naprawa: `Po merge'u PR: ${ponow}` }
   }
   if (u.poleClaudeMd === 'uzgodniono') {
     log(`/dev-pr: ${u.plikDecyzji} juz ma claude_md: uzgodniono — bez zmian`)
@@ -1099,7 +1191,8 @@ Zwroc obiekt zgodny ze schematem.`,
    \`git commit -m "docs(${zadanie}): CLAUDE.md uzgodniony po merge'u"\` — temat w jednej linii, stopka wylacznie drugim \`-m\`.
    commit = krotki hash.
 3. pole = sama wartosc (bez "claude_md: ") z \`git show HEAD:${u.plikDecyzji} | grep -m1 '^claude_md:'\`.
-4. ${KROK_PUSH}
+4. ${KROK_CI_GLOWNEJ}
+5. ${KROK_PUSH}
 Zwroc obiekt zgodny ze schematem.`,
     { schema: UZGODNIENIE_COMMIT, agentType: 'klasa-mechaniczny', label: `pr:claude-md-commit:${zadanie}` }
   )
@@ -1107,8 +1200,9 @@ Zwroc obiekt zgodny ze schematem.`,
     return { status: 'BLAD', etap, powod: `pole claude_md po commicie: ${c ? c.pole : 'brak wyniku agenta'} — sprawdz ${u.plikDecyzji} i \`git log -1\`` }
   }
   if (!c.push) log(`/dev-pr: UWAGA — commit ${c.commit} bez pusha (${c.pushDetal}); pojedzie z nastepna galezia`)
+  logCiGlownej('claude-md', c.ciGlownej)
   log(`/dev-pr: CLAUDE.md uzgodniony (${u.znPrzed} -> ${u.znPo} zn), ${u.plikDecyzji}: claude_md: uzgodniono, commit ${c.commit}`)
-  return { status: 'OK', etap, plikDecyzji: u.plikDecyzji, fakty: u.fakty, zmiany: u.zmiany, znPrzed: u.znPrzed, znPo: u.znPo, commit: c.commit, push: c.push, pushDetal: c.pushDetal }
+  return { status: 'OK', etap, plikDecyzji: u.plikDecyzji, fakty: u.fakty, zmiany: u.zmiany, znPrzed: u.znPrzed, znPo: u.znPo, commit: c.commit, ciGlownej: c.ciGlownej, push: c.push, pushDetal: c.pushDetal }
 }
 
 // ── Etap: compound (Faza 7 — baza wiedzy + petla zwrotna do reviewerow) ───
@@ -1151,8 +1245,9 @@ ${JSON.stringify(odlozone, null, 2)}
    (czesc nieostatnia) = odlozoneZapisane 0 — start kolejnej czesci zbierze je z PR.
 ` : ''}5. Zacommituj artefakty bazy wiedzy jawnym pathspec (docs/solutions/, docs/learned-patterns.md,
    docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md, docs/completed/${zadanie}/known-issues.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
-   commit = krotki hash; bez zmian do zacommitowania commit null, push false, pushDetal "brak commita" i pomin pkt 6.
-6. ${KROK_PUSH}
+   commit = krotki hash; bez zmian do zacommitowania commit null, push false, pushDetal "brak commita" i pomin pkt 7 (pkt 6 robisz).
+6. ${KROK_CI_GLOWNEJ}
+7. ${KROK_PUSH}
    Po merge'u z \`--delete-branch\` biezaca galaz to glowna, wiec push wysyla commit compoundu na glowna — bez niego
    nastepny pull request wiozlby ten commit, a krok CLAUDE.md zatrzymalby sie na rozjechanej galezi glownej.
 
@@ -1167,6 +1262,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (wynik.indeks === 'bramka') log(`/dev-pr compound: ${INDEKS_PELNY}`)
   if (odlozone.length) log(`/dev-pr compound: watki odlozone ${odlozone.length}, w known-issues.md: ${wynik.odlozoneZapisane || 0}`)
   if (wynik.commit && !wynik.push) log(`/dev-pr compound: UWAGA — commit ${wynik.commit} bez pusha (${wynik.pushDetal}); wypchnij go przed kolejnym PR i krokiem CLAUDE.md`)
+  logCiGlownej('compound', wynik.ciGlownej)
   return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
 }
 
