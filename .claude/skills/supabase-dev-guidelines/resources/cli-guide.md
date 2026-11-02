@@ -49,10 +49,16 @@ supabase stop --no-backup               # Zatrzymaj i usuń dane
 
 ## Baza Danych
 
+> **CLI 3 (od 2026-11-02) — cel komendy.** `db push`, `db pull`, `db dump`, `migration list|fetch|repair`, `inspect db *`
+> i `gen types` bez flagi celu działają na **lokalnym** stacku. Na podlinkowany projekt: `--linked` (działa w v2 i v3;
+> w v3 z ostrzeżeniem, zamiennik `--remote`), na konkretną bazę: `--db-url "<url>"` (v3: `--remote=<url>`). Każda zmiana
+> hostowanej bazy bez terminala (agent, CI) wymaga `--yes` — agent dostaje błąd `HostedMutationConsentRequiredError`
+> i pyta operatora, zanim doda `--yes` na dev/prod. Przewodnik: https://supabase.com/docs/guides/local-development/cli/migrating-to-v3
+
 ### Migracje
 ```bash
 supabase migration new <nazwa>          # Utwórz pusty plik migracji
-supabase migration list                 # Pokaż historię (local + remote)
+supabase migration list --linked        # Historia: lokalne pliki vs podlinkowany projekt
 supabase migration up                   # Aplikuj oczekujące migracje
 supabase migration down --last 1        # Cofnij ostatnią migrację
 supabase migration squash               # Scal wiele migracji w jedną
@@ -68,10 +74,10 @@ supabase db diff --linked               # Porównaj z remote
 
 ### Push / Pull / Reset
 ```bash
-supabase db push                        # Wypchnij migracje na remote
-supabase db push --dry-run              # Podgląd bez aplikowania
-supabase db push --include-roles        # Uwzględnij role
-supabase db pull                        # Pobierz schemat z remote
+supabase db push --linked               # Wypchnij migracje na podlinkowany projekt (operator potwierdza)
+supabase db push --linked --dry-run     # Podgląd bez aplikowania
+supabase db push --linked --include-roles  # Uwzględnij role
+supabase db pull --linked               # Pobierz schemat z podlinkowanego projektu
 supabase db reset                       # Odtwórz lokalną bazę od zera
 supabase db reset --no-seed             # Bez danych seed
 ```
@@ -195,7 +201,7 @@ Kluczowe sekcje:
 project_id = "my-project"
 
 [db]
-major_version = 15
+major_version = 15   # musi zgadzać się z bazą zdalną: SHOW server_version; (przykład)
 
 [auth]
 site_url = "http://localhost:3000"
@@ -239,8 +245,8 @@ supabase gen types typescript --local > src/types/database.types.ts
 
 ### 3. Deploy
 ```bash
-supabase db push --dry-run               # Podgląd
-supabase db push                         # Aplikuj migracje
+supabase db push --linked --dry-run      # Podgląd
+supabase db push --linked                # Aplikuj migracje (operator potwierdza; bez terminala: --yes)
 supabase functions deploy                # Deploy Edge Functions
 supabase secrets set --env-file .env.prod  # Sekrety
 ```

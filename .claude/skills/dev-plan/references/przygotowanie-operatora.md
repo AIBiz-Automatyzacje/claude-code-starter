@@ -17,7 +17,7 @@ Nie wpisujesz:
 
 - dostępu do Figmy — rozstrzyga go 1.6 (pobranie się udało albo zapadło „projektujemy z głowy”);
 - fizycznego urządzenia do `[Manual]` — to smoke po implementacji, niczego nie blokuje przed startem;
-- czynności po zakończeniu zadania (`supabase db push` na dev/prod po merge'u, rollout, monitoring, sprzątanie danych testowych) — te idą do `Operator checklist` IU, która je wywołuje, a stamtąd do smoke'u operatora przy archiwizacji;
+- czynności po zakończeniu zadania (`supabase db push --linked` na dev/prod po merge'u, rollout, monitoring, sprzątanie danych testowych) — te idą do `Operator checklist` IU, która je wywołuje, a stamtąd do smoke'u operatora przy archiwizacji;
 - decyzji produktowych czekających na wybór — to bloker planowania z 0.5, nie przygotowanie;
 - tego, co autopilot robi sam: typecheck, testy, dev server, migracje i seedy na projekt e2e, `git`.
 

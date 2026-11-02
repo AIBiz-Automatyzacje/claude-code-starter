@@ -594,8 +594,8 @@ ${BLOK_DLUGIE_KOMENDY}
 
 1. Wczytaj SUPABASE_E2E_DB_URL i SUPABASE_E2E_SERVICE_ROLE_KEY z .env.e2e (do uzycia, nie do logu).
 2. MIGRACJE — najpierw \`node .claude/scripts/e2e/e2e.mjs suma\`: kod 1 = migracja z sumy zmieniona albo usunieta ->
-   status "niepowodzenie" z trafieniami w detal, bez db push (zmieniona wypchnieta migracja nie trafia do bazy e2e). Potem realny apply: \`supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all\`
-   (non-interactive: dodaj --yes jesli CLI wspiera, inaczej \`echo Y |\`). To pierwsza PRAWDZIWA
+   status "niepowodzenie" z trafieniami w detal, bez db push (zmieniona wypchnieta migracja nie trafia do bazy e2e). Potem realny apply: \`supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all --yes\`
+   (\`--yes\` obowiazkowe: CLI 3 bez terminala odrzuca zmiane hostowanej bazy bez niego, odpowiedz podana potokiem nic nie potwierdza; w v2 to ta sama flaga globalna). To pierwsza PRAWDZIWA
    weryfikacja SQL migracji w pipeline (testy migracji w repo to regex na pliku). Blad SQL ->
    status "niepowodzenie" z pelna trescia bledu w detal — to moze byc DEFEKT KODU migracji, nie infra.
 3. SEED: znajdz seedy powiazane z flow tej fazy — pliki *-seed.sql w e2e/seeds/. Zrodla nazw flow/seedow
