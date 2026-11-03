@@ -122,6 +122,7 @@ test('sekcje slotów, do których odsyłają workflowy, są nagłówkami ## w wa
     'walidacja.md': ['Zimny runner', 'Flake infrastruktury', 'Rozgrzewka cache', 'Runner testów i build'],
     'fix-e2e.md': ['Ponowne odegranie scenariusza', 'Sprawdzenie poprawki wizualnej'],
     'buildery.md': ['Ścieżki warstw'],
+    'plan-e2e.md': ['Linia scenariusza'],
   }
   const workflowy = [autopilot, execute, review, pr].join('\n')
   for (const [plik, nazwy] of Object.entries(sekcje)) {

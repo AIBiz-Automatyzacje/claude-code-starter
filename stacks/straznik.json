@@ -42,7 +42,6 @@
     { "plik": ".claude/scripts/e2e/srodowisko.mjs", "rodzaj": "przejsciowy", "iu": "IU-1.7", "slowa": ["vite"], "linie": ["VITE_SUPABASE_URL", "= Vite w trybie e2e", "ma w Vite (tryb e2e)"], "powod": "klucze bazy i strażnik bazy dev („Vite w trybie e2e doczyta bazę dev”) z profil.json" },
     { "plik": ".claude/scripts/plan/walidacja-planu.mjs", "rodzaj": "przejsciowy", "iu": "IU-1.7", "slowa": ["vite"], "powod": "KOMENDY_CLI z profil.json" },
     { "plik": ".claude/workflows/dev-docs-review-wf.js", "rodzaj": "przejsciowy", "iu": "IU-1.7", "slowa": ["vite"], "linie": ["- CLI (bun, npm, npx, pnpm, yarn, make, node, tsc, vitest"], "powod": "lista CLI scribe'a = KOMENDY_CLI (zgodność pilnuje kontrakt-docs-active.test.mjs)" },
-    { "plik": ".claude/workflows/dev-docs-review-wf.js", "rodzaj": "przejsciowy", "iu": "IU-1.6", "slowa": ["agent-browser"], "linie": ["W webie flow nie ma osobnego pliku"], "powod": "opis pola E2E_RESULT.flow (A0.7 §6 p.3) — kontrakt testera rdzeń/stack" },
     { "plik": ".claude/scripts/smoke/zmienne.mjs", "rodzaj": "przejsciowy", "iu": "IU-1.7", "slowa": ["vite"], "powod": "zmienne wbudowane Vite (MODE, BASE_URL…) z profil.json" },
     { "plik": ".claude/skills/security/", "rodzaj": "przejsciowy", "iu": "IU-2.9", "slowa": ["vite", "port-dev", "DOM"], "powod": "skill wspólny: różnice stacku do references/stack.md" },
     { "plik": ".claude/skills/sentry-integration/", "rodzaj": "przejsciowy", "iu": "IU-2.9", "slowa": ["vite"], "powod": "skill wspólny: różnice stacku do references/stack.md" },

@@ -8,6 +8,8 @@
 // kopie reguly rozjezdzaja sie po cichu). Skill wstrzykiwany builderowi jest jego warstwa stala, wiec nie niesie protokolu
 // audytu ani krzyku wersalikami (PA-24, PA-17). Kazde sprawdzenie ma test na podlozonym zlym tekscie.
 // Wszystkie buildery maja szkielet (P12), wiec planner nie dokleja im juz wlasnego bloku wymagan wykonania.
+// Tu sa asercje rdzenia — kontrakt, ktory spelnia builder kazdego stacku (D3, D22). Asercje stacku web (runner testow,
+// skille web) sa w stacks/web/__tests__/role.test.mjs; wariant stacku dostaje wlasne obok swojej nakladki.
 
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -15,17 +17,18 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { AGENCI, agenci } from './agenci-pipeline.mjs'
+import { AGENCI, agenci, blokPolecen, wersaliki } from './agenci-pipeline.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 const BUILDERY_ZE_SZKIELETEM = ['feature-builder-data', 'feature-builder-ui', 'feature-builder-fullstack', 'feature-builder-ui-figma',
   'feature-builder-fullstack-figma']
-// Skille przepisane wg PA-17 (jedna zasada = jedno zdanie z powodem).
-const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-guidelines', 'tailwind-react-guidelines', 'ux-ui-guidelines']
+// Skille wspolne przepisane wg PA-17 (jedna zasada = jedno zdanie z powodem).
+const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-guidelines']
 
 const REGULY_KODU = '.claude/rules/coding-rules.md'
-// `[E2E]`: scenariusze przegladarki i reczne wykonuja tester i operator — builder pisze tylko seed z pola Pliki.
-const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'tsc --noEmit', 'vitest related --run', 'pytaniem „undefined”',
+// `[E2E]`: scenariusze narzedzia jazdy i reczne wykonuja tester i operator — builder pisze tylko seed z pola Pliki.
+// Komende testow powiazanych w samosprawdzeniu sprawdza test stacku.
+const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'samosprawdzenie plików jednostki', 'tsc --noEmit', 'pytaniem „undefined”',
   'Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator']
 // Tokeny regul kodu, ktorych builder nie przepisuje — odwoluje sie do sekcji po nazwie.
 const TOKENY_REGUL_KODU = ['auth.uid()', 'auth.jwt()', 'strictObject', 'search_path', 'AbortSignal', 'eslint-disable', 'toBeDefined',
@@ -33,7 +36,6 @@ const TOKENY_REGUL_KODU = ['auth.uid()', 'auth.jwt()', 'strictObject', 'search_p
 // Znaczniki protokolu audytu i jego raportu (skill security przed P12).
 const ZNACZNIKI_AUDYTU = ['Executive Summary', 'Risk Matrix', 'Remediation Roadmap', 'Format Raportu', 'Klasyfikacja Findings',
   'skanowy protokol', 'jak atakujacy']
-const WERSALIKI = /(?<![\p{L}_])(?:NIGDY|ZAWSZE|MUSI|MUSISZ|MUST|NEVER|ALWAYS|ALL|WAŻNE|OBOWIĄZKOWE|KRYTYCZNE|TYLKO|NIE)(?![\p{L}_])/gu
 
 const zrodloExecute = readFileSync(join(REPO, '.claude/workflows/dev-docs-execute-wf.js'), 'utf8')
 
@@ -45,15 +47,6 @@ function polaWyniku() {
   assert.notEqual(start, -1, 'nie znaleziono BUILD_RESULT — kotwica testu wymaga aktualizacji')
   const blok = zrodloExecute.slice(start, zrodloExecute.indexOf('\n}', start))
   return [...blok.matchAll(/^ {4}(\w+): \{/gm)].map((m) => m[1] ?? '')
-}
-
-/**
- * @param {string} tekst
- * @returns {string}  tresc bloku `## Polecenia` (do nastepnego naglowka drugiego stopnia)
- */
-function blokPolecen(tekst) {
-  const m = tekst.match(/^## Polecenia\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m)
-  return m?.[1] ?? ''
 }
 
 /**
@@ -81,22 +74,13 @@ function protokolAudytu(tekst) {
   return ZNACZNIKI_AUDYTU.filter((z) => ascii.includes(z))
 }
 
-/**
- * @param {string} tekst  SKILL.md
- * @returns {string[]}  slowa krzyczane wersalikami poza blokami kodu i kodem w linii
- */
-function wersaliki(tekst) {
-  const proza = tekst.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
-  return [...proza.matchAll(WERSALIKI)].map((m) => m[0])
-}
-
 const POLA = ['id', 'status', 'pliki', 'odchylenia']
 const DOBRY = `Wdrazasz jednostke.
 
 ## Polecenia
 
 - Przeczytaj ${REGULY_KODU}.
-- Uruchom \`tsc --noEmit\` i \`vitest related --run\`; kazdy test przejdz pytaniem „undefined”.
+- Uruchom samosprawdzenie plików jednostki: \`tsc --noEmit\` i testy powiazane; kazdy test przejdz pytaniem „undefined”.
 - Scenariusze \`[E2E]\` i \`[Manual]\` wykonują tester i operator.
 - Zwracasz \`status\`, \`pliki\` i \`odchylenia\`.
 `
@@ -109,8 +93,8 @@ test('brak odczytu regul, samosprawdzenia, pytania i pola wyniku jest zglaszany'
   const tekst = 'Wdrazasz jednostke.\n\n## Polecenia\n\n- Zwracasz `status`.\n\n## Inne\n\nCzytasz coding-rules: .claude/rules/coding-rules.md\n'
   assert.deepEqual(naruszeniaSzkieletu(tekst, POLA), [
     `brak w poleceniach: ${REGULY_KODU}`,
+    'brak w poleceniach: samosprawdzenie plików jednostki',
     'brak w poleceniach: tsc --noEmit',
-    'brak w poleceniach: vitest related --run',
     'brak w poleceniach: pytaniem „undefined”',
     'brak w poleceniach: Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator',
     'pole wyniku bez polecenia: pliki',
