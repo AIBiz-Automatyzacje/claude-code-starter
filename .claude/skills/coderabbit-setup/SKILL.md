@@ -22,6 +22,10 @@ projektu), a dopasowany do stacku bieżącego projektu.
 To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
 `{{CODING_RULES}}`, który przy sklejaniu zastępujesz wartością stałej.
 
+**Stała ścieżki reguł stacku:** `STACK_RULES = .claude/rules/stack.md` (mechanizmy
+stacku do reguł kodu, np. wyjątki od zakazu `as`). Template ma w jej miejscu
+znacznik `{{STACK_RULES}}`.
+
 ## Wykonanie
 
 1. **Sprawdź istniejący config.** Jeśli `.coderabbit.yaml` już istnieje w korzeniu
@@ -41,12 +45,12 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
      w projekcie (wyjątek: świeży projekt przed init — wtedy zostaw z komentarzem,
      że filtry są przygotowane z wyprzedzeniem); wpisy z template'u bazowego
      zostają zawsze — `e2e/seeds/` dopisuje pipeline,
-   - każdy znacznik `{{CODING_RULES}}` zastąp wartością stałej z sekcji
-     „Pliki skilla”,
+   - każdy znacznik `{{CODING_RULES}}` i `{{STACK_RULES}}` zastąp wartością
+     stałej z sekcji „Pliki skilla”,
    - w `knowledge_base.code_guidelines.filePatterns` wpisz TYLKO istniejące pliki —
-     sprawdź kolejno: plik ze stałej `CODING_RULES`, `CLAUDE.md`, dodatkowe
-     konwencje w `docs/` (np. `docs/figma-build-conventions.md`); gdy pliku
-     ze stałej nie ma, usuń go także z pierwszej linii bloku `**/*.{ts,tsx}`,
+     sprawdź kolejno: pliki ze stałych `CODING_RULES` i `STACK_RULES`, `CLAUDE.md`,
+     dodatkowe konwencje w `docs/` (np. `docs/figma-build-conventions.md`); gdy pliku
+     ze stałej nie ma, usuń go także z bloku `**/*.{ts,tsx}`,
    - jeśli branch główny to nie `main` (sprawdź `git symbolic-ref refs/remotes/origin/HEAD`
      lub `git branch`) — popraw `base_branches`.
 
@@ -54,7 +58,7 @@ To jedyne miejsce z tą ścieżką — template ma w jej miejscu znacznik
 
 5. **Zwaliduj YAML.** Uruchom:
    ```bash
-   ruby -ryaml -e 't = File.read(".coderabbit.yaml"); c = YAML.load(t); abort "niepodstawiony {{CODING_RULES}}" if t.include?("{{CODING_RULES}}"); abort "tone_instructions > 250 zn." if c["tone_instructions"].to_s.size > 250; puts "YAML OK"'
+   ruby -ryaml -e 't = File.read(".coderabbit.yaml"); c = YAML.load(t); abort "niepodstawiony znacznik reguł" if t.match?(/\{\{(CODING|STACK)_RULES\}\}/); abort "tone_instructions > 250 zn." if c["tone_instructions"].to_s.size > 250; puts "YAML OK"'
    ```
    (systemowy ruby jest na macOS; gdyby go nie było — zwaliduj innym dostępnym
    parserem YAML). Błąd = napraw plik, nie pomijaj walidacji. Schemat CodeRabbit

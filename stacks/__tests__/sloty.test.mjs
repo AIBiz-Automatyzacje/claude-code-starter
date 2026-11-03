@@ -22,8 +22,8 @@ const pliki = rejestr.sloty.map((s) => s.plik)
 
 // Slot tekstowy leży w .claude/stack/ (wspólny dla workflowów i skilli) albo w references/stack.md skilla (D20); slot
 // plikowy to moduł rdzenia, który nakładka podmienia w całości (adapter E2E); slot danych to profil.json dla skryptów
-// i hooków (D15, IU-1.7).
-const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|stack\/profil\.json|skills\/[a-z0-9-]+\/references\/stack\.md|scripts\/[a-z0-9-]+\/adapter\.mjs)$/
+// i hooków (D15, IU-1.7); reguły stacku to `rules/stack.md` obok rdzenia `coding-rules.md` (IU-1.9).
+const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|stack\/profil\.json|skills\/[a-z0-9-]+\/references\/stack\.md|scripts\/[a-z0-9-]+\/adapter\.mjs|rules\/stack\.md)$/
 
 test('rejestr: każdy slot ma ścieżkę slotu tekstowego albo plikowego i opis, bez powtórzeń', () => {
   assert.ok(Array.isArray(rejestr.sloty) && rejestr.sloty.length > 0)
@@ -44,7 +44,8 @@ test('rejestr ma sloty tekstowe z IU-1.1', () => {
 test('każdy slot z rejestru ma wariant web: tekstowy z nagłówkiem, plikowy z komentarzem o kontrakcie, danych z opisem', () => {
   for (const plik of pliki) {
     assert.ok(existsSync(resolve(KORZEN, plik)), `brak pliku ${plik}`)
-    if (plik.endsWith('.md')) assert.match(czytaj(plik), /^# \S/, `${plik} zaczyna się nagłówkiem`)
+    // Reguła Claude Code (rules/) zaczyna się frontmatterem `paths:`, nagłówek stoi pod nim.
+    if (plik.endsWith('.md')) assert.match(czytaj(plik).replace(/^---\n[\s\S]*?\n---\n\n?/, ''), /^# \S/, `${plik} zaczyna się nagłówkiem`)
     else if (plik.endsWith('.json')) assert.ok(JSON.parse(czytaj(plik)).opis.trim().length > 0, `${plik} ma pole opis`)
     else assert.match(czytaj(plik), /^\/\/ .*slot plikowy/i, `${plik} zaczyna się opisem slotu`)
   }
@@ -56,6 +57,10 @@ test('rejestr ma adapter E2E (IU-1.3)', () => {
 
 test('rejestr ma slot danych profil.json (IU-1.7)', () => {
   assert.ok(pliki.includes(`${KATALOG_SLOTOW}/profil.json`))
+})
+
+test('rejestr ma slot reguł stacku rules/stack.md (IU-1.9)', () => {
+  assert.ok(pliki.includes('.claude/rules/stack.md'))
 })
 
 // Profil web niesie dzisiejsze wartości rdzenia 1:1: klucze VITE_* i kolejność plików env strażnika bazy dev, zmienne

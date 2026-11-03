@@ -46,6 +46,10 @@
       "opis": "weryfikacja-setup: komendy narzędzia jazdy w przejściu na żywo (Drive, Evidence, zamknięcie)."
     },
     {
+      "plik": ".claude/rules/stack.md",
+      "opis": "Reguły stacku do rdzenia coding-rules.md (A0.5 §1): miejsce testów, przypinanie wersji, rozpoznanie trybu aplikacji, wyjątki od zakazu as, budżet paczki i ładowanie leniwe, limit czasu żądania, rozpoznanie React Compilera."
+    },
+    {
       "plik": ".claude/scripts/e2e/adapter.mjs",
       "opis": "Adapter E2E (slot plikowy): domyślny port i komenda startu, port serwera deweloperskiego, narzędzie jazdy, próbny zrzut, uwagi planowania."
     }
