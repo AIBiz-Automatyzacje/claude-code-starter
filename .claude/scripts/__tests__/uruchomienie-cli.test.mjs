@@ -36,7 +36,8 @@ test('CLI z kopii w ścieżce ze spacją i polskimi znakami oraz przez dowiązan
   const tmp = mkdtempSync(join(tmpdir(), 'cli-sciezka-'))
   try {
     const projekt = join(tmp, 'projekt z spacją Ł')
-    for (const k of ['scripts', 'hooks']) {
+    // stack/: skrypty czytaja profil stacku (.claude/stack/profil.json, IU-1.7), ktory sync przenosi razem z nimi.
+    for (const k of ['scripts', 'hooks', 'stack']) {
       cpSync(join(CLAUDE, k), join(projekt, '.claude', k), { recursive: true, filter: (z) => !z.includes('__tests__') })
     }
     const dowiazanie = join(tmp, 'dowiazanie')

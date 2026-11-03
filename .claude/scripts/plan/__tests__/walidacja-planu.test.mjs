@@ -14,8 +14,12 @@ import { parsujPlan } from '../plan-techniczny.mjs'
 import { liczLinieKodu } from '../budzet-pliku.mjs'
 import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan, uwagiRozmiaruFaz, uwagiRozmiaruIu } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
+import { PROFIL } from '../../stack/profil.mjs'
 
-const FIXTURE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/plan-techniczny.md'), 'utf8')
+// Katalogi seedow i runnerow E2E z profilu stacku (IU-1.7); fixture niesie sciezki web (e2e/seeds/) — test przechodzi na kazdym
+// wariancie profilu.
+const { katalogSeedow: SEEDY, katalogRunnerow: RUNNERY } = PROFIL.e2e
+const FIXTURE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/plan-techniczny.md'), 'utf8').replaceAll('e2e/seeds/', `${SEEDY}/`)
 
 /** @param {number} n @returns {string} n linii kodu */
 const linie = (n) => 'const x = 1\n'.repeat(n)
@@ -146,8 +150,8 @@ test('scenariusze: bez typu, [E2E] bez identyfikatora flow, nieznany seed, ten s
     ['IU-3: scenariusz bez typu [Unit] / [E2E] / [Manual]: „hook dla szkicu zwraca brak oferty”'])
   assert.deepEqual(sprawdz(zmien('- [E2E] `oferta-publiczna` (seed', '- [E2E] oferta publiczna (seed')).bledy,
     ['IU-3: [E2E] bez identyfikatora flow w backtickach na początku linii'])
-  assert.deepEqual(sprawdz(zmien('`oferta-publiczna` (seed: e2e/seeds/publikacja-oferty-seed.sql)', '`oferta-publiczna` (seed: e2e/seeds/brak-seed.sql)')).bledy,
-    ['IU-3: seed e2e/seeds/brak-seed.sql — nie ma go w polu Pliki (Stwórz (e2e seed)) ani w repo'])
+  assert.deepEqual(sprawdz(zmien(`\`oferta-publiczna\` (seed: ${SEEDY}/publikacja-oferty-seed.sql)`, `\`oferta-publiczna\` (seed: ${SEEDY}/brak-seed.sql)`)).bledy,
+    [`IU-3: seed ${SEEDY}/brak-seed.sql — nie ma go w polu Pliki (Stwórz (e2e seed)) ani w repo`])
   assert.deepEqual(sprawdz(zmien('- [E2E] `oferta-publiczna`', '- [E2E] `publikacja-oferty`')).bledy,
     ['IU-3: flow `publikacja-oferty` ma już linię [E2E] w IU-2 — jeden scenariusz = jedna linia'])
 })
@@ -161,8 +165,8 @@ test('weryfikacja: [Manual], bez komendy CLI, [E2E] bez runnera i runner bedacy 
   for (const komenda of ['`tsc`', '`supabase test db`', '`psql "$SUPABASE_E2E_DB_URL" -c "select 1"`', '`./skrypty/sprawdz.sh`', '`node skrypty/x.mjs`']) {
     assert.deepEqual(sprawdz(zmien(typecheck, `- ${komenda} przechodzi\n\n### Faza 2`)).bledy, [], komenda)
   }
-  // Zmiana kontraktu (P13 S2): runner z e2e/ bez [E2E] scribe uruchomilby bez srodowiska e2e — blad, nie zwykla komenda.
-  assert.equal(sprawdz(zmien(typecheck, '- `./e2e/sprawdz.sh` przechodzi\n\n### Faza 2')).bledy.length, 1)
+  // Zmiana kontraktu (P13 S2): runner z katalogu runnerow E2E bez [E2E] scribe uruchomilby bez srodowiska e2e — blad, nie zwykla komenda.
+  assert.equal(sprawdz(zmien(typecheck, `- \`./${RUNNERY}/sprawdz.sh\` przechodzi\n\n### Faza 2`)).bledy.length, 1)
   assert.equal(sprawdz(zmien(typecheck, '- `test-utils.ts` istnieje\n\n### Faza 2')).bledy.length, 1)
   const runner = '- [E2E] `e2e/run-all.sh` — wszystkie flow zielone'
   assert.deepEqual(sprawdz(zmien(runner, '- [E2E] `publikacja-oferty` — oferta opublikowana')).bledy,
@@ -172,9 +176,9 @@ test('weryfikacja: [Manual], bez komendy CLI, [E2E] bez runnera i runner bedacy 
   assert.deepEqual(sprawdz(zmien(runner, '- [E2E] runner `e2e/run-all.sh` — wszystkie flow zielone')).bledy, [])
 })
 
-test('seed w tabeli poza e2e/seeds/*-seed.sql jest odrzucony', () => {
-  const md = zmien('| Stwórz (e2e seed) | `e2e/seeds/publikacja-oferty-seed.sql` |', '| Stwórz (e2e seed) | `supabase/seed.sql` |')
-  assert.ok(sprawdz(md).bledy.includes('IU-1: seed `supabase/seed.sql` poza wzorcem e2e/seeds/<flow>-seed.sql'))
+test('seed w tabeli poza <katalog seedow>/*-seed.sql jest odrzucony', () => {
+  const md = zmien(`| Stwórz (e2e seed) | \`${SEEDY}/publikacja-oferty-seed.sql\` |`, '| Stwórz (e2e seed) | `supabase/seed.sql` |')
+  assert.ok(sprawdz(md).bledy.includes(`IU-1: seed \`supabase/seed.sql\` poza wzorcem ${SEEDY}/<flow>-seed.sql`))
 })
 
 test('frontmatter: brak pol kontekstu designerskiego i nieistniejacy SPEC sa odrzucone', () => {

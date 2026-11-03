@@ -21,6 +21,7 @@ import { sciezkaPlanu } from '../../scripts/dossier/dokumenty.mjs'
 import { liczE2e, scenariuszeFazy } from '../../scripts/e2e/scenariusze.mjs'
 import { KOMENDY_CLI } from '../../scripts/plan/walidacja-planu.mjs'
 import { zadanieZPlanu } from '../../scripts/plan/zadanie.mjs'
+import { PROFIL } from '../../scripts/stack/profil.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const WF = (/** @type {string} */ plik) => readFileSync(resolve(KATALOG, '..', plik), 'utf8')
@@ -203,7 +204,11 @@ test('kazdy plik zadania zaczyna sie od naglowka, galezi i daty aktualizacji', (
   }
 })
 
+// Komendy CLI stacku (IU-1.7) scribe bierze z profilu stacku — lista w prompcie niesie komendy rdzenia i odeslanie.
 test('scribe uruchamia kazda komende, ktora walidacja planu przyjmuje w Weryfikacji (inaczej "klasyfikacja niejasna")', () => {
   const lista = literal(review, '   - CLI (', '): uruchom komende')
-  for (const komenda of KOMENDY_CLI) assert.match(lista, new RegExp(`(?:^|[\\s,(])${komenda}(?=[\\s,)]|$)`), `scribe bez ${komenda}`)
+  for (const komenda of KOMENDY_CLI.filter((k) => !PROFIL.komendyCli.includes(k))) {
+    assert.match(lista, new RegExp(`(?:^|[\\s,(])${komenda}(?=[\\s,)]|$)`), `scribe bez ${komenda}`)
+  }
+  assert.ok(lista.includes('\\`komendyCli\\` z .claude/stack/profil.json'), 'scribe bez odeslania do komend CLI stacku')
 })

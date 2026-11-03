@@ -10,6 +10,11 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { PROFIL } from '../../stack/profil.mjs'
+
+// Katalog seedow E2E z profilu stacku (IU-1.7) — test przechodzi na kazdym wariancie profilu.
+const SEEDY = PROFIL.e2e.katalogSeedow
+
 const CLI = resolve(dirname(fileURLToPath(import.meta.url)), '../e2e.mjs')
 const ZADANIA = '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a → ok\n- [ ] Test: [E2E] `b` — /b → ok\n'
 
@@ -65,7 +70,7 @@ test('manual: jeden flow na [Manual]; flow bez linii = kod 1; lista-manual zwrac
 test('scenariusze: niezaznaczone linie [E2E] fazy z obu prefiksow z flow i seedem; kopie Operator i findingi pominiete', () => {
   const k = projekt([
     '## Faza 1 — A', '',
-    '- [ ] Test: [E2E] `a` (seed: e2e/seeds/a-seed.sql) — /a → ok',
+    `- [ ] Test: [E2E] \`a\` (seed: ${SEEDY}/a-seed.sql) — /a → ok`,
     '- [x] Test: [E2E] `b` — /b → ok',
     '- [ ] Weryfikacja: [E2E] `e2e/f1-run-all.sh` — wszystkie zielone',
     '- [ ] Weryfikacja: [E2E] stary format bez flow',
@@ -78,7 +83,7 @@ test('scenariusze: niezaznaczone linie [E2E] fazy z obu prefiksow z flow i seede
   assert.deepEqual(w.json, {
     faza: 1,
     scenariusze: [
-      { tresc: 'Test: [E2E] `a` (seed: e2e/seeds/a-seed.sql) — /a → ok', flow: 'a', seed: 'e2e/seeds/a-seed.sql' },
+      { tresc: `Test: [E2E] \`a\` (seed: ${SEEDY}/a-seed.sql) — /a → ok`, flow: 'a', seed: `${SEEDY}/a-seed.sql` },
       { tresc: 'Weryfikacja: [E2E] `e2e/f1-run-all.sh` — wszystkie zielone', flow: 'e2e/f1-run-all.sh', seed: null },
       { tresc: 'Weryfikacja: [E2E] stary format bez flow', flow: null, seed: null },
     ],

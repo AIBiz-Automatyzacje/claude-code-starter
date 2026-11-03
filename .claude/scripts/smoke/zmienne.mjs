@@ -17,6 +17,8 @@ import { isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
+import { PROFIL } from '../stack/profil.mjs'
+
 const KOD_BRAKOW = 1
 const KOD_ZLYCH_ARGUMENTOW = 2
 const KOD_WYJATKU = 3
@@ -31,8 +33,8 @@ const WZORZEC_EXAMPLE = new RegExp(`^\\s*(?:export\\s+)?${NAZWA}\\s*=`)
 const PLIK_EXAMPLE = /(^|\/)\.env[^/]*\.example$/
 const PLIK_KODU = /\.(?:[cm]?[jt]s|[jt]sx)$/
 const POMIJANE = /(^|\/)(?:__tests__|e2e|\.claude|node_modules)\/|\.(?:test|spec)\.[^/]+$|(^|\/)\.env\.e2e/
-// Zmienne wbudowane Vite i srodowiska uruchomienia — nie ustawia ich operator.
-const WBUDOWANE = new Set(['NODE_ENV', 'MODE', 'DEV', 'PROD', 'SSR', 'BASE_URL', 'CI', 'HOME', 'PATH', 'PWD', 'TZ'])
+// Zmienne wbudowane narzedzia budowania (profil stacku) i srodowiska uruchomienia — nie ustawia ich operator.
+const WBUDOWANE = new Set(['NODE_ENV', ...PROFIL.env.wbudowane, 'CI', 'HOME', 'PATH', 'PWD', 'TZ'])
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string} */
 function git(projekt, argumenty) {

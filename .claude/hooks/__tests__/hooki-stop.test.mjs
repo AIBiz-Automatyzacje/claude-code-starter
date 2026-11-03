@@ -36,12 +36,15 @@ function uruchom(hook, pliki, wejscie, env = {}) {
   }
 }
 
-const CONSOLE_W_SRC = { 'src/app.ts': "export const x = 1\nconsole.log('start')\n" }
+// Katalog frontendu pasujacy do globu `zrodla.frontend` z profilu stacku (IU-1.7; web: src/) — test przechodzi na kazdym wariancie.
+const FRONTEND = JSON.parse(readFileSync(join(HOOKI, '..', 'stack', 'profil.json'), 'utf8')).zrodla.frontend
+const KATALOG_FRONTENDU = ['src', 'app', 'lib', 'components'].find((k) => new RegExp(FRONTEND).test(`${k}/app.ts`)) ?? 'src'
+const CONSOLE_W_SRC = { [`${KATALOG_FRONTENDU}/app.ts`]: "export const x = 1\nconsole.log('start')\n" }
 
 test('error-handling: console.log w src bez konfiguracji ESLint z szablonu = blokada (starsze projekty)', () => {
   const w = uruchom('error-handling-reminder.sh', { ...CONSOLE_W_SRC, 'eslint.config.js': 'export default []\n' }, WEJSCIE(false))
   assert.equal(w.status, BLOKADA, w.stderr)
-  assert.match(w.stderr, /src\/app\.ts/)
+  assert.match(w.stderr, new RegExp(`${KATALOG_FRONTENDU}/app\\.ts`))
 })
 
 test('error-handling: eslint.config.ts z szablonu (znacznik .claude/templates/bramki) = koniec od razu', () => {

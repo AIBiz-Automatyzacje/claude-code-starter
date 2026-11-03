@@ -21,8 +21,9 @@ const rejestr = JSON.parse(czytaj('stacks/sloty.json'))
 const pliki = rejestr.sloty.map((s) => s.plik)
 
 // Slot tekstowy leży w .claude/stack/ (wspólny dla workflowów i skilli) albo w references/stack.md skilla (D20); slot
-// plikowy to moduł rdzenia, który nakładka podmienia w całości (adapter E2E).
-const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|skills\/[a-z0-9-]+\/references\/stack\.md|scripts\/[a-z0-9-]+\/adapter\.mjs)$/
+// plikowy to moduł rdzenia, który nakładka podmienia w całości (adapter E2E); slot danych to profil.json dla skryptów
+// i hooków (D15, IU-1.7).
+const SLOT = /^\.claude\/(?:stack\/[a-z0-9-]+\.md|stack\/profil\.json|skills\/[a-z0-9-]+\/references\/stack\.md|scripts\/[a-z0-9-]+\/adapter\.mjs)$/
 
 test('rejestr: każdy slot ma ścieżkę slotu tekstowego albo plikowego i opis, bez powtórzeń', () => {
   assert.ok(Array.isArray(rejestr.sloty) && rejestr.sloty.length > 0)
@@ -40,16 +41,43 @@ test('rejestr ma sloty tekstowe z IU-1.1', () => {
   }
 })
 
-test('każdy slot z rejestru ma wariant web: tekstowy z nagłówkiem, plikowy z komentarzem o kontrakcie', () => {
+test('każdy slot z rejestru ma wariant web: tekstowy z nagłówkiem, plikowy z komentarzem o kontrakcie, danych z opisem', () => {
   for (const plik of pliki) {
     assert.ok(existsSync(resolve(KORZEN, plik)), `brak pliku ${plik}`)
     if (plik.endsWith('.md')) assert.match(czytaj(plik), /^# \S/, `${plik} zaczyna się nagłówkiem`)
+    else if (plik.endsWith('.json')) assert.ok(JSON.parse(czytaj(plik)).opis.trim().length > 0, `${plik} ma pole opis`)
     else assert.match(czytaj(plik), /^\/\/ .*slot plikowy/i, `${plik} zaczyna się opisem slotu`)
   }
 })
 
 test('rejestr ma adapter E2E (IU-1.3)', () => {
   assert.ok(pliki.includes('.claude/scripts/e2e/adapter.mjs'))
+})
+
+test('rejestr ma slot danych profil.json (IU-1.7)', () => {
+  assert.ok(pliki.includes(`${KATALOG_SLOTOW}/profil.json`))
+})
+
+// Profil web niesie dzisiejsze wartości rdzenia 1:1: klucze VITE_* i kolejność plików env strażnika bazy dev, zmienne
+// wbudowane Vite, katalogi seedów i runnerów E2E, glob frontendu hooka, komenda testów powiązanych, CLI stacku scribe'a.
+test('profil web: wartości stacku web', () => {
+  const { opis, ...wartosci } = JSON.parse(czytaj(`${KATALOG_SLOTOW}/profil.json`))
+  assert.match(opis, /web/)
+  assert.deepEqual(wartosci, {
+    env: {
+      prefiksPubliczny: 'VITE_',
+      adresSupabase: 'VITE_SUPABASE_URL',
+      kluczSupabase: ['VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_ANON_KEY'],
+      plikiDev: ['.env', '.env.local'],
+      plikE2eLokalny: '.env.e2e.local',
+      aplikacjaE2e: 'Vite w trybie e2e',
+      wbudowane: ['MODE', 'DEV', 'PROD', 'SSR', 'BASE_URL'],
+    },
+    e2e: { katalogSeedow: 'e2e/seeds', katalogRunnerow: 'e2e' },
+    zrodla: { frontend: '^src/' },
+    testy: { powiazane: 'vitest related --run' },
+    komendyCli: ['vitest'],
+  })
 })
 
 test('w .claude/stack/ nie ma plików spoza rejestru', () => {

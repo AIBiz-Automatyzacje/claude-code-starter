@@ -4,7 +4,7 @@
 # Hook Stop — sprawdza edytowane pliki pod kątem poprawnego error handlingu
 # Wyłączony w projekcie z eslint.config.* z szablonu (.claude/templates/bramki) — tam pracę robi ESLint w bramkach.
 #
-# Frontend (src/): wykrywa console.log/warn/error → sugeruje Sentry
+# Frontend (glob zrodla.frontend z .claude/stack/profil.json — profil stacku): wykrywa console.log/warn/error → sugeruje Sentry
 # Edge Functions (supabase/functions/, handler withSupabase albo Deno.serve): wymaga await captureError w catch
 #
 # Exit codes: 0 = OK, 2 = blocking (Claude widzi stderr i kontynuuje pracę)
@@ -18,6 +18,8 @@ if grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
 fi
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+# Profil stacku obok hooka (.claude/stack/profil.json); sciezka ustalona przed cd, bo sciezka hooka moze byc wzgledna.
+PROFIL="$(cd "$(dirname "$0")/.." && pwd)/stack/profil.json"
 cd "$PROJECT_DIR"
 
 # Projekt z konfiguracja ESLint z szablonu (komentarz ze sciezka .claude/templates/bramki): no-console, no-empty
@@ -39,14 +41,12 @@ if [ -z "$CHANGED_FILES" ]; then
     exit 0
 fi
 
-# Filtruj tylko pliki TS/TSX, pomiń testy i konfiguracje
+# Filtruj tylko pliki TS/TSX, pomiń testy i konfiguracje (`.config.` obejmuje konfiguracje narzędzi stacku)
 FILES=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx)$' \
     | grep -v '\.test\.' \
     | grep -v '\.spec\.' \
     | grep -v '\.d\.ts$' \
     | grep -v '\.config\.' \
-    | grep -v 'vite\.config' \
-    | grep -v 'tailwind\.config' \
     | grep -v 'tsconfig' \
     | grep -v 'node_modules' \
     || true)
@@ -58,8 +58,9 @@ fi
 WARNINGS=""
 WARNING_COUNT=0
 
-# === FRONTEND: sprawdź pliki w src/ ===
-FRONTEND_FILES=$(echo "$FILES" | grep '^src/' || true)
+# === FRONTEND: sprawdź pliki frontendu stacku (zrodla.frontend z profilu) ===
+FRONTEND_GLOB=$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).zrodla.frontend)' "$PROFIL")
+FRONTEND_FILES=$(echo "$FILES" | grep -E "$FRONTEND_GLOB" || true)
 
 for file in $FRONTEND_FILES; do
     [ -f "$PROJECT_DIR/$file" ] || continue

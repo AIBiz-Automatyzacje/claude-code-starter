@@ -13,10 +13,12 @@ import assert from 'node:assert/strict'
 
 import { liczE2e as liczScenariuszeE2e } from '../../dossier/dokumenty.mjs'
 import { gotowosc } from '../gotowosc.mjs'
+import { PROFIL } from '../../stack/profil.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = resolve(KATALOG, '../plan.mjs')
-const FIXTURE = readFileSync(join(KATALOG, 'fixtures/plan-techniczny.md'), 'utf8')
+// Fixture niesie sciezki seedow web (e2e/seeds/); katalog seedow z profilu stacku (IU-1.7) — test przechodzi na kazdym wariancie.
+const FIXTURE = readFileSync(join(KATALOG, 'fixtures/plan-techniczny.md'), 'utf8').replaceAll('e2e/seeds/', `${PROFIL.e2e.katalogSeedow}/`)
 const PLAN = 'docs/plans/2026-10-07-001-feat-publikacja-ofert-plan.md'
 const ZADANIE = 'docs/active/publikacja-ofert'
 const PREP = 'docs/operator/publikacja-ofert-przygotowanie.md'
@@ -193,13 +195,13 @@ test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i 
   // Plan ma migracje, a .env.e2e (X=1) nie ma bazy e2e z ref — advisors nie pobiegnie (P17): uwaga, nie bloker.
   assert.deepEqual(zle.e2e.uwagi, [
     'brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup',
-    'advisors nie pobiegnie: brak ref projektu e2e: ani SUPABASE_E2E_DB_URL, ani VITE_SUPABASE_URL w .env.e2e nie wskazuje projektu Supabase — dopisz SUPABASE_E2E_PROJECT_REF',
+    `advisors nie pobiegnie: brak ref projektu e2e: ani SUPABASE_E2E_DB_URL, ani ${PROFIL.env.adresSupabase} w .env.e2e nie wskazuje projektu Supabase — dopisz SUPABASE_E2E_PROJECT_REF`,
   ])
   const dobre = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([dobre.ok, dobre.e2e.ok, dobre.e2e.bledy], [true, true, []])
   mkdirSync(join(k, '.claude/skills/weryfikacja'), { recursive: true })
   writeFileSync(join(k, '.claude/skills/weryfikacja/SKILL.md'), '# W\n')
-  writeFileSync(join(k, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\n')
+  writeFileSync(join(k, '.env.e2e'), `${PROFIL.env.adresSupabase}=https://abcdefghijklmnopqrst.supabase.co\n`)
   const sprawne = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
   assert.deepEqual(gotowosc(k, ZADANIE, { narzedzia: sprawne, srodowisko: {} }).e2e.uwagi, ['advisors nie pobiegnie: brak SUPABASE_ACCESS_TOKEN — Supabase → Account → Access Tokens, wpis SUPABASE_ACCESS_TOKEN=<token> w .env.e2e'])
   const zTokenem = gotowosc(k, ZADANIE, { narzedzia: sprawne, srodowisko: { SUPABASE_ACCESS_TOKEN: 't' } })

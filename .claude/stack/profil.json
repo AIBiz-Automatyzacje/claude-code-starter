@@ -1,0 +1,23 @@
+{
+  "opis": "Profil stacku web (slot danych, D15): wartości zależne od stacku, które czytają skrypty i hooki rdzenia. Skrypty biorą je przez .claude/scripts/stack/profil.mjs, hook error-handling-reminder.sh wprost z tego pliku. Nakładka stacku podmienia plik w całości.",
+  "env": {
+    "prefiksPubliczny": "VITE_",
+    "adresSupabase": "VITE_SUPABASE_URL",
+    "kluczSupabase": ["VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_ANON_KEY"],
+    "plikiDev": [".env", ".env.local"],
+    "plikE2eLokalny": ".env.e2e.local",
+    "aplikacjaE2e": "Vite w trybie e2e",
+    "wbudowane": ["MODE", "DEV", "PROD", "SSR", "BASE_URL"]
+  },
+  "e2e": {
+    "katalogSeedow": "e2e/seeds",
+    "katalogRunnerow": "e2e"
+  },
+  "zrodla": {
+    "frontend": "^src/"
+  },
+  "testy": {
+    "powiazane": "vitest related --run"
+  },
+  "komendyCli": ["vitest"]
+}

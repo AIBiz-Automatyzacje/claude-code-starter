@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { PROFIL } from '../../scripts/stack/profil.mjs'
 import { AGENCI, agenci, blokPolecen, wersaliki } from './agenci-pipeline.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
@@ -27,9 +28,9 @@ const SKILLE_BEZ_WERSALIKOW = ['security', 'sentry-integration', 'supabase-dev-g
 
 const REGULY_KODU = '.claude/rules/coding-rules.md'
 // `[E2E]`: scenariusze narzedzia jazdy i reczne wykonuja tester i operator — builder pisze tylko seed z pola Pliki.
-// Komende testow powiazanych w samosprawdzeniu sprawdza test stacku.
+// Komenda testow powiazanych w samosprawdzeniu pochodzi z profilu stacku (A0.7 §6 p.2, IU-1.7).
 const WYMAGANE_W_POLECENIACH = [REGULY_KODU, 'samosprawdzenie plików jednostki', 'tsc --noEmit', 'pytaniem „undefined”',
-  'Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator']
+  'Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator', PROFIL.testy.powiazane]
 // Tokeny regul kodu, ktorych builder nie przepisuje — odwoluje sie do sekcji po nazwie.
 const TOKENY_REGUL_KODU = ['auth.uid()', 'auth.jwt()', 'strictObject', 'search_path', 'AbortSignal', 'eslint-disable', 'toBeDefined',
   'user_metadata', '`any`']
@@ -80,7 +81,7 @@ const DOBRY = `Wdrazasz jednostke.
 ## Polecenia
 
 - Przeczytaj ${REGULY_KODU}.
-- Uruchom samosprawdzenie plików jednostki: \`tsc --noEmit\` i testy powiazane; kazdy test przejdz pytaniem „undefined”.
+- Uruchom samosprawdzenie plików jednostki: \`tsc --noEmit\` i \`${PROFIL.testy.powiazane}\`; kazdy test przejdz pytaniem „undefined”.
 - Scenariusze \`[E2E]\` i \`[Manual]\` wykonują tester i operator.
 - Zwracasz \`status\`, \`pliki\` i \`odchylenia\`.
 `
@@ -97,6 +98,7 @@ test('brak odczytu regul, samosprawdzenia, pytania i pola wyniku jest zglaszany'
     'brak w poleceniach: tsc --noEmit',
     'brak w poleceniach: pytaniem „undefined”',
     'brak w poleceniach: Scenariusze `[E2E]` i `[Manual]` wykonują tester i operator',
+    `brak w poleceniach: ${PROFIL.testy.powiazane}`,
     'pole wyniku bez polecenia: pliki',
     'pole wyniku bez polecenia: odchylenia',
   ])

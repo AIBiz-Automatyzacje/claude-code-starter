@@ -367,7 +367,7 @@ ${podsumowanieIU}
 ${BLOK_DLUGIE_KOMENDY}
 2. Aktualizuj ${sciezka}/*-zadania.md: oznacz ukonczone checkboxy [x] (NIE ruszaj "Weryfikacja:" ANI zadnego
    checkboxa z markerem [E2E]/[Manual] — "Test: [E2E]" to URUCHOMIENIE flow przez testera review, nie jego
-   napisanie; odznacza go scribe review po PASS testera E2E. Napisany seed e2e/seeds/*.sql odhaczasz WYLACZNIE
+   napisanie; odznacza go scribe review po PASS testera E2E. Napisany seed *-seed.sql odhaczasz WYLACZNIE
    w checkboxie implementacyjnym "Stwórz (e2e seed):").
 3. Aktualizuj ${sciezka}/*-kontekst.md: zmiany i decyzje tej fazy dopisz do sekcji \`## Dziennik\`
    (jedna sekcja, chronologicznie) plus "Ostatnia aktualizacja". Odchylenia i nastepne kroki builderow z listy raportow dopisz do \`## Dziennik\` (linia na IU), bo to jedyny zapis pracy, ktora builder zostawil poza jednostka. NIE zakladaj w tym pliku sekcji
