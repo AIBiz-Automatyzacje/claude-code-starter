@@ -205,8 +205,8 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - Odbiór: pełne testy maszynerii zielone, diff zachowania zerowy (porównanie wygenerowanych promptów przed/po dla vibersi),
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
-**Stan Etapu 1 (2026-11-03, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.8, każda na gałęzi `popr/*`
-zmergowanej `--no-ff` do main, CI zielone do IU-1.7 włącznie:
+**Stan Etapu 1 (2026-11-03, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.9, każda na gałęzi `popr/*`
+zmergowanej `--no-ff` do main, CI zielone do IU-1.8 włącznie:
 
 | IU | Gałąź / merge | Co powstało |
 |---|---|---|
@@ -218,6 +218,7 @@ zmergowanej `--no-ff` do main, CI zielone do IU-1.7 włącznie:
 | 1.6 | `popr/testy-rol` / `c616f21` | `szkielet-buildera` i `tester-e2e` w rdzeniu = kontrakt każdego stacku (samosprawdzenie plików jednostki zamiast `vitest related --run`, skille wspólne); asercje web (runner Vitest, skille web, preflight/zrzuty/`$Z`/`wait --text` agent-browser) dosłownie w `stacks/web/__tests__/role.test.mjs`; `warstwa-stala`, `klasy-rol`, `odczyt-zakresami` neutralne bez zmian; opis `E2E_RESULT.flow` w review odsyła do `plan-e2e.md`, sekcja „Linia scenariusza” (wyjątek strażnika usunięty) |
 | 1.7 | `popr/profil-stacku` / `a4b1a3e` | slot danych `.claude/stack/profil.json` (D15; `env`: prefiks publiczny, adres i klucz Supabase klienta, pliki env bazy dev, plik e2e o najwyższym priorytecie, zmienne wbudowane; `e2e`: katalogi seedów i runnerów; `zrodla.frontend`; `testy.powiazane`; `komendyCli`) + odczyt `scripts/stack/profil.mjs`; z profilu: strażnik bazy dev i `KLUCZE_BAZY`, oba advisors, `ZAPIS_SEEDA`, wzorzec seeda i runnera oraz `KOMENDY_CLI` w walidacji planu, zmienne wbudowane smoke'u, glob frontendu hooka; prompty (scribe, db-sync, fix E2E, execute, schemat flow) i security-sentinel odsyłają do profilu; 8 wpisów strażnika usuniętych; kontrakt `stack/__tests__/profil.test.mjs`, testy rdzenia z literałami web przepięte na profil |
 | 1.8 | `popr/polityki-adaptera` / `8ef651c` | kontrakt adaptera: `POLITYKA_OBCEGO` (D11; web `stop`, przy `zastap` `serwer.mjs` zatrzymuje obcy proces z PID-em i stawia swój serwer) i `SYGNATURY_BLOKERA` z polityką `manual-restart` \| `stop-rebuild` (D12; web `[]`, sygnatury rdzenia zostają w review); sygnatury płyną JSON-em `e2e.mjs restart` → autopilot (`sygnaturyZRestartu`) → `args.sygnaturyBlokera` review; `stop-rebuild` = scribe bez księgowania `[E2E]`, STOP przed zamknięciem review z naprawą adaptera (`decyzjaBlokeraSrodowiska`); login canary kontem e2e w `e2e.mjs start` z bazą e2e (D16, `scripts/e2e/konto.mjs`: password grant, brak konta → admin API, zły login = STOP startu) — dla webu nowy krok startu zamówiony w D16 |
+| 1.9 | `popr/reguly-stacku` / `ff20ead` | slot `.claude/rules/stack.md` (web: testy obok źródeł, dokładne wersje, tryb aplikacji albo `SITE_URL`, `as` przy zawężaniu DOM, size-limit, `React.lazy` > 50 KB, `AbortSignal.timeout`, `babel-plugin-react-compiler`; `paths:` jak rdzeń); `coding-rules.md` odsyła do sekcji stack.md o tej samej nazwie (8 reguł) i ma 3 przeformułowania bez mechanizmu (interfejs zamiast DOM, logowanie serwer/klient, „trasa (strona albo ekran)”); 6 nowych reguł i 3 rozszerzenia z A0.5 §3 (zamówione); buildery i klasa naprawiacza czytają Read-em też stack.md; reviewerzy, hook stop, dev-pr i coderabbit-setup (`STACK_RULES`) odsyłają do stack.md; 6 wpisów strażnika usuniętych; kontrakt `workflows/__tests__/reguly-stacku.test.mjs`, treść web `stacks/web/__tests__/reguly.test.mjs`; testy rdzenia sprawdzone na próbnym stack.md Expo |
 
 Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
 - Odesłanie w rdzeniu ma postać „`<plik slotu>`, sekcja „<nagłówek ##>””; testy sprawdzają, że nagłówek istnieje.
@@ -257,7 +258,12 @@ Przesunięcia zakresu względem listy IU wyżej:
   i `brak-entitlements` (`stop-rebuild`, naprawa = komenda rebuildu z A0.1 #15); dowód Maestro (`_canary.yaml`) zostaje
   w adapterze, login REST kontem e2e robi już rdzeń. Krok 4 db-sync (konto testowe) został w prompcie bez zmian.
 
-Zostało: IU-1.9 (reguły), potem odbiór Etapu 1.
+- Z IU-1.9 dla Etapu 2 (`rules/stack.md` Expo z A0.5 §2): te same nazwy sekcji, do których odsyła rdzeń (Organizacja
+  kodu, Zależności, Bezpieczeństwo, Type safety, Performance, Async i React) — sprawdza je `reguly-stacku.test.mjs`.
+  „6 nowych reguł i 3 rozszerzenia” są w A0.5 §3 (tabela reguł R z A0.6), nie w §1/§4. `performance-oracle` stracił
+  web-owe „`React.lazy()` z `Suspense`” na rzecz odesłania do sekcji „Performance” (stack.md web ma `React.lazy`).
+
+Zostało: odbiór Etapu 1.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
