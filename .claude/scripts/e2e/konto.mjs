@@ -8,6 +8,9 @@ import { PROFIL } from '../stack/profil.mjs'
 const LIMIT_MS = 10_000
 const KONTO_ISTNIEJE = new Set(['email_exists', 'user_already_exists'])
 const ZLE_DANE = new Set(['invalid_credentials', 'invalid_grant'])
+// Captcha Auth odrzuca logowanie przed sprawdzeniem hasla, wiec canary nic o koncie nie wie: nie blokuje startu i nie zaklada
+// konta. Tokenu nie wysyla — logowanie sprawdza tester w aplikacji, przez widget z kluczem testowym projektu.
+const CAPTCHA = 'captcha_failed'
 
 /** @typedef {{ status: 'ok' | 'utworzone' | 'blad' | 'pominieto', detal: string, naprawa: string }} WynikCanary */
 
@@ -45,6 +48,9 @@ export async function loginCanary(env, { limitMs = LIMIT_MS } = {}) {
   const login = () => wyslij(`${baza}/auth/v1/token?grant_type=password`, { apikey: klucz }, { email, password: haslo }, limitMs)
   const pierwszy = await login()
   if ('status' in pierwszy && pierwszy.status === 200) return { status: 'ok', detal: `zalogowano kontem ${email}`, naprawa: '' }
+  if ('status' in pierwszy && pierwszy.kod === CAPTCHA) {
+    return { status: 'pominieto', detal: `projekt e2e wymaga captchy przy logowaniu — canary nie sprawdzil hasla konta ${email}, sprawdzi je tester`, naprawa: '' }
+  }
   if (!('status' in pierwszy) || !ZLE_DANE.has(pierwszy.kod)) {
     return { status: 'blad', detal: `logowanie kontem e2e ${email}: ${opis(pierwszy)}`, naprawa: naprawaSieci }
   }

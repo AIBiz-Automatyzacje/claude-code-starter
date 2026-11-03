@@ -17,9 +17,10 @@ const SERWIS = 'klucz-serwisowy'
 
 /**
  * Atrapa Auth API: konta w mapie e-mail → haslo; zapisuje zadania (metoda, sciezka, naglowki, cialo).
- * @param {{ konta?: Record<string, string>, status?: number }} [o] status: wymuszona odpowiedz kazdego zadania
+ * @param {{ konta?: Record<string, string>, status?: number, captcha?: boolean }} [o] status: wymuszona odpowiedz kazdego
+ * zadania; captcha: projekt z wlaczona captcha Auth odrzuca logowanie bez tokenu, zanim sprawdzi haslo
  */
-async function atrapa({ konta = {}, status } = {}) {
+async function atrapa({ konta = {}, status, captcha = false } = {}) {
   /** @type {{ metoda: string, sciezka: string, apikey: string, autoryzacja: string, cialo: Record<string, unknown> }[]} */
   const zadania = []
   const serwer = createServer((zad, odp) => {
@@ -31,6 +32,7 @@ async function atrapa({ konta = {}, status } = {}) {
       const json = (/** @type {number} */ kod, /** @type {unknown} */ tresc) => odp.writeHead(kod, { 'Content-Type': 'application/json' }).end(JSON.stringify(tresc))
       if (status) return json(status, { code: 'unexpected_failure', msg: 'awaria' })
       if (zad.url === '/auth/v1/token?grant_type=password') {
+        if (captcha) return json(400, { code: 'captcha_failed', error_code: 'captcha_failed', msg: 'captcha protection: request disallowed' })
         return konta[String(cialo.email)] === cialo.password
           ? json(200, { access_token: 'jwt', token_type: 'bearer' })
           : json(400, { code: 'invalid_credentials', error_code: 'invalid_credentials', msg: 'Invalid login credentials' })
@@ -91,6 +93,23 @@ test('konto z innym haslem: blad z naprawa, bez sekretow w wyniku', async () => 
     assert.match(w.detal, /istnieje/)
     assert.match(w.naprawa, /E2E_TEST_PASSWORD/)
     assert.doesNotMatch(`${w.detal} ${w.naprawa}`, new RegExp(`${HASLO}|${SERWIS}|inne`), 'sekret w wyniku')
+  } finally {
+    await a.zamknij()
+  }
+})
+
+// Odbior Etapu 1 w vibersi: projekt e2e z captcha Turnstile dostawal STOP startu z rada o adresie i kluczu, choc konto i haslo
+// byly dobre. Auth odrzuca takie logowanie przed sprawdzeniem hasla, wiec canary nic o koncie nie wie: nie blokuje startu, nie
+// zaklada konta i nie wysyla tokenu. Logowanie sprawdza tester w aplikacji, przez widget z kluczem testowym.
+test('captcha Auth w projekcie e2e: canary pominiety z powodem, jedno zadanie, bez admin API i bez tokenu', async () => {
+  const a = await atrapa({ konta: { 'e2e@x.pl': HASLO }, captcha: true })
+  try {
+    const w = await loginCanary(env(a.url))
+    assert.equal(w.status, 'pominieto', w.detal)
+    assert.equal(w.detal, 'projekt e2e wymaga captchy przy logowaniu — canary nie sprawdzil hasla konta e2e@x.pl, sprawdzi je tester')
+    assert.equal(w.naprawa, '')
+    assert.deepEqual(a.zadania.map((z) => z.sciezka), ['/auth/v1/token?grant_type=password'])
+    assert.deepEqual(a.zadania[0]?.cialo, { email: 'e2e@x.pl', password: HASLO })
   } finally {
     await a.zamknij()
   }
