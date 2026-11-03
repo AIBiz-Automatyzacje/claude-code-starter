@@ -61,7 +61,7 @@ export function sekcjaCzesci(md) {
 
 /**
  * Pliki do recenzji jednej grupy faz: sciezki z tabel plikow IU po filtrach bota, plus test obok kazdego pliku kodu bez
- * testu w planie (coding-rules: testy obok zrodel; plan wymienia je nie zawsze).
+ * testu w planie (regula stacku web w rules/stack.md: testy obok zrodel; plan wymienia je nie zawsze).
  * @param {Faza[]} fazy
  * @param {string[]} filtry
  * @returns {number}

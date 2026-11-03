@@ -9,7 +9,7 @@ Szukasz w zmienionym kodzie fazy defektów wydajności, które rosną z danymi a
 
 ## Wejście
 
-Polecenie workflowu wskazuje dossier fazy: mapę zmian, pełny diff, profil stacku (paczki korzenia i pakietów workspace'u, katalog `supabase/` z liczbą migracji i Edge Functions) oraz wynik bramek domknięcia ze statusem bramki size-limit. Pozycja z warunkiem w nawiasie dotyczy fazy, w której diff albo profil stacku ten warunek spełnia; pozycja bez warunku dotyczy każdej fazy z kodem.
+Polecenie workflowu wskazuje dossier fazy: mapę zmian, pełny diff, profil stacku (paczki korzenia i pakietów workspace'u, katalog `supabase/` z liczbą migracji i Edge Functions) oraz wynik bramek domknięcia ze statusem bramki budżetu paczki klienta. Pozycja z warunkiem w nawiasie dotyczy fazy, w której diff albo profil stacku ten warunek spełnia; pozycja bez warunku dotyczy każdej fazy z kodem.
 
 ## Polecenia
 
@@ -31,7 +31,7 @@ Polecenie workflowu wskazuje dossier fazy: mapę zmian, pełny diff, profil stac
 - Wypisz każdy listener, `setInterval`, `setTimeout`, obserwator i subskrypcję dodane w diffie z miejscem, które je zdejmuje. Brak zdjęcia w komponencie montowanym wielokrotnie albo w długo żyjącym procesie serwera to finding P2, bo każde zamontowanie dokłada kopię.
 - (@tanstack/react-query w profilu stacku) Wypisz każde nowe zapytanie z kluczem i `staleTime`. Klucz bez parametrów, od których zależy wynik, albo ponowne pobieranie przy każdym zamontowaniu danych, które zmieniają się rzadko, to finding P3.
 - Wypisz każde kosztowne obliczenie albo żądanie powtarzane z tymi samymi danymi w obrębie jednego żądania albo widoku użytkownika (ten sam `fetch` w dwóch komponentach, to samo zapytanie w pętli). Powtórzenie bez współdzielonego wyniku to finding P3.
-- (kod klienta w diffie) Wypisz każdy nowy import biblioteki w kodzie klienta z miejscem w paczce (ścieżka startowa czy ekran ładowany leniwie) i formą importu. Import całej biblioteki zamiast modułu (`lodash` zamiast `lodash/x`), ciężka biblioteka w ścieżce startowej zamiast `import()` albo `React.lazy()` z `Suspense` oraz nowa zależność, gdy projekt ma lżejszy zamiennik, to finding P2 — bramka size-limit pilnuje budżetu całej paczki, nie miejsca importu.
+- (kod klienta w diffie) Wypisz każdy nowy import biblioteki w kodzie klienta z miejscem w paczce (ścieżka startowa czy ekran ładowany leniwie) i formą importu. Import całej biblioteki zamiast modułu (`lodash` zamiast `lodash/x`), ciężka biblioteka w ścieżce startowej zamiast ładowania leniwego (mechanizm: `.claude/rules/stack.md`, sekcja „Performance”) oraz nowa zależność, gdy projekt ma lżejszy zamiennik, to finding P2 — bramka budżetu paczki pilnuje całej paczki, nie miejsca importu.
 - (`index.html`, style albo fonty w diffie) Wypisz każdy zasób ładowany przy starcie strony. Skrypt bez `defer` lub `async` albo font bez `font-display` to finding P3, bo blokuje pierwszy render.
 - (Edge Function w diffie) Wypisz importy na górnym poziomie i operacje na kolekcjach. Ciężki import wydłużający zimny start albo przetwarzanie kolekcji element po elemencie zamiast w paczkach to finding P2.
 - Traktuj wypisy z list jako notatkę roboczą; do wyniku zwracaj finding z plikiem:linią, kosztem na konkretnej ścieżce (ile wywołań, wierszy albo renderów przy jakim rozmiarze danych) i konkretną zmianą, bo sceptyk ocenia tezę na kodzie, a koszt bez liczby nie daje się sprawdzić.

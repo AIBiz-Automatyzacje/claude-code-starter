@@ -96,12 +96,12 @@ export function skanuj(korzen, straznik, sloty) {
   return { naruszenia, nieaktualne: wyjatki.flatMap((w, i) => nieaktualnosc(w, pokryte[i])) }
 }
 
-const SLOT_PELNA_SCIEZKA = /\.claude\/(?:stack\/[a-z0-9-]+\.(?:md|json)|skills\/[a-z0-9-]+\/references\/stack\.md)/g
+const SLOT_PELNA_SCIEZKA = /\.claude\/(?:stack\/[a-z0-9-]+\.(?:md|json)|skills\/[a-z0-9-]+\/references\/stack\.md|rules\/stack\.md)/g
 const SLOT_SKILLA = /(?<![\w/.-])references\/stack\.md/g
 const IMPORT_WZGLEDNY = /(?:\bfrom\s+|\bimport\s*\(\s*)'(\.\.?\/[^']+)'/g
 
 /**
- * Odesłania rdzenia do slotów: pełne ścieżki `.claude/stack/…` i `.claude/skills/<s>/references/stack.md`,
+ * Odesłania rdzenia do slotów: pełne ścieżki `.claude/stack/…`, `.claude/skills/<s>/references/stack.md` i `.claude/rules/stack.md`,
  * `references/stack.md` w plikach skilla (slot tego skilla) oraz względne importy modułów będących slotami plikowymi.
  * @param {string} korzen @param {string[]} sloty @returns {Array<{ plik: string, slot: string }>}
  */

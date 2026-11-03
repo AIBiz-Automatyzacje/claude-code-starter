@@ -46,11 +46,12 @@ reviews:
   path_instructions:
     - path: "**/*.{ts,tsx}"
       instructions: |
-        Trzymaj się reguł z {{CODING_RULES}} i CLAUDE.md.
+        Trzymaj się reguł z {{CODING_RULES}}, {{STACK_RULES}} i CLAUDE.md.
         Krytyczne:
         - Zero `any` — używaj `unknown` + type guards
         - Zero `!` (non-null assertion) — obsłuż null/undefined jawnie
-        - Zero `as` type assertions poza DOM narrowing. `as const`
+        - Zero `as` type assertions poza wyjątkami z {{STACK_RULES}}
+          (sekcja Type safety). `as const`
           i `satisfies` nie są type assertion — nie zgłaszaj ich
         - Próg rozmiaru z reguły 1. stosuj z tolerancją 20%: sygnalizuj
           dopiero plik > 360 linii albo funkcję > 60 linii
@@ -125,6 +126,7 @@ knowledge_base:
     # UZUPEŁNIJ: wpisz TYLKO pliki, które istnieją w projekcie docelowym.
     filePatterns:
       - "{{CODING_RULES}}"
+      - "{{STACK_RULES}}"
       - "CLAUDE.md"
   learnings:
     scope: auto

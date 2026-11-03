@@ -335,7 +335,7 @@ reviewerów" to informacja; brak sekcji to luka, której operator nie zauważy.
 ## Referencje kontekstowe
 
 - `.claude/workflows/dev-pr-wf.js` — mechanika; etapy `start` / `zbierz` / `napraw` / `merge` / `claude-md` / `compound`
-- `.claude/rules/coding-rules.md` — reguły, których naprawy muszą przestrzegać
+- `.claude/rules/coding-rules.md` i `.claude/rules/stack.md` — reguły kodu i mechanizmy stacku, których naprawy muszą przestrzegać
 - `.claude/skills/dev-compound/SKILL.md` — procedura bazy wiedzy używana przez etap `compound`
 - `.coderabbit.yaml` w repo projektu — gdy ma `auto_incremental_review: true`, każda tura poprawek
   dostaje recenzję automatycznie i krok 2 ma sens; bez tego operator musi poprosić bota ręcznie

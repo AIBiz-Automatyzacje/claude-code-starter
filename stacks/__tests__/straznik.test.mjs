@@ -122,6 +122,12 @@ test('odesłania do slotów: pełne ścieżki, references/stack.md skilla, impor
   ])
 })
 
+test('odesłania do slotów: reguły stacku .claude/rules/stack.md (IU-1.9)', (t) => {
+  const k = repo({ '.claude/rules/coding-rules.md': 'Limit czasu (mechanizm: `.claude/rules/stack.md`, sekcja „Async i React”).' })
+  t.after(() => rmSync(k, { recursive: true, force: true }))
+  assert.deepEqual(odeslaniaDoSlotow(k, []).map((o) => `${o.plik} → ${o.slot}`), ['.claude/rules/coding-rules.md → .claude/rules/stack.md'])
+})
+
 // --- repo szablonu ---
 
 const lista = wczytajStraznik(KORZEN)

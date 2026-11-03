@@ -45,10 +45,13 @@ function blokiStackow() {
 
 // Sciezka regul kodu zyje w jednej stalej w SKILL.md (P12 ja zmieni); template ma w jej miejscu {{CODING_RULES}}.
 const STALA = /`CODING_RULES = ([^`]+)`/.exec(OPIS)?.[1]
+// Reguly stacku (IU-1.9): mechanizm zalezny od stacku (np. wyjatki od zakazu `as`) bot czyta z rules/stack.md wariantu.
+const STALA_STACKU = /`STACK_RULES = ([^`]+)`/.exec(OPIS)?.[1]
 
-/** Config tak, jak skleja go skill: baza ze stala + bloki wybranych stackow. @param {BlokStacku[]} bloki */
+/** Config tak, jak skleja go skill: baza ze stalymi + bloki wybranych stackow. @param {BlokStacku[]} bloki */
 function zbuduj(bloki) {
-  const config = parse(BAZA.replaceAll('{{CODING_RULES}}', STALA ?? '{{CODING_RULES}}'))
+  const config = parse(BAZA.replaceAll('{{CODING_RULES}}', STALA ?? '{{CODING_RULES}}')
+    .replaceAll('{{STACK_RULES}}', STALA_STACKU ?? '{{STACK_RULES}}'))
   for (const b of bloki) {
     config.reviews.path_filters.push(...b.filtry)
     config.reviews.path_instructions.push(...b.instrukcje)
@@ -120,6 +123,15 @@ test('sciezka regul kodu wystepuje w skillu raz — w stalej CODING_RULES, z kto
   assert.ok(config.knowledge_base.code_guidelines.filePatterns.includes(STALA))
   assert.ok(blokGlowny().includes(STALA))
   assert.doesNotMatch(JSON.stringify(config), /\{\{CODING_RULES\}\}/, 'niepodstawiony znacznik w configu')
+})
+
+test('reguly stacku: stala STACK_RULES podstawiona w bloku glownym i knowledge_base, baza bez mechanizmu stacku web', () => {
+  assert.equal(STALA_STACKU, '.claude/rules/stack.md', 'SKILL.md bez stalej `STACK_RULES = <sciezka>`')
+  const config = zbuduj([])
+  assert.ok(config.knowledge_base.code_guidelines.filePatterns.includes(STALA_STACKU))
+  assert.ok(blokGlowny().includes(STALA_STACKU))
+  assert.doesNotMatch(JSON.stringify(config), /\{\{STACK_RULES\}\}/, 'niepodstawiony znacznik w configu')
+  assert.doesNotMatch(BAZA, /\bDOM\b/)
 })
 
 // nav-icons.tsx zgloszony w PR 1 i znow 9 PR-ow pozniej: regula „jeden eksport per plik” bez wyjatku dla kolekcji.
