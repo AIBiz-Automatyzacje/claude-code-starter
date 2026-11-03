@@ -22,6 +22,10 @@
       "opis": "Format linii [E2E] w planie, seedy, granice narzędzia jazdy, serwer aplikacji w scenariuszu."
     },
     {
+      "plik": ".claude/stack/profil.json",
+      "opis": "Slot danych (D15) dla skryptów i hooków: klucze env klienta i strażnika bazy dev, zmienne wbudowane, katalogi seedów i runnerów E2E, glob frontendu, komenda testów powiązanych, komendy CLI stacku."
+    },
+    {
       "plik": ".claude/skills/dev-plan/references/stack.md",
       "opis": "dev-plan: przykłady stacku do przygotowania operatora (klucze klienta, assety, start aplikacji w trybie e2e)."
     },

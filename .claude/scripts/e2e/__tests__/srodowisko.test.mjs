@@ -14,9 +14,13 @@ import { uwagaSerweraApi } from '../adapter.mjs'
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
 import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
 import { restartFazy, startE2e } from '../start.mjs'
+import { doWzorca, PROFIL } from '../../stack/profil.mjs'
 
 const ZADANIE = 'docs/active/z'
-const BAZA = 'VITE_SUPABASE_URL=https://e2e.supabase.co\nVITE_SUPABASE_ANON_KEY=a\nSUPABASE_E2E_DB_URL=postgres://x\nSUPABASE_E2E_SERVICE_ROLE_KEY=s\nE2E_TEST_EMAIL=t@x.pl\nE2E_TEST_PASSWORD=p\n'
+// Klucze klienta Supabase i pliki env bazy dev z profilu stacku (IU-1.7): test przechodzi na kazdym wariancie profilu.
+const { adresSupabase: ADRES, kluczSupabase: [KLUCZ = '', LEGACY = ''], plikiDev, plikE2eLokalny } = PROFIL.env
+const DEV = plikiDev[0] ?? '.env'
+const BAZA = `${ADRES}=https://e2e.supabase.co\n${LEGACY}=a\nSUPABASE_E2E_DB_URL=postgres://x\nSUPABASE_E2E_SERVICE_ROLE_KEY=s\nE2E_TEST_EMAIL=t@x.pl\nE2E_TEST_PASSWORD=p\n`
 /** @type {import('../srodowisko.mjs').Narzedzia} */
 const SPRAWNE = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }), zrzut: () => ({ ok: true, detal: '' }) }
 
@@ -106,14 +110,14 @@ test('konfiguracja: domyslnie dev server Vite w trybie e2e na 5174 (5173 = zwykl
 })
 
 test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, agent-browser — kazdy blad z naprawa', () => {
-  const p = projekt({ pliki: { 'supabase/config.toml': '', '.env': 'VITE_SUPABASE_URL=https://e2e.supabase.co\n' } })
-  const bledy = bledySrodowiska(p, parsujEnv('VITE_SUPABASE_URL=https://e2e.supabase.co\n'), {
+  const p = projekt({ pliki: { 'supabase/config.toml': '', [DEV]: `${ADRES}=https://e2e.supabase.co\n` } })
+  const bledy = bledySrodowiska(p, parsujEnv(`${ADRES}=https://e2e.supabase.co\n`), {
     jazda: true, narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'brak agent-browser' }) },
   })
   assert.equal(bledy.length, 4)
   assert.match(bledy[0], /\.env\.e2e nie jest w \.gitignore — dopisz go/)
   assert.match(bledy[1], /dedykowanego projektu Supabase e2e/)
-  assert.match(bledy[2], /brak kluczy bazy e2e w \.env\.e2e: VITE_SUPABASE_PUBLISHABLE_KEY \(albo legacy VITE_SUPABASE_ANON_KEY\), SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD/)
+  assert.match(bledy[2], new RegExp(`brak kluczy bazy e2e w \\.env\\.e2e: ${KLUCZ} \\(albo legacy ${LEGACY}\\), SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD`))
   assert.match(bledy[3], /agent-browser nie dziala: brak agent-browser — instalacja: npm install -g agent-browser/)
   rmSync(p, { recursive: true })
 })
@@ -121,7 +125,7 @@ test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, 
 test('sprawdzenie: projekt bez Supabase nie wymaga kluczy bazy; komplet kluczy i inna baza = zero bledow', () => {
   const bez = projekt()
   assert.deepEqual(bledySrodowiska(bez, {}, { jazda: true, narzedzia: SPRAWNE }), [])
-  const z = projekt({ pliki: { 'supabase/config.toml': '', '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
+  const z = projekt({ pliki: { 'supabase/config.toml': '', [DEV]: `${ADRES}=https://dev.supabase.co\n` } })
   assert.deepEqual(bledySrodowiska(z, parsujEnv(BAZA), { jazda: true, narzedzia: SPRAWNE }), [])
   rmSync(bez, { recursive: true })
   rmSync(z, { recursive: true })
@@ -129,11 +133,11 @@ test('sprawdzenie: projekt bez Supabase nie wymaga kluczy bazy; komplet kluczy i
 
 test('sprawdzenie: klucz klienta bazy e2e = publishable albo legacy anon (Supabase wycofuje anon do konca 2026)', () => {
   const p = projekt({ pliki: { 'supabase/config.toml': '' } })
-  const publishable = BAZA.replace('VITE_SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY')
+  const publishable = BAZA.replace(LEGACY, KLUCZ)
   assert.deepEqual(bledySrodowiska(p, parsujEnv(publishable), { jazda: false, narzedzia: SPRAWNE }), [])
   assert.deepEqual(bledySrodowiska(p, parsujEnv(BAZA), { jazda: false, narzedzia: SPRAWNE }), [])
-  const bez = bledySrodowiska(p, parsujEnv(BAZA.replace('VITE_SUPABASE_ANON_KEY=a\n', '')), { jazda: false, narzedzia: SPRAWNE })
-  assert.deepEqual(bez, ['brak kluczy bazy e2e w .env.e2e: VITE_SUPABASE_PUBLISHABLE_KEY (albo legacy VITE_SUPABASE_ANON_KEY) — szablon: .claude/templates/e2e-env/README.md'])
+  const bez = bledySrodowiska(p, parsujEnv(BAZA.replace(`${LEGACY}=a\n`, '')), { jazda: false, narzedzia: SPRAWNE })
+  assert.deepEqual(bez, [`brak kluczy bazy e2e w .env.e2e: ${KLUCZ} (albo legacy ${LEGACY}) — szablon: .claude/templates/e2e-env/README.md`])
   rmSync(p, { recursive: true })
 })
 
@@ -256,9 +260,9 @@ test('E2E_URL bez schematu albo nie-URL = blad sprawdzenia z naprawa, nie wyjate
   rmSync(p, { recursive: true })
 })
 
-test('guard tozsamosci dziala takze bez katalogu supabase/ (VITE_SUPABASE_URL w .env.e2e = jak w .env)', () => {
-  const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
-  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co' }, { jazda: false, narzedzia: SPRAWNE })
+test('guard tozsamosci dziala takze bez katalogu supabase/ (adres Supabase klienta w .env.e2e = jak w pliku env bazy dev)', () => {
+  const p = projekt({ pliki: { [DEV]: `${ADRES}=https://dev.supabase.co\n` } })
+  const bledy = bledySrodowiska(p, { [ADRES]: 'https://dev.supabase.co' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /dedykowanego projektu Supabase e2e/)
   rmSync(p, { recursive: true })
@@ -285,12 +289,12 @@ test('wlasny serwer z poprzedniego runu (zywy PID) = uruchomione, nie zastany; s
   rmSync(p, { recursive: true })
 })
 
-test('guard tozsamosci: .env ma VITE_SUPABASE_URL, a .env.e2e nie (Vite w trybie e2e doczyta baze dev); porownanie po origin', () => {
-  const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
+test('guard tozsamosci: plik env bazy dev ma adres Supabase klienta, a .env.e2e nie (aplikacja w trybie e2e doczyta baze dev); porownanie po origin', () => {
+  const p = projekt({ pliki: { [DEV]: `${ADRES}=https://dev.supabase.co\n` } })
   const brak = bledySrodowiska(p, { E2E_URL: 'http://localhost:5173' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(brak.length, 1)
-  assert.match(brak[0], /brak VITE_SUPABASE_URL w \.env\.e2e/)
-  const ukosnik = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://dev.supabase.co/' }, { jazda: false, narzedzia: SPRAWNE })
+  assert.match(brak[0], new RegExp(`brak ${ADRES} w \\.env\\.e2e`))
+  const ukosnik = bledySrodowiska(p, { [ADRES]: 'https://dev.supabase.co/' }, { jazda: false, narzedzia: SPRAWNE })
   assert.match(ukosnik[0] ?? '', /dedykowanego projektu Supabase e2e/)
   rmSync(p, { recursive: true })
 })
@@ -439,11 +443,11 @@ test('PID ponownie uzyty przez inny proces uzytkownika (inny czas startu): nie n
   assert.equal(obcy.kill(), true, 'obcy proces przezyl stop')
 })
 
-test('guard tozsamosci uwzglednia .env.e2e.local (Vite daje mu najwyzszy priorytet)', () => {
-  const p = projekt({ pliki: { '.env': 'VITE_SUPABASE_URL=https://dev.supabase.co\n', '.env.e2e.local': 'VITE_SUPABASE_URL=https://dev.supabase.co\n' } })
-  const bledy = bledySrodowiska(p, { VITE_SUPABASE_URL: 'https://e2e.supabase.co' }, { jazda: false, narzedzia: SPRAWNE })
+test('guard tozsamosci uwzglednia plik env e2e o najwyzszym priorytecie (web: .env.e2e.local)', { skip: plikE2eLokalny === null && 'stack bez takiego pliku' }, () => {
+  const p = projekt({ pliki: { [DEV]: `${ADRES}=https://dev.supabase.co\n`, [plikE2eLokalny ?? '']: `${ADRES}=https://dev.supabase.co\n` } })
+  const bledy = bledySrodowiska(p, { [ADRES]: 'https://e2e.supabase.co' }, { jazda: false, narzedzia: SPRAWNE })
   assert.equal(bledy.length, 1)
-  assert.match(bledy[0], /\.env\.e2e\.local/)
+  assert.match(bledy[0], new RegExp(doWzorca(plikE2eLokalny ?? '')))
 })
 
 // Smoke P16 (wf_1a28a396-1e1): autopilot startowal serwer w sesji z LANG=pl_PL.UTF-8, stop szedl z powloki z innym locale.
@@ -513,10 +517,10 @@ test('start bez scenariuszy z baza e2e: guard tozsamosci przechodzi = pominieto 
   const ok = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.deepEqual([ok.status, ok.bazaE2e, ok.serwer], ['pominieto', true, 'brak'])
   assert.match(ok.detal, /baza e2e sprawna — db-sync i advisors/)
-  writeFileSync(join(p, '.env'), 'VITE_SUPABASE_URL=https://e2e.supabase.co\n')
+  writeFileSync(join(p, DEV), `${ADRES}=https://e2e.supabase.co\n`)
   const dev = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.deepEqual([dev.status, dev.bazaE2e], ['pominieto', false])
-  assert.match(dev.detal, /baza e2e wylaczona.*taki sam jak w \.env/)
+  assert.match(dev.detal, new RegExp(`baza e2e wylaczona.*taki sam jak w ${doWzorca(plikiDev.join(' / '))}`))
   const bezEnv = await startE2e(projekt({ zadania: bezScen }), ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
   assert.equal(bezEnv.bazaE2e, false)
 })

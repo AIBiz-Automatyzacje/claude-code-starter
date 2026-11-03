@@ -10,7 +10,11 @@ import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { PROFIL } from '../../stack/profil.mjs'
 import { brakiWSmoke, dodaneLinie, nazwyWLinii, noweZmienne } from '../zmienne.mjs'
+
+// Zmienna wbudowana narzedzia budowania z profilu stacku (IU-1.7; web: MODE z Vite) — test przechodzi na kazdym wariancie.
+const WBUDOWANA = PROFIL.env.wbudowane[0] ?? 'NODE_ENV'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = join(KATALOG, '..', 'zmienne.mjs')
@@ -73,7 +77,7 @@ test('uzycia w kodzie: process.env, import.meta.env, Deno.env.get w dodanych lin
   git('commit', '-qm', 'baza')
   git('switch', '-qc', 'feature/x')
   zapisz(repo, {
-    'src/stary.ts': 'export const u = import.meta.env.VITE_STARY\nexport const n = import.meta.env.VITE_NOWY ?? import.meta.env.MODE\n',
+    'src/stary.ts': `export const u = import.meta.env.VITE_STARY\nexport const n = import.meta.env.VITE_NOWY ?? import.meta.env.${WBUDOWANA}\n`,
     'server/a.ts': "const k = process.env.KLUCZ_SERWERA\nconst t = process.env['TOKEN_X']\nif (process.env.NODE_ENV) {}\n",
     'supabase/functions/f/index.ts': "const s = Deno.env.get('SEKRET_FUNKCJI')\n",
     'src/a.test.ts': 'process.env.TYLKO_TEST\n',

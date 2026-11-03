@@ -114,7 +114,7 @@ const E2E_RESULT = {
         additionalProperties: false,
         properties: {
           checkbox: { type: 'string', description: 'tresc wiersza checkboxa [E2E] z *-zadania.md skopiowana 1:1 (bez "- [ ] ", lacznie z ewentualnym suffixem "(SKIP — …)"/"(FAIL: …)")' },
-          flow: { type: 'string', description: 'kebab-case IDENTYFIKATOR flow z linii [E2E] (pierwszy backtick w linii; dla runnera — sciezka e2e/<etap>-run-all.sh) — KLUCZ dopasowania dla scribe (tresc checkboxa moze sie roznic suffixami); "" TYLKO gdy linia nie ma zadnego backticka (starszy format — wtedy scribe dopasowuje po znormalizowanej tresci). Czy flow ma osobny plik: .claude/stack/plan-e2e.md, sekcja „Linia scenariusza”' },
+          flow: { type: 'string', description: 'kebab-case IDENTYFIKATOR flow z linii [E2E] (pierwszy backtick w linii; dla runnera <etap>-run-all.sh — jego sciezka z tego backticka) — KLUCZ dopasowania dla scribe (tresc checkboxa moze sie roznic suffixami); "" TYLKO gdy linia nie ma zadnego backticka (starszy format — wtedy scribe dopasowuje po znormalizowanej tresci). Czy flow ma osobny plik: .claude/stack/plan-e2e.md, sekcja „Linia scenariusza”' },
           wynik: { type: 'string', enum: ['PASS', 'FAIL', 'SKIP'] },
           // P14: kategoria przyczyny SKIP decyduje, czy scenariusz idzie do fixa, czy na [Manual] (PRZYCZYNY_SKIP).
           przyczyna: { type: 'string', enum: ['nie-dotyczy', 'srodowisko', 'limit-zewnetrzny', 'harness', 'brak-seeda', 'scenariusz-niewykonalny'], description: 'PASS/FAIL: nie-dotyczy. SKIP: srodowisko (aplikacja, baza albo DNS niedostepne), limit-zewnetrzny (limit uslugi zewnetrznej, np. 429 mailera), harness (powierzchnia poza kontrola headless: popup OAuth, natywne okno), brak-seeda, scenariusz-niewykonalny (linia bez wykonalnego opisu)' },
@@ -619,8 +619,8 @@ ${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTes
       manual, bezWpisu, manualPozycje) — liczby wpisz do sekcji Bookkeeping. Kod wyjscia rozny od 0 -> tresc bledu do raportu,
       linie [E2E] zostaja bez zmian.`}
    b) Niezaznaczone linie "Weryfikacja:" BEZ markera [E2E] klasyfikujesz po tresci, od gory, pierwsza pasujaca kategoria wygrywa:
-   - CLI (bun, npm, npx, pnpm, yarn, make, node, tsc, vitest, cargo, pytest, ruff, eslint, supabase, psql, deno, curl, wc, git,
-     bash, sh, ./x, *.sh, *.mjs): uruchom komende przez Bash; exit 0 -> [x]; inny kod -> [ ] z suffixem " (FAIL: <skrot bledu>)" i finding P2.
+   - CLI (bun, npm, npx, pnpm, yarn, make, node, tsc, komendy stacku z listy \`komendyCli\` z .claude/stack/profil.json, cargo,
+     pytest, ruff, eslint, supabase, psql, deno, curl, wc, git, bash, sh, ./x, *.sh, *.mjs): uruchom komende przez Bash; exit 0 -> [x]; inny kod -> [ ] z suffixem " (FAIL: <skrot bledu>)" i finding P2.
    - Grep / istnienie pliku (grep, rg, test -f, ls, "brak referencji do", "plik istnieje", "import nie istnieje"):
      uruchom; PASS -> [x]; FAIL -> [ ] z suffixem " (FAIL)" i finding P2.
    - Przegladarka albo czlowiek (URL, agent-browser, "viewport", "kliknij", "screenshot", 🌐, "recznie", "operator", "symulator",

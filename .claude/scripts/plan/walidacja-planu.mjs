@@ -11,6 +11,7 @@ import { ekranyFigmy, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
 import { sprawdzMakiety } from './makiety.mjs'
 import { sciezkaWzgledna } from './przygotowanie.mjs'
 import { uwagiRejestru } from './rejestr-stalych.mjs'
+import { doWzorca, PROFIL } from '../stack/profil.mjs'
 
 export { PROG_ESLINT, PROG_PYTANIA } from './budzet-pliku.mjs'
 
@@ -25,13 +26,17 @@ export const BUILDERZY = ['feature-builder-ui', 'feature-builder-data', 'feature
 const DELEGACI = [...BUILDERZY, 'feature-builder-ui-figma', 'feature-builder-fullstack-figma']
 const POLA_FRONTMATTERA = ['design_md', 'figma_spec', 'figma_screens', 'operator_prep']
 const PLIK_TESTU = /(?:\.(?:test|spec)\.[cm]?[jt]sx?$|__tests__\/)/
-const SEED = /^e2e\/seeds\/[\w.-]+-seed\.sql$/
+const { katalogSeedow, katalogRunnerow } = PROFIL.e2e
+const SEED = new RegExp(`^${doWzorca(katalogSeedow)}\\/[\\w.-]+-seed\\.sql$`)
+// Runner E2E (`<katalog runnerow>/<x>.sh`) w backtickach — scribe uruchomilby go bez srodowiska e2e.
+const RUNNER_E2E = new RegExp(`\`[^\`]*(?<!\\w)${doWzorca(katalogRunnerow)}\\/[^\`\\s]*\\.sh\\b[^\`]*\``)
 // Tokeny, po ktorych grepy konsumentow licza i wykluczaja linie zadan (precheck, tester, scribe, completion-gate, execute=done).
 const ZNACZNIKI = /\[(?:E2E|Manual|Unit)\]|Operator:|\[P[123]\]/
 // Kategorie CLI i Grep scribe'a review-wf (bookkeeping "Weryfikacja:", pkt 3): pozycja bez nich zostaje "klasyfikacja niejasna".
-// Lista CLI jest tez w prompcie scribe'a — zgodnosc pilnuje kontrakt-docs-active.test.mjs.
-export const KOMENDY_CLI = ['bun', 'npm', 'npx', 'pnpm', 'yarn', 'make', 'node', 'tsc', 'vitest', 'cargo', 'pytest', 'ruff', 'eslint',
-  'supabase', 'psql', 'deno', 'curl', 'wc', 'git', 'bash', 'sh']
+// Lista CLI rdzenia jest tez w prompcie scribe'a, komendy stacku scribe bierze z profilu (`komendyCli`) — zgodnosc pilnuje
+// kontrakt-docs-active.test.mjs.
+export const KOMENDY_CLI = ['bun', 'npm', 'npx', 'pnpm', 'yarn', 'make', 'node', 'tsc', ...PROFIL.komendyCli, 'cargo', 'pytest', 'ruff',
+  'eslint', 'supabase', 'psql', 'deno', 'curl', 'wc', 'git', 'bash', 'sh']
 const KOMENDY_GREP = ['grep', 'rg', 'ls', 'test']
 const KOMENDA = new RegExp(`\`(?:(?:${[...KOMENDY_CLI, ...KOMENDY_GREP].join('|')})(?=[\\s\`])|\\./|[^\`\\s]+\\.(?:sh|mjs)\\b)[^\`]*\``)
 
@@ -123,7 +128,7 @@ function pliki(iu, migracje, w) {
   }
   if (!iu.tabelaPlikow) w.bledy.push(`${iu.id}: pole Pliki bez tabeli (Akcja | Plik | Linie dziś → po | Wymiary | Werdykt)`)
   for (const p of iu.pliki) {
-    if (akcja(p).includes('e2e seed') && !SEED.test(p.sciezka)) w.bledy.push(`${iu.id}: seed \`${p.sciezka}\` poza wzorcem e2e/seeds/<flow>-seed.sql`)
+    if (akcja(p).includes('e2e seed') && !SEED.test(p.sciezka)) w.bledy.push(`${iu.id}: seed \`${p.sciezka}\` poza wzorcem ${katalogSeedow}/<flow>-seed.sql`)
   }
   if (iu.pliki.some((p) => /^wydziel/i.test(p.werdykt.trim())) && !iu.pliki.some((p) => akcja(p) === 'stworz')) {
     w.bledy.push(`${iu.id}: werdykt „wydziel” bez wiersza Stwórz dla nowego modułu`)
@@ -164,9 +169,9 @@ function weryfikacja(iu, flowy, w) {
       else if (flowy.has(runner.replace(/^.*\//, '').replace(/\.sh$/, ''))) {
         w.bledy.push(`${iu.id}: Weryfikacja [E2E] \`${runner}\` to scenariusz z linii [E2E] — drugi przebieg tego samego flow`)
       }
-    } else if (/`[^`]*\be2e\/[^`\s]*\.sh\b[^`]*`/.test(v.tresc)) {
+    } else if (RUNNER_E2E.test(v.tresc)) {
       w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” uruchamia runner E2E bez znacznika [E2E] — scribe uruchomiłby go`
-        + ' bez środowiska e2e; zapis „[E2E] `e2e/<runner>.sh` — <stan>”')
+        + ` bez środowiska e2e; zapis „[E2E] \`${katalogRunnerow}/<runner>.sh\` — <stan>”`)
     } else if (!KOMENDA.test(v.tresc)) {
       w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” bez komendy w backtickach z listy, którą uruchamia scribe`
         + ` (${KOMENDY_CLI.join(', ')}, ${KOMENDY_GREP.join(', ')}, ./skrypt, *.sh, *.mjs) — krok człowieka idzie do Operator checklist`)

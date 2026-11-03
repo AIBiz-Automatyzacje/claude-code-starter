@@ -19,12 +19,15 @@ import { basename, join } from 'node:path'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { adresHttp, HOSTY_LOKALNE } from './adres.mjs'
+import { PROFIL } from '../stack/profil.mjs'
 import { DOMYSLNY_PORT, komendaStartu, NARZEDZIE_JAZDY, probnyZrzut, sprawdzNarzedzie } from './adapter.mjs'
 
 export const PLIK_ENV = '.env.e2e'
 // Klucze bazy e2e; grupa = zamienniki. Klucz klienta: publishable (sb_publishable_…) albo legacy anon, ktory Supabase
-// wycofuje do konca 2026 — projekt z nowymi kluczami dostawal STOP na starcie mimo kompletnego .env.e2e.
-export const KLUCZE_BAZY = [['VITE_SUPABASE_URL'], ['VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_ANON_KEY'], ['SUPABASE_E2E_DB_URL'],
+// wycofuje do konca 2026 — projekt z nowymi kluczami dostawal STOP na starcie mimo kompletnego .env.e2e. Klucze klienta
+// (adres i klucz Supabase z prefiksem publicznym stacku) daje profil stacku.
+const { env: ENV_STACKU } = PROFIL
+export const KLUCZE_BAZY = [[ENV_STACKU.adresSupabase], ENV_STACKU.kluczSupabase, ['SUPABASE_E2E_DB_URL'],
   ['SUPABASE_E2E_SERVICE_ROLE_KEY'], ['E2E_TEST_EMAIL'], ['E2E_TEST_PASSWORD']]
 const LIMIT_STARTU_SEK = 90
 // Agent startu uruchamia skrypt Bashem z limitem 600 s — start musi skonczyc sie wczesniej, inaczej Bash ubija skrypt
@@ -135,16 +138,17 @@ export function bledySrodowiska(projekt, env, { jazda, narzedzia = NARZEDZIA }) 
   if (!narzedzia.czyIgnorowany(projekt, PLIK_ENV)) bledy.push(`${PLIK_ENV} nie jest w .gitignore — dopisz go (plik zawiera sekrety)`)
   if (konf.blad) bledy.push(konf.blad)
   // Guard tozsamosci niezaleznie od bazy e2e: projekt bez supabase/ tez moze celowac z E2E w baze dev. Brak klucza w .env.e2e
-  // przy kluczu w .env = Vite w trybie e2e doczyta adres z .env, czyli baze dev.
-  // .env.e2e.local ma w Vite (tryb e2e) najwyzszy priorytet — to jego adres trafia do aplikacji.
-  const dev = [wczytajEnv(projekt, '.env'), wczytajEnv(projekt, '.env.local')].flatMap((e) => (e?.VITE_SUPABASE_URL ? [originBazy(e.VITE_SUPABASE_URL)] : []))
-  const lokalny = wczytajEnv(projekt, '.env.e2e.local')?.VITE_SUPABASE_URL
-  const adresE2e = lokalny || env.VITE_SUPABASE_URL
-  const zrodlo = lokalny ? '.env.e2e.local' : PLIK_ENV
+  // przy kluczu w pliku env bazy dev (profil stacku: plikiDev) = aplikacja w trybie e2e doczyta adres z niego, czyli baze dev.
+  // Plik plikE2eLokalny ma w trybie e2e najwyzszy priorytet — to jego adres trafia do aplikacji.
+  const { adresSupabase, plikiDev, plikE2eLokalny, aplikacjaE2e } = ENV_STACKU
+  const dev = plikiDev.map((plik) => wczytajEnv(projekt, plik)).flatMap((e) => (e?.[adresSupabase] ? [originBazy(e[adresSupabase])] : []))
+  const lokalny = plikE2eLokalny ? wczytajEnv(projekt, plikE2eLokalny)?.[adresSupabase] : undefined
+  const adresE2e = lokalny || env[adresSupabase]
+  const zrodlo = lokalny ? plikE2eLokalny : PLIK_ENV
   if (dev.length && !adresE2e) {
-    bledy.push(`brak VITE_SUPABASE_URL w ${PLIK_ENV}, a .env / .env.local go ma — Vite w trybie e2e doczyta baze dev; ustaw adres dedykowanego projektu Supabase e2e`)
+    bledy.push(`brak ${adresSupabase} w ${PLIK_ENV}, a ${plikiDev.join(' / ')} go ma — ${aplikacjaE2e} doczyta baze dev; ustaw adres dedykowanego projektu Supabase e2e`)
   } else if (adresE2e && dev.includes(originBazy(adresE2e))) {
-    bledy.push(`VITE_SUPABASE_URL w ${zrodlo} jest taki sam jak w .env / .env.local — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
+    bledy.push(`${adresSupabase} w ${zrodlo} jest taki sam jak w ${plikiDev.join(' / ')} — E2E potrzebuje dedykowanego projektu Supabase e2e (ochrona bazy dev/prod)`)
   }
   if (konf.bazaE2e) {
     const braki = KLUCZE_BAZY.filter((grupa) => !grupa.some((k) => env[k])).map(([k, ...legacy]) => (legacy.length ? `${k} (albo legacy ${legacy.join(', ')})` : k))

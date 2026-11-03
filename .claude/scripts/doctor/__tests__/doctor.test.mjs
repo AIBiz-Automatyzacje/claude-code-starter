@@ -11,6 +11,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 const SKRYPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'doctor.sh')
+// Adres Supabase klienta z profilu stacku (IU-1.7): test przechodzi na kazdym wariancie profilu.
+const ADRES_SUPABASE = JSON.parse(readFileSync(resolve(dirname(SKRYPT), '..', '..', 'stack', 'profil.json'), 'utf8')).env.adresSupabase
 const NARZEDZIA_SYSTEMOWE = ['cat', 'dirname', 'find', 'grep', 'head', 'tail', 'tr']
 
 /** @typedef {{ katalog: string, projekt: string, dom: string, bin: string }} Srodowisko */
@@ -355,12 +357,12 @@ test('warstwa stala: zgodne pliki → OK z liczba plikow i polecen; naruszenie �
 // mowi o tym przed runem — UWAGA (nie blokuje), z miejscem, gdzie wygenerowac token i gdzie go wpisac.
 test('advisors: bez Supabase nie dotyczy; baza e2e bez tokenu → UWAGA z naprawa; token w .env.e2e → OK z ref', () => zSrodowiskiem((s) => {
   assert.equal(wiersz(doctor(s).stdout, 'advisors (baza e2e)')[1], 'nie dotyczy')
-  writeFileSync(join(s.projekt, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\n')
+  writeFileSync(join(s.projekt, '.env.e2e'), `${ADRES_SUPABASE}=https://abcdefghijklmnopqrst.supabase.co\n`)
   const bezTokenu = wiersz(doctor(s).stdout, 'advisors (baza e2e)')
   assert.equal(bezTokenu[1], 'UWAGA')
   assert.match(bezTokenu[2], /brak SUPABASE_ACCESS_TOKEN/)
   assert.match(bezTokenu[3], /Access Tokens.*SUPABASE_ACCESS_TOKEN=<token> w \.env\.e2e/)
-  writeFileSync(join(s.projekt, '.env.e2e'), 'VITE_SUPABASE_URL=https://abcdefghijklmnopqrst.supabase.co\nSUPABASE_ACCESS_TOKEN=tajny\n')
+  writeFileSync(join(s.projekt, '.env.e2e'), `${ADRES_SUPABASE}=https://abcdefghijklmnopqrst.supabase.co\nSUPABASE_ACCESS_TOKEN=tajny\n`)
   const ok = doctor(s)
   assert.deepEqual(wiersz(ok.stdout, 'advisors (baza e2e)').slice(1, 3), ['OK', 'token i projekt e2e abcdefghijklmnopqrst'])
   assert.doesNotMatch(ok.stdout, /tajny/)

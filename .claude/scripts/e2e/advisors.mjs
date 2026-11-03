@@ -3,7 +3,8 @@
 // migracje fazy trafily do jakiejkolwiek bazy, a bez tokenu milczala statusem `brak` (vibersi etap 1, 6a pkt 80).
 //
 // Ref: SUPABASE_E2E_PROJECT_REF z .env.e2e, inaczej projekt bazy, do ktorej db-sync wgrywa migracje (SUPABASE_E2E_DB_URL:
-// uzytkownik poolera `postgres.<ref>` albo host `db.<ref>.supabase.co`), inaczej host VITE_SUPABASE_URL; rozne projekty w obu
+// uzytkownik poolera `postgres.<ref>` albo host `db.<ref>.supabase.co`), inaczej host adresu Supabase klienta (profil stacku:
+// env.adresSupabase); rozne projekty w obu
 // adresach = brak (lint innej bazy niz ta z migracjami). Token: SUPABASE_ACCESS_TOKEN z .env.e2e, inaczej ze srodowiska —
 // token projektu wygrywa z ogolnym z powloki (projekt e2e na innym koncie). ~/.zshrc nie dociera do agentow (powloka
 // nieinteraktywna, vibersi etap 1), wiec .env.e2e jest miejscem domyslnym. Statusy: ok / porazka (lint ERROR) / blad (API) /
@@ -12,9 +13,11 @@
 import { spawnSync } from 'node:child_process'
 
 import { advisorsProjektu, API_SUPABASE } from '../bramki/advisors.mjs'
+import { PROFIL } from '../stack/profil.mjs'
 import { envE2e, PLIK_ENV } from './srodowisko.mjs'
 
 export const KLUCZ_TOKENU = 'SUPABASE_ACCESS_TOKEN'
+const ADRES_APLIKACJI = PROFIL.env.adresSupabase
 const KATALOG_MIGRACJI = 'supabase/migrations'
 const HOST_SUPABASE = /^([a-z0-9]{20})\.supabase\.(?:co|in)$/
 const HOST_BAZY = /^db\.([a-z0-9]{20})\.supabase\.(?:co|in)$/
@@ -42,12 +45,12 @@ function refZBazy(dbUrl) {
 export function refE2e(env) {
   if (env.SUPABASE_E2E_PROJECT_REF) return { ref: env.SUPABASE_E2E_PROJECT_REF, blad: null }
   const zBazy = refZBazy(env.SUPABASE_E2E_DB_URL)
-  const zAplikacji = HOST_SUPABASE.exec(adres(env.VITE_SUPABASE_URL)?.hostname ?? '')?.[1] ?? null
+  const zAplikacji = HOST_SUPABASE.exec(adres(env[ADRES_APLIKACJI])?.hostname ?? '')?.[1] ?? null
   if (zBazy && zAplikacji && zBazy !== zAplikacji) {
-    return { ref: null, blad: `SUPABASE_E2E_DB_URL (${zBazy}) i VITE_SUPABASE_URL (${zAplikacji}) wskazuja rozne projekty — dopisz SUPABASE_E2E_PROJECT_REF projektu, do ktorego db-sync wgrywa migracje` }
+    return { ref: null, blad: `SUPABASE_E2E_DB_URL (${zBazy}) i ${ADRES_APLIKACJI} (${zAplikacji}) wskazuja rozne projekty — dopisz SUPABASE_E2E_PROJECT_REF projektu, do ktorego db-sync wgrywa migracje` }
   }
   const ref = zBazy ?? zAplikacji
-  return ref ? { ref, blad: null } : { ref: null, blad: `brak ref projektu e2e: ani SUPABASE_E2E_DB_URL, ani VITE_SUPABASE_URL w ${PLIK_ENV} nie wskazuje projektu Supabase — dopisz SUPABASE_E2E_PROJECT_REF` }
+  return ref ? { ref, blad: null } : { ref: null, blad: `brak ref projektu e2e: ani SUPABASE_E2E_DB_URL, ani ${ADRES_APLIKACJI} w ${PLIK_ENV} nie wskazuje projektu Supabase — dopisz SUPABASE_E2E_PROJECT_REF` }
 }
 
 /**

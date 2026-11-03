@@ -7,6 +7,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { ekranyFigmy, parsujPlan, poleTekstowe, sciezkaOrigin } from '../plan-techniczny.mjs'
+import { PROFIL } from '../../stack/profil.mjs'
+
+// Katalog seedow E2E z profilu stacku (IU-1.7) — test przechodzi na kazdym wariancie profilu.
+const SEEDY = PROFIL.e2e.katalogSeedow
 
 /** @param {string} cialo @param {string} [fm] @returns {string} */
 const plan = (cialo, fm = 'design_md: null\nfigma_spec: null\nfigma_screens: {}\noperator_prep: null') => `---\n${fm}\n---\n\n# P\n\n${cialo}`
@@ -159,11 +163,11 @@ test('seed z dopiskiem w nawiasie jest rozpoznany; inny zapis seeda to problem',
 - [ ] **IU-1: Pierwsza**
 
 **Scenariusze testowe:**
-- [E2E] \`a\` (seed: e2e/seeds/a-seed.sql — trzy zdarzenia) — otwórz → ok
+- [E2E] \`a\` (seed: ${SEEDY}/a-seed.sql — trzy zdarzenia) — otwórz → ok
 - [E2E] \`b\` (seed: a-seed) — otwórz → ok
 `))
   const iu = p.fazy[0].iu[0]
-  assert.deepEqual(iu.scenariusze.map((s) => s.seed), ['e2e/seeds/a-seed.sql', null])
+  assert.deepEqual(iu.scenariusze.map((s) => s.seed), [`${SEEDY}/a-seed.sql`, null])
   assert.match(iu.problemy.join('\n'), /seed w zapisie innym niż/)
 })
 

@@ -2,6 +2,8 @@
 // jednoznacznie przeczytac (lista wcieta albo z innym znacznikiem, kontynuacja bez wciecia, pole dwa razy, kilka plikow
 // w jednej komorce), trafia do `problemy` jednostki i walidacja odrzuca plan — zamiast cicho zgubic scenariusz albo plik.
 
+import { doWzorca, PROFIL } from '../stack/profil.mjs'
+
 /**
  * @typedef {{ nr: number, tekst: string, kod: boolean }} Linia  linia pliku planu; kod = wewnatrz bloku kodu
  * @typedef {{ akcja: string, sciezka: string, dzis: number | null, po: number | null, wymiary: string, werdykt: string }} Plik
@@ -19,8 +21,9 @@ const POLA_IU = new Set(['cel', 'wymagania', 'zaleznosci', 'pliki', 'delegate to
 const POLA_LISTY = ['scenariusze testowe', 'weryfikacja', 'operator checklist']
 const POLA_OPISU = ['cel', 'podejscie', 'notatka wykonawcza']
 const SEPARATOR_KOMOREK = /(?<!\\)\|/
-/** Zapis seeda w scenariuszu [E2E] planu i pliku zadan: `(seed: e2e/seeds/<x>-seed.sql)`. */
-export const ZAPIS_SEEDA = /\(seed:\s*(e2e\/seeds\/[^\s)]+)/
+/** Zapis seeda w scenariuszu [E2E] planu i pliku zadan: `(seed: <katalog seedow stacku>/<x>-seed.sql)`. */
+export const ZAPIS_SEEDA = new RegExp(`\\(seed:\\s*(${doWzorca(PROFIL.e2e.katalogSeedow)}\\/[^\\s)]+)`)
+const PRZYKLAD_SEEDA = `(seed: ${PROFIL.e2e.katalogSeedow}/<x>-seed.sql)`
 const SEPARATOR = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/
 
 /** @param {string} s @returns {string} */
@@ -120,7 +123,7 @@ function scenariusz(pozycja, problemy) {
   const typ = /^\[(Unit|E2E|Manual)\]\s*/.exec(pozycja)
   const tresc = typ ? pozycja.slice(typ[0].length) : pozycja
   const seed = ZAPIS_SEEDA.exec(tresc)?.[1] ?? null
-  if (/\(seed:/.test(tresc) && !seed) problemy.push(`seed w zapisie innym niż „(seed: e2e/seeds/<x>-seed.sql)”: „${tresc.slice(0, 60)}”`)
+  if (/\(seed:/.test(tresc) && !seed) problemy.push(`seed w zapisie innym niż „${PRZYKLAD_SEEDA}”: „${tresc.slice(0, 60)}”`)
   return { typ: typ ? typ[1] : '', tresc, flow: typ?.[1] === 'E2E' ? (/^`([^`]+)`/.exec(tresc)?.[1] ?? null) : null, seed }
 }
 

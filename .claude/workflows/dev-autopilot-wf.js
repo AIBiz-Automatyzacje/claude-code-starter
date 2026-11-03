@@ -600,11 +600,12 @@ ${BLOK_DLUGIE_KOMENDY}
    (\`--yes\` obowiazkowe: CLI 3 bez terminala odrzuca zmiane hostowanej bazy bez niego, odpowiedz podana potokiem nic nie potwierdza; w v2 to ta sama flaga globalna). To pierwsza PRAWDZIWA
    weryfikacja SQL migracji w pipeline (testy migracji w repo to regex na pliku). Blad SQL ->
    status "niepowodzenie" z pelna trescia bledu w detal — to moze byc DEFEKT KODU migracji, nie infra.
-3. SEED: znajdz seedy powiazane z flow tej fazy — pliki *-seed.sql w e2e/seeds/. Zrodla nazw flow/seedow
+3. SEED: znajdz seedy powiazane z flow tej fazy — pliki *-seed.sql w katalogu seedow stacku (\`e2e.katalogSeedow\`
+   w .claude/stack/profil.json, dalej <seedy>). Zrodla nazw flow/seedow
    fazy ${numerFazy} w ${sciezka}/*-zadania.md (WSZYSTKIE, nie tylko "Weryfikacja:"): (a) kazda linia z markerem
    [E2E] (prefiks Test: i Weryfikacja:) — identyfikator flow (pierwszy backtick w linii) i ewentualne jawne
-   "(seed: e2e/seeds/<x>-seed.sql)"; (b) checkboxy implementacyjne "Stwórz (e2e seed):" tej fazy (niosa dokladne
-   sciezki); (c) fallback: kazdy e2e/seeds/*-seed.sql dodany lub zmieniony w commitach tej fazy.
+   "(seed: <seedy>/<x>-seed.sql)"; (b) checkboxy implementacyjne "Stwórz (e2e seed):" tej fazy (niosa dokladne
+   sciezki); (c) fallback: kazdy <seedy>/*-seed.sql dodany lub zmieniony w commitach tej fazy.
    Jawny "(seed: …)" WYGRYWA (scenariusz moze uzywac cudzego seeda); konwencje <flow>-seed.sql dobieraj
    po identyfikatorze flow tylko gdy linia nie wskazuje seeda jawnie. Aplikuj kazdy
    WYLACZNIE przez \`psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <plik>\`.
@@ -684,7 +685,7 @@ KLASYFIKUJ kazdy finding przed naprawa:
 - Typ KOD (blad implementacji/security/perf/architektury): napraw kod -> uruchom unit testy -> odznacz checkbox.
 - Typ TEST (brakujacy test): NIE ruszaj kodu produkcyjnego, napisz test (min 1 asercja, nie assertion-free)
   zgodnie z planem w docs/plans/ -> uruchom -> odznacz.
-- Typ E2E (weryfikacja E2E): napraw przyczyne (takze: NAPISZ brakujacy seed e2e/seeds/<flow>-seed.sql wg IU,
+- Typ E2E (weryfikacja E2E): napraw przyczyne (takze: NAPISZ brakujacy seed <flow>-seed.sql w katalogu \`e2e.katalogSeedow\` z .claude/stack/profil.json wg IU,
   gdy finding mowi "brak seeda") -> re-uruchom scenariusz narzedziem jazdy wg .claude/stack/fix-e2e.md, sekcja
   „Ponowne odegranie scenariusza” (przed odegraniem zaaplikuj seed flow przez psql na "$SUPABASE_E2E_DB_URL") -> odznacz
   DOPIERO po PASS (nie na "naprawilem kod"). Zrodlowy checkbox identyfikuj TOLERANCYJNIE: NAJPIERW po
