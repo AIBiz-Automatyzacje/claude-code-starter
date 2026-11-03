@@ -4,8 +4,9 @@
 //
 // Statusy: pominieto     — zadanie nie ma scenariuszy [E2E] ani makiet figma_screens (niczego nie testujemy w przegladarce);
 //          brak-srodowiska — zadanie ma scenariusze, a repo nie ma .env.e2e -> STOP przed faza 1;
-//          niepowodzenie — .env.e2e jest, ale sprawdzenie albo start padly albo na porcie E2E dziala obcy serwer (P19:
-//                          PID i komenda w naprawie) -> STOP przed faza 1;
+//          niepowodzenie — .env.e2e jest, ale sprawdzenie, login kontem e2e (D16) albo start padly albo na porcie E2E dziala
+//                          obcy serwer (P19: PID i komenda w naprawie; przy polityce `zastap` adaptera, D11, obcy proces
+//                          z PID-em zostaje zatrzymany) -> STOP przed faza 1;
 //          gotowe        — nasz serwer odpowiada albo sprawdzenie bez startu przeszlo;
 //          odroczone     — projekt od zera (P17): repo nie ma jeszcze aplikacji (brak package.json albo package.json bez
 //                          zaleznosci), a komenda startu nie ma czego uruchomic; .env.e2e sprawne, serwer wystartuje restart
@@ -20,7 +21,8 @@ import { join } from 'node:path'
 
 import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
-import { naprawaZrzutu, opisProbyZrzutu } from './adapter.mjs'
+import { naprawaZrzutu, opisProbyZrzutu, POLITYKA_OBCEGO, SYGNATURY_BLOKERA } from './adapter.mjs'
+import { loginCanary } from './konto.mjs'
 import { doOdegrania, liczE2e } from './scenariusze.mjs'
 import { naprawaObcego, opisObcego, stanPortu, uruchomSerwer } from './serwer.mjs'
 import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './srodowisko.mjs'
@@ -78,10 +80,12 @@ export function potrzebyZadania(projekt, sciezka) {
 /**
  * @param {string} projekt
  * @param {string | null} sciezka katalog zadania; null = bez zadania (skill weryfikacji)
- * @param {{ uruchom: boolean, narzedzia?: import('./srodowisko.mjs').Narzedzia }} opcje uruchom=false: sprawdzenie bez startu (sekcja Doctor)
+ * @param {{ uruchom: boolean, narzedzia?: import('./srodowisko.mjs').Narzedzia, politykaObcego?: 'stop' | 'zastap',
+ *   canary?: typeof loginCanary }} opcje uruchom=false: sprawdzenie bez startu (sekcja Doctor); politykaObcego i canary: domyslnie
+ *   z adaptera stacku (D11) i login kontem e2e (D16) — testy podstawiaja wlasne
  * @returns {Promise<WynikStartu>}
  */
-export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZIA }) {
+export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZIA, politykaObcego = POLITYKA_OBCEGO, canary = loginCanary }) {
   const { scenariusze, figmaScreens } = sciezka ? potrzebyZadania(projekt, sciezka) : { scenariusze: null, figmaScreens: false }
   const env = envE2e(projekt)
   const konf = env ? konfiguracja(projekt, env) : null
@@ -116,33 +120,45 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
   }
   if (!uruchom) {
     const port = await stanPortu(konf)
+    if (port.obcy && politykaObcego === 'zastap' && port.obcy.pid) {
+      return { ...wynik, status: 'gotowe', serwer: 'brak', detal: `sprawdzenie ${PLIK_ENV} ok; start zastapi obcy serwer PID ${port.obcy.pid} (${port.obcy.komenda}) serwerem pipeline'u: ${konf.start}` }
+    }
     if (port.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', detal: opisObcego(konf, port.obcy), naprawa: `${naprawaObcego(konf, port.obcy)} Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
     return { ...wynik, status: 'gotowe', serwer: port.serwer, detal: `sprawdzenie ${PLIK_ENV} ok; serwer ${port.serwer === 'uruchomione' ? `pipeline'u dziala na ${konf.zdrowie}` : `nie dziala — autopilot uruchomi: ${konf.start}`}` }
   }
+  // Login canary kontem e2e (D16) przed serwerem: zle konto wychodzi tu z naprawa, a nie jako SKIP-y testera w kazdej fazie.
+  const konto = konf.bazaE2e ? await canary(env) : null
+  if (konto?.status === 'blad') {
+    const blad = `konto e2e: ${konto.detal}`
+    return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${konto.naprawa} Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
+  }
+  const dopisekKonta = konto?.status === 'utworzone' ? `; konto e2e: ${konto.detal}` : ''
   // Probny zrzut przed startem serwera (P19): zawieszony zrzut w trakcie runu kosztowal faze 971 s obejscia.
   const zrzut = (narzedzia.zrzut ?? NARZEDZIA.zrzut)?.()
   if (zrzut && !zrzut.ok) {
     const blad = `${opisProbyZrzutu}: ${zrzut.detal}`
     return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${naprawaZrzutu} Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
   }
-  const serwer = await uruchomSerwer(projekt, konf, env)
+  const serwer = await uruchomSerwer(projekt, konf, env, { politykaObcego })
   if (serwer.obcy) {
     return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', detal: serwer.blad ?? '', naprawa: `${naprawaObcego(konf, serwer.obcy)} Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
   }
   if (serwer.blad && brakAplikacji(projekt, serwer)) {
     const przyczyna = (serwer.ogon ?? '').split('\n').find((l) => BRAK_APLIKACJI.test(l))?.trim() ?? `kod ${serwer.wyjscie}`
-    return { ...wynik, status: 'odroczone', log: konf.log, detal: `aplikacji jeszcze nie ma („${konf.start}”: ${przyczyna}) — serwer wystartuje przed testerem pierwszej fazy, ktora go potrzebuje` }
+    return { ...wynik, status: 'odroczone', log: konf.log, detal: `aplikacji jeszcze nie ma („${konf.start}”: ${przyczyna}) — serwer wystartuje przed testerem pierwszej fazy, ktora go potrzebuje${dopisekKonta}` }
   }
   if (serwer.blad) {
     return { ...wynik, status: 'niepowodzenie', log: konf.log, bledy: [serwer.blad], detal: serwer.blad, naprawa: `Uruchom recznie „${konf.start}” i sprawdz ${konf.zdrowie}; parametry E2E_START, E2E_URL, E2E_HEALTH, E2E_START_TIMEOUT w ${PLIK_ENV}. Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
   }
-  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony („${konf.start}”), odpowiada na ${konf.zdrowie}` }
+  const zastapiony = serwer.zastapiony ? `; zastapiony obcy serwer PID ${serwer.zastapiony.pid} (${serwer.zastapiony.komenda})` : ''
+  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony („${konf.start}”), odpowiada na ${konf.zdrowie}${zastapiony}${dopisekKonta}` }
 }
 
 /**
  * @typedef {{ status: 'pominieto' | 'gotowe' | 'niepowodzenie', faza: number, scenariusze: number, figmaScreens: boolean,
  *   serwer: 'uruchomione' | 'obcy' | 'brak', url: string | null, log: string | null, detal: string,
- *   obcy: import('./serwer.mjs').ObcySerwer | null, naprawa?: string }} WynikRestartu
+ *   obcy: import('./serwer.mjs').ObcySerwer | null, naprawa?: string, sygnaturyBlokera: import('./adapter.mjs').SygnaturaBlokera[] }} WynikRestartu
+ * sygnaturyBlokera: z adaptera stacku (D12) — autopilot przekazuje je do detekcji blokera w review fazy
  */
 
 /**
@@ -161,7 +177,7 @@ export async function restartFazy(projekt, sciezka, faza) {
   const env = envE2e(projekt)
   const konf = env ? konfiguracja(projekt, env) : null
   /** @type {WynikRestartu} */
-  const wynik = { status: 'pominieto', faza, scenariusze, figmaScreens, serwer: 'brak', url: konf?.url ?? null, log: null, detal: '', obcy: null }
+  const wynik = { status: 'pominieto', faza, scenariusze, figmaScreens, serwer: 'brak', url: konf?.url ?? null, log: null, detal: '', obcy: null, sygnaturyBlokera: SYGNATURY_BLOKERA }
   if (!scenariusze && !figmaScreens) return { ...wynik, detal: `faza ${faza} bez scenariuszy [E2E] i makiet — serwer niepotrzebny` }
   if (!env || !konf || konf.blad) return { ...wynik, status: 'niepowodzenie', detal: konf?.blad ?? `brak ${PLIK_ENV}` }
   const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true })
@@ -169,5 +185,6 @@ export async function restartFazy(projekt, sciezka, faza) {
   // bo `detal` idzie do testera jako przyczyna trybu bez przegladarki.
   if (serwer.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', obcy: serwer.obcy, detal: serwer.blad ?? '', naprawa: naprawaObcego(konf, serwer.obcy) }
   if (serwer.blad) return { ...wynik, status: 'niepowodzenie', log: konf.log, detal: serwer.blad }
-  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony od nowa („${konf.start}”), odpowiada na ${konf.zdrowie}` }
+  const zastapiony = serwer.zastapiony ? `; zastapiony obcy serwer PID ${serwer.zastapiony.pid} (${serwer.zastapiony.komenda})` : ''
+  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony od nowa („${konf.start}”), odpowiada na ${konf.zdrowie}${zastapiony}` }
 }

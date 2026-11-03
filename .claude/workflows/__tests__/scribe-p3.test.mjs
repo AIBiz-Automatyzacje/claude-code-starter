@@ -29,7 +29,7 @@ function wytnij(kotwica, koniec) {
 }
 
 /** @typedef {{ e2eStatus: string, e2eTryb: string, e2ePrzebiegi: unknown[], e2eTesterFail: boolean, e2eWykonany: boolean }} PrzebiegScribe */
-/** @type {{ scribePrompt: (sciezka: string, faza: number, potwierdzone: unknown[], przebieg: PrzebiegScribe, obalone: unknown[]) => string, BLOK_LIMIT_P3: string }} */
+/** @type {{ scribePrompt: (sciezka: string, faza: number, potwierdzone: unknown[], przebieg: PrzebiegScribe, obalone: unknown[], bezKsiegowaniaE2e?: boolean) => string, BLOK_LIMIT_P3: string }} */
 // P14: scribe dostaje polecenie ksiegowania [E2E] z komendaKsiegowania (atrapa — kontrakt w e2e-manual.test.mjs).
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { scribePrompt, BLOK_LIMIT_P3 } = new Function('przebiegBlok', 'komendaKsiegowania',
@@ -52,6 +52,16 @@ test('scribe: P3 typu KOD/TEST ida do known-issues, sekcja "## P3 faza N", dopis
 test('scribe: "Do poprawy" to P1 i P2 — P3 nie ida do fixa', () => {
   assert.match(prompt, /"## Do poprawy po review fazy 4"\n\s+— wylistuj findingi typu KOD\/TEST\/E2E o severity P1 i P2 jako checkbox/)
   assert.doesNotMatch(prompt, /ORAZ findingi P3|agentowi fixa razem z P1\/P2/)
+})
+
+// D12 (IU-1.8): bloker srodowiska z polityka stop-rebuild zatrzymuje run przed zamknieciem review — scribe nie ksieguje
+// linii [E2E] (powtorka review po przebudowie odegra je od nowa); bez blokera polecenie ksiegowania jak dotad.
+test('scribe: przy blokerze stop-rebuild linii [E2E] nie ksieguje; bez niego dostaje komende ksiegowania', () => {
+  const zTesterem = { ...PRZEBIEG, e2eStatus: 'wykonany', e2eTryb: 'interaktywny' }
+  assert.match(scribePrompt('docs/active/x', 4, [], zTesterem, []), /e2e\.mjs ksieguj/)
+  const stop = scribePrompt('docs/active/x', 4, [], zTesterem, [], true)
+  assert.doesNotMatch(stop, /e2e\.mjs ksieguj/)
+  assert.match(stop, /wymaga przebudowy[^\n]*linii \[E2E\] nie ruszasz/)
 })
 
 test('scribe: prompt krotszy niz przed P8 (8297 znakow stalej czesci)', () => {

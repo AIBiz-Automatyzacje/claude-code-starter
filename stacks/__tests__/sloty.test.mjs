@@ -109,3 +109,11 @@ test('adapter E2E web: Vite na 5174 obok 5173, agent-browser, uwagi o proxy Vite
   assert.equal(a.LIMIT_ZRZUTU_SEK, 30)
   assert.match(a.naprawaZrzutu, /agent-browser close --all/)
 })
+
+// Polityki web (IU-1.8) = dzisiejsze zachowanie: obcy serwer na porcie E2E to STOP (P19), a bloker środowiska w trakcie
+// runu łapią sygnatury rdzenia (dev server, DNS) z [Manual] i restartem — web nie dokłada własnych.
+test('adapter E2E web: obcy serwer = stop, bez sygnatur blokera stacku', async () => {
+  const a = await import(resolve(KORZEN, '.claude/scripts/e2e/adapter.mjs'))
+  assert.equal(a.POLITYKA_OBCEGO, 'stop')
+  assert.deepEqual(a.SYGNATURY_BLOKERA, [])
+})

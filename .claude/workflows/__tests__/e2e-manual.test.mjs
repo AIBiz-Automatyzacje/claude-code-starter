@@ -31,7 +31,7 @@ function wytnij(zrodlo, kotwica, koniec) {
 
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const A = new Function(`${wytnij(autopilot, '// ── Bramka wejscia (P4)', '// ── Koniec bramki wejscia')}
-  return { decyzjaSrodowiskaE2e, srodowiskoPoReview, srodowiskoPoRestarcie, advisorsZWyniku }`)()
+  return { decyzjaSrodowiskaE2e, srodowiskoPoReview, srodowiskoPoRestarcie, advisorsZWyniku, sygnaturyZRestartu, decyzjaBlokeraSrodowiska }`)()
 // eslint-disable-next-line no-new-func -- jw.
 const R = new Function(`${wytnij(review, 'const SYGNATURY_BLOKERA = [', '// ── Koniec E2E po testerze')}
   return { PRZYCZYNY_SKIP, liczManualE2e, komendaKsiegowania, wykryjBlokerSrodowiska }`)()
@@ -175,6 +175,40 @@ test('w trakcie: autopilot nie zatrzymuje runu na blokerze srodowiska ani na pad
   assert.doesNotMatch(autopilot, /scenariusz E2E padl na BLOKERZE SRODOWISKA/)
   assert.doesNotMatch(autopilot, /review\.e2eTesterFail\)\s*\{[\s\S]{0,400}stopRun/)
   assert.match(autopilot, /srodowiskoE2E = srodowiskoPoReview\(srodowiskoE2E, review\)/)
+})
+
+// ── (3) Polityka blokera stacku (D12, IU-1.8): stop-rebuild zatrzymuje run z naprawa adaptera ─────────
+// Sygnatury blokera stacku przychodza z adaptera w JSON-ie `e2e.mjs restart`; autopilot je waliduje i przekazuje do review.
+// Bloker z polityka `stop-rebuild` (restart serwera nie przebuduje binarki) = STOP przed zamknieciem review: linie [E2E]
+// zostaja bez zmian, swiezy run po przebudowie powtarza review fazy.
+
+const NATYWNY = { wzorzec: 'cannot find native module', flagi: 'i', klasa: 'brak-modulu-natywnego', polityka: 'stop-rebuild', naprawa: 'Przebuduj dev-client.' }
+
+test('restart: sygnatury blokera stacku z JSON-u restartu, tylko poprawne wpisy; brak albo smiec = pusta lista', () => {
+  assert.deepEqual(A.sygnaturyZRestartu(JSON.stringify({ status: 'gotowe', sygnaturyBlokera: [NATYWNY, { klasa: 'x' }, null] })), [NATYWNY])
+  assert.deepEqual(A.sygnaturyZRestartu(JSON.stringify({ status: 'gotowe' })), [])
+  assert.deepEqual(A.sygnaturyZRestartu('to nie JSON'), [])
+  assert.deepEqual(A.sygnaturyZRestartu(undefined), [])
+})
+
+test('w trakcie: bloker stop-rebuild = STOP fazy z naprawa adaptera i komenda swiezego runu; manual-restart i brak blokera = dalej', () => {
+  const stop = A.decyzjaBlokeraSrodowiska({ blokerSrodowiska: { wykryty: true, klasa: 'brak-modulu-natywnego', dowod: 'Cannot find native module X', polityka: 'stop-rebuild', naprawa: 'Przebuduj dev-client.' } }, 3, ZADANIE)
+  assert.match(stop?.powod ?? '', /^Faza 3: srodowisko E2E wymaga przebudowy \(brak-modulu-natywnego\): "Cannot find native module X"/)
+  assert.match(stop?.powod ?? '', /linie \[E2E\] bez zmian/)
+  assert.match(stop?.naprawa ?? '', /^Przebuduj dev-client\. .*BEZ resumeFromRunId/)
+  assert.equal(A.decyzjaBlokeraSrodowiska({ blokerSrodowiska: { wykryty: true, klasa: 'dev-server-nieosiagalny', dowod: 'x', polityka: 'manual-restart', naprawa: '' } }, 3, ZADANIE), null)
+  assert.equal(A.decyzjaBlokeraSrodowiska({ blokerSrodowiska: null }, 3, ZADANIE), null)
+  assert.equal(A.decyzjaBlokeraSrodowiska(null, 3, ZADANIE), null)
+})
+
+test('w trakcie: wiring — sygnatury z restartu do args review, STOP stop-rebuild przed zamknieciem review', () => {
+  assert.match(wytnij(autopilot, '      const po = srodowiskoPoRestarcie(', "    const review = await workflow('dev-docs-review-wf'"), /sygnaturyBlokera = sygnaturyZRestartu\(restart && restart\.stdout\)/)
+  assert.match(wytnij(autopilot, "    const review = await workflow('dev-docs-review-wf'", '    })'), /\n\s+sygnaturyBlokera,\n/)
+  const poReview = wytnij(autopilot, '    if (review.scribeFail) {', "    faza.review = 'done'")
+  assert.match(poReview, /const stopBlokera = decyzjaBlokeraSrodowiska\(review, numerFazy, sciezka\)\n\s+if \(stopBlokera\) \{\n\s+oznaczStan\(\)\n\s+return await stopRun\(\{ \.\.\.stopBlokera, faza: numerFazy, findings: review\.findings, raporty \}\)/)
+  assert.ok(poReview.indexOf('decyzjaBlokeraSrodowiska(') < poReview.indexOf('srodowiskoPoReview('), 'STOP przed przelaczeniem na martwe')
+  assert.match(review, /scribePrompt\(sciezka, faza, potwierdzone, przebieg, obalone, bezKsiegowaniaE2e\)/)
+  assert.match(review, /const bezKsiegowaniaE2e = Boolean\(blokerSrodowiska && blokerSrodowiska\.polityka === 'stop-rebuild'\)/)
 })
 
 test('w trakcie: przyczyny SKIP w review-wf = kopia z ksiegowanie.mjs', () => {

@@ -2,7 +2,7 @@
 //
 // Uruchomienie: node --test .claude/scripts/e2e/__tests__/srodowisko.test.mjs
 
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -10,7 +10,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { uwagaSerweraApi } from '../adapter.mjs'
+import { SYGNATURY_BLOKERA, uwagaSerweraApi } from '../adapter.mjs'
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
 import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
 import { restartFazy, startE2e } from '../start.mjs'
@@ -676,4 +676,66 @@ test('uwagaSerweraApi: katalogi server/, api/, apps/api/ i skrypty z czlonem ser
   for (const nazwa of ['observer', 'server-x', 'dev:observer', 'serverless:x', 'rapid', 'dev:apis', 'api-docs', 'dev']) assert.equal(zeSkryptem(nazwa), false, nazwa)
   assert.equal(wykryty({ 'apps/web/src/index.ts': '' }), false, 'apps/ bez api/')
   assert.equal(uwagaSerweraApi(projekt({ pliki: { 'apps/api/x.ts': '' } }), { E2E_HEALTH_TRESC: 'ok' }), null, 'sonda z trescia')
+})
+
+// D11 (IU-1.8): polityka obcego procesu na porcie E2E z adaptera. `stop` (web, P19) zostawia obcy serwer ze STOP-em startu
+// (test wyzej); `zastap` (stack, w ktorym serwer czyta env przy starcie — Metro w Expo) zatrzymuje obcy proces z PID-em
+// i stawia serwer pipeline'u. Bez PID-u (lsof niedostepny, host nielokalny) zastapic nie ma czego — zostaje STOP.
+test('start z polityka zastap: obcy serwer z PID-em zatrzymany, nasz uruchomiony; sprawdzenie bez startu nie blokuje', {
+  skip: spawnSync('lsof', ['-v']).error ? 'brak lsof' : false,
+}, async () => {
+  const port = await wolnyPort()
+  const kod = `require('http').createServer((q,s)=>s.end('ok')).listen(${port})`
+  const obcy = spawn(process.execPath, ['-e', kod], { stdio: 'ignore' })
+  try {
+    for (let i = 0; i < 50 && !(await odpowiada(`http://127.0.0.1:${port}`)); i += 1) await new Promise((r) => setTimeout(r, 100))
+    const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=node -e "${kod}"\nE2E_START_TIMEOUT=20\n` })
+    const sprawdzenie = await startE2e(p, ZADANIE, { uruchom: false, narzedzia: SPRAWNE, politykaObcego: 'zastap' })
+    assert.equal(sprawdzenie.status, 'gotowe', sprawdzenie.detal)
+    assert.match(sprawdzenie.detal, new RegExp(`start zastapi obcy serwer PID ${obcy.pid}`))
+    const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE, politykaObcego: 'zastap' })
+    assert.deepEqual([w.status, w.serwer], ['gotowe', 'uruchomione'], w.detal)
+    assert.match(w.detal, new RegExp(`zastapiony obcy serwer PID ${obcy.pid}`))
+    for (let i = 0; i < 50 && obcy.exitCode === null && obcy.signalCode === null; i += 1) await new Promise((r) => setTimeout(r, 100))
+    assert.notEqual(obcy.signalCode ?? obcy.exitCode, null, 'obcy proces zyje')
+    assert.equal(stanSerwera(konfProjektu(p)).zyje, true, 'na porcie dziala serwer pipeline\'u')
+  } finally {
+    obcy.kill('SIGKILL')
+  }
+})
+
+// D12 (IU-1.8): restart niesie sygnatury blokera srodowiska stacku z adaptera — autopilot przekazuje je do review fazy.
+test('restart fazy niesie sygnatury blokera stacku z adaptera (takze faza bez scenariuszy)', async () => {
+  const p = projekt({ zadania: '## Faza 1 — A\n\n- [ ] Stwórz: `a.ts`\n', env: 'X=1\n' })
+  const w = await restartFazy(p, ZADANIE, 1)
+  assert.equal(w.status, 'pominieto')
+  assert.deepEqual(w.sygnaturyBlokera, SYGNATURY_BLOKERA)
+})
+
+// D16 (IU-1.8): login canary kontem e2e na starcie z baza e2e — zly login = STOP z naprawa przed startem serwera; konto
+// zalozone przez canary widac w detalu. Bez bazy e2e canary nie biegnie.
+test('start z baza e2e: canary konta przed serwerem — blad = niepowodzenie z naprawa, utworzone = gotowe z adnotacja', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
+  const env = `${BAZA}E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n`
+  const p = projekt({ env, pliki: { 'supabase/config.toml': '' } })
+  /** @type {string[]} */
+  const wywolania = []
+  const zly = await startE2e(p, ZADANIE, {
+    uruchom: true, narzedzia: SPRAWNE,
+    canary: async () => { wywolania.push('blad'); return { status: 'blad', detal: 'logowanie kontem e2e t@x.pl: HTTP 400 invalid_credentials', naprawa: 'Ustaw E2E_TEST_PASSWORD' } },
+  })
+  assert.deepEqual([zly.status, zly.serwer], ['niepowodzenie', 'brak'])
+  assert.match(zly.detal, /konto e2e: logowanie kontem e2e t@x\.pl/)
+  assert.match(zly.naprawa, /Ustaw E2E_TEST_PASSWORD/)
+  assert.equal(await odpowiada(`http://127.0.0.1:${port}`), false, 'serwer nie startuje po zlym loginie')
+  const ok = await startE2e(p, ZADANIE, {
+    uruchom: true, narzedzia: SPRAWNE,
+    canary: async () => { wywolania.push('utworzone'); return { status: 'utworzone', detal: 'konto t@x.pl utworzone', naprawa: '' } },
+  })
+  assert.equal(ok.status, 'gotowe', ok.detal)
+  assert.match(ok.detal, /; konto e2e: konto t@x\.pl utworzone$/)
+  const bezBazy = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\n` })
+  await startE2e(bezBazy, ZADANIE, { uruchom: false, narzedzia: SPRAWNE, canary: async () => { wywolania.push('bez-bazy'); return { status: 'ok', detal: '', naprawa: '' } } })
+  assert.deepEqual(wywolania, ['blad', 'utworzone'], 'canary tylko przy starcie z baza e2e')
 })
