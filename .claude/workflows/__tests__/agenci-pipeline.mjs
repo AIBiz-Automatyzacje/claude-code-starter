@@ -1,4 +1,5 @@
-// Odczyt plikow agentow i wywolan agent() w workflowach — wspolne dla klasy-rol.test.mjs (PLAN-POPRAWY P3).
+// Odczyt plikow agentow i wywolan agent() w workflowach — wspolne dla klasy-rol.test.mjs (PLAN-POPRAWY P3), szkieletu
+// buildera i asercji stacku plikow rol (stacks/web/__tests__/role.test.mjs).
 // Plik nie ma testow; funkcje biora katalog glowny, zeby te same sprawdzenia dzialaly na repo i na podlozonym drzewie.
 //
 // Wywolania czytamy statycznie: opcje kazdego agent() sa w jednej linii `{ schema: X, ..., label: ... }` (tak pisze je
@@ -51,6 +52,26 @@ export function narzedzia(fm) {
  */
 export function tresc(tekst) {
   return tekst.split(/^---$/m).slice(2).join('---')
+}
+
+/**
+ * @param {string} tekst
+ * @returns {string}  tresc bloku `## Polecenia` (do nastepnego naglowka drugiego stopnia)
+ */
+export function blokPolecen(tekst) {
+  const m = tekst.match(/^## Polecenia\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m)
+  return m?.[1] ?? ''
+}
+
+const WERSALIKI = /(?<![\p{L}_])(?:NIGDY|ZAWSZE|MUSI|MUSISZ|MUST|NEVER|ALWAYS|ALL|WAŻNE|OBOWIĄZKOWE|KRYTYCZNE|TYLKO|NIE)(?![\p{L}_])/gu
+
+/**
+ * @param {string} tekst  SKILL.md
+ * @returns {string[]}  slowa krzyczane wersalikami poza blokami kodu i kodem w linii
+ */
+export function wersaliki(tekst) {
+  const proza = tekst.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
+  return [...proza.matchAll(WERSALIKI)].map((m) => m[0])
 }
 
 /**
