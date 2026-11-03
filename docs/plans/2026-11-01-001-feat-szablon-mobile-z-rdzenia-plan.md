@@ -205,8 +205,8 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - Odbiór: pełne testy maszynerii zielone, diff zachowania zerowy (porównanie wygenerowanych promptów przed/po dla vibersi),
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
-**Stan Etapu 1 (2026-11-02, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.5, każda na gałęzi `popr/*`
-zmergowanej `--no-ff` do main, CI zielone do IU-1.3 włącznie:
+**Stan Etapu 1 (2026-11-02, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.6, każda na gałęzi `popr/*`
+zmergowanej `--no-ff` do main, CI zielone do IU-1.5 włącznie:
 
 | IU | Gałąź / merge | Co powstało |
 |---|---|---|
@@ -215,6 +215,7 @@ zmergowanej `--no-ff` do main, CI zielone do IU-1.3 włącznie:
 | 1.3 | `popr/adapter-e2e` / `f8a9b53` | `scripts/e2e/adapter.mjs` (slot plikowy: port, komenda startu, narzędzie jazdy, próbny zrzut, uwagi Vite) + `adres.mjs`; `srodowisko`, `start`, `gotowosc`, doctor (`doctor/narzedzie-jazdy.mjs`, `port-e2e`) przez adapter; kontrakt `e2e/__tests__/adapter.test.mjs` |
 | 1.4 | `popr/sloty-skille` / `46faa0e` | `references/stack.md` w dev-plan, dev-docs-complete, dev-prep, dev-compound, weryfikacja-setup (D20); dev-plan odsyła do `buildery.md`/`plan-e2e.md`; `szkielet.mjs` bierze teksty z `SZKIELET_WERYFIKACJI` adaptera; test `workflows/__tests__/sloty-skilli.test.mjs` |
 | 1.5 | `popr/straznik-stacku` / `7f7c2c3` | `stacks/straznik.mjs` + `stacks/straznik.json` (10 słów stacku web, 59 wyjątków: `usun` 6, `podmiana` 8, `przejsciowy` z IU 23, `staly` 22); wyjątek bez trafień zatrzymuje test; drugi strażnik: odesłania rdzenia (`.claude/stack/*`, `references/stack.md`, import adaptera) ⊆ rejestr slotów i każdy slot ma odesłanie; test `stacks/__tests__/straznik.test.mjs` |
+| 1.6 | `popr/testy-rol` / `c616f21` | `szkielet-buildera` i `tester-e2e` w rdzeniu = kontrakt każdego stacku (samosprawdzenie plików jednostki zamiast `vitest related --run`, skille wspólne); asercje web (runner Vitest, skille web, preflight/zrzuty/`$Z`/`wait --text` agent-browser) dosłownie w `stacks/web/__tests__/role.test.mjs`; `warstwa-stala`, `klasy-rol`, `odczyt-zakresami` neutralne bez zmian; opis `E2E_RESULT.flow` w review odsyła do `plan-e2e.md`, sekcja „Linia scenariusza” (wyjątek strażnika usunięty) |
 
 Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
 - Odesłanie w rdzeniu ma postać „`<plik slotu>`, sekcja „<nagłówek ##>””; testy sprawdzają, że nagłówek istnieje.
@@ -238,14 +239,14 @@ Przesunięcia zakresu względem listy IU wyżej:
   sync-template, dev-plan; `dossier/profil.mjs`, bramki warunkowe, coderabbit-setup) i nazwami skilli w telemetrii.
 - Wpisy strażnika bez IU w planie (`"iu": "Etap 2"`): agenci badawczy `best-practices-researcher`,
   `framework-docs-researcher`, `repo-research-analyst`, `web-research-specialist` (stos web wpisany w treść) oraz fixture
-  `templates/smoke-autopilot` (D18) — do przypisania przy rozpisaniu Etapu 2. Opis `E2E_RESULT.flow` w review
-  („W webie flow nie ma osobnego pliku: agent-browser…”, A0.7 §6 p.3) przypisany do IU-1.6.
+  `templates/smoke-autopilot` (D18) — do przypisania przy rozpisaniu Etapu 2.
+- Asercje stacku plików ról: web w `stacks/web/__tests__/`, Expo w `stacks/expo/__tests__/` (Etap 2, IU-2.1/2.2);
+  testy w `.claude/**/__tests__/` muszą przejść na każdym wariancie.
 - Zostaje na Etap 2 (IU-2.6): wykrywanie tras routera w `szkielet.mjs`.
 - Uwaga techniczna: glob `test` (`.claude/**/__tests__`) w głównym katalogu łapie też testy z `.claude/worktrees/*` — liczba
   testów na main jest wtedy wyższa niż w worktree; nic to nie psuje.
 
-Zostało: IU-1.6 (testy ról: rdzeń vs stack),
-IU-1.7 (`profil.json`), IU-1.8 (polityki adaptera E2E, login canary), IU-1.9 (reguły), potem odbiór Etapu 1.
+Zostało: IU-1.7 (`profil.json`), IU-1.8 (polityki adaptera E2E, login canary), IU-1.9 (reguły), potem odbiór Etapu 1.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
