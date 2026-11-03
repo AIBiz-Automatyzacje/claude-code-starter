@@ -205,8 +205,8 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
 - Odbiór: pełne testy maszynerii zielone, diff zachowania zerowy (porównanie wygenerowanych promptów przed/po dla vibersi),
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
-**Stan Etapu 1 (2026-11-03, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.7, każda na gałęzi `popr/*`
-zmergowanej `--no-ff` do main, CI zielone do IU-1.5 włącznie:
+**Stan Etapu 1 (2026-11-03, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.8, każda na gałęzi `popr/*`
+zmergowanej `--no-ff` do main, CI zielone do IU-1.7 włącznie:
 
 | IU | Gałąź / merge | Co powstało |
 |---|---|---|
@@ -217,6 +217,7 @@ zmergowanej `--no-ff` do main, CI zielone do IU-1.5 włącznie:
 | 1.5 | `popr/straznik-stacku` / `7f7c2c3` | `stacks/straznik.mjs` + `stacks/straznik.json` (10 słów stacku web, 59 wyjątków: `usun` 6, `podmiana` 8, `przejsciowy` z IU 23, `staly` 22); wyjątek bez trafień zatrzymuje test; drugi strażnik: odesłania rdzenia (`.claude/stack/*`, `references/stack.md`, import adaptera) ⊆ rejestr slotów i każdy slot ma odesłanie; test `stacks/__tests__/straznik.test.mjs` |
 | 1.6 | `popr/testy-rol` / `c616f21` | `szkielet-buildera` i `tester-e2e` w rdzeniu = kontrakt każdego stacku (samosprawdzenie plików jednostki zamiast `vitest related --run`, skille wspólne); asercje web (runner Vitest, skille web, preflight/zrzuty/`$Z`/`wait --text` agent-browser) dosłownie w `stacks/web/__tests__/role.test.mjs`; `warstwa-stala`, `klasy-rol`, `odczyt-zakresami` neutralne bez zmian; opis `E2E_RESULT.flow` w review odsyła do `plan-e2e.md`, sekcja „Linia scenariusza” (wyjątek strażnika usunięty) |
 | 1.7 | `popr/profil-stacku` / `a4b1a3e` | slot danych `.claude/stack/profil.json` (D15; `env`: prefiks publiczny, adres i klucz Supabase klienta, pliki env bazy dev, plik e2e o najwyższym priorytecie, zmienne wbudowane; `e2e`: katalogi seedów i runnerów; `zrodla.frontend`; `testy.powiazane`; `komendyCli`) + odczyt `scripts/stack/profil.mjs`; z profilu: strażnik bazy dev i `KLUCZE_BAZY`, oba advisors, `ZAPIS_SEEDA`, wzorzec seeda i runnera oraz `KOMENDY_CLI` w walidacji planu, zmienne wbudowane smoke'u, glob frontendu hooka; prompty (scribe, db-sync, fix E2E, execute, schemat flow) i security-sentinel odsyłają do profilu; 8 wpisów strażnika usuniętych; kontrakt `stack/__tests__/profil.test.mjs`, testy rdzenia z literałami web przepięte na profil |
+| 1.8 | `popr/polityki-adaptera` / `8ef651c` | kontrakt adaptera: `POLITYKA_OBCEGO` (D11; web `stop`, przy `zastap` `serwer.mjs` zatrzymuje obcy proces z PID-em i stawia swój serwer) i `SYGNATURY_BLOKERA` z polityką `manual-restart` \| `stop-rebuild` (D12; web `[]`, sygnatury rdzenia zostają w review); sygnatury płyną JSON-em `e2e.mjs restart` → autopilot (`sygnaturyZRestartu`) → `args.sygnaturyBlokera` review; `stop-rebuild` = scribe bez księgowania `[E2E]`, STOP przed zamknięciem review z naprawą adaptera (`decyzjaBlokeraSrodowiska`); login canary kontem e2e w `e2e.mjs start` z bazą e2e (D16, `scripts/e2e/konto.mjs`: password grant, brak konta → admin API, zły login = STOP startu) — dla webu nowy krok startu zamówiony w D16 |
 
 Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
 - Odesłanie w rdzeniu ma postać „`<plik slotu>`, sekcja „<nagłówek ##>””; testy sprawdzają, że nagłówek istnieje.
@@ -252,7 +253,11 @@ Przesunięcia zakresu względem listy IU wyżej:
   albo wariantu razem z wyjątkiem `staly` przykładowego planu). `feature-tester-e2e.md` wciąż wymienia `e2e/<etap>-run-all.sh`
   (plik `podmiana`, IU-2.2).
 
-Zostało: IU-1.8 (polityki adaptera E2E, login canary), IU-1.9 (reguły), potem odbiór Etapu 1.
+- Z IU-1.8 dla IU-2.3 (adapter Expo): `POLITYKA_OBCEGO = 'zastap'`, `SYGNATURY_BLOKERA` z `brak-modulu-natywnego`
+  i `brak-entitlements` (`stop-rebuild`, naprawa = komenda rebuildu z A0.1 #15); dowód Maestro (`_canary.yaml`) zostaje
+  w adapterze, login REST kontem e2e robi już rdzeń. Krok 4 db-sync (konto testowe) został w prompcie bez zmian.
+
+Zostało: IU-1.9 (reguły), potem odbiór Etapu 1.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
