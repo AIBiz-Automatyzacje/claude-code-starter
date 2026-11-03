@@ -132,7 +132,7 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     const blad = `konto e2e: ${konto.detal}`
     return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${konto.naprawa} Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
   }
-  const dopisekKonta = konto?.status === 'utworzone' ? `; konto e2e: ${konto.detal}` : ''
+  const dopisekKonta = konto?.status === 'utworzone' || konto?.status === 'pominieto' ? `; konto e2e: ${konto.detal}` : ''
   // Probny zrzut przed startem serwera (P19): zawieszony zrzut w trakcie runu kosztowal faze 971 s obejscia.
   const zrzut = (narzedzia.zrzut ?? NARZEDZIA.zrzut)?.()
   if (zrzut && !zrzut.ok) {

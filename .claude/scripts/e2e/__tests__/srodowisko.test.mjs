@@ -739,3 +739,16 @@ test('start z baza e2e: canary konta przed serwerem — blad = niepowodzenie z n
   await startE2e(bezBazy, ZADANIE, { uruchom: false, narzedzia: SPRAWNE, canary: async () => { wywolania.push('bez-bazy'); return { status: 'ok', detal: '', naprawa: '' } } })
   assert.deepEqual(wywolania, ['blad', 'utworzone'], 'canary tylko przy starcie z baza e2e')
 })
+
+// Projekt z captcha Auth: canary niczego nie sprawdzil, ale start idzie dalej, a detal mowi, ze haslo konta sprawdzi dopiero tester.
+test('start z baza e2e: canary pominiety przez captche = gotowe z adnotacja powodu', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
+  const p = projekt({ env: `${BAZA}E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n`, pliki: { 'supabase/config.toml': '' } })
+  const w = await startE2e(p, ZADANIE, {
+    uruchom: true, narzedzia: SPRAWNE,
+    canary: async () => ({ status: 'pominieto', detal: 'projekt e2e wymaga captchy przy logowaniu', naprawa: '' }),
+  })
+  assert.equal(w.status, 'gotowe', w.detal)
+  assert.match(w.detal, /; konto e2e: projekt e2e wymaga captchy przy logowaniu$/)
+})
