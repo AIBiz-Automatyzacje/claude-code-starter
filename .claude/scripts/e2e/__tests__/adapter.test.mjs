@@ -40,6 +40,24 @@ test('adapter: narzędzie jazdy testera z instalacją i diagnozą', () => {
   assert.equal(typeof adapter.naprawaZrzutu, 'string')
 })
 
+// Polityki stacku (IU-1.8): obcy proces na porcie E2E (D11) i bloker środowiska w trakcie runu (D12).
+test('adapter: polityka obcego procesu na porcie E2E — stop albo zastap', () => {
+  assert.ok(['stop', 'zastap'].includes(adapter.POLITYKA_OBCEGO), String(adapter.POLITYKA_OBCEGO))
+})
+
+test('adapter: sygnatury blokera środowiska stacku — wzorzec, klasa, polityka, naprawa przy stop-rebuild; dane JSON', () => {
+  assert.ok(Array.isArray(adapter.SYGNATURY_BLOKERA))
+  for (const s of adapter.SYGNATURY_BLOKERA) {
+    assert.deepEqual(Object.keys(s).sort(), ['flagi', 'klasa', 'naprawa', 'polityka', 'wzorzec'], JSON.stringify(s))
+    assert.doesNotThrow(() => new RegExp(s.wzorzec, s.flagi))
+    assert.match(s.klasa, /^[a-z0-9-]+$/)
+    assert.ok(['manual-restart', 'stop-rebuild'].includes(s.polityka), s.polityka)
+    assert.equal(typeof s.naprawa, 'string')
+    if (s.polityka === 'stop-rebuild') assert.ok(s.naprawa.trim().length > 0, `${s.klasa}: STOP bez naprawy`)
+  }
+  assert.deepEqual(JSON.parse(JSON.stringify(adapter.SYGNATURY_BLOKERA)), adapter.SYGNATURY_BLOKERA, 'sygnatury przechodza przez JSON restartu')
+})
+
 test('adapter: uwagi planowania to lista napisów; projekt bez plików stacku nie dostaje uwag', () => {
   const pusty = mkdtempSync(join(tmpdir(), 'adapter-'))
   try {

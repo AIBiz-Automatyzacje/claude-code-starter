@@ -1325,6 +1325,27 @@ function srodowiskoPoReview(srodowisko, review) {
   return review && review.blokerSrodowiska && review.blokerSrodowiska.wykryty ? 'martwe' : srodowisko
 }
 
+// Sygnatury blokera srodowiska stacku (D12) z JSON-u `e2e.mjs restart` (adapter): tylko wpisy z wzorcem, klasa i znana polityka
+// — review-wf kompiluje je i sprawdza przed sygnaturami rdzenia. Brak albo nieczytelny wynik = [] (zostaja sygnatury rdzenia).
+function sygnaturyZRestartu(stdout) {
+  const w = jsonZeStdout(stdout)
+  const lista = w && Array.isArray(w.sygnaturyBlokera) ? w.sygnaturyBlokera : []
+  return lista.filter((s) => s && typeof s === 'object' && typeof s.wzorzec === 'string' && typeof s.klasa === 'string'
+    && ['manual-restart', 'stop-rebuild'].includes(s.polityka))
+}
+
+// Bloker z polityka stop-rebuild (D12, mobile: brak modulu natywnego, entitlements): restart serwera go nie usunie, a faza
+// na zepsutej binarce dalaby SKIP-y w kazdej nastepnej. STOP z naprawa adaptera; review zostaje pending, linie [E2E] bez zmian
+// (scribe ich nie ksiegowal) — swiezy run po przebudowie powtarza review fazy z testerem.
+function decyzjaBlokeraSrodowiska(review, numerFazy, sciezka) {
+  const b = review && review.blokerSrodowiska
+  if (!b || !b.wykryty || b.polityka !== 'stop-rebuild') return null
+  return {
+    powod: `Faza ${numerFazy}: srodowisko E2E wymaga przebudowy (${b.klasa}): "${b.dowod}". Review pozostaje pending, linie [E2E] bez zmian.`,
+    naprawa: `${b.naprawa} Po przebudowie swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`,
+  }
+}
+
 // Agent haiku wpisal raz Co-Authored-By w druga linie tematu (commit 2c97286, przeglad runow 19.09) — stopka bez pustej linii.
 function instrukcjaCommita(temat) {
   return `\`git commit -m "${temat}"\` — temat w jednej linii. Stopke (np. Co-Authored-By) dopisujesz wylacznie drugim \`-m\`: git oddziela ja wtedy pusta linia.`
@@ -1709,6 +1730,8 @@ for (const numerFazy of kolejka) {
   let restartBlad = null
   // Obcy serwer na porcie E2E po restarcie (P19) — przyczyna trybu bez przegladarki dla testera (powod linii [Manual]).
   let przyczynaBezPrzegladarki = null
+  // Sygnatury blokera srodowiska stacku z adaptera (D12) — z JSON-u restartu do detekcji w review fazy.
+  let sygnaturyBlokera = []
   // Metryki fazy: przy resume review moze byc juz 'done' i review-wf sie NIE odpali — wtedy liczniki
   // i przebieg czytamy z faza.metryki utrwalonych w stanie (bez tego telemetria dostawala null).
   const metrykiZeStanu = faza.metryki || {}
@@ -1758,6 +1781,7 @@ for (const numerFazy of kolejka) {
         restart = await agent(e2eRestartPrompt(sciezka, numerFazy), { schema: E2E_RESTART, agentType: 'klasa-mechaniczny', label: `e2e:restart:faza-${numerFazy}` })
       }
       const po = srodowiskoPoRestarcie(restart && restart.stdout)
+      sygnaturyBlokera = sygnaturyZRestartu(restart && restart.stdout)
       if (po.srodowisko) srodowiskoE2E = po.srodowisko
       if (po.srodowisko === 'gotowe') e2eBylaPrzegladarka = true
       if (po.srodowisko === 'martwe' && po.obcy) przyczynaBezPrzegladarki = po.przyczyna
@@ -1794,6 +1818,8 @@ for (const numerFazy of kolejka) {
       restartE2e: restartBlad,
       // Obcy serwer na porcie E2E (P19) — tester wpisuje te przyczyne w powod SKIP-ow; null = brak obcego serwera.
       przyczynaBezPrzegladarki,
+      // Sygnatury blokera srodowiska stacku (D12) — polityka stop-rebuild zatrzymuje run po review; [] = sygnatury rdzenia.
+      sygnaturyBlokera,
     })
     if (!review) {
       return await stopRun({ powod: `review fazy ${numerFazy} zwrocil null`, faza: numerFazy, raporty })
@@ -1806,6 +1832,12 @@ for (const numerFazy of kolejka) {
         powod: `Faza ${numerFazy}: scribe padl 2x — findingi zweryfikowane (P1/P2 w wyniku), ale raport review-faza-${numerFazy}.md nie zostal zapisany. Review pozostaje pending; odpal SWIEZY run (reviewerzy odpala sie ponownie).`,
         faza: numerFazy, findings: review.findings, raporty,
       })
+    }
+    // Bloker srodowiska z polityka stop-rebuild (D12): restart serwera nie przebuduje binarki — STOP przed zamknieciem review.
+    const stopBlokera = decyzjaBlokeraSrodowiska(review, numerFazy, sciezka)
+    if (stopBlokera) {
+      oznaczStan()
+      return await stopRun({ ...stopBlokera, faza: numerFazy, findings: review.findings, raporty })
     }
     // Awaria E2E w trakcie runu (P14, PANEL-WEJSCIE §2 pkt 6) nie zatrzymuje runu. Review-wf przeniosl juz scenariusze fazy
     // na [Manual] z powodem (skrypt ksiegowania): bloker srodowiska -> przyczyna srodowisko, pad testera -> tester-padl.

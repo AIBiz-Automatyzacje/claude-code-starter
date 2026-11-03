@@ -565,7 +565,7 @@ function przebiegBlok(p) {
 // (2026-07-30). W trybie `bez-interakcji` tester JEST w `aktywni`, ale przegladarki nie tknal — warunek
 // "tester nie odpalil" przepuscilby wtedy scribe'a do odznaczania browserowych checkboxow bez zadnego
 // przebiegu, cicho kasujac gwarancje z poprzedniego audytu. Pytanie jest wiec "czy tester MIAL PRZEGLADARKE".
-function scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone) {
+function scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone, bezKsiegowaniaE2e = false) {
   return `Jestes scribe review fazy ${faza} w ${sciezka}. Otrzymujesz ZWERYFIKOWANE findings (po adversarial verify).
 
 Findings (JSON):
@@ -611,7 +611,7 @@ ${JSON.stringify(obalone || [], null, 2)}
    P1/P2/P3/OPERATOR, sciezka raportu i najwazniejszy wniosek.
 3. Bookkeeping checkboxow fazy ${faza}.
    a) Linie z markerem [E2E] (Test: i Weryfikacja:) ksieguje sam skrypt — nie edytuj ich recznie i nie kopiuj ich
-      do Operator checklist. ${przebieg.e2eTryb === 'pominiety' ? 'Tester E2E nie byl w tej fazie uruchomiony — linii [E2E] nie ruszasz.' : `Uruchom w korzeniu repo dokladnie:
+      do Operator checklist. ${przebieg.e2eTryb === 'pominiety' ? 'Tester E2E nie byl w tej fazie uruchomiony — linii [E2E] nie ruszasz.' : bezKsiegowaniaE2e ? 'Srodowisko E2E wymaga przebudowy (STOP runu po review) — linii [E2E] nie ruszasz; powtorka review po przebudowie odegra je od nowa.' : `Uruchom w korzeniu repo dokladnie:
 ${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTesterFail)}
       Skrypt odznacza flow z samymi PASS, zostawia FAIL, scenariusze niewykonalne przez srodowisko, limit zewnetrzny,
       harness albo pad testera przenosi na [Manual] z powodem (trafia do smoke'u operatora, run idzie dalej), a pozostale
@@ -781,6 +781,8 @@ const advisorsE2e = (args && args.advisors) || null
 const restartE2e = (args && args.restartE2e) || null
 // Obcy serwer na porcie E2E po restarcie (P19) — nazwana przyczyna trybu bez przegladarki dla testera; null = brak.
 const przyczynaBezPrzegladarki = (args && args.przyczynaBezPrzegladarki) || null
+// Sygnatury blokera srodowiska stacku z adaptera (D12): autopilot bierze je z JSON-u `e2e.mjs restart`; bez nich — rdzen.
+const sygnaturyStacku = (args && Array.isArray(args.sygnaturyBlokera)) ? args.sygnaturyBlokera : []
 // Tiery rozumowania per rola (plan B4). Wystawione jako `args.tiery`, zeby dalo sie porownac dwa
 // ustawienia bez edycji kodu — inaczej kazda proba strojenia kosztu jest commitem w workflow.
 // Tabela D6 (PANEL-WYNIK): efort jawny, bo dziedziczony z sesji zalezal od tego, jaka sesje operator otworzyl.
@@ -913,16 +915,33 @@ if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZna
 // komunikatu, a curl 8 pisze „Couldn't connect to server”, czego sygnatury nie znaja. FAIL z „connection refused” nie jest
 // awaria: tester daje FAIL tylko wtedy, gdy `e2e.mjs stan` pokazuje, ze nasz serwer padl z bledem kodu fazy — to defekt do
 // fixa, a fix po naprawie uruchamia serwer od nowa. Findingi nie sa wejsciem (audyt 2026-09-02, A1: `dns.lookup`/`getaddrinfo`
-// w opisie defektu kodu udawal awarie). Sygnatury tylko nazywaja klase awarii w logu runu.
+// w opisie defektu kodu udawal awarie). Sygnatury rdzenia tylko nazywaja klase awarii w logu runu (polityka `manual-restart`:
+// [Manual] i restart serwera w nastepnej fazie). Sygnatury stacku (D12, IU-1.8) przychodza z adaptera w args i sprawdzane sa
+// pierwsze: polityka `stop-rebuild` (mobile: brak modulu natywnego, entitlements) zatrzymuje run z naprawa adaptera.
 const SYGNATURY_BLOKERA = [
-  { re: /err_connection_refused|econnrefused|net::err_connection|connection refused|couldn't connect to server|(localhost|127\.0\.0\.1):\d+[^\n]{0,60}\b(refused|unreachable|timed out|nie odpowiada)/i, klasa: 'dev-server-nieosiagalny' },
-  { re: /err_name_not_resolved|\benotfound\b|\beai_again\b|getaddrinfo\s+(enotfound|eai_again|eai_fail)|could not resolve host/i, klasa: 'host-nierozwiazywalny' },
+  { re: /err_connection_refused|econnrefused|net::err_connection|connection refused|couldn't connect to server|(localhost|127\.0\.0\.1):\d+[^\n]{0,60}\b(refused|unreachable|timed out|nie odpowiada)/i, klasa: 'dev-server-nieosiagalny', polityka: 'manual-restart', naprawa: '' },
+  { re: /err_name_not_resolved|\benotfound\b|\beai_again\b|getaddrinfo\s+(enotfound|eai_again|eai_fail)|could not resolve host/i, klasa: 'host-nierozwiazywalny', polityka: 'manual-restart', naprawa: '' },
 ]
-function wykryjBlokerSrodowiska(przebiegiTestera) {
+const POLITYKI_BLOKERA = ['manual-restart', 'stop-rebuild']
+// Sygnatura stacku z JSON-u restartu: wpis z nieznana polityka albo wzorcem, ktory sie nie kompiluje, pomijamy (zostaje rdzen).
+function sygnaturaStacku(s) {
+  if (!s || typeof s !== 'object' || typeof s.wzorzec !== 'string' || !POLITYKI_BLOKERA.includes(s.polityka)) return null
+  try {
+    return { re: new RegExp(s.wzorzec, typeof s.flagi === 'string' ? s.flagi : ''), klasa: String(s.klasa || 'srodowisko'), polityka: s.polityka, naprawa: String(s.naprawa || '') }
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+    return null
+  }
+}
+function wykryjBlokerSrodowiska(przebiegiTestera, sygnaturyStacku = []) {
   const awaria = (przebiegiTestera || []).find((p) => p && p.wynik === 'SKIP' && p.przyczyna === 'srodowisko')
   if (!awaria) return null
-  const sygnatura = SYGNATURY_BLOKERA.find((s) => s.re.test(awaria.dowod || ''))
-  return { wykryty: true, klasa: sygnatura ? sygnatura.klasa : 'srodowisko', dowod: String(awaria.dowod || '').slice(0, 500) }
+  const sygnatury = [...(Array.isArray(sygnaturyStacku) ? sygnaturyStacku : []).map(sygnaturaStacku).filter(Boolean), ...SYGNATURY_BLOKERA]
+  const sygnatura = sygnatury.find((s) => s.re.test(awaria.dowod || ''))
+  return {
+    wykryty: true, klasa: sygnatura ? sygnatura.klasa : 'srodowisko', dowod: String(awaria.dowod || '').slice(0, 500),
+    polityka: sygnatura ? sygnatura.polityka : 'manual-restart', naprawa: sygnatura ? sygnatura.naprawa : '',
+  }
 }
 
 // ── E2E po testerze (P14, PANEL-WEJSCIE §2 pkt 6) ──────────────────────────
@@ -977,9 +996,13 @@ const wszystkie = wyniki.flatMap((w, i) => (w ? w.findings.map((f) => ({ ...f, _
 // Wejscie = przebiegi testera (P14: pole przyczyny, nie tekst findingow). Tylko w trybie `interaktywny` — w `bez-interakcji`
 // SKIP srodowiska jest stanem OCZEKIWANYM (srodowiska swiadomie nie ma), a nie awaria w trakcie runu.
 const blokerSrodowiska = e2eTryb === 'interaktywny'
-  ? wykryjBlokerSrodowiska(e2ePrzebiegi)
+  ? wykryjBlokerSrodowiska(e2ePrzebiegi, sygnaturyStacku)
   : null
-if (blokerSrodowiska) {
+// Polityka stop-rebuild: orkiestrator zatrzymuje run przed zamknieciem review, wiec scribe linii [E2E] nie ksieguje.
+const bezKsiegowaniaE2e = Boolean(blokerSrodowiska && blokerSrodowiska.polityka === 'stop-rebuild')
+if (bezKsiegowaniaE2e) {
+  log(`AWARIA SRODOWISKA E2E (${blokerSrodowiska.klasa}) wymaga przebudowy — linie [E2E] bez zmian, orkiestrator zatrzyma run z naprawa`)
+} else if (blokerSrodowiska) {
   log(`AWARIA SRODOWISKA E2E (${blokerSrodowiska.klasa}) — SKIP-y srodowiska ida na [Manual]; orkiestrator puszcza faze bez przegladarki, nastepna zaczyna od restartu serwera`)
 }
 const RANGA = { P1: 0, P2: 1, P3: 2 }
@@ -1300,13 +1323,13 @@ const przebieg = {
 
 // Faza 3: scribe zapisuje raport + bookkeeping + liczy severity gate
 phase('Zapis')
-let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone), zEffortem({ schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}` }, tiery.scribe))
+let wynik = await agent(scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone, bezKsiegowaniaE2e), zEffortem({ schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}` }, tiery.scribe))
 if (!wynik) {
   // Scribe padl — jedna ponowna proba (to JEDYNY agent zapisujacy review-faza-N.md i sekcje
   // "Do poprawy"; bez tych artefaktow fix dziala bez kontekstu, a czlowiek bez widoku).
   log(`Scribe fazy ${faza} padl — ponawiam raz`)
   wynik = await agent(
-    `${scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
+    `${scribePrompt(sciezka, faza, potwierdzone, przebieg, obalone, bezKsiegowaniaE2e)}\n\n(PONOWNA PROBA — poprzedni zapis nie zwrocil wyniku. Pliki zapisuj idempotentnie: nadpisz raport w calosci, sekcje w zadaniach ZASTAP zamiast dopisywac duplikat.)`,
     zEffortem({ schema: REVIEW_RESULT, agentType: 'klasa-orkiestracyjny', label: `scribe:faza-${faza}:retry` }, tiery.scribe)
   )
 }

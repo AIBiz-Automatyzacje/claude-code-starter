@@ -6,11 +6,14 @@
 // odcisk .env.e2e) decyduje tylko, czy nasz serwer jest aktualny: nasz serwer ze stara konfiguracja albo zawieszony
 // zatrzymujemy i uruchamiamy od nowa (poprawka operatora w .env.e2e musi zadzialac w swiezym runie).
 // Obcy serwer na porcie E2E (P19, vibersi etap 2: zwykly `vite --port 5173` na bazie dev przyjety jako „zastany”, 9 scenariuszy
-// SKIP) to porazka startu z PID-em i komenda procesu: pipeline nie testuje na serwerze, ktorego konfiguracji nie zna.
+// SKIP) to porazka startu z PID-em i komenda procesu: pipeline nie testuje na serwerze, ktorego konfiguracji nie zna. Tak dziala
+// polityka `stop` z adaptera; `zastap` (D11, stack z serwerem czytajacym env przy starcie) zatrzymuje obcy proces i stawia nasz.
 
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { setTimeout as czekaj } from 'node:timers/promises'
+
+import { POLITYKA_OBCEGO } from './adapter.mjs'
 
 const LIMIT_SONDY_MS = 3000
 const ODSTEP_SONDY_MS = 500
@@ -150,6 +153,20 @@ async function czekajNaZwolnienie(url) {
 }
 
 /**
+ * Polityka `zastap` (D11): obcy proces z PID-em zatrzymany jak nasz (SIGTERM, po limicie SIGKILL), port sprawdzony od nowa.
+ * Proces, ktory przezyl albo zwolnil port innemu obcemu, zostaje obcym (null = STOP startu z PID-em).
+ * @param {Konfiguracja} konf @param {ObcySerwer} obcy z PID-em
+ * @returns {Promise<ObcySerwer | null>} zatrzymany proces albo null
+ */
+async function zastapObcy(konf, obcy) {
+  const uruchomiony = obcy.pid ? czasStartu(obcy.pid) : null
+  if (!obcy.pid || uruchomiony === null) return null
+  await zatrzymajProces({ pid: obcy.pid, start: '', odcisk: '', uruchomiony })
+  await czekajNaZwolnienie(konf.url)
+  return await obcySerwer(konf) ? null : obcy
+}
+
+/**
  * Stan serwera pipeline'u — dla testera, gdy aplikacja milczy: nasz serwer martwy (albo watcher zywy) z bledem kodu na koncu
  * logu = kod fazy go polozyl; serwer nie nasz albo bez bledu w logu = awaria srodowiska. Start, ktory padl przed odpowiedzia,
  * zostawia plik PID martwego procesu (P17) — `stan` pokazuje wtedy nasz martwy serwer z ogonem logu, nie „nie nasz”.
@@ -173,10 +190,11 @@ export function stanSerwera(konf) {
  * @param {string} projekt
  * @param {Konfiguracja} konf
  * @param {Record<string, string>} env doklejane do srodowiska komendy startu
- * @param {{ odNowa?: boolean }} [opcje]
- * @returns {Promise<{ serwer: 'uruchomione' | 'obcy' | 'brak', blad?: string, obcy?: ObcySerwer, wyjscie?: number | string, ogon?: string }>}
+ * @param {{ odNowa?: boolean, politykaObcego?: 'stop' | 'zastap' }} [opcje] politykaObcego: z adaptera stacku (D11) — `zastap`
+ *   zatrzymuje obcy proces z PID-em i stawia serwer pipeline'u (wynik niesie `zastapiony`); obcy bez PID-u zostaje STOP-em
+ * @returns {Promise<{ serwer: 'uruchomione' | 'obcy' | 'brak', blad?: string, obcy?: ObcySerwer, zastapiony?: ObcySerwer, wyjscie?: number | string, ogon?: string }>}
  */
-export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {}) {
+export async function uruchomSerwer(projekt, konf, env, { odNowa = false, politykaObcego = POLITYKA_OBCEGO } = {}) {
   const z = zapisPid(konf)
   if (zyjeNasz(z) && z) {
     const aktualny = !odNowa && z.start === konf.start && z.odcisk === konf.odcisk
@@ -187,7 +205,8 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
   }
   rmSync(konf.pid, { force: true })
   const obcy = await obcySerwer(konf)
-  if (obcy) return { serwer: 'obcy', blad: opisObcego(konf, obcy), obcy }
+  const zastapiony = obcy && politykaObcego === 'zastap' && obcy.pid ? await zastapObcy(konf, obcy) : null
+  if (obcy && !zastapiony) return { serwer: 'obcy', blad: opisObcego(konf, obcy), obcy }
   const log = openSync(konf.log, 'w')
   const srodowisko = { ...process.env, ...env }
   for (const k of KLUCZE_POZA_SERWEREM) delete srodowisko[k]
@@ -204,7 +223,7 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false } = {})
   writeFileSync(konf.pid, JSON.stringify(zapis))
   const termin = Date.now() + konf.limitSek * 1000
   while (Date.now() < termin) {
-    if (await odpowiada(konf.zdrowie, konf.zdrowieTresc)) return { serwer: 'uruchomione' }
+    if (await odpowiada(konf.zdrowie, konf.zdrowieTresc)) return zastapiony ? { serwer: 'uruchomione', zastapiony } : { serwer: 'uruchomione' }
     if (wyjscie !== null) {
       // Plik PID martwego procesu zostaje: `stan` pokaze nasz serwer z ogonem logu (kod fazy go polozyl), nastepny start go nadpisze.
       const ogon = ogonLogu(konf.log)

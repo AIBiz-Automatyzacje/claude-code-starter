@@ -159,8 +159,9 @@ test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika
   // P8: minus STOP verify-fix (agent usuniety, K-6 kontroli fixa daje pozycje do poprawki zamiast STOP-u) = 13;
   // P8 sesja 2: plus stan bez P3 po zapisie known-issues (stan sprzed P8, odlozP3ZeStanu) = 14;
   // P14: minus dwa STOP-y E2E w trakcie runu (bloker srodowiska, pad testera) — scenariusze ida na [Manual], run idzie dalej = 12
+  // IU-1.8 (D12): plus STOP blokera srodowiska z polityka stop-rebuild adaptera (review pending, przebudowa) = 13
   const kod = zrodlo.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')
-  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 12)
+  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 13)
   assert.equal(zrodlo.match(/label: 'stan:zapis'/g)?.length, 1)
 })
 

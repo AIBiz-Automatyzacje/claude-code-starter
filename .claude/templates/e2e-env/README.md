@@ -79,6 +79,7 @@ zatrzymuje się przed fazą N, dopóki pozycja jest nieodhaczona.
 
 ```
 Bootstrap:    e2e:start  — e2e.mjs start: scenariusze [E2E] i makiety zadania, sprawdzenie .env.e2e,
+                           z bazą e2e login kontem E2E_TEST_EMAIL (brak konta → założenie kluczem service_role),
                            start serwera w tle (PID i log w /tmp/autopilot-e2e-<projekt>.*).
                            Niesprawne środowisko przy [E2E] = STOP przed fazą 1 z naprawą ze skryptu.
 Per faza:     db-sync    — tylko z bazą e2e: e2e.mjs suma (migrations.sum), supabase db push na bazę e2e

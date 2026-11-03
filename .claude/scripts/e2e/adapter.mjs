@@ -12,6 +12,11 @@
 //   LIMIT_ZRZUTU_SEK, opisProbyZrzutu, naprawaZrzutu — limit i teksty STOP-u probnego zrzutu
 //   uwagiPlanowania(projekt, env) string[] — uwagi stacku do bramki gotowosci /dev-plan
 //   SZKIELET_WERYFIKACJI        teksty sekcji Doctor, Drive, Evidence i Cleanup w szkielecie skilla weryfikacji (szkielet.mjs)
+//   POLITYKA_OBCEGO             'stop' | 'zastap' — obcy proces na porcie E2E: STOP startu z PID-em albo zatrzymanie go i start
+//                               serwera pipeline'u (D11; zastap dla stacku, w ktorym serwer czyta env przy starcie)
+//   SYGNATURY_BLOKERA           SygnaturaBlokera[] — awarie srodowiska stacku w trakcie runu (dowod SKIP-u testera) z polityka
+//                               'manual-restart' ([Manual] + restart w nastepnej fazie) albo 'stop-rebuild' (STOP z naprawa,
+//                               D12); rdzen ma wlasne sygnatury dev servera i DNS, stack doklada swoje. Dane JSON (restart).
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
@@ -21,6 +26,16 @@ import { join } from 'node:path'
 import { adresHttp, tenSamSerwer } from './adres.mjs'
 
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
+/**
+ * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild', naprawa: string }} SygnaturaBlokera
+ */
+
+// Obcy serwer na porcie E2E to w webie STOP z PID-em (P19): zwykly dev server celuje w baze dev, a restart go nie zmieni.
+/** @type {'stop' | 'zastap'} */
+export const POLITYKA_OBCEGO = 'stop'
+// Web nie ma awarii srodowiska poza sygnaturami rdzenia (dev server, DNS): kazda idzie na [Manual] z restartem serwera.
+/** @type {SygnaturaBlokera[]} */
+export const SYGNATURY_BLOKERA = []
 
 // 5174, nie 5173: zwykly `pnpm dev` zajmuje 5173 i start E2E zastawal go jako serwer aplikacji (vibersi etap 2, P19).
 export const DOMYSLNY_PORT = 5174

@@ -42,7 +42,7 @@ function wytnijFragment() {
 
 // Wyjatek od no-new-func: jedyna droga do niewyeksportowanej jednostki w skrypcie workflowu;
 // wejsciem jest plik z tego repo, nie dane uzytkownika.
-/** @type {{ wykryjBlokerSrodowiska: (przebiegiTestera: PrzebiegE2e[]) => { wykryty: boolean, klasa: string, dowod: string } | null }} */
+/** @type {{ wykryjBlokerSrodowiska: (przebiegiTestera: PrzebiegE2e[], sygnaturyStacku?: unknown[]) => { wykryty: boolean, klasa: string, dowod: string, polityka: string, naprawa: string } | null }} */
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const { wykryjBlokerSrodowiska } = new Function(
   `${wytnijFragment()}\nreturn { wykryjBlokerSrodowiska }`
@@ -105,10 +105,36 @@ test('NIE wykryta — tryb bez-interakcji (SKIP srodowisko jest wtedy oczekiwany
 
 // ── Kotwica wywolania w workflowie ─────────────────────────────────────────
 
-test('wiring — detekcja tylko w trybie przegladarki, na przebiegach testera', () => {
+// IU-1.8 (zamowiona zmiana): detekcja dostaje tez sygnatury blokera stacku z args (adapter przez `e2e.mjs restart`).
+test('wiring — detekcja tylko w trybie przegladarki, na przebiegach testera i sygnaturach stacku z args', () => {
   assert.match(
     zrodlo,
-    /const blokerSrodowiska = e2eTryb === 'interaktywny'\s*\n\s*\? wykryjBlokerSrodowiska\(e2ePrzebiegi\)\s*\n\s*: null/,
+    /const blokerSrodowiska = e2eTryb === 'interaktywny'\s*\n\s*\? wykryjBlokerSrodowiska\(e2ePrzebiegi, sygnaturyStacku\)\s*\n\s*: null/,
     'detekcja dostaje przebiegi testera i dziala tylko w trybie przegladarki',
   )
+  assert.match(zrodlo, /const sygnaturyStacku = \(args && Array\.isArray\(args\.sygnaturyBlokera\)\) \? args\.sygnaturyBlokera : \[\]/)
+})
+
+// ── Polityka blokera (D12, IU-1.8) ─────────────────────────────────────────
+// Sygnatury rdzenia (dev server, DNS) i SKIP srodowiska bez sygnatury: [Manual] + restart w nastepnej fazie (web). Sygnatury
+// stacku z adaptera maja wlasna polityke — `stop-rebuild` (mobile: brak modulu natywnego, entitlements) zatrzymuje run
+// z naprawa, bo restart serwera nie przebuduje binarki.
+
+const NATYWNY = { wzorzec: 'cannot find native module|requireNativeModule', flagi: 'i', klasa: 'brak-modulu-natywnego', polityka: 'stop-rebuild', naprawa: 'Przebuduj dev-client.' }
+
+test('polityka: sygnatury rdzenia i SKIP bez sygnatury = manual-restart bez naprawy', () => {
+  assert.deepEqual(wykryjBlokerSrodowiska(przebieg('connect ECONNREFUSED 127.0.0.1:5173'), [NATYWNY]),
+    { wykryty: true, klasa: 'dev-server-nieosiagalny', dowod: 'connect ECONNREFUSED 127.0.0.1:5173', polityka: 'manual-restart', naprawa: '' })
+  assert.equal(wykryjBlokerSrodowiska(przebieg('aplikacja milczy'))?.polityka, 'manual-restart')
+})
+
+test('polityka: sygnatura stacku stop-rebuild wygrywa z rdzeniem i niesie naprawe adaptera', () => {
+  const w = wykryjBlokerSrodowiska(przebieg('Error: Cannot find native module ExpoSecureStore (connection refused w logu Metro)'), [NATYWNY])
+  assert.deepEqual([w?.klasa, w?.polityka, w?.naprawa], ['brak-modulu-natywnego', 'stop-rebuild', 'Przebuduj dev-client.'])
+})
+
+test('polityka: sygnatura stacku z nieznana polityka albo zlym wzorcem jest pomijana (dane z JSON-u restartu)', () => {
+  const zle = [{ ...NATYWNY, wzorzec: '(' }, { ...NATYWNY, polityka: 'zignoruj' }, null, 'tekst']
+  const w = wykryjBlokerSrodowiska(przebieg('Cannot find native module X'), zle)
+  assert.deepEqual([w?.klasa, w?.polityka], ['srodowisko', 'manual-restart'])
 })
