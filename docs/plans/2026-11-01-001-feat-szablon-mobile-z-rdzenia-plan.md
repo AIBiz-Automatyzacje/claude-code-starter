@@ -206,7 +206,7 @@ Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dos
   jeden przebieg autopilota na małym zadaniu w projekcie web.
 
 **Stan Etapu 1 (2026-11-03, sesja „Szablon mobile z rdzenia — Etap 1”).** Zrobione IU-1.1–1.9, każda na gałęzi `popr/*`
-zmergowanej `--no-ff` do main, CI zielone do IU-1.8 włącznie:
+zmergowanej `--no-ff` do main, CI zielone do IU-1.9 i poprawki canary (`746d862`) włącznie:
 
 | IU | Gałąź / merge | Co powstało |
 |---|---|---|
@@ -263,7 +263,11 @@ Przesunięcia zakresu względem listy IU wyżej:
   „6 nowych reguł i 3 rozszerzenia” są w A0.5 §3 (tabela reguł R z A0.6), nie w §1/§4. `performance-oracle` stracił
   web-owe „`React.lazy()` z `Suspense`” na rzecz odesłania do sekcji „Performance” (stack.md web ma `React.lazy`).
 
-Zostało: odbiór Etapu 1.
+- Z odbioru: login canary przy captcha Auth daje `pominieto` zamiast STOP-u (`popr/canary-captcha` / `746d862`, regresja IU-1.8). Dla IU-2.3:
+  adapter Expo dziedziczy to zachowanie z rdzenia.
+
+Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vibersi przeszły, wyniki i sprawy otwarte w
+`docs/reviews/2026-11-odbior-etapu-1.md`. Zostało: decyzja operatora o przyjęciu Etapu 1.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
