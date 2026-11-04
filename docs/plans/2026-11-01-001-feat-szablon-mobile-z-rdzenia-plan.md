@@ -267,7 +267,7 @@ Przesunięcia zakresu względem listy IU wyżej:
   adapter Expo dziedziczy to zachowanie z rdzenia.
 
 Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vibersi przeszły, wyniki i sprawy otwarte w
-`docs/reviews/2026-11-odbior-etapu-1.md`. Zostało: decyzja operatora o przyjęciu Etapu 1.
+`docs/reviews/2026-11-odbior-etapu-1.md`. Etap 1 przyjęty przez operatora 2026-11-04.
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
