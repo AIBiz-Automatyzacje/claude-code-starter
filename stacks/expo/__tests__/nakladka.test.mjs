@@ -18,11 +18,6 @@ const STACK = join(KORZEN, 'stacks/expo')
 
 const ZALEGLE = [
   // sloty
-  '.claude/stack/buildery.md', // IU-2.5
-  '.claude/stack/walidacja.md', // IU-2.5
-  '.claude/stack/fix-e2e.md', // IU-2.5
-  '.claude/stack/plan-e2e.md', // IU-2.5
-  '.claude/skills/dev-plan/references/stack.md', // IU-2.5
   '.claude/skills/dev-prep/references/stack.md', // IU-2.9
   '.claude/skills/dev-compound/references/stack.md', // IU-2.9
   '.claude/skills/weryfikacja-setup/references/stack.md', // IU-2.6

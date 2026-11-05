@@ -18,6 +18,7 @@ import { bezOgonkow, parsujPlan } from '../plan-techniczny.mjs'
 import { podsumowanieBudzetu } from '../budzet-pliku.mjs'
 import { BUILDERZY, sprawdzPlan } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
+import { doWzorca, PROFIL } from '../../stack/profil.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
 const SKILL = join(REPO, '.claude/skills/dev-plan')
@@ -71,7 +72,8 @@ test('przykład planu: generator daje zadanie z dwiema fazami, scenariuszem E2E 
     const z = zadanieZPlanu(korzen, SCIEZKA_PLANU, { data: '2026-10-07' })
     assert.deepEqual(z.bledyBilansu, [])
     assert.equal(z.nazwa, 'notatki-klienta')
-    assert.deepEqual(z.liczniki, { fazy: 2, iu: 2, implementacyjne: 9, testy: 4, weryfikacje: 3, e2e: 1, operator: 1 })
+    // Stack z plikiem flow (D17) ma w tabeli IU-2 jego wiersz.
+    assert.deepEqual(z.liczniki, { fazy: 2, iu: 2, implementacyjne: PROFIL.e2e.plikFlow ? 10 : 9, testy: 4, weryfikacje: 3, e2e: 1, operator: 1 })
     const jednostki = parsujPlan(przykladPlanu()).fazy.flatMap((f) => f.iu)
     assert.deepEqual(podsumowanieBudzetu(jednostki), { iu_z_wymiarami: 1, wydzielenia: 1 })
   } finally {
@@ -141,9 +143,12 @@ test('kolumna linii: szacunek z tyldą albo bez strzałki to błąd zapisu, a pl
   assert.match(sprawdz(mutacja('| 0 → 70 |', '| 0 → — |')).bledy.join('\n'), /notatki-service\.ts` — brak liczby linii po zmianie/)
 })
 
-test('Weryfikacja z runnerem e2e/*.sh bez znacznika [E2E] jest odrzucona — scribe uruchomiłby go bez środowiska e2e', () => {
-  const w = sprawdz(mutacja('- `pnpm vitest run src/features/klienci` przechodzi', '- `bash e2e/run-all.sh` przechodzi'))
-  assert.match(w.bledy.join('\n'), /IU-2: Weryfikacja „`bash e2e\/run-all\.sh` przechodzi” uruchamia runner E2E bez znacznika \[E2E\]/)
+// Katalog runnerów i komenda testów ze stacku (IU-2.5): ostatnia pozycja Weryfikacji przykładu podmieniona na runner bez znacznika.
+test('Weryfikacja z runnerem E2E bez znacznika [E2E] jest odrzucona — scribe uruchomiłby go bez środowiska e2e', () => {
+  const ostatnia = przykladPlanu().match(/^- `[^`]+` przechodzi$/gm)?.at(-1) ?? ''
+  const runner = `bash ${PROFIL.e2e.katalogRunnerow}/run-all.sh`
+  const w = sprawdz(mutacja(ostatnia, `- \`${runner}\` przechodzi`))
+  assert.match(w.bledy.join('\n'), new RegExp(`IU-2: Weryfikacja „\`${doWzorca(runner)}\` przechodzi” uruchamia runner E2E bez znacznika \\[E2E\\]`))
 })
 
 test('wymaganie ze „Śledzenia wymagań” bez IU dostaje uwagę (autopilot pominąłby je po cichu)', () => {

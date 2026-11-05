@@ -168,11 +168,11 @@ test('rdzeń szablonu nie zawiera słów stacku web poza slotami i wyjątkami, a
   assert.deepEqual(nieaktualne, [], 'wyjątek w stacks/straznik.json już niczego nie pokrywa — usuń go albo zawęź')
 })
 
-test('wyjątki stałe z planu: klasyfikator „Weryfikacja:”, przykładowy plan, etykieta warmup:vitest', () => {
+test('wyjątki z planu: klasyfikator „Weryfikacja:” i etykieta warmup:vitest stałe, przykładowy plan podmieniany', () => {
   const stale = lista.wyjatki.filter((w) => w.rodzaj === 'staly')
   const ma = (/** @type {string} */ plik, /** @type {string} */ linia) => stale.some((w) => w.plik === plik && (w.linie ?? []).some((l) => l.includes(linia)))
   assert.ok(ma('.claude/workflows/dev-docs-review-wf.js', 'agent-browser'))
-  assert.ok(stale.some((w) => w.plik === '.claude/skills/dev-plan/references/szablon-planu.md'))
+  assert.ok(lista.wyjatki.some((w) => w.plik === '.claude/skills/dev-plan/references/szablon-planu.md' && w.rodzaj === 'podmiana'))
   assert.ok(ma('.claude/workflows/dev-autopilot-wf.js', "'warmup:vitest'"))
 })
 

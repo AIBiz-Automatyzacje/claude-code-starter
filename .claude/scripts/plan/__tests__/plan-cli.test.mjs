@@ -39,6 +39,8 @@ function repo(o = {}) {
     'src/services/oferty-service.ts': 'const x = 1\n'.repeat(12),
     'src/features/oferty/components/lista-ofert.tsx': 'const x = 1\n'.repeat(8),
     [PREP]: o.prep ?? '# Przygotowanie\n\n- [ ] Klucz mapy — **[blokuje: faza 2]** (IU-2)\n- [x] Konto — **[blokuje: faza 1]**\n',
+    // Stack z plikiem flow (D17): flow scenariuszy fixture'u są już w repo.
+    ...Object.fromEntries((PROFIL.e2e.plikFlow ? ['publikacja-oferty', 'oferta-publiczna'] : []).map((f) => [PROFIL.e2e.plikFlow?.replace('<flow>', f) ?? '', 'appId: x\n'])),
     ...(o.env === false ? {} : { '.env.e2e': 'X=1\n' }),
   }
   for (const [s, t] of Object.entries(pliki)) {

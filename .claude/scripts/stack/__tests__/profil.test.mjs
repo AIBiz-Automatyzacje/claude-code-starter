@@ -33,6 +33,7 @@ test('profil: pola i typy kontraktu', () => {
   assert.ok(env.aplikacjaE2e.trim().length > 0)
   assert.ok(env.wbudowane.every((n) => /^[A-Z_][A-Z0-9_]*$/.test(n)))
   for (const katalog of [e2e.katalogSeedow, e2e.katalogRunnerow]) assert.match(katalog, /^[\w.][\w./-]*[\w]$/, katalog)
+  assert.ok(e2e.plikFlow === null || e2e.plikFlow.includes('<flow>'), 'plikFlow: wzór ścieżki z <flow> albo null')
   assert.doesNotThrow(() => new RegExp(PROFIL.zrodla.frontend))
   assert.ok(PROFIL.testy.powiazane.trim().length > 0)
   assert.ok(PROFIL.komendyCli.every((k) => /^[\w-]+$/.test(k)))

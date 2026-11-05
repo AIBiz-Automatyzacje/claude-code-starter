@@ -11,7 +11,7 @@ import { FIXTURES, atrapa, commit, git, noweRepo, usun, zapisz } from './repo-te
 
 const CLI = resolve(FIXTURES, '..', '..', 'bramki.mjs')
 const NODE_MODULES_SZABLONU = resolve(FIXTURES, '..', '..', '..', '..', '..', 'node_modules')
-const BRAMKI = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'testyUsuniete', 'stryker']
+const BRAMKI = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'stack', 'migracje', 'migracjeSuma', 'testyUsuniete', 'stryker']
 const MIGRACJA = 'supabase/migrations/20260901000000_oferty.sql'
 const KOD = 'export function wczytaj(tekst: string): unknown {\n  try {\n    return JSON.parse(tekst)\n  } catch (e) {\n    throw new Error(\'zly JSON\', { cause: e })\n  }\n}\n'
 
@@ -61,7 +61,7 @@ test('faza czysta: kod 0, kazda bramka z polami status, sekundy, trafienia; nieo
       assert.equal(typeof wynik[b].sekundy, 'number', b)
     }
     assert.deepEqual(BRAMKI.map((b) => [b, wynik[b].status]), [
-      ['typecheck', 'ok'], ['eslint', 'ok'], ['testyTypow', 'pominieta'], ['knip', 'ok'], ['sizeLimit', 'ok'], ['migracje', 'ok'],
+      ['typecheck', 'ok'], ['eslint', 'ok'], ['testyTypow', 'pominieta'], ['knip', 'ok'], ['sizeLimit', 'ok'], ['stack', 'pominieta'], ['migracje', 'ok'],
       ['migracjeSuma', 'brak'], ['testyUsuniete', 'ok'], ['stryker', 'pominieta'],
     ])
   } finally {
