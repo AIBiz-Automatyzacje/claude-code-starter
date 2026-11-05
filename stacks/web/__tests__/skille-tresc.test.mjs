@@ -1,6 +1,6 @@
 // Tresc zasobow skilli, ktora przenosi wzorzec poprawki z projektu do szablonu (plan paczki P27-P29-E5, S2).
 //
-// Uruchomienie:  node --test .claude/workflows/__tests__/skille-tresc.test.mjs
+// Uruchomienie:  node --test stacks/web/__tests__/skille-tresc.test.mjs
 
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -9,7 +9,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
-const PERFORMANCE = readFileSync(resolve(KATALOG, '../../skills/tailwind-react-guidelines/resources/performance.md'), 'utf8')
+const PERFORMANCE = readFileSync(resolve(KATALOG, '../../../.claude/skills/tailwind-react-guidelines/resources/performance.md'), 'utf8')
 
 /** @param {string} tekst @param {string} naglowek @returns {string} */
 function sekcja(tekst, naglowek) {

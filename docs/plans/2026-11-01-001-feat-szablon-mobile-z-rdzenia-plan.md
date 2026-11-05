@@ -314,18 +314,19 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
   — wchłania `e2e-setup` (D24; zostaje wiedza o dev-clientcie, pułapki 6–8, 10, 11, para `EXPO_PUBLIC_E2E_TEST_USER_*`,
   monit konta Apple i „Otworzyć w…” jak w IU-2.3). Wykrywanie tras routera w `szkielet.mjs`. Fixture `templates/smoke-autopilot`
   w wersji RN (D18): jeden ekran i flow Maestro, zamiast łatki na fixture web (A0.1).
-- IU-2.7 Skille (D6, D7): plugin `expo@claude-plugins-official` w `settings.patch.json` (MCP Expo wyłączony — D19, `deny`
-  dla `@expo/agent-cli` i `Bash(*submit-expo-feedback*)`, bramka „plugin zainstalowany” w doctorze; hub ostrzega, że przypięty
-  plugin może być starszy od SDK); lokalnie: hub stosu (przemianowany z
+- IU-2.7 Skille (D6, D7): plugin `expo@claude-plugins-official` w `settings.patch.json` (MCP Expo bez narzędzi do logowania
+  operatora — D19, `deny` dla `@expo/agent-cli` i `Bash(*submit-expo-feedback*)`, bramka „plugin zainstalowany” w doctorze; hub
+  ostrzega, że przypięty plugin może być starszy od SDK); lokalnie: hub stosu `expo-stos-szablonu` (przemianowany z
   `expo-overview`), skill Uniwind (przypięta kopia oficjalnego skilla autorów z audytem świeżości), nowy
   `rn-expo-guidelines` (A0.4 §7), `mobile-e2e-maestro` i `ux-ui-guidelines-mobile` po poprawkach P1/P2 z A0.3.
-  `AGENTS.md` i `.claude/settings.json` przychodzą z szablonu `default@sdk-58`: nakładka ustala, co z nimi przy syncu.
+  `AGENTS.md` i `.claude/settings.json` przychodzą z szablonu `default@sdk-58`: `AGENTS.md` należy do projektu (sync obejmuje tylko
+  `.claude/`), a `settings.json` nadpisuje sync wersją wariantu, która ma ten sam plugin.
   Usunąć (`usun.txt`): agent-browser, tailwind-react-guidelines, ux-ui-guidelines, coolify-manager, makieta +
   `scripts/makieta` (D2); nie przenosić `expo-tailwind-setup` (wadliwy pin NativeWind v5 preview).
   Zmiany w rdzeniu konieczne przy tych usunięciach (web bez zmian zachowania): zdania o `/makieta` i kontrola
   `makieta.mjs sprawdz` z `dev-docs-complete` (workflow i skill) do `dev-docs-complete/references/stack.md`, a asercje z
-  `start-koniec.test.mjs` do `stacks/web/__tests__/`; wariant Expo: przegląd pary `-figma.png`/`-actual.png` ręcznie w smoke'u;
-  odesłania do usuwanych skilli (`zapobieganie.mjs`, `doctor.sh`, `kontekst-designerski.md`, `skille-tresc.test.mjs`) do
+  `start-koniec.test.mjs` do `stacks/web/__tests__/`; slot Expo tego skilla (A0.1 #32): przegląd pary `-figma.png`/`-actual.png`
+  ręcznie w smoke'u; odesłania do usuwanych skilli (`zapobieganie.mjs`, `doctor.sh`, `kontekst-designerski.md`, `skille-tresc.test.mjs`) do
   slotu albo testów web. Nowy test: rdzeń po usunięciach nie odsyła do plików z `usun.txt`.
 - IU-2.8 Reguły/hooki/settings: `rules/stack.md` mobile z projektu w A0.5 §2 (~60 reguł, 10 grup) i korekt po spike'u;
   `mobile-anti-pattern-check.sh` naprawiony i rozszerzony (D25) w `settings.patch.json`; `learned-patterns.md` **nie**
@@ -350,8 +351,7 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
 - IU-2.9 Wspólne skille `security`, `sentry-integration`, `supabase-dev-guidelines`, `dev-prep` — rdzeń = aktualna
   wersja web, różnice mobile (10–14 akapitów na skill wg A0.3) w `references/stack.md` (D20), z poprawkami P1 z A0.3.
   Storage sesji: domyślny wariant Supabase, `LargeSecureStore` jako opcja (D9). Płatności: IAP/RevenueCat zamiast
-  Stripe Checkout dla treści cyfrowych (D10). Sloty Expo `dev-docs-complete/references/stack.md` (A0.1 #32, ręczny przegląd
-  makiet z IU-2.7) i `dev-compound/references/stack.md`. Agenci badawczy `best-practices-researcher`, `framework-docs-researcher`,
+  Stripe Checkout dla treści cyfrowych (D10). Slot Expo `dev-compound/references/stack.md`. Agenci badawczy `best-practices-researcher`, `framework-docs-researcher`,
   `repo-research-analyst`, `web-research-specialist`: stos web i przykłady do slotu, dosłownie dla webu, a ich wpisy strażnika
   znikają.
 - Odbiór: `zbuduj.mjs expo` daje `.claude/`, na którym przechodzą testy rdzenia + testy nakładki.
@@ -361,6 +361,9 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
 | IU | Gałąź / merge | Co powstało |
 |---|---|---|
 | 2.0 | `popr/zbuduj-wariant` | `stacks/zbuduj.mjs` (walidacja przed zapisem, `usun.txt`, nakładka, deep-merge z `null` = usuń i tablicami bez powtórzeń, `.rdzen-version` z `-dirty`, cel z `.claude/` tylko z `--zastap`); `stacks/testuj-wariant.mjs` (ławka: wariant + `package.json`, `tsconfig`, rejestr, strażnik, `node_modules` pakietów; testy `.claude/**` i typecheck); puste `stacks/expo/usun.txt` i `settings.patch.json`; testy `stacks/__tests__/zbuduj.test.mjs`, `stacks/expo/__tests__/nakladka.test.mjs` z listą `ZALEGLE` (27 pozycji); `tsconfig` bez `stacks/*/nakladka`. Na wariancie bez nakładki: testy 1402/1402, typecheck 0 |
+| 2.7 | `popr/expo-skille` | `usun.txt` (agent-browser, tailwind-react-guidelines, ux-ui-guidelines, coolify-manager, makieta + `scripts/makieta`); `settings.patch.json` (plugin `expo@claude-plugins-official`, 4 reguły `deny`); kolejność kluczy w `zbuduj.mjs` (`permissions` na początku, klucze pluginów na końcu: próba `plugin install` nie brudzi pliku); nowe skille w nakładce: hub `expo-stos-szablonu`, `rn-expo-guidelines` (10 referencji), przypięty `uniwind` (`66bac01`, `ZRODLO.md`), poprawiony `mobile-e2e-maestro` (M1–M7, kontrakt testera, lekcje A0.6), poprawiony `ux-ui-guidelines-mobile` (U1–U12, Uniwind); slot Expo `dev-docs-complete/references/stack.md`. Zmiany w rdzeniu: zdania o `/makieta` i kontrola do slotu web, sekcja „Punkty wizualne” (asercje do `stacks/web/__tests__/makieta.test.mjs`), `skille-tresc.test.mjs` do `stacks/web/__tests__/`, neutralne zdania w `kontekst-designerski.md` i `sync-template/SKILL.md`, warunkowy skrypt coolify w `doctor.sh`. Na wariancie: 1254/1257, 3 padnięcia na IU-2.1 (martwe `skills:` builderów web) |
+
+D19 po próbie (Claude Code 2.1.318): `disabledMcpServers` i `deny` w ustawieniach projektu nie usuwają serwera `plugin:expo:expo`, a przełącznik `/mcp` zapisuje wybór w `~/.claude.json`, czyli poza szablonem. Bez logowania serwer ma status `needs-auth` i nie daje narzędzi, więc nakładka nie dodaje reguły dla MCP. Logowanie operatora jest włączeniem z D19. A0.3 U2 nieaktualne: docs Expo (2026-11-03) wymagają `behavior="padding"` na obu platformach.
 
 Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
 - Testy nakładki leżą w `stacks/<stack>/__tests__/` (build odrzuca `__tests__` w `nakladka/`) i moduły nakładki importują z ławki

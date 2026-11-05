@@ -109,6 +109,6 @@ każdego pliku z chwili syncu) czyta telemetria: czy run wykonał dokładnie wer
 - `settings.json` (współdzielona konfiguracja szablonu) jest nadpisywany; lokalne
   nadpisania konfiguracji projekt trzyma w `settings.json` **local** — czyli
   `settings.local.json`, którego skrypt nigdy nie dotyka.
-- `agent-browser` aktualizuje się przez repo jak każdy inny skill; jego twarda
-  synchronizacja z upstream CLI (vercel-labs) to osobny proces opisany w
+- Skill narzędzia z własnym upstreamem aktualizuje się przez repo jak każdy inny skill;
+  jego twarda synchronizacja z upstreamem to osobny proces opisany w
   `ZRODLA-SZABLONU.md` — nie mieszaj tych dwóch.

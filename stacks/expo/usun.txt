@@ -1,2 +1,14 @@
 # Pliki rdzenia, których wariant Expo nie ma. Jedna ścieżka w linii, `/` na końcu = katalog.
 # Wpis, który niczego nie usuwa, zatrzymuje build (stacks/zbuduj.mjs).
+
+# Narzędzie jazdy web; w Expo: mobile-e2e-maestro.
+.claude/skills/agent-browser/
+# Wytyczne React DOM + Tailwind; w Expo: rn-expo-guidelines.
+.claude/skills/tailwind-react-guidelines/
+# Wytyczne UX web; w Expo: ux-ui-guidelines-mobile.
+.claude/skills/ux-ui-guidelines/
+# Wdrożenia Coolify nie dotyczą aplikacji natywnej.
+.claude/skills/coolify-manager/
+# Makieta obok aplikacji w iframe nie obsłuży aplikacji natywnej (D2). Do zrobienia po pilocie: zrzut z emulatora obok makiety.
+.claude/skills/makieta/
+.claude/scripts/makieta/
