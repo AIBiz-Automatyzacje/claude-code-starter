@@ -176,6 +176,10 @@ D11–D25 przyjęte wg rekomendacji (sekcja „Decyzje”).
 (D13); reguła `deny` dla `@expo/agent-cli feedback` w trybie autopilota (D6); `expo:*` przez narzędzie `Skill` w builderze.
 Wynik: notatka z PASS/FAIL per punkt → korekty `rules/stack.md` mobile i Etapu 2.
 
+**Stan (2026-11-05):** spike zrobiony, wyniki i proponowane korekty w
+[`docs/reviews/2026-11-audyt-mobile/spike-sdk-58.md`](../reviews/2026-11-audyt-mobile/spike-sdk-58.md). D7 i D8 potwierdzone;
+przed Etapem 2 decyzje operatora: źródło pluginu Expo (D6) i alternatywa dla swapu (D13). Korekt jeszcze nie naniesiono.
+
 ### Etap 1 — Szwy w rdzeniu (repo web, zachowanie web bez zmian)
 
 Cel: wyciągnąć tekst stackowy z rdzenia do slotów. Projekty web po syncu dostają identyczne zachowanie.
