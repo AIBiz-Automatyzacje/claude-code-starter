@@ -261,7 +261,7 @@ stanu przed decyzją.
 
 ## Proponowane korekty planu
 
-Naniesione po decyzjach z 2026-11-05: logika env w IU-2.3 oraz nazwa pluginu i `deny` w IU-2.7. Reszta tej listy jeszcze nienaniesiona.
+Naniesione po decyzjach z 2026-11-05: logika env w IU-2.3 oraz nazwa pluginu i `deny` w IU-2.7. Reszta tej listy naniesiona w planie 2026-11-05 (gałąź `popr/korekty-po-spike`).
 
 **`rules/stack.md` mobile (IU-2.8).** Rdzeń odsyła po nazwie do sekcji, których projekt A0.5 §2 nie ma. Doliczyć je obok grup
 tematycznych, z treścią:
