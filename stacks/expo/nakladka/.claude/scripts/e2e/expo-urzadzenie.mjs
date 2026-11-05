@@ -1,0 +1,223 @@
+// Urządzenie i dev-client dla E2E na Expo: iOS najpierw, Android jako zapas (A0.1 #7–9). Na iOS odpada symulator z zalogowanym kontem
+// Apple, bo monit „Weryfikacja konta Apple” zasłania aplikację i nie zamyka się wstrzykniętym dotknięciem (spike SDK 58). Dev-client
+// starszy od konfiguracji natywnej albo bez podpisu to STOP: bez tego aplikacja pada dopiero w środku scenariusza.
+
+import { spawnSync } from 'node:child_process'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+
+/**
+ * @typedef {{ status: number | null, stdout: string, stderr: string, blad?: boolean }} WynikKomendy
+ * @typedef {(komenda: string, argumenty: string[], opcje?: { cwd?: string, limitMs?: number }) => WynikKomendy} Wykonaj
+ * @typedef {{ bundleId: string | null, appId: string | null, scheme: string | null }} Aplikacja
+ * @typedef {{ platforma: 'ios' | 'android', id: string, nazwa: string, sciezkaAplikacji: string | null }} Urzadzenie
+ * @typedef {{ ok: true, urzadzenie: Urzadzenie, uwagi: string[] } | { ok: false, detal: string, naprawa: string }} WynikUrzadzenia
+ * @typedef {{ udid: string, name: string, state: string, dataPath: string, isAvailable: boolean, deviceTypeIdentifier?: string }} Symulator
+ */
+
+const LIMIT_KOMENDY_MS = 30_000
+const LIMIT_BOOTU_MS = 180_000
+const KONTO_APPLE = 'com.apple.account.AppleAccount'
+const LOCKFILES = ['bun.lock', 'bun.lockb', 'pnpm-lock.yaml', 'yarn.lock', 'package-lock.json']
+const KONFIGURACJA = ['app.json', 'app.config.js', 'app.config.ts', ...LOCKFILES]
+// Pliki natywne tylko swojej platformy: nowszy ios/Podfile.lock nie unieważnia binarki Androida.
+const NATYWNE = { ios: 'ios/Podfile.lock', android: 'android/build.gradle' }
+// package.json celowo pominięty: jego mtime przestawia każdy checkout i edycja `scripts`.
+
+export const REBUILD = {
+  ios: 'LANG=en_US.UTF-8 npx expo run:ios --no-bundler',
+  android: 'npx expo run:android --no-bundler',
+}
+
+/** @type {Wykonaj} */
+export function wykonaj(komenda, argumenty, { cwd, limitMs = LIMIT_KOMENDY_MS } = {}) {
+  const w = spawnSync(komenda, argumenty, { encoding: 'utf8', cwd, timeout: limitMs, killSignal: 'SIGKILL' })
+  return { status: w.status, stdout: w.stdout ?? '', stderr: w.stderr ?? '', blad: !!w.error }
+}
+
+/** @param {unknown} x @returns {Record<string, unknown>} */
+const rekord = (x) => (x && typeof x === 'object' ? /** @type {Record<string, unknown>} */ (x) : {})
+/** @param {unknown} x @returns {string | null} */
+const napis = (x) => (typeof x === 'string' && x ? x : null)
+
+/** @param {unknown} konfig konfiguracja `expo` @returns {Aplikacja} */
+function polaAplikacji(konfig) {
+  const expo = rekord(konfig)
+  const scheme = Array.isArray(expo.scheme) ? expo.scheme[0] : expo.scheme
+  return { bundleId: napis(rekord(expo.ios).bundleIdentifier), appId: napis(rekord(expo.android).package), scheme: napis(scheme) }
+}
+
+/**
+ * Identyfikatory aplikacji: app.json, a przy app.config.* konfiguracja policzona przez Expo CLI projektu.
+ * @param {string} projekt @param {Wykonaj} [wykonajKomende] @returns {Aplikacja | null} null: repo bez konfiguracji Expo
+ */
+export function aplikacjaProjektu(projekt, wykonajKomende = wykonaj) {
+  const appJson = join(projekt, 'app.json')
+  const zPliku = existsSync(appJson) ? polaAplikacji(rekord(JSON.parse(readFileSync(appJson, 'utf8'))).expo) : null
+  if (zPliku?.bundleId && zPliku.appId) return zPliku
+  if (!['app.config.js', 'app.config.ts'].some((p) => existsSync(join(projekt, p)))) return zPliku
+  const w = wykonajKomende(join(projekt, 'node_modules/.bin/expo'), ['config', '--json'], { cwd: projekt })
+  return w.status === 0 ? polaAplikacji(JSON.parse(w.stdout)) : zPliku
+}
+
+/**
+ * Zalogowane konto Apple na symulatorze: wpis w bazie kont, odczyt tylko typów, bez danych konta.
+ * @param {string} dataPath @param {Wykonaj} [wykonajKomende] @returns {boolean | null} null: nie udało się sprawdzić
+ */
+export function maKontoApple(dataPath, wykonajKomende = wykonaj) {
+  const katalog = join(dataPath, 'Library/Accounts')
+  const baza = existsSync(katalog) ? readdirSync(katalog).find((p) => /^Accounts\d+\.sqlite$/.test(p)) : undefined
+  if (!baza) return null
+  const zapytanie = `select count(*) from ZACCOUNT a join ZACCOUNTTYPE t on a.ZACCOUNTTYPE = t.Z_PK where t.ZIDENTIFIER = '${KONTO_APPLE}'`
+  const w = wykonajKomende('sqlite3', [`file:${join(katalog, baza)}?mode=ro`, zapytanie])
+  return w.status === 0 ? Number(w.stdout.trim()) > 0 : null
+}
+
+/**
+ * Dev-client na wyłączonym symulatorze: simctl pyta tylko włączone urządzenia, więc czytamy metadane kontenerów z dysku.
+ * @param {string} dataPath @param {string} bundleId @returns {boolean}
+ */
+function zainstalowanaNaDysku(dataPath, bundleId) {
+  const katalog = join(dataPath, 'Containers/Bundle/Application')
+  if (!existsSync(katalog)) return false
+  return readdirSync(katalog).some((k) => {
+    const meta = join(katalog, k, '.com.apple.mobile_container_manager.metadata.plist')
+    return existsSync(meta) && readFileSync(meta).includes(bundleId)
+  })
+}
+
+/** @param {Wykonaj} wykonajKomende @returns {Symulator[]} iPhone'y dostępne w simctl */
+function symulatory(wykonajKomende) {
+  const w = wykonajKomende('xcrun', ['simctl', 'list', 'devices', 'available', '-j'])
+  if (w.status !== 0) return []
+  const urzadzenia = /** @type {Record<string, Symulator[]>} */ (rekord(rekord(JSON.parse(w.stdout)).devices))
+  return Object.values(urzadzenia).flat().filter((s) => /iPhone/.test(s.deviceTypeIdentifier ?? s.name))
+}
+
+/**
+ * @param {string} projekt @param {number} mtimeBinarki sekundy @param {'ios' | 'android'} platforma
+ * @returns {string | null} plik nowszy od binarki
+ */
+export function przestarzaly(projekt, mtimeBinarki, platforma) {
+  for (const plik of [NATYWNE[platforma], ...KONFIGURACJA]) {
+    const sciezka = join(projekt, plik)
+    if (existsSync(sciezka) && statSync(sciezka).mtimeMs / 1000 > mtimeBinarki) return plik
+  }
+  return null
+}
+
+/**
+ * Podpis dev-clienta iOS. Niepodpisany build działa, ale SecureStore nie utrwala sesji, więc logowanie „przechodzi”, a kolejny flow
+ * startuje wylogowany. Warunek nie zależy od uprawnień w app.json: keychain-access-groups wstrzykuje Xcode przy podpisywaniu.
+ * @param {string} sciezka .app @param {Wykonaj} wykonajKomende @returns {boolean}
+ */
+export function podpisany(sciezka, wykonajKomende = wykonaj) {
+  const w = wykonajKomende('codesign', ['-d', '--entitlements', '-', '--xml', sciezka])
+  return w.status === 0 && !/not signed at all/.test(`${w.stdout}${w.stderr}`)
+}
+
+/** @param {Symulator} s @param {Wykonaj} wykonajKomende @returns {{ ok: boolean, detal: string }} */
+function wlaczony(s, wykonajKomende) {
+  if (s.state === 'Booted') return { ok: true, detal: '' }
+  const boot = wykonajKomende('xcrun', ['simctl', 'boot', s.udid])
+  if (boot.status !== 0) return { ok: false, detal: `simctl boot ${s.name}: ${boot.stderr.trim()}` }
+  const stan = wykonajKomende('xcrun', ['simctl', 'bootstatus', s.udid, '-b'], { limitMs: LIMIT_BOOTU_MS })
+  return stan.status === 0 ? { ok: true, detal: '' } : { ok: false, detal: `${s.name} nie wystartował w ${LIMIT_BOOTU_MS / 1000} s` }
+}
+
+/**
+ * iPhone do E2E: E2E_URZADZENIE (nazwa albo UDID) albo pierwszy bez konta Apple z dev-clientem, włączone najpierw.
+ * @param {string} bundleId @param {string | undefined} wskazane @param {Wykonaj} wykonajKomende
+ * @returns {{ symulator: Symulator | null, uwagi: string[], odpady: string[] }}
+ */
+function wybierzSymulator(bundleId, wskazane, wykonajKomende) {
+  const lista = symulatory(wykonajKomende).filter((s) => !wskazane || s.udid === wskazane || s.name === wskazane)
+  const odpady = []
+  const uwagi = []
+  const dobre = []
+  for (const s of lista) {
+    const konto = maKontoApple(s.dataPath, wykonajKomende)
+    if (konto) odpady.push(`${s.name}: zalogowane konto Apple`)
+    else if (!zainstalowanaNaDysku(s.dataPath, bundleId)) odpady.push(`${s.name}: brak dev-clienta`)
+    else {
+      if (konto === null) uwagi.push(`${s.name}: nie sprawdzono konta Apple`)
+      dobre.push(s)
+    }
+  }
+  dobre.sort((a, b) => Number(b.state === 'Booted') - Number(a.state === 'Booted'))
+  return { symulator: dobre[0] ?? null, uwagi, odpady }
+}
+
+/**
+ * @param {string} projekt @param {Aplikacja} aplikacja @param {Symulator} s @param {string[]} uwagi @param {Wykonaj} wykonajKomende
+ * @returns {WynikUrzadzenia}
+ */
+function sprawdzIos(projekt, aplikacja, s, uwagi, wykonajKomende) {
+  const start = wlaczony(s, wykonajKomende)
+  if (!start.ok) return { ok: false, detal: start.detal, naprawa: `Uruchom symulator ręcznie: xcrun simctl boot ${s.udid}` }
+  const kontener = wykonajKomende('xcrun', ['simctl', 'get_app_container', s.udid, String(aplikacja.bundleId)])
+  const sciezka = kontener.stdout.trim()
+  if (kontener.status !== 0 || !sciezka) return { ok: false, detal: `${s.name}: brak dev-clienta ${aplikacja.bundleId}`, naprawa: `Zainstaluj dev-client: ${REBUILD.ios}.` }
+  const stary = przestarzaly(projekt, statSync(sciezka).mtimeMs / 1000, 'ios')
+  if (stary) return { ok: false, detal: `dev-client na ${s.name} starszy niż ${stary}: moduły natywne z nowszych zależności nie są w buildzie`, naprawa: `Przebuduj: ${REBUILD.ios}.` }
+  if (!podpisany(sciezka, wykonajKomende)) return { ok: false, detal: `dev-client na ${s.name} bez podpisu: SecureStore nie utrwali sesji`, naprawa: `Przebuduj z podpisem ad-hoc: ${REBUILD.ios}.` }
+  return { ok: true, urzadzenie: { platforma: 'ios', id: s.udid, nazwa: s.name, sciezkaAplikacji: sciezka }, uwagi }
+}
+
+/**
+ * Android: tylko emulator już działający. Odczyt mtime bywa niedostępny (`Permission denied`) i wtedy kontrola świeżości odpada z uwagą.
+ * @param {string} projekt @param {Aplikacja} aplikacja @param {string | undefined} wskazane @param {Wykonaj} wykonajKomende
+ * @returns {WynikUrzadzenia | null} null: brak działającego urządzenia z dev-clientem
+ */
+function sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende) {
+  const lista = wykonajKomende('adb', ['devices'])
+  if (lista.status !== 0 || !aplikacja.appId) return null
+  const seriale = lista.stdout.split('\n').map((l) => l.match(/^(\S+)\s+device$/)?.[1]).filter((s) => s && (!wskazane || s === wskazane))
+  for (const id of /** @type {string[]} */ (seriale)) {
+    const sciezka = wykonajKomende('adb', ['-s', id, 'shell', 'pm', 'path', aplikacja.appId]).stdout.trim().split('\n')[0].replace(/^package:/, '')
+    if (!sciezka) continue
+    const urzadzenie = /** @type {Urzadzenie} */ ({ platforma: 'android', id, nazwa: id, sciezkaAplikacji: sciezka })
+    const mtime = Number(wykonajKomende('adb', ['-s', id, 'shell', 'stat', '-c', '%Y', sciezka]).stdout.trim())
+    if (!Number.isFinite(mtime) || mtime <= 0) return { ok: true, urzadzenie, uwagi: [`${id}: nie sprawdzono świeżości dev-clienta (brak odczytu mtime)`] }
+    const stary = przestarzaly(projekt, mtime, 'android')
+    if (stary) return { ok: false, detal: `dev-client na ${id} starszy niż ${stary}: moduły natywne z nowszych zależności nie są w buildzie`, naprawa: `Przebuduj: ${REBUILD.android}.` }
+    return { ok: true, urzadzenie, uwagi: [] }
+  }
+  return null
+}
+
+/**
+ * Wybór urządzenia: E2E_PLATFORMA (`ios` albo `android`) i E2E_URZADZENIE z .env.e2e, inaczej iOS, a przy braku Android.
+ * @param {string} projekt @param {Aplikacja} aplikacja @param {Record<string, string>} env @param {Wykonaj} [wykonajKomende]
+ * @returns {WynikUrzadzenia}
+ */
+export function przygotujUrzadzenie(projekt, aplikacja, env, wykonajKomende = wykonaj) {
+  const platforma = env.E2E_PLATFORMA
+  if (platforma && !['ios', 'android'].includes(platforma)) return { ok: false, detal: `E2E_PLATFORMA=${platforma}`, naprawa: 'Dozwolone wartości E2E_PLATFORMA: ios, android.' }
+  const wskazane = env.E2E_URZADZENIE || undefined
+  const odpady = []
+  if (platforma !== 'android' && aplikacja.bundleId) {
+    const wybor = wybierzSymulator(aplikacja.bundleId, wskazane, wykonajKomende)
+    if (wybor.symulator) return sprawdzIos(projekt, aplikacja, wybor.symulator, wybor.uwagi, wykonajKomende)
+    odpady.push(...wybor.odpady)
+  }
+  if (platforma !== 'ios') {
+    const android = sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende)
+    if (android) return android
+    odpady.push('Android: brak działającego emulatora z dev-clientem')
+  }
+  return {
+    ok: false,
+    detal: `brak urządzenia do E2E (${odpady.join('; ') || 'brak iPhone w simctl'})`,
+    naprawa: `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}.`,
+  }
+}
+
+/**
+ * Zrzut ekranu urządzenia.
+ * @param {Urzadzenie} u @param {string} plik @param {number} limitMs @param {Wykonaj} [wykonajKomende] @returns {WynikKomendy}
+ */
+export function zrzutEkranu(u, plik, limitMs, wykonajKomende = wykonaj) {
+  if (u.platforma === 'ios') return wykonajKomende('xcrun', ['simctl', 'io', u.id, 'screenshot', plik], { limitMs })
+  return wykonajKomende('adb', ['-s', u.id, 'exec-out', 'screencap', '-p'], { limitMs })
+}

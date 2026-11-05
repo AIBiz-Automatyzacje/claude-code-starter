@@ -10,7 +10,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { SYGNATURY_BLOKERA, uwagaSerweraApi } from '../adapter.mjs'
+import { DOMYSLNY_PORT, komendaStartu, naprawaZrzutu, NARZEDZIE_JAZDY, opisProbyZrzutu, SCIEZKA_ZDROWIA, SYGNATURY_BLOKERA } from '../adapter.mjs'
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
 import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
 import { restartFazy, startE2e } from '../start.mjs'
@@ -89,17 +89,17 @@ test('parsujEnv: komentarze, export, cudzyslowy, komentarz za wartoscia', () => 
   assert.deepEqual(parsujEnv('# x\nexport A=1\nB="dwa # nie komentarz"\nC=3 # komentarz\n  D = cztery\nE=\'x\' # komentarz\n'), { A: '1', B: 'dwa # nie komentarz', C: '3', D: 'cztery', E: 'x' })
 })
 
-test('konfiguracja: domyslnie dev server Vite w trybie e2e na 5174 (5173 = zwykly pnpm dev, P19) z menedzerem z lockfile; parametry z .env.e2e wygrywaja', () => {
+test('konfiguracja: domyslnie adres i komenda startu z adaptera z menedzerem z lockfile; parametry z .env.e2e wygrywaja', () => {
   const p = projekt({ pliki: { 'pnpm-lock.yaml': '' } })
   const dom = konfiguracja(p, {})
-  assert.equal(dom.url, 'http://localhost:5174')
-  assert.equal(dom.start, 'pnpm run dev -- --mode e2e --port 5174 --strictPort')
-  assert.deepEqual([dom.port, dom.lokalny], [5174, true])
+  assert.equal(dom.url, `http://localhost:${DOMYSLNY_PORT}`)
+  assert.equal(dom.start, komendaStartu('pnpm', DOMYSLNY_PORT))
+  assert.deepEqual([dom.port, dom.lokalny], [DOMYSLNY_PORT, true])
   assert.equal(konfiguracja(p, { E2E_URL: 'https://app.example.com' }).lokalny, false)
   assert.equal(dom.limitSek, 90)
   assert.equal(dom.bazaE2e, false)
   const wlasne = konfiguracja(p, { E2E_URL: 'http://127.0.0.1:4100', E2E_HEALTH: 'http://127.0.0.1:4100/zdrowie', E2E_START_TIMEOUT: '15' })
-  assert.equal(wlasne.start, 'pnpm run dev -- --mode e2e --port 4100 --strictPort')
+  assert.equal(wlasne.start, komendaStartu('pnpm', 4100))
   assert.equal(wlasne.zdrowie, 'http://127.0.0.1:4100/zdrowie')
   assert.equal(wlasne.limitSek, 15)
   assert.equal(konfiguracja(p, { E2E_START: 'node serwer.js' }).start, 'node serwer.js')
@@ -109,16 +109,16 @@ test('konfiguracja: domyslnie dev server Vite w trybie e2e na 5174 (5173 = zwykl
   rmSync(p, { recursive: true })
 })
 
-test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, agent-browser — kazdy blad z naprawa', () => {
+test('sprawdzenie: plik poza .gitignore, brak kluczy bazy, ta sama baza co dev, narzedzie jazdy — kazdy blad z naprawa', () => {
   const p = projekt({ pliki: { 'supabase/config.toml': '', [DEV]: `${ADRES}=https://e2e.supabase.co\n` } })
   const bledy = bledySrodowiska(p, parsujEnv(`${ADRES}=https://e2e.supabase.co\n`), {
-    jazda: true, narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'brak agent-browser' }) },
+    jazda: true, narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'brak narzedzia' }) },
   })
   assert.equal(bledy.length, 4)
   assert.match(bledy[0], /\.env\.e2e nie jest w \.gitignore — dopisz go/)
   assert.match(bledy[1], /dedykowanego projektu Supabase e2e/)
   assert.match(bledy[2], new RegExp(`brak kluczy bazy e2e w \\.env\\.e2e: ${KLUCZ} \\(albo legacy ${LEGACY}\\), SUPABASE_E2E_DB_URL, SUPABASE_E2E_SERVICE_ROLE_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD`))
-  assert.match(bledy[3], /agent-browser nie dziala: brak agent-browser — instalacja: npm install -g agent-browser/)
+  assert.equal(bledy[3], `${NARZEDZIE_JAZDY.nazwa} nie dziala: brak narzedzia — instalacja: ${NARZEDZIE_JAZDY.instalacja}; diagnoza: ${NARZEDZIE_JAZDY.diagnoza}`)
   rmSync(p, { recursive: true })
 })
 
@@ -186,7 +186,7 @@ test('start: uruchamia serwer z E2E_START, czeka na sonde, stop zabija tylko swo
   // Serwer odpowiada, ale nie ma naszego pliku PID = obcy (P19): STOP startu, proces zostaje.
   const pid = readFileSync(konf.pid, 'utf8')
   rmSync(konf.pid)
-  const drugi = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE })
+  const drugi = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE, politykaObcego: 'stop' })
   assert.deepEqual([drugi.status, drugi.serwer], ['niepowodzenie', 'obcy'])
   assert.equal(await odpowiada(`http://127.0.0.1:${port}`), true)
   writeFileSync(konf.pid, pid)
@@ -582,7 +582,7 @@ test('obcy serwer HTTP na porcie E2E: start i sprawdzenie = STOP z PID-em, komen
   try {
     const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=node -e "setInterval(()=>{},1000)"\n` })
     for (const uruchom of [true, false]) {
-      const w = await startE2e(p, ZADANIE, { uruchom, narzedzia: SPRAWNE })
+      const w = await startE2e(p, ZADANIE, { uruchom, narzedzia: SPRAWNE, politykaObcego: 'stop' })
       assert.deepEqual([w.status, w.serwer], ['niepowodzenie', 'obcy'], `uruchom=${uruchom}: ${w.detal}`)
       assert.match(w.detal, new RegExp(`na porcie ${port} dziala serwer spoza pipeline'u — PID ${obcy.pid}: \\S*node -e require\\('http'\\)`))
       assert.match(w.naprawa, new RegExp(`^Zatrzymaj go: \`kill ${obcy.pid}\`.*E2E_URL=http://localhost:<port>.*lsof -nP -iTCP:${port} -sTCP:LISTEN`))
@@ -603,7 +603,7 @@ test('obcy serwer HTTP zajal port w trakcie runu: restart fazy = niepowodzenie z
   await zatrzymajSerwer(konfProjektu(p))
   const obcy = await obcySerwerHttp(port)
   try {
-    const w = await restartFazy(p, ZADANIE, 1)
+    const w = await restartFazy(p, ZADANIE, 1, { politykaObcego: 'stop' })
     assert.deepEqual([w.status, w.serwer, w.obcy?.pid, w.log], ['niepowodzenie', 'obcy', obcy.pid, null], w.detal)
     assert.match(w.detal, new RegExp(`PID ${obcy.pid}: `))
     assert.doesNotMatch(w.detal, /kill/, 'detal idzie do testera jako przyczyna — bez polecenia kill')
@@ -623,8 +623,8 @@ test('probny zrzut na starcie: porazka = niepowodzenie przed startem serwera z n
   const wiszacy = { ...SPRAWNE, zrzut: () => { proby += 1; return { ok: false, detal: 'nie skonczyl sie w 30 s' } } }
   const w = await startE2e(p, ZADANIE, { uruchom: true, narzedzia: wiszacy })
   assert.equal(w.status, 'niepowodzenie')
-  assert.equal(w.detal, 'probny zrzut agent-browser (about:blank, limit 30 s): nie skonczyl sie w 30 s')
-  assert.match(w.naprawa, /^Zamknij sesje przegladarki \(`agent-browser close --all`\).*e2e\.mjs start --zadanie docs\/active\/z$/)
+  assert.equal(w.detal, `${opisProbyZrzutu}: nie skonczyl sie w 30 s`)
+  assert.equal(w.naprawa, `${naprawaZrzutu} Sprawdzenie startu: node .claude/scripts/e2e/e2e.mjs start --zadanie docs/active/z`)
   assert.equal(await odpowiada(`http://127.0.0.1:${port}`), false, 'serwer nie wystartowal')
   assert.equal((await startE2e(p, ZADANIE, { uruchom: false, narzedzia: wiszacy })).status, 'gotowe')
   assert.equal(proby, 1)
@@ -633,9 +633,9 @@ test('probny zrzut na starcie: porazka = niepowodzenie przed startem serwera z n
 // Recenzja P19: stary `.env.e2e` z samym `E2E_START ... --port 5173` (szablon smoke-autopilot sprzed P19) po zmianie domyslnego
 // E2E_URL na 5174 — serwer na 5173, sonda na 5174, STOP po limicie z bledna przyczyna. Teraz blad konfiguracji z naprawa.
 test('E2E_START z --port innym niz port E2E_URL = blad konfiguracji z naprawa; ten sam port albo brak --port = bez bledu', () => {
-  const stary = konfiguracja('/tmp/x', { E2E_START: 'pnpm --filter web exec vite --mode e2e --port 5173 --strictPort' })
-  assert.equal(stary.blad, 'E2E_START uruchamia serwer na porcie 5173, a E2E_URL wskazuje port 5174 — ustaw w .env.e2e E2E_URL=http://localhost:5173 albo zmien --port w E2E_START na 5174')
-  assert.equal(konfiguracja('/tmp/x', { E2E_URL: 'http://localhost:5173', E2E_START: 'vite --port=5173' }).blad, null)
+  const stary = konfiguracja('/tmp/x', { E2E_START: 'pnpm --filter web exec serwer --port 3999 --strictPort' })
+  assert.equal(stary.blad, `E2E_START uruchamia serwer na porcie 3999, a E2E_URL wskazuje port ${DOMYSLNY_PORT} — ustaw w .env.e2e E2E_URL=http://localhost:3999 albo zmien --port w E2E_START na ${DOMYSLNY_PORT}`)
+  assert.equal(konfiguracja('/tmp/x', { E2E_URL: 'http://localhost:3999', E2E_START: 'serwer --port=3999' }).blad, null)
   assert.equal(konfiguracja('/tmp/x', { E2E_START: 'node serwer.js' }).blad, null)
 })
 
@@ -666,18 +666,6 @@ test('restart: potomek naszego serwera ignorujacy SIGTERM ginie z grupa — rest
   assert.deepEqual([w.status, w.serwer, w.obcy], ['gotowe', 'uruchomione', null], w.detal)
 })
 
-// P3 pkt 96 M14 + P27 S1 (12): wykrycie serwera API — kotwice regexu skryptow bez testu (mutacje przezywaly), a uklady
-// `api/`, `apps/api/` i skrypty `*:api` nie byly wykrywane (uwaga P25 nie dzialala na innych repo).
-test('uwagaSerweraApi: katalogi server/, api/, apps/api/ i skrypty z czlonem server albo api; observer, server-x, rapid — nie', () => {
-  const wykryty = (/** @type {Record<string, string>} */ pliki) => uwagaSerweraApi(projekt({ pliki }), {}) !== null
-  for (const katalog of ['server/index.ts', 'api/index.ts', 'apps/api/src/index.ts']) assert.equal(wykryty({ [katalog]: '' }), true, katalog)
-  const zeSkryptem = (/** @type {string} */ nazwa) => wykryty({ 'package.json': JSON.stringify({ scripts: { [nazwa]: 'x' } }) })
-  for (const nazwa of ['server', 'dev:server', 'server:dev', 'build:server:prod', 'api', 'dev:api', 'api:build']) assert.equal(zeSkryptem(nazwa), true, nazwa)
-  for (const nazwa of ['observer', 'server-x', 'dev:observer', 'serverless:x', 'rapid', 'dev:apis', 'api-docs', 'dev']) assert.equal(zeSkryptem(nazwa), false, nazwa)
-  assert.equal(wykryty({ 'apps/web/src/index.ts': '' }), false, 'apps/ bez api/')
-  assert.equal(uwagaSerweraApi(projekt({ pliki: { 'apps/api/x.ts': '' } }), { E2E_HEALTH_TRESC: 'ok' }), null, 'sonda z trescia')
-})
-
 // D11 (IU-1.8): polityka obcego procesu na porcie E2E z adaptera. `stop` (web, P19) zostawia obcy serwer ze STOP-em startu
 // (test wyzej); `zastap` (stack, w ktorym serwer czyta env przy starcie — Metro w Expo) zatrzymuje obcy proces z PID-em
 // i stawia serwer pipeline'u. Bez PID-u (lsof niedostepny, host nielokalny) zastapic nie ma czego — zostaje STOP.
@@ -702,6 +690,60 @@ test('start z polityka zastap: obcy serwer z PID-em zatrzymany, nasz uruchomiony
   } finally {
     obcy.kill('SIGKILL')
   }
+})
+
+// IU-2.3: kroki stacku wokol serwera z adaptera (Expo: urzadzenie i plik env przed startem, canary po odpowiedzi serwera).
+test('kroki stacku: przedStartem przed zrzutem i serwerem, poStarcie po odpowiedzi; szczegoly w detalu', async () => {
+  const port = await wolnyPort()
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"\nE2E_START_TIMEOUT=20\n`, pliki: { 'package.json': JSON.stringify({ dependencies: { a: '1.0.0' } }) } })
+  /** @type {string[]} */
+  const kolejnosc = []
+  const w = await startE2e(p, ZADANIE, {
+    uruchom: true,
+    narzedzia: { ...SPRAWNE, zrzut: () => { kolejnosc.push('zrzut'); return { ok: true, detal: '' } } },
+    kroki: {
+      przedStartem: (_p, env) => { kolejnosc.push(`przed:${env.E2E_URL === `http://127.0.0.1:${port}`}`); return { ok: true, detal: 'urzadzenie X', naprawa: '' } },
+      poStarcie: async (_p, _e, konf) => { kolejnosc.push(`po:${await odpowiada(`http://127.0.0.1:${konf.port}`)}`); return { ok: true, detal: 'dowod przeszedl', naprawa: '' } },
+    },
+  })
+  assert.equal(w.status, 'gotowe', w.detal)
+  assert.deepEqual(kolejnosc, ['przed:true', 'zrzut', 'po:true'])
+  assert.match(w.detal, /; urzadzenie X; dowod przeszedl$/)
+})
+
+test('kroki stacku: porazka przedStartem = STOP bez zrzutu i serwera; porazka poStarcie = STOP z logiem i naprawa, serwer zostaje', async () => {
+  const port = await wolnyPort()
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"\nE2E_START_TIMEOUT=20\n`, pliki: { 'package.json': JSON.stringify({ dependencies: { a: '1.0.0' } }) } })
+  let zrzuty = 0
+  const narzedzia = { ...SPRAWNE, zrzut: () => { zrzuty += 1; return { ok: true, detal: '' } } }
+  const zaden = async () => { throw new Error('poStarcie nie moze ruszyc po porazce przedStartem') }
+  const przed = await startE2e(p, ZADANIE, { uruchom: true, narzedzia, kroki: { przedStartem: () => ({ ok: false, detal: 'brak urzadzenia', naprawa: 'Wlacz urzadzenie.' }), poStarcie: zaden } })
+  assert.deepEqual([przed.status, przed.serwer, przed.detal, zrzuty], ['niepowodzenie', 'brak', 'brak urzadzenia', 0])
+  assert.equal(przed.naprawa, 'Wlacz urzadzenie. Sprawdzenie startu: node .claude/scripts/e2e/e2e.mjs start --zadanie docs/active/z')
+  assert.equal(await odpowiada(`http://127.0.0.1:${port}`), false)
+  const po = await startE2e(p, ZADANIE, { uruchom: true, narzedzia, kroki: { przedStartem: () => ({ ok: true, detal: '', naprawa: '' }), poStarcie: async () => ({ ok: false, detal: 'dowod padl', naprawa: 'Sprawdz recznie.' }) } })
+  assert.deepEqual([po.status, po.serwer, po.detal, po.bledy], ['niepowodzenie', 'uruchomione', 'dowod padl', ['dowod padl']])
+  assert.equal(po.log, konfProjektu(p).log)
+  assert.match(po.naprawa, /^Sprawdz recznie\. Sprawdzenie startu: /)
+})
+
+test('kroki stacku: repo bez aplikacji nie wola przedStartem; restart wola przedStartem bez dowodu, a porazka = niepowodzenie z naprawa', async () => {
+  const port = await wolnyPort()
+  const start = `node -e "require('http').createServer((q,s)=>s.end('ok')).listen(${port})"`
+  const p = projekt({ env: `E2E_URL=http://127.0.0.1:${port}\nE2E_START=${start}\nE2E_START_TIMEOUT=20\n` })
+  let wywolania = 0
+  const liczace = { przedStartem: () => { wywolania += 1; return { ok: true, detal: '', naprawa: '' } }, poStarcie: async () => ({ ok: true, detal: '', naprawa: '' }) }
+  assert.equal((await startE2e(p, ZADANIE, { uruchom: true, narzedzia: SPRAWNE, kroki: liczace })).status, 'gotowe')
+  assert.equal(wywolania, 0)
+  const zly = await restartFazy(p, ZADANIE, 1, { kroki: { przedStartem: () => ({ ok: false, detal: 'dev-client stary', naprawa: 'Przebuduj.' }) } })
+  assert.deepEqual([zly.status, zly.detal, zly.naprawa, zly.serwer], ['niepowodzenie', 'dev-client stary', 'Przebuduj.', 'brak'])
+  const dobry = await restartFazy(p, ZADANIE, 1, { kroki: liczace })
+  assert.deepEqual([dobry.status, wywolania], ['gotowe', 1])
+})
+
+test('konfiguracja: sonda domyslnie z E2E_URL i sciezki adaptera, E2E_HEALTH wygrywa', () => {
+  assert.equal(konfiguracja('/tmp/x', { E2E_URL: 'http://127.0.0.1:4100/' }).zdrowie, SCIEZKA_ZDROWIA ? `http://127.0.0.1:4100${SCIEZKA_ZDROWIA}` : 'http://127.0.0.1:4100/')
+  assert.equal(konfiguracja('/tmp/x', { E2E_URL: 'http://127.0.0.1:4100', E2E_HEALTH: 'http://127.0.0.1:1/x' }).zdrowie, 'http://127.0.0.1:1/x')
 })
 
 // D12 (IU-1.8): restart niesie sygnatury blokera srodowiska stacku z adaptera — autopilot przekazuje je do review fazy.

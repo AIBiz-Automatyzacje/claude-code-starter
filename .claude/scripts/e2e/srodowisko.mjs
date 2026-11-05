@@ -6,7 +6,7 @@
 // Parametry `.env.e2e` (wszystkie opcjonalne, domyslne z adaptera stacku):
 //   E2E_URL            adres aplikacji (domyslnie http://localhost:<DOMYSLNY_PORT adaptera>)
 //   E2E_START          komenda startu (domyslnie komendaStartu adaptera)
-//   E2E_HEALTH         adres sondy zdrowia (domyslnie E2E_URL; odpowiedz < 500 = dziala)
+//   E2E_HEALTH         adres sondy zdrowia (domyslnie E2E_URL ze sciezka SCIEZKA_ZDROWIA adaptera; odpowiedz < 500 = dziala)
 //   E2E_HEALTH_TRESC   tekst, ktory musi byc w odpowiedzi sondy (P25 A2: aplikacja z serwerem API — trasa zdrowia serwera
 //                      zamiast strony, bo fallback SPA odpowiada 200 na kazdej sciezce)
 //   E2E_START_TIMEOUT  sekundy na start (domyslnie 90)
@@ -20,7 +20,7 @@ import { basename, join } from 'node:path'
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { adresHttp, HOSTY_LOKALNE } from './adres.mjs'
 import { PROFIL } from '../stack/profil.mjs'
-import { DOMYSLNY_PORT, komendaStartu, NARZEDZIE_JAZDY, probnyZrzut, sprawdzNarzedzie } from './adapter.mjs'
+import { DOMYSLNY_PORT, komendaStartu, NARZEDZIE_JAZDY, probnyZrzut, SCIEZKA_ZDROWIA, sprawdzNarzedzie } from './adapter.mjs'
 
 export const PLIK_ENV = '.env.e2e'
 // Klucze bazy e2e; grupa = zamienniki. Klucz klienta: publishable (sb_publishable_…) albo legacy anon, ktory Supabase
@@ -95,7 +95,7 @@ const originBazy = (url) => adresHttp(url.trim())?.origin ?? url.trim()
  */
 export function konfiguracja(projekt, env) {
   const url = env.E2E_URL || `http://localhost:${DOMYSLNY_PORT}`
-  const zdrowie = env.E2E_HEALTH || url
+  const zdrowie = env.E2E_HEALTH || (SCIEZKA_ZDROWIA ? `${url.replace(/\/$/, '')}${SCIEZKA_ZDROWIA}` : url)
   const nazwa = basename(projekt).replace(/[^A-Za-z0-9_-]/g, '_')
   const adres = adresHttp(url)
   const port = adres ? adres.port || (adres.protocol === 'https:' ? '443' : '80') : String(DOMYSLNY_PORT)

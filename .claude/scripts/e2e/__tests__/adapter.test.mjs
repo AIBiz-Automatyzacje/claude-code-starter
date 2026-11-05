@@ -27,6 +27,19 @@ test('adapter: stałe portów i komenda startu', () => {
   const start = adapter.komendaStartu('pnpm', 4321)
   assert.equal(typeof start, 'string')
   assert.match(start, /\b4321\b/, 'komenda startu stawia serwer na porcie z E2E_URL')
+  assert.match(adapter.SCIEZKA_ZDROWIA, /^(\/.*)?$/)
+})
+
+test('adapter: kroki stacku wokół serwera i uwaga doctora; repo bez plików stacku nic nie dostaje', async () => {
+  const pusty = mkdtempSync(join(tmpdir(), 'adapter-'))
+  try {
+    assert.deepEqual(adapter.przedStartem(pusty, {}), { ok: true, detal: '', naprawa: '' })
+    assert.deepEqual(await adapter.poStarcie(pusty, {}, { port: 1 }), { ok: true, detal: '', naprawa: '' })
+    assert.deepEqual(adapter.poZatrzymaniu(pusty), { detal: '' })
+    assert.equal(adapter.uwagaDoctora(pusty), null)
+  } finally {
+    rmSync(pusty, { recursive: true, force: true })
+  }
 })
 
 test('adapter: narzędzie jazdy testera z instalacją i diagnozą', () => {

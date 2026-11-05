@@ -19,18 +19,14 @@ const STACK = join(KORZEN, 'stacks/expo')
 const ZALEGLE = [
   // sloty
   '.claude/stack/buildery.md', // IU-2.5
-  '.claude/stack/e2e-srodowisko.md', // IU-2.3
   '.claude/stack/walidacja.md', // IU-2.5
   '.claude/stack/fix-e2e.md', // IU-2.5
   '.claude/stack/plan-e2e.md', // IU-2.5
-  '.claude/stack/profil.json', // IU-2.3
   '.claude/skills/dev-plan/references/stack.md', // IU-2.5
   '.claude/skills/dev-prep/references/stack.md', // IU-2.9
   '.claude/skills/dev-compound/references/stack.md', // IU-2.9
   '.claude/skills/weryfikacja-setup/references/stack.md', // IU-2.6
-  '.claude/scripts/e2e/adapter.mjs', // IU-2.3
   // wyjątki strażnika `podmiana`
-  '.claude/templates/e2e-env/', // IU-2.3
   '.claude/agents/feature-builder-ui.md', // IU-2.1
   '.claude/agents/feature-builder-ui-figma.md', // IU-2.1
   '.claude/agents/feature-builder-fullstack.md', // IU-2.1

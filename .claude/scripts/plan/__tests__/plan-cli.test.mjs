@@ -12,6 +12,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { liczE2e as liczScenariuszeE2e } from '../../dossier/dokumenty.mjs'
+import { NARZEDZIE_JAZDY } from '../../e2e/adapter.mjs'
 import { gotowosc } from '../gotowosc.mjs'
 import { PROFIL } from '../../stack/profil.mjs'
 
@@ -51,10 +52,10 @@ function repo(o = {}) {
   return korzen
 }
 
-// Atrapa CLI agent-browser w PATH: bramka gotowosci robi pelne sprawdzenie srodowiska (jak bootstrap), a test nie moze
-// zalezec od przegladarki zainstalowanej na maszynie.
+// Atrapa narzedzia jazdy w PATH: bramka gotowosci robi pelne sprawdzenie srodowiska (jak bootstrap), a test nie moze
+// zalezec od narzedzia zainstalowanego na maszynie.
 const ATRAPY = mkdtempSync(join(tmpdir(), 'plan-cli-bin-'))
-writeFileSync(join(ATRAPY, 'agent-browser'), '#!/bin/sh\necho "ok"\n', { mode: 0o755 })
+writeFileSync(join(ATRAPY, NARZEDZIE_JAZDY.nazwa), '#!/bin/sh\necho "ok"\n', { mode: 0o755 })
 test.after(() => rmSync(ATRAPY, { recursive: true, force: true }))
 
 /** @param {string} korzen @param {string[]} argumenty @returns {{ kod: number | null, json: any }} */
@@ -185,13 +186,13 @@ test('gotowosc: vitest bez configu → testy.ok false z poprawka i STOP; config 
   assert.deepEqual([dobre.ok, dobre.testy.ok], [true, true])
 }))
 
-test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i agent-browser to STOP; brak skilla weryfikacji = uwaga', () => wRepo((k) => {
+test('gotowosc: pelne sprawdzenie srodowiska jak bootstrap — bledy .env.e2e i narzedzia jazdy to STOP; brak skilla weryfikacji = uwaga', () => wRepo((k) => {
   zadanieNaGalezi(k)
   const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => false, narzedzieJazdy: () => ({ ok: false, detal: 'chrome: fail' }) } })
   assert.deepEqual([zle.ok, zle.e2e.ok, zle.e2e.envE2e], [false, false, true])
   assert.equal(zle.e2e.bledy.length, 2)
   assert.match(zle.e2e.bledy[0], /\.env\.e2e nie jest w \.gitignore/)
-  assert.match(zle.e2e.bledy[1], /agent-browser nie dziala: chrome: fail/)
+  assert.ok(zle.e2e.bledy[1].startsWith(`${NARZEDZIE_JAZDY.nazwa} nie dziala: chrome: fail`), zle.e2e.bledy[1])
   // Plan ma migracje, a .env.e2e (X=1) nie ma bazy e2e z ref — advisors nie pobiegnie (P17): uwaga, nie bloker.
   assert.deepEqual(zle.e2e.uwagi, [
     'brak skilla weryfikacji projektu (.claude/skills/weryfikacja/SKILL.md) — tester odegra scenariusze bez mapy funkcji; generator: /weryfikacja-setup',
@@ -249,116 +250,6 @@ test('gotowosc: brak planu technicznego pod wskaznikiem to blad planu, nie wyjat
   const w = gotowosc(k, ZADANIE)
   assert.equal(w.plan.ok, false)
   assert.match(w.plan.bledy[0], /brak planu technicznego \(wskaźnik w planie zadania: docs\/plans\//)
-}))
-
-// P25 A2: aplikacja z serwerem API (katalog server/ albo skrypt *:server) i sonda E2E bez tresci — sam Vite przechodzi sonde
-// fallbackiem SPA, a zapisy przez /api dostaja 404 (vibersi etapy 4–5). Uwaga przy planowaniu, nie STOP.
-test('gotowosc: serwer API bez E2E_HEALTH_TRESC = uwaga E2E z sekcja README; z trescia albo bez serwera — bez uwagi', () => wRepo((k) => {
-  zadanieNaGalezi(k)
-  const uwagaApi = (/** @type {string[]} */ u) => u.filter((t) => /serwer API/.test(t))
-  assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [])
-  mkdirSync(join(k, 'server'))
-  writeFileSync(join(k, 'server/app.ts'), 'export {}\n')
-  const [uwaga] = uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi)
-  assert.match(uwaga ?? '', /E2E_HEALTH_TRESC/)
-  assert.match(uwaga ?? '', /Aplikacja z osobnym serwerem API/)
-  writeFileSync(join(k, '.env.e2e'), "X=1\nE2E_HEALTH=http://localhost:5174/healthz\nE2E_HEALTH_TRESC='\"status\":\"ok\"'\n")
-  assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [])
-  rmSync(join(k, 'server'), { recursive: true })
-  writeFileSync(join(k, '.env.e2e'), 'X=1\n')
-  writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { 'build:server': 'esbuild server/index.ts' } }))
-  assert.equal(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi).length, 1, 'skrypt build:server tez oznacza serwer API')
-  for (const zly of ['{ zly', '{"scripts":null}']) {
-    writeFileSync(join(k, 'package.json'), zly)
-    assert.deepEqual(uwagaApi(gotowosc(k, ZADANIE).e2e.uwagi), [], `${zly}: bez uwagi i bez wyjatku bramki`)
-  }
-}))
-
-// P27 (1) (vibersi etap 5): E2E_HEALTH=<E2E_URL>/healthz, a proxy Vite tylko na /api — /healthz dostal fallback SPA (index.html),
-// sonda z E2E_HEALTH_TRESC dala STOP startu. Uwaga przy planowaniu, gdy sciezki sondy nie ma w vite.config.*.
-test('gotowosc: sciezka E2E_HEALTH na porcie Vite bez wpisu w vite.config = uwaga; w proxy, pod /api albo na porcie serwera — bez uwagi', () => wRepo((k) => {
-  zadanieNaGalezi(k)
-  const uwagaProxy = (/** @type {string[]} */ u) => u.filter((t) => /proxy Vite/.test(t))
-  const vite = (/** @type {string} */ klucze) => writeFileSync(join(k, 'vite.config.ts'), `export default { server: { proxy: { ${klucze} } } }\n`)
-  const env = (/** @type {string} */ zdrowie, tresc = "E2E_HEALTH_TRESC='ok'\n") => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=${zdrowie}\n${tresc}`)
-  vite("'/api': 'http://localhost:8787'")
-  env('http://localhost:5174/healthz')
-  const [uwaga] = uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi)
-  assert.match(uwaga ?? '', /ścieżki \/healthz z E2E_HEALTH nie ma w trasach proxy vite\.config\.ts/)
-  assert.match(uwaga ?? '', /Aplikacja z osobnym serwerem API/)
-  vite("'/api': 'http://localhost:8787', '/healthz': 'http://localhost:8787'")
-  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [])
-  vite("'^/healthz': 'http://localhost:8787'")
-  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'klucz proxy jako wyrazenie z ^')
-  vite("'/api': 'http://localhost:8787'")
-  env('http://localhost:5174/api/health')
-  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'sciezka pod /api')
-  env('http://localhost:5174/apihealth')
-  assert.equal(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi).length, 1, '/api nie jest prefiksem segmentu /apihealth')
-  env('http://localhost:8787/healthz')
-  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'sonda wprost na porcie serwera')
-  env('http://localhost:5174')
-  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'sonda na stronie glownej')
-  rmSync(join(k, 'vite.config.ts'))
-  env('http://localhost:5174/healthz')
-  assert.deepEqual(uwagaProxy(gotowosc(k, ZADANIE).e2e.uwagi), [], 'bez vite.config — projekt nie na Vite')
-}))
-
-// Recenzja S1 (P2-1, P3-3, P3-4): bez E2E_HEALTH_TRESC sonda przechodzi na kazdej trasie (rada „dodaj do proxy” psulaby trase
-// aplikacji); alias hosta to ten sam port Vite; liczą się tylko klucze proxy (bez komentarzy, `base`, aliasow), klucz z ^ = regex.
-test('gotowosc: uwaga proxy sondy tylko z E2E_HEALTH_TRESC, alias hosta, klucze proxy bez komentarzy, klucze-regexy Vite', () => wRepo((k) => {
-  zadanieNaGalezi(k)
-  const uwagaProxy = () => gotowosc(k, ZADANIE).e2e.uwagi.filter((t) => /proxy Vite/.test(t))
-  const vite = (/** @type {string} */ tresc) => writeFileSync(join(k, 'vite.config.ts'), tresc)
-  const env = (/** @type {string} */ zdrowie, tresc = "E2E_HEALTH_TRESC='ok'\n") => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=${zdrowie}\n${tresc}`)
-  vite("export default { server: { proxy: { '/api': 'http://localhost:8787' } } }\n")
-  env('http://localhost:5174/login', '')
-  assert.deepEqual(uwagaProxy(), [], 'bez E2E_HEALTH_TRESC — trasa aplikacji, bez rady')
-  env('http://127.0.0.1:5174/healthz')
-  assert.equal(uwagaProxy().length, 1, '127.0.0.1 i localhost to ten sam serwer Vite')
-  const przypadki = /** @type {[string, string, number][]} */ ([
-    ["export default { base: '/', server: { proxy: { '/api': 'x' } } }", '/healthz', 1],
-    ["export default { server: { proxy: {\n  // '/healthz': 'x',\n  '/api': 'x' } } }", '/healthz', 1],
-    ["export default { resolve: { alias: { '@': '/src' } }, server: { proxy: { '/api': 'x' } } }", '/src/health', 1],
-    ["export default { server: { proxy: { '/api': { target: 'x', rewrite: (p) => p.replace(/^\\/api/, '/healthz') } } } }", '/healthz', 1],
-    ["export default { server: { proxy: { '^/api/.*': 'x' } } }", '/api/health', 0],
-    ["export default { server: { proxy: { '^/(api|healthz)': 'x' } } }", '/healthz', 0],
-    ["export default { server: { proxy: { '/healthz': 'http://localhost:8787' } } }", '/healthz/', 0],
-    ["export default { server: { proxy: { '/api/': 'x' } } }", '/api/health', 0],
-    ["export default { server: { proxy: { '^/(': 'x' } } }", '/healthz', 1],
-    ["export default { define: { '/healthz': 'x' }, server: { proxy: { '/api': 'x' } } }", '/healthz', 1],
-    ["export default { server: { proxy: { '^/healthz$': 'x' } } }", '/healthz/', 0],
-    // vibersi etap 6a: proxy z funkcji (`proxySerweraE2e(...)` z tablicy tras) — kluczy nie widac, liczy sie napis-sciezka w pliku
-    ["const TRASY = ['/api/', '/healthz'] as const\nexport default { server: { proxy: zTras(TRASY) } }", '/healthz', 0],
-    ["const TRASY = ['/api/'] as const\nexport default { server: { proxy: zTras(TRASY) } }", '/healthz', 1],
-    ["export default { server: { proxy } }", '/healthz', 1],
-  ])
-  for (const [tresc, sciezka, ile] of przypadki) {
-    vite(`${tresc}\n`)
-    env(`http://localhost:5174${sciezka}`)
-    assert.equal(uwagaProxy().length, ile, `${tresc} / ${sciezka}`)
-  }
-}))
-
-// P3 pkt 96 M15: uwagi serwera API i proxy sondy dotycza scenariuszy [E2E] — zadanie bez nich (same makiety albo nic) ich nie
-// dostaje; mutacja usuwajaca warunek `scenariusze` w gotowosc przezywala.
-test('gotowosc: serwer API i sonda poza proxy bez scenariuszy [E2E] — bez uwag (dotycza tylko scenariuszy)', () => wRepo((k) => {
-  zadanieNaGalezi(k)
-  mkdirSync(join(k, 'server'))
-  writeFileSync(join(k, 'server/app.ts'), 'export {}\n')
-  writeFileSync(join(k, 'vite.config.ts'), "export default { server: { proxy: { '/api': 'http://localhost:8787' } } }\n")
-  const env = (/** @type {string} */ tresc) => writeFileSync(join(k, '.env.e2e'), `X=1\nE2E_URL=http://localhost:5174\nE2E_HEALTH=http://localhost:5174/healthz\n${tresc}`)
-  const uwagi = (/** @type {RegExp} */ wzor) => gotowosc(k, ZADANIE).e2e.uwagi.filter((u) => wzor.test(u)).length
-  env('')
-  assert.equal(uwagi(/serwer API/), 1, 'ze scenariuszami, sonda bez tresci: uwaga serwera API')
-  env("E2E_HEALTH_TRESC='ok'\n")
-  assert.equal(uwagi(/proxy Vite/), 1, 'ze scenariuszami, sonda z trescia poza proxy: uwaga proxy')
-  const zadania = join(k, ZADANIE, 'publikacja-ofert-zadania.md')
-  writeFileSync(zadania, readFileSync(zadania, 'utf8').replace(/\[E2E\]/g, '[Manual]'))
-  assert.equal(gotowosc(k, ZADANIE).e2e.scenariusze, 0)
-  assert.equal(uwagi(/proxy Vite/), 0)
-  env('')
-  assert.equal(uwagi(/serwer API/), 0)
 }))
 
 // P25 A1: autopilot zatrzymuje sie przed faza z nieodhaczonym blokerem — bootstrap przepisuje ten wynik 1:1. vibersi etap 5:

@@ -1,0 +1,79 @@
+# Canary startu E2E: skopiuj do .maestro/_canary.yaml i dopasuj do swojej aplikacji.
+#
+# Start nie wpuszcza runu do faz, dopóki canary nie przejdzie. Flow musi przejść przez logowanie i sprawdzić element ZA logowaniem:
+# pierwszy ekran zwykle nie wymaga sesji i nie ładuje żadnego modułu natywnego poza rdzeniem, więc sam start aplikacji nic nie dowodzi
+# (build bez entitlements nie utrwala sesji, przestarzała binarka pada na głębszym ekranie).
+#
+# Zasady:
+# - Minimalny flow: logowanie i jedna asercja za logowaniem. To bramka, nie scenariusz testowy.
+# - Zmienne podaje adapter: APP_ID, APP_SCHEME, METRO_URL (adres Metro dla platformy, zakodowany do parametru), E2E_EMAIL, E2E_PASSWORD.
+# - Po zmianie: `maestro check-syntax .maestro/_canary.yaml`.
+# - Canary biegnie przed db-sync, więc asercja zależy od sesji, nie od rekordów z seeda: nagłówek z nazwą użytkownika, pasek
+#   zakładek, pusty stan listy.
+#
+# Dev-client: `launchApp` nie ląduje w aplikacji, tylko na ekranie „DEVELOPMENT SERVERS”. Do dev servera wchodzisz deep linkiem.
+# Przed każdym `openLink` proces musi być zatrzymany osobnym krokiem `stopApp`: deep link do żywego procesu wywraca runtime
+# (EXC_BAD_ACCESS w `jsi::Object::~Object()`), a Maestro pokaże tylko nietrafioną asercję albo `Timed out snapshotting`.
+# `clearState: true` przywraca arkusz „This is the developer menu”, stąd warunkowe zamknięcie: `Continue`, potem tap poza panelem.
+# Jeśli Twoje UI zawiera napisy „Continue” albo „Reload”, podmień warunki.
+
+appId: ${APP_ID}
+
+---
+- launchApp:
+    clearState: true # sesja ma powstać teraz, nie zostać z poprzedniego przebiegu
+- stopApp
+- openLink: "${APP_SCHEME}://expo-development-client/?url=${METRO_URL}"
+# Pierwszy deep link na iOS pyta „Otworzyć w…”.
+- tapOn:
+    text: "Otwórz|Open"
+    optional: true
+# Arkusz dev-menu pojawia się po zbudowaniu paczki: limit pokrywa zimny start i bundling.
+- extendedWaitUntil:
+    visible:
+      text: "Continue"
+    timeout: 90000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        text: "Continue"
+    commands:
+      - tapOn:
+          text: "Continue"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Reload"
+    commands:
+      - tapOn:
+          point: "50%,15%"
+      - waitForAnimationToEnd
+
+# Logowanie: podmień testID na swoje albo użyj przycisku dev sign-in, jeśli aplikacja go ma.
+- tapOn:
+    id: "login-email-input"
+- inputText: ${E2E_EMAIL}
+- tapOn:
+    id: "login-password-input"
+- inputText: ${E2E_PASSWORD}
+- tapOn:
+    id: "login-submit-button"
+
+# Element renderowany wyłącznie po zalogowaniu.
+- extendedWaitUntil:
+    visible:
+      id: "home-greeting" # podmień
+    timeout: 30000
+
+# Sesja przeżywa restart: bez tego build bez uprawnień do keychaina przechodzi, a każdy kolejny flow startuje wylogowany.
+- stopApp
+- openLink: "${APP_SCHEME}://expo-development-client/?url=${METRO_URL}"
+- tapOn:
+    text: "Otwórz|Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "home-greeting" # ten sam element
+    timeout: 30000

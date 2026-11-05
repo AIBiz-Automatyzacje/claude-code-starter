@@ -1,0 +1,473 @@
+// Adapter E2E Expo (IU-2.3, D11, D12, D13): plik env, wybór urządzenia, dev-client, canary, profil i szablony. Moduły biegną z ławki,
+// bo w nakładce względne importy do rdzenia się nie rozwiązują. Komendy systemowe są atrapami; jazdę na symulatorze i emulatorze opisuje plan.
+//
+// Uruchomienie: node --test stacks/expo/__tests__/adapter-e2e.test.mjs
+
+import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import test, { after } from 'node:test'
+import assert from 'node:assert/strict'
+
+import { przygotujLawke } from '../../testuj-wariant.mjs'
+
+const KORZEN = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+const { katalog: WARIANT, sprzataj } = przygotujLawke(KORZEN, 'expo')
+after(sprzataj)
+
+/** @param {string} plik wzgledem .claude/scripts/e2e */
+const modul = (plik) => import(pathToFileURL(join(WARIANT, '.claude/scripts/e2e', plik)).href)
+const adapter = await modul('adapter.mjs')
+const env = await modul('expo-env.mjs')
+const urzadzenie = await modul('expo-urzadzenie.mjs')
+const canary = await modul('expo-canary.mjs')
+/** @param {string} sciezka */
+const czytaj = (sciezka) => readFileSync(join(WARIANT, sciezka), 'utf8')
+
+/** @returns {string} */
+const katalog = () => mkdtempSync(join(tmpdir(), 'expo-e2e-'))
+const IGNOROWANE = { czyIgnorowany: () => true }
+
+// --- plik env (D13) ---
+
+test('env: zapisuje tylko linie EXPO_PUBLIC_* dosłownie, ze znacznikiem; sekrety bazy zostają poza plikiem', () => {
+  const p = katalog()
+  writeFileSync(join(p, '.env.e2e'), 'SUPABASE_E2E_SERVICE_ROLE_KEY=tajne\n# EXPO_PUBLIC_KOMENTARZ=x\nEXPO_PUBLIC_A=https://e2e.example\nexport EXPO_PUBLIC_B="z spacja"\nE2E_TEST_PASSWORD=haslo\n')
+  const w = env.zapiszEnvE2e(p, IGNOROWANE)
+  assert.equal(w.ok, true)
+  assert.equal(readFileSync(join(p, env.PLIK_DEV), 'utf8'), `${env.ZNACZNIK}\nEXPO_PUBLIC_A=https://e2e.example\nexport EXPO_PUBLIC_B="z spacja"\n`)
+  assert.equal(env.plikAdaptera(p), true)
+})
+
+test('env: plik poza .gitignore = STOP bez zapisu; sprawdzenie na prawdziwym git', () => {
+  const p = katalog()
+  spawnSync('git', ['init', '-q'], { cwd: p })
+  writeFileSync(join(p, '.env.e2e'), 'EXPO_PUBLIC_A=1\n')
+  const bez = env.zapiszEnvE2e(p)
+  assert.equal(bez.ok, false)
+  assert.match(bez.detal, /\.env\.development\.local, \.env\.kopia-e2e\.local poza \.gitignore/)
+  assert.equal(existsSync(join(p, env.PLIK_DEV)), false)
+  writeFileSync(join(p, '.gitignore'), '.env*.local\n')
+  assert.equal(env.zapiszEnvE2e(p).ok, true)
+})
+
+test('env: plik operatora dostaje kopię i wraca po cofnięciu; .env.local nietknięty', () => {
+  const p = katalog()
+  writeFileSync(join(p, '.env.e2e'), 'EXPO_PUBLIC_A=e2e\n')
+  writeFileSync(join(p, '.env.local'), 'EXPO_PUBLIC_A=dev\n')
+  writeFileSync(join(p, env.PLIK_DEV), 'EXPO_PUBLIC_A=operator\n')
+  const w = env.zapiszEnvE2e(p, IGNOROWANE)
+  assert.match(w.detal, /plik operatora w \.env\.kopia-e2e\.local/)
+  assert.equal(readFileSync(join(p, env.PLIK_KOPII), 'utf8'), 'EXPO_PUBLIC_A=operator\n')
+  assert.match(env.cofnijEnvE2e(p).detal, /operatora przywrócony/)
+  assert.equal(readFileSync(join(p, env.PLIK_DEV), 'utf8'), 'EXPO_PUBLIC_A=operator\n')
+  assert.equal(existsSync(join(p, env.PLIK_KOPII)), false)
+  assert.equal(readFileSync(join(p, '.env.local'), 'utf8'), 'EXPO_PUBLIC_A=dev\n')
+})
+
+test('env: pozostałość po przebiegu nadpisana i nazwana; plik operatora obok kopii = STOP bez zmian', () => {
+  const p = katalog()
+  writeFileSync(join(p, '.env.e2e'), 'EXPO_PUBLIC_A=nowe\n')
+  writeFileSync(join(p, env.PLIK_DEV), `${env.ZNACZNIK}\nEXPO_PUBLIC_A=stare\n`)
+  assert.match(env.zapiszEnvE2e(p, IGNOROWANE).detal, /nadpisana pozostałość/)
+  assert.match(readFileSync(join(p, env.PLIK_DEV), 'utf8'), /EXPO_PUBLIC_A=nowe/)
+  assert.equal(existsSync(join(p, env.PLIK_KOPII)), false)
+  const q = katalog()
+  writeFileSync(join(q, '.env.e2e'), 'EXPO_PUBLIC_A=e2e\n')
+  writeFileSync(join(q, env.PLIK_DEV), 'EXPO_PUBLIC_A=operator\n')
+  writeFileSync(join(q, env.PLIK_KOPII), 'EXPO_PUBLIC_A=kopia\n')
+  assert.equal(env.zapiszEnvE2e(q, IGNOROWANE).ok, false)
+  assert.equal(readFileSync(join(q, env.PLIK_DEV), 'utf8'), 'EXPO_PUBLIC_A=operator\n')
+  assert.equal(readFileSync(join(q, env.PLIK_KOPII), 'utf8'), 'EXPO_PUBLIC_A=kopia\n')
+})
+
+test('env: cofnięcie nie rusza pliku bez znacznika; bez plików nic nie robi', () => {
+  const p = katalog()
+  assert.equal(env.cofnijEnvE2e(p).detal, '')
+  writeFileSync(join(p, env.PLIK_DEV), 'EXPO_PUBLIC_A=operator\n')
+  writeFileSync(join(p, env.PLIK_KOPII), 'EXPO_PUBLIC_A=kopia\n')
+  assert.match(env.cofnijEnvE2e(p).detal, /zostaje/)
+  assert.equal(readFileSync(join(p, env.PLIK_DEV), 'utf8'), 'EXPO_PUBLIC_A=operator\n')
+  assert.equal(existsSync(join(p, env.PLIK_KOPII)), true)
+})
+
+// --- urządzenie i dev-client ---
+
+const BUNDLE = 'com.example.app'
+const APLIKACJA = { bundleId: BUNDLE, appId: 'com.example.android', scheme: 'przyklad' }
+
+/**
+ * @param {string} baza @param {string} nazwa @param {{ stan?: string, konto?: boolean, aplikacja?: boolean }} o
+ * @returns {{ udid: string, name: string, state: string, dataPath: string, isAvailable: boolean, deviceTypeIdentifier: string, konto: boolean }}
+ */
+function symulator(baza, nazwa, { stan = 'Shutdown', konto = false, aplikacja = true } = {}) {
+  const udid = `UDID-${nazwa}`
+  const dataPath = join(baza, udid)
+  mkdirSync(join(dataPath, 'Library/Accounts'), { recursive: true })
+  writeFileSync(join(dataPath, 'Library/Accounts/Accounts3.sqlite'), '')
+  if (aplikacja) {
+    mkdirSync(join(dataPath, 'Containers/Bundle/Application/X'), { recursive: true })
+    writeFileSync(join(dataPath, 'Containers/Bundle/Application/X/.com.apple.mobile_container_manager.metadata.plist'), `bplist${BUNDLE}`)
+  }
+  return { udid, name: nazwa, state: stan, dataPath, isAvailable: true, deviceTypeIdentifier: 'com.apple.CoreSimulator.SimDeviceType.iPhone-17', konto }
+}
+
+/**
+ * Atrapa komend systemowych: simctl, sqlite3, codesign, adb.
+ * @param {ReturnType<typeof symulator>[]} lista @param {{ aplikacja?: string, podpis?: string, adb?: string, pmPath?: string, mtimeAdb?: string }} o
+ */
+function atrapa(lista, { aplikacja = '', podpis = 'Executable=/x', adb = 'List of devices attached\n', pmPath = '', mtimeAdb = '' } = {}) {
+  /** @type {string[]} */
+  const wywolania = []
+  const wynik = (/** @type {string} */ stdout, status = 0, stderr = '') => ({ status, stdout, stderr })
+  /** @param {string} komenda @param {string[]} a */
+  const wykonaj = (komenda, a) => {
+    wywolania.push(`${komenda} ${a.join(' ')}`)
+    if (komenda === 'sqlite3') return wynik(lista.find((s) => a[0].includes(s.udid))?.konto ? '1\n' : '0\n')
+    if (komenda === 'codesign') return wynik('', 0, podpis)
+    if (komenda === 'adb' && a[0] === 'devices') return wynik(adb)
+    if (komenda === 'adb' && a.includes('pm')) return wynik(pmPath)
+    if (komenda === 'adb' && a.includes('stat')) return wynik(mtimeAdb, mtimeAdb ? 0 : 1)
+    if (a[1] === 'list') return wynik(JSON.stringify({ devices: { 'com.apple.CoreSimulator.SimRuntime.iOS-26-4': lista } }))
+    if (a[1] === 'get_app_container') return wynik(aplikacja, aplikacja ? 0 : 1)
+    return wynik('')
+  }
+  return { wykonaj, wywolania }
+}
+
+/** @returns {{ baza: string, projekt: string, app: string }} projekt i binarka nowsza od konfiguracji */
+function uklad() {
+  const baza = katalog()
+  const projekt = katalog()
+  writeFileSync(join(projekt, 'app.json'), JSON.stringify({ expo: { scheme: 'przyklad', ios: { bundleIdentifier: BUNDLE }, android: { package: 'com.example.android' } } }))
+  utimesSync(join(projekt, 'app.json'), 1000, 1000)
+  const app = join(baza, 'Przyklad.app')
+  mkdirSync(app)
+  return { baza, projekt, app }
+}
+
+test('urządzenie: symulator z kontem Apple odpada, włączony bez konta wygrywa; wyłączonego nie bootuje bez potrzeby', () => {
+  const { baza, projekt, app } = uklad()
+  const lista = [symulator(baza, 'iPhone 17 Pro', { stan: 'Booted', konto: true }), symulator(baza, 'iPhone 17e'), symulator(baza, 'iPhone 17', { stan: 'Booted' })]
+  const { wykonaj, wywolania } = atrapa(lista, { aplikacja: app })
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(w.ok, true)
+  assert.equal(w.urzadzenie.nazwa, 'iPhone 17')
+  assert.deepEqual(wywolania.filter((c) => c.includes(' boot ')), [])
+})
+
+test('urządzenie: wyłączony iPhone z dev-clientem jest bootowany; bez dev-clienta odpada', () => {
+  const { baza, projekt, app } = uklad()
+  const lista = [symulator(baza, 'iPhone Air', { aplikacja: false }), symulator(baza, 'iPhone 17')]
+  const { wykonaj, wywolania } = atrapa(lista, { aplikacja: app })
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(w.urzadzenie.nazwa, 'iPhone 17')
+  assert.ok(wywolania.includes('xcrun simctl boot UDID-iPhone 17'))
+  assert.ok(wywolania.includes('xcrun simctl bootstatus UDID-iPhone 17 -b'))
+})
+
+test('urządzenie: E2E_URZADZENIE zawęża wybór; wskazany z kontem Apple = STOP z przyczyną', () => {
+  const { baza, projekt, app } = uklad()
+  const lista = [symulator(baza, 'iPhone 17', { stan: 'Booted' }), symulator(baza, 'iPhone 17e')]
+  const { wykonaj } = atrapa(lista, { aplikacja: app })
+  assert.equal(urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_URZADZENIE: 'iPhone 17e' }, wykonaj).urzadzenie.nazwa, 'iPhone 17e')
+  const zKontem = atrapa([symulator(baza, 'iPhone 17 Pro', { konto: true })], { aplikacja: app })
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_URZADZENIE: 'iPhone 17 Pro', E2E_PLATFORMA: 'ios' }, zKontem.wykonaj)
+  assert.equal(w.ok, false)
+  assert.match(w.detal, /iPhone 17 Pro: zalogowane konto Apple/)
+})
+
+test('urządzenie: nieznana baza kont nie blokuje, ale idzie jako uwaga', () => {
+  const { baza, projekt, app } = uklad()
+  const s = symulator(baza, 'iPhone 17', { stan: 'Booted' })
+  const a = atrapa([s], { aplikacja: app })
+  const wykonaj = (/** @type {string} */ k, /** @type {string[]} */ b) => (k === 'sqlite3' ? { status: 1, stdout: '', stderr: 'no such table' } : a.wykonaj(k, b))
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(w.ok, true)
+  assert.deepEqual(w.uwagi, ['iPhone 17: nie sprawdzono konta Apple'])
+})
+
+test('dev-client: starszy od lockfile\'a = STOP z komendą przebudowy i LANG; package.json się nie liczy', () => {
+  const { baza, projekt, app } = uklad()
+  utimesSync(app, 2000, 2000)
+  writeFileSync(join(projekt, 'package.json'), '{}')
+  const { wykonaj } = atrapa([symulator(baza, 'iPhone 17', { stan: 'Booted' })], { aplikacja: app })
+  assert.equal(urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj).ok, true, 'nowszy package.json nie unieważnia binarki')
+  writeFileSync(join(projekt, 'package-lock.json'), '{}')
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(w.ok, false)
+  assert.match(w.detal, /starszy niż package-lock\.json/)
+  assert.match(w.naprawa, /LANG=en_US\.UTF-8 npx expo run:ios --no-bundler/)
+})
+
+test('dev-client: nowszy plik natywny drugiej platformy nie unieważnia binarki', () => {
+  const { projekt } = uklad()
+  mkdirSync(join(projekt, 'android'))
+  writeFileSync(join(projekt, 'android/build.gradle'), '')
+  assert.equal(urzadzenie.przestarzaly(projekt, 2000, 'ios'), null)
+  assert.equal(urzadzenie.przestarzaly(projekt, 2000, 'android'), 'android/build.gradle')
+})
+
+test('dev-client iOS bez podpisu = STOP niezależnie od uprawnień w app.json', () => {
+  const { baza, projekt, app } = uklad()
+  const { wykonaj } = atrapa([symulator(baza, 'iPhone 17', { stan: 'Booted' })], { aplikacja: app, podpis: `${app}: code object is not signed at all` })
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(w.ok, false)
+  assert.match(w.detal, /bez podpisu/)
+})
+
+test('Android: zapas przy braku iOS; E2E_PLATFORMA wymusza; brak odczytu mtime to uwaga, stary dev-client STOP', () => {
+  const { projekt } = uklad()
+  const adb = 'List of devices attached\nemulator-5554\tdevice\nemulator-5556\toffline\n'
+  const bez = atrapa([], { adb, pmPath: 'package:/data/app/x/base.apk\n' })
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, bez.wykonaj)
+  assert.deepEqual([w.urzadzenie.platforma, w.urzadzenie.id], ['android', 'emulator-5554'])
+  assert.match(w.uwagi[0], /nie sprawdzono świeżości/)
+  const stary = atrapa([], { adb, pmPath: 'package:/data/app/x/base.apk\n', mtimeAdb: '500\n' })
+  const w2 = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_PLATFORMA: 'android' }, stary.wykonaj)
+  assert.equal(w2.ok, false)
+  assert.match(w2.detal, /starszy niż app\.json/)
+  assert.match(w2.naprawa, /npx expo run:android --no-bundler/)
+})
+
+test('brak urządzenia = STOP z przyczynami i naprawą obu platform; zła E2E_PLATFORMA = STOP', () => {
+  const { baza, projekt } = uklad()
+  const { wykonaj } = atrapa([symulator(baza, 'iPhone 17', { aplikacja: false })])
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(w.ok, false)
+  assert.match(w.detal, /iPhone 17: brak dev-clienta; Android: brak działającego emulatora/)
+  assert.match(w.naprawa, /emulator -avd/)
+  assert.equal(urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_PLATFORMA: 'windows' }, wykonaj).ok, false)
+})
+
+test('aplikacja: identyfikatory z app.json; app.config przez Expo CLI projektu; repo bez konfiguracji = null', () => {
+  const { projekt } = uklad()
+  assert.deepEqual(urzadzenie.aplikacjaProjektu(projekt), APLIKACJA)
+  const q = katalog()
+  writeFileSync(join(q, 'app.config.ts'), 'export default {}')
+  /** @type {string[][]} */
+  const wolania = []
+  const wykonaj = (/** @type {string} */ k, /** @type {string[]} */ a) => {
+    wolania.push([k, ...a])
+    return { status: 0, stdout: JSON.stringify({ scheme: ['a', 'b'], ios: { bundleIdentifier: 'i' }, android: { package: 'p' } }), stderr: '' }
+  }
+  assert.deepEqual(urzadzenie.aplikacjaProjektu(q, wykonaj), { bundleId: 'i', appId: 'p', scheme: 'a' })
+  assert.deepEqual(wolania[0].slice(1), ['config', '--json'])
+  assert.equal(urzadzenie.aplikacjaProjektu(katalog()), null)
+})
+
+// --- canary ---
+
+test('canary: adres Metro per platforma; flow bez logowania nie ma launchApp przed openLink', () => {
+  assert.equal(canary.adresMetro('ios', 8081), 'http%3A%2F%2F127.0.0.1%3A8081')
+  assert.equal(canary.adresMetro('android', 8081), 'http%3A%2F%2F10.0.2.2%3A8081')
+  const flow = canary.flowWejscia(BUNDLE, 'przyklad', 'ADRES')
+  assert.match(flow, new RegExp(`^appId: ${BUNDLE}\\n---\\n- stopApp\\n- openLink: "przyklad://expo-development-client/\\?url=ADRES"`))
+  assert.doesNotMatch(flow, /launchApp/)
+  assert.match(flow, /Cannot find native module/)
+  assert.match(canary.flowWejscia(BUNDLE, null, 'ADRES'), /- launchApp/)
+})
+
+test('canary: własny flow dostaje zmienne i urządzenie; hasło nie wychodzi w naprawie ani wyniku', async () => {
+  const p = katalog()
+  mkdirSync(join(p, '.maestro'))
+  writeFileSync(join(p, canary.PLIK_CANARY), 'appId: x\n')
+  /** @type {string[]} */
+  let argumenty = []
+  /** @type {string[]} */
+  let sekrety = []
+  const maestro = async (/** @type {string[]} */ a, /** @type {string} */ _cwd, /** @type {string[]} */ s) => {
+    argumenty = a
+    sekrety = s
+    return { kod: 0, ogon: '' }
+  }
+  const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'UDID', nazwa: 'iPhone 17', sciezkaAplikacji: 'x' }, aplikacja: APLIKACJA }
+  const w = await canary.przejdzCanary(p, { E2E_TEST_EMAIL: 'e2e@a.test', E2E_TEST_PASSWORD: 'tajne' }, cel, { maestro })
+  assert.equal(w.ok, true)
+  assert.match(w.detal, /_canary\.yaml przeszedł/)
+  assert.deepEqual(argumenty.slice(0, 3), ['--device', 'UDID', 'test'])
+  assert.equal(argumenty.at(-1), canary.PLIK_CANARY)
+  for (const z of [`APP_ID=${BUNDLE}`, 'APP_SCHEME=przyklad', 'METRO_URL=http%3A%2F%2F127.0.0.1%3A8081', 'E2E_EMAIL=e2e@a.test', 'E2E_PASSWORD=tajne']) assert.ok(argumenty.includes(z), z)
+  assert.deepEqual(sekrety, ['tajne'])
+  assert.equal(canary.zamaskuj('Input text tajne', sekrety), 'Input text ***')
+})
+
+test('canary: bez własnego flow idzie plik tymczasowy i nazwany słaby dowód; porażka z modułem natywnym wskazuje przebudowę', async () => {
+  const p = katalog()
+  const cel = { port: 8081, urzadzenie: { platforma: 'android', id: 'emulator-5554', nazwa: 'emulator-5554', sciezkaAplikacji: 'x' }, aplikacja: APLIKACJA }
+  /** @type {string} */
+  let plik = ''
+  const ok = await canary.przejdzCanary(p, {}, cel, {
+    maestro: async (/** @type {string[]} */ a) => {
+      plik = readFileSync(String(a.at(-1)), 'utf8')
+      return { kod: 0, ogon: '' }
+    },
+  })
+  assert.equal(ok.ok, true)
+  assert.match(ok.detal, /słaby dowód/)
+  assert.match(plik, /appId: com\.example\.android/)
+  assert.match(plik, /10\.0\.2\.2/)
+  const zle = await canary.przejdzCanary(p, {}, cel, { maestro: async () => ({ kod: 1, ogon: 'Cannot find native module X' }) })
+  assert.equal(zle.ok, false)
+  assert.match(zle.naprawa, /przebuduj/)
+})
+
+test('canary: uruchomMaestro maskuje hasło w ogonie i na stderr, oddaje kod; brak programu daje wynik zamiast wyjątku', async () => {
+  const bin = katalog()
+  writeFileSync(join(bin, 'maestro'), '#!/bin/sh\necho "Input text tajne"\nexit 3\n', { mode: 0o755 })
+  const sciezka = process.env.PATH
+  const pisz = process.stderr.write
+  /** @type {string[]} */
+  const stderr = []
+  process.stderr.write = /** @type {typeof process.stderr.write} */ ((/** @type {string} */ t) => { stderr.push(t); return true })
+  try {
+    process.env.PATH = `${bin}:${sciezka}`
+    const w = await canary.uruchomMaestro(['test'], bin, ['tajne'])
+    assert.deepEqual(w, { kod: 3, ogon: 'Input text ***' })
+    assert.deepEqual(stderr, ['Input text ***\n'])
+    process.env.PATH = katalog()
+    const brak = await canary.uruchomMaestro(['test'], bin, [])
+    assert.match(String(brak.kod), /ENOENT/)
+  } finally {
+    process.stderr.write = pisz
+    process.env.PATH = sciezka
+  }
+})
+
+test('reload: wysyła metodę reload przez /message i kończy się ok; zamknięty port = wynik z błędem', async () => {
+  /** @type {string} */
+  let odebrane = ''
+  /** @type {import('node:stream').Duplex[]} */
+  const polaczenia = []
+  const serwer = createServer()
+  serwer.on('upgrade', (zadanie, gniazdo) => {
+    polaczenia.push(gniazdo)
+    const klucz = createHash('sha1').update(`${zadanie.headers['sec-websocket-key']}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`).digest('base64')
+    assert.equal(zadanie.url, '/message')
+    gniazdo.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${klucz}\r\n\r\n`)
+    gniazdo.on('data', (/** @type {Buffer} */ ramka) => {
+      if (odebrane) return
+      const dlugosc = ramka[1] & 0x7f
+      const maska = ramka.subarray(2, 6)
+      odebrane = Buffer.from(ramka.subarray(6, 6 + dlugosc).map((b, i) => b ^ maska[i % 4])).toString()
+    })
+    gniazdo.on('error', () => {})
+  })
+  await new Promise((r) => { serwer.listen(0, '127.0.0.1', () => r(undefined)) })
+  const adres = serwer.address()
+  const port = adres && typeof adres === 'object' ? adres.port : 0
+  try {
+    assert.deepEqual(await canary.wyslijReload(port), { ok: true, detal: '' })
+    assert.deepEqual(JSON.parse(odebrane), { version: 2, method: 'reload' })
+  } finally {
+    // Gniazdo po upgrade nie należy już do serwera HTTP: zostawione trzyma proces testu przy życiu.
+    for (const g of polaczenia) g.destroy()
+    serwer.close()
+  }
+  assert.equal((await canary.wyslijReload(port)).ok, false)
+})
+
+// --- kontrakt adaptera ---
+
+test('adapter: polityka zastap, port 8081 bez portu deweloperskiego, CI usunięte z każdej komendy startu', () => {
+  assert.equal(adapter.POLITYKA_OBCEGO, 'zastap')
+  assert.equal(adapter.DOMYSLNY_PORT, 8081)
+  assert.equal(adapter.PORT_DEV, null)
+  assert.equal(adapter.komendaStartu('npm', 8081), 'env -u CI npx expo start --port 8081')
+  assert.equal(adapter.komendaStartu('pnpm', 8082), 'env -u CI pnpm exec expo start --port 8082')
+  assert.equal(adapter.komendaStartu('bun', 8081), 'env -u CI bunx expo start --port 8081')
+  assert.equal(adapter.komendaStartu('yarn', 8081), 'env -u CI yarn expo start --port 8081')
+})
+
+test('adapter: sygnatury blokera łapią komunikaty modułu natywnego i entitlements, zwykły błąd nie', () => {
+  const pasuje = (/** @type {string} */ tekst) => adapter.SYGNATURY_BLOKERA.filter((/** @type {{ wzorzec: string, flagi: string }} */ s) => new RegExp(s.wzorzec, s.flagi).test(tekst)).map((/** @type {{ klasa: string }} */ s) => s.klasa)
+  assert.deepEqual(pasuje('Error: Cannot find native module ExpoClipboard'), ['brak-modulu-natywnego'])
+  assert.deepEqual(pasuje("TurboModuleRegistry.getEnforcing(...): 'X' could not be found"), ['brak-modulu-natywnego'])
+  assert.deepEqual(pasuje('SecureStore: a required entitlement is missing'), ['brak-entitlements'])
+  assert.deepEqual(pasuje('errSecMissingEntitlement (-34018)'), ['brak-entitlements'])
+  assert.deepEqual(pasuje('Unable to find element with text "Zaloguj"'), [])
+  for (const s of adapter.SYGNATURY_BLOKERA) {
+    assert.equal(s.polityka, 'stop-rebuild')
+    assert.match(s.naprawa, /expo run:ios/)
+  }
+})
+
+test('adapter: wersja Javy ze starego i nowego formatu; niepoprawny tekst = null', () => {
+  assert.equal(adapter.wersjaJavy('openjdk version "21.0.10" 2026-01-20'), 21)
+  assert.equal(adapter.wersjaJavy('java version "1.8.0_391"'), 8)
+  assert.equal(adapter.wersjaJavy('The operation couldn’t be completed. Unable to locate a Java Runtime.'), null)
+})
+
+test('adapter: repo bez konfiguracji Expo nie dostaje kroków stacku', async () => {
+  const p = katalog()
+  assert.deepEqual(adapter.przedStartem(p, {}), { ok: true, detal: '', naprawa: '' })
+  assert.deepEqual(await adapter.poStarcie(p, {}, { port: 8081 }), { ok: true, detal: '', naprawa: '' })
+  assert.equal(adapter.uwagaDoctora(p), null)
+  assert.deepEqual(adapter.uwagiPlanowania(p, {}), [])
+})
+
+test('adapter: pozostawiony plik env = wiersz doctora i uwaga planowania; projekt Expo bez canary = uwaga; stop sprząta', () => {
+  const p = katalog()
+  writeFileSync(join(p, 'app.json'), '{}')
+  assert.match(adapter.uwagiPlanowania(p, {})[0], /brak \.maestro\/_canary\.yaml/)
+  writeFileSync(join(p, env.PLIK_DEV), `${env.ZNACZNIK}\nEXPO_PUBLIC_A=e2e\n`)
+  const wiersz = spawnSync(process.execPath, [join(WARIANT, '.claude/scripts/doctor/uwaga-stacku.mjs'), p], { encoding: 'utf8' })
+  assert.deepEqual(wiersz.stdout.trimEnd().split('\t').slice(0, 2), ['env E2E', 'UWAGA'])
+  assert.match(adapter.uwagiPlanowania(p, {})[0], /przykrywa \.env\.local/)
+  assert.match(adapter.poZatrzymaniu(p).detal, /usunięty/)
+  assert.equal(existsSync(join(p, env.PLIK_DEV)), false)
+  assert.equal(spawnSync(process.execPath, [join(WARIANT, '.claude/scripts/doctor/uwaga-stacku.mjs'), p], { encoding: 'utf8' }).stdout, '')
+})
+
+// --- profil, slot i szablony ---
+
+test('profil: klucze EXPO_PUBLIC_*, katalog .maestro, jest, bez pliku e2e o wyższym priorytecie', () => {
+  const p = JSON.parse(czytaj('.claude/stack/profil.json'))
+  assert.equal(p.env.prefiksPubliczny, 'EXPO_PUBLIC_')
+  assert.equal(p.env.adresSupabase, 'EXPO_PUBLIC_SUPABASE_URL')
+  assert.deepEqual(p.env.plikiDev, ['.env', '.env.local'])
+  assert.equal(p.env.plikE2eLokalny, null)
+  assert.deepEqual([p.e2e.katalogSeedow, p.e2e.katalogRunnerow], ['.maestro', '.maestro'])
+  assert.match(p.testy.powiazane, /^jest /)
+  assert.ok(new RegExp(p.zrodla.frontend).test('src/app/index.tsx'))
+  assert.ok(!new RegExp(p.zrodla.frontend).test('supabase/functions/x/index.ts'))
+})
+
+test('slot e2e-srodowisko: te same sekcje co web plus przebudowa; bez słów stacku web', () => {
+  const slot = czytaj('.claude/stack/e2e-srodowisko.md')
+  for (const s of ['Start aplikacji', 'Sonda zdrowia', 'Narzędzie jazdy', 'Przebudowa dev-clienta']) assert.match(slot, new RegExp(`^## ${s}$`, 'm'))
+  assert.doesNotMatch(slot, /agent-browser|\bVite\b|5174/)
+  assert.match(slot, /sekcja „Aplikacja z osobnym serwerem API”/)
+})
+
+test('README: sekcja, do której odsyła rdzeń, Metro i canary zamiast przeglądarki', () => {
+  const r = czytaj('.claude/templates/e2e-env/README.md')
+  assert.match(r, /^## Aplikacja z osobnym serwerem API/m)
+  assert.match(r, /\.env\.development\.local/)
+  assert.doesNotMatch(r, /agent-browser|\bVite\b|5174|VITE_/)
+  const przyklad = czytaj('.claude/templates/e2e-env/.env.e2e.example')
+  assert.match(przyklad, /^EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=/m)
+  assert.doesNotMatch(przyklad, /VITE_|agent-browser/)
+})
+
+test('wzór canary: stopApp przed każdym openLink, zmienne z adaptera, bez kont na sztywno', () => {
+  const c = czytaj('.claude/templates/e2e-env/_canary.yaml')
+  const kroki = c.split('\n').filter((l) => /^- (launchApp|stopApp|openLink)/.test(l)).map((l) => l.replace(/^- (\w+).*/, '$1'))
+  assert.deepEqual(kroki, ['launchApp', 'stopApp', 'openLink', 'stopApp', 'openLink'])
+  for (const z of ['${APP_ID}', '${APP_SCHEME}', '${METRO_URL}', '${E2E_EMAIL}', '${E2E_PASSWORD}']) assert.ok(c.includes(z), z)
+})
+
+test('wzór canary przechodzi maestro check-syntax', { skip: spawnSync('maestro', ['--version']).error ? 'brak maestro' : false }, () => {
+  const k = katalog()
+  try {
+    writeFileSync(join(k, '_canary.yaml'), czytaj('.claude/templates/e2e-env/_canary.yaml'))
+    const w = spawnSync('maestro', ['check-syntax', join(k, '_canary.yaml')], { encoding: 'utf8' })
+    assert.equal(w.status, 0, `${w.stdout}${w.stderr}`)
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+})

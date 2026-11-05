@@ -21,7 +21,7 @@ import { join } from 'node:path'
 
 import { czyFigmaScreens, sekcjaDesignerska } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
-import { naprawaZrzutu, opisProbyZrzutu, POLITYKA_OBCEGO, SYGNATURY_BLOKERA } from './adapter.mjs'
+import { naprawaZrzutu, opisProbyZrzutu, poStarcie, POLITYKA_OBCEGO, przedStartem, SYGNATURY_BLOKERA } from './adapter.mjs'
 import { loginCanary } from './konto.mjs'
 import { doOdegrania, liczE2e } from './scenariusze.mjs'
 import { naprawaObcego, opisObcego, stanPortu, uruchomSerwer } from './serwer.mjs'
@@ -36,6 +36,8 @@ import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './sr
 // Komenda startu bez aplikacji: pnpm/npm bez binarki, skryptu albo package.json, powloka bez programu (kod 127).
 const BRAK_APLIKACJI = /Command "[^"]+" not found|command not found|ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND|ERR_PNPM_NO_SCRIPT|Missing script|ENOENT[^\n]*package\.json/i
 const KOD_BRAKU_PROGRAMU = 127
+// Kroki stacku wokol serwera z adaptera; testy rdzenia podstawiaja wlasne.
+const KROKI_STACKU = { przedStartem, poStarcie }
 
 /**
  * Repo bez aplikacji (projekt od zera, vibersi: package.json ze skryptami scrapera, bez zaleznosci): rozpoznanie po strukturze,
@@ -81,11 +83,11 @@ export function potrzebyZadania(projekt, sciezka) {
  * @param {string} projekt
  * @param {string | null} sciezka katalog zadania; null = bez zadania (skill weryfikacji)
  * @param {{ uruchom: boolean, narzedzia?: import('./srodowisko.mjs').Narzedzia, politykaObcego?: 'stop' | 'zastap',
- *   canary?: typeof loginCanary }} opcje uruchom=false: sprawdzenie bez startu (sekcja Doctor); politykaObcego i canary: domyslnie
- *   z adaptera stacku (D11) i login kontem e2e (D16) — testy podstawiaja wlasne
+ *   canary?: typeof loginCanary, kroki?: typeof KROKI_STACKU }} opcje uruchom=false: sprawdzenie bez startu (sekcja Doctor); politykaObcego,
+ *   canary i kroki: domyslnie z adaptera stacku (D11) i login kontem e2e (D16) — testy podstawiaja wlasne
  * @returns {Promise<WynikStartu>}
  */
-export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZIA, politykaObcego = POLITYKA_OBCEGO, canary = loginCanary }) {
+export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZIA, politykaObcego = POLITYKA_OBCEGO, canary = loginCanary, kroki = KROKI_STACKU }) {
   const { scenariusze, figmaScreens } = sciezka ? potrzebyZadania(projekt, sciezka) : { scenariusze: null, figmaScreens: false }
   const env = envE2e(projekt)
   const konf = env ? konfiguracja(projekt, env) : null
@@ -133,11 +135,15 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
     return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${konto.naprawa} Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
   }
   const dopisekKonta = konto?.status === 'utworzone' || konto?.status === 'pominieto' ? `; konto e2e: ${konto.detal}` : ''
+  const sprawdzenieStartu = komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')
+  // Repo bez aplikacji nie ma jeszcze czego przygotowac: krok stacku przechodzi pierwszy restart z aplikacja.
+  const przed = projektBezAplikacji(projekt) ? { ok: true, detal: '', naprawa: '' } : kroki.przedStartem(projekt, env)
+  if (!przed.ok) return { ...wynik, status: 'niepowodzenie', bledy: [przed.detal], detal: przed.detal, naprawa: `${przed.naprawa} Sprawdzenie startu: ${sprawdzenieStartu}` }
   // Probny zrzut przed startem serwera (P19): zawieszony zrzut w trakcie runu kosztowal faze 971 s obejscia.
   const zrzut = (narzedzia.zrzut ?? NARZEDZIA.zrzut)?.()
   if (zrzut && !zrzut.ok) {
     const blad = `${opisProbyZrzutu}: ${zrzut.detal}`
-    return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${naprawaZrzutu} Sprawdzenie startu: ${komendaSprawdzenia(sciezka).replace(' sprawdz', ' start')}` }
+    return { ...wynik, status: 'niepowodzenie', bledy: [blad], detal: blad, naprawa: `${naprawaZrzutu} Sprawdzenie startu: ${sprawdzenieStartu}` }
   }
   const serwer = await uruchomSerwer(projekt, konf, env, { politykaObcego })
   if (serwer.obcy) {
@@ -150,8 +156,11 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
   if (serwer.blad) {
     return { ...wynik, status: 'niepowodzenie', log: konf.log, bledy: [serwer.blad], detal: serwer.blad, naprawa: `Uruchom recznie „${konf.start}” i sprawdz ${konf.zdrowie}; parametry E2E_START, E2E_URL, E2E_HEALTH, E2E_START_TIMEOUT w ${PLIK_ENV}. Sprawdzenie: ${komendaSprawdzenia(sciezka)}` }
   }
+  const po = await kroki.poStarcie(projekt, env, konf)
+  if (!po.ok) return { ...wynik, status: 'niepowodzenie', serwer: 'uruchomione', log: konf.log, bledy: [po.detal], detal: po.detal, naprawa: `${po.naprawa} Sprawdzenie startu: ${sprawdzenieStartu}` }
   const zastapiony = serwer.zastapiony ? `; zastapiony obcy serwer PID ${serwer.zastapiony.pid} (${serwer.zastapiony.komenda})` : ''
-  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony („${konf.start}”), odpowiada na ${konf.zdrowie}${zastapiony}${dopisekKonta}` }
+  const stack = [przed.detal, po.detal].filter(Boolean).map((d) => `; ${d}`).join('')
+  return { ...wynik, status: 'gotowe', serwer: 'uruchomione', log: konf.log, detal: `serwer uruchomiony („${konf.start}”), odpowiada na ${konf.zdrowie}${zastapiony}${dopisekKonta}${stack}` }
 }
 
 /**
@@ -168,9 +177,10 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
  * @param {string} projekt
  * @param {string} sciezka katalog zadania wzgledem projektu
  * @param {number} faza
+ * @param {{ kroki?: Pick<typeof KROKI_STACKU, 'przedStartem'>, politykaObcego?: 'stop' | 'zastap' }} [opcje] domyslnie z adaptera stacku, testy podstawiaja wlasne
  * @returns {Promise<WynikRestartu>}
  */
-export async function restartFazy(projekt, sciezka, faza) {
+export async function restartFazy(projekt, sciezka, faza, { kroki = KROKI_STACKU, politykaObcego = POLITYKA_OBCEGO } = {}) {
   const zadania = plikZadania(join(projekt, sciezka), '-zadania.md')
   const scenariusze = zadania ? doOdegrania(zadania.tresc, faza).length : 0
   const { figmaScreens } = potrzebyZadania(projekt, sciezka)
@@ -180,7 +190,10 @@ export async function restartFazy(projekt, sciezka, faza) {
   const wynik = { status: 'pominieto', faza, scenariusze, figmaScreens, serwer: 'brak', url: konf?.url ?? null, log: null, detal: '', obcy: null, sygnaturyBlokera: SYGNATURY_BLOKERA }
   if (!scenariusze && !figmaScreens) return { ...wynik, detal: `faza ${faza} bez scenariuszy [E2E] i makiet — serwer niepotrzebny` }
   if (!env || !konf || konf.blad) return { ...wynik, status: 'niepowodzenie', detal: konf?.blad ?? `brak ${PLIK_ENV}` }
-  const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true })
+  // Bez dowodu poStarcie: ten raz na run robi start, a restart stoi przed kazda faza.
+  const przed = kroki.przedStartem(projekt, env)
+  if (!przed.ok) return { ...wynik, status: 'niepowodzenie', detal: przed.detal, naprawa: przed.naprawa }
+  const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true, politykaObcego })
   // Obcy serwer zajal port w trakcie runu: przyczyna poza kodem fazy — bez logu dla correctness; naprawa osobno (operator, log),
   // bo `detal` idzie do testera jako przyczyna trybu bez przegladarki.
   if (serwer.obcy) return { ...wynik, status: 'niepowodzenie', serwer: 'obcy', obcy: serwer.obcy, detal: serwer.blad ?? '', naprawa: naprawaObcego(konf, serwer.obcy) }

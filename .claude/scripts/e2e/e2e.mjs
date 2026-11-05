@@ -29,6 +29,7 @@ import { isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
+import { poZatrzymaniu } from './adapter.mjs'
 import { advisorsE2e } from './advisors.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { rodzajPrzyczyny, zaksiegujFaze } from './ksiegowanie.mjs'
@@ -107,7 +108,8 @@ async function wykonaj(polecenie, o, projekt) {
     zakoncz(w, w.status !== 'porazka' && w.status !== 'blad')
   }
   if (polecenie === 'stop') {
-    const w = await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {}))
+    const serwer = await zatrzymajSerwer(konfiguracja(projekt, envE2e(projekt) ?? {}))
+    const w = { ...serwer, detal: [serwer.detal, poZatrzymaniu(projekt).detal].filter(Boolean).join('; ') }
     if (!o.zadanie) zakoncz(w, true)
     const z = przeniesZrzutyZKorzenia(projekt, o.zadanie)
     zakoncz({ ...w, zrzutyPrzeniesione: z.przeniesione, detal: [w.detal, opisZrzutow(z)].filter(Boolean).join('; ') }, true)

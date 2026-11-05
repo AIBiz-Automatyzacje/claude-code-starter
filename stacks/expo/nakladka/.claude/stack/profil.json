@@ -1,0 +1,23 @@
+{
+  "opis": "Profil stacku Expo (slot danych, D15): wartości zależne od stacku, które czytają skrypty i hooki rdzenia. Skrypty biorą je przez .claude/scripts/stack/profil.mjs, hook error-handling-reminder.sh wprost z tego pliku.",
+  "env": {
+    "prefiksPubliczny": "EXPO_PUBLIC_",
+    "adresSupabase": "EXPO_PUBLIC_SUPABASE_URL",
+    "kluczSupabase": ["EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "EXPO_PUBLIC_SUPABASE_ANON_KEY"],
+    "plikiDev": [".env", ".env.local"],
+    "plikE2eLokalny": null,
+    "aplikacjaE2e": "Metro w trybie dev",
+    "wbudowane": ["EXPO_OS", "EXPO_BASE_URL", "EXPO_SERVER", "EXPO_PROJECT_ROOT", "EXPO_ROUTER_APP_ROOT", "EXPO_ROUTER_IMPORT_MODE"]
+  },
+  "e2e": {
+    "katalogSeedow": ".maestro",
+    "katalogRunnerow": ".maestro"
+  },
+  "zrodla": {
+    "frontend": "^(src|app|components|hooks|lib|features|core)/"
+  },
+  "testy": {
+    "powiazane": "jest --watchAll=false --findRelatedTests"
+  },
+  "komendyCli": ["jest", "expo"]
+}
