@@ -33,7 +33,7 @@ Przy `experiments.typedRoutes: true` `<Link href>` z fikcyjną trasą nie przech
 
 ## Miejsce testów
 
-Testy leżą w `__tests__/`, poza katalogiem tras (`src/app` albo `app`): plik w katalogu tras staje się trasą.
+Testy leżą obok plików źródłowych. Wyjątek to katalog tras (`src/app` albo `app`), w którym każdy plik staje się trasą: testy tras idą do `__tests__/`.
 
 ## Granica z Maestro
 

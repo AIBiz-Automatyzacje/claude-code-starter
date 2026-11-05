@@ -3,6 +3,7 @@
 # .claude/templates/bramki/ biegna na jego node_modules.
 packages:
   - .claude/templates/bramki
+  - stacks/expo/__tests__/pakiet-bramek
 
 # Stryker importuje `typescript` bez deklaracji zaleznosci; w szablonie wspinaczka po katalogach trafia na TypeScript 7
 # korzenia (bez API JS). Peer = typescript pakietu bramek (5.9.3), jak w projekcie z bramkami.

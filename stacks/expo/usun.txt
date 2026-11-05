@@ -12,3 +12,7 @@
 # Makieta obok aplikacji w iframe nie obsłuży aplikacji natywnej (D2). Do zrobienia po pilocie: zrzut z emulatora obok makiety.
 .claude/skills/makieta/
 .claude/scripts/makieta/
+# Budżetu paczki nie pilnuje bramka; bez size-limit.
+.claude/templates/bramki/.size-limit.json
+# Testy konfiguracji Vitest; wersję jest ma stacks/expo/__tests__/bramki.test.mjs.
+.claude/templates/bramki/__tests__/
