@@ -45,6 +45,16 @@ Techniczne — przyjmuję rekomendację, chyba że zmienisz:
 | D24 | `e2e-setup` | Wchłonąć w wariant Maestro `weryfikacja-setup`, potem usunąć. |
 | D25 | Hook antywzorców | Naprawić 3 defekty (filtr komentarzy, odesłanie, `*.web.tsx`/`+html`/`supabase/functions`), dodać 3 wzorce: `SafeAreaView` z `react-native`, `process.env[`, `Permission: false`. |
 
+## Korekty po spike'u SDK 58 (operator, 2026-11-05)
+
+Wiersze tabel wyżej zostają jako zapis decyzji z 2026-11-02; przy rozjeździe obowiązuje ta sekcja. Dowody: `spike-sdk-58.md`.
+
+| # | Korekta | Powód |
+|---|---|---|
+| D6 | Plugin to **`expo@claude-plugins-official`** w zakresie projektu, nie `expo@expo-plugins`. `deny` obejmuje `@expo/agent-cli` (lista z A0.2) i dodatkowo `Bash(*submit-expo-feedback*)`. Hub stosu ostrzega, że przypięty plugin może być starszy od bieżącego SDK. | Tak podają dokumentacja Expo i szablon `default@sdk-58`; marketplace przypina SHA. Wersja 1.13.9 woła `submit-expo-feedback`. |
+| D11 | Polityka mobile `zastap` zostaje, ale z innym uzasadnieniem: obcy Metro na porcie może serwować paczkę innego projektu. | Wartości env z plików docierają bez restartu Metro, więc dawny powód („dev-client czyta env przy starcie Metro”) jest nieścisły. |
+| D13 | Zamiast swapu `.env.local`: adapter E2E zapisuje **`.env.development.local`**, wysyła reload i usuwa plik po przebiegu. `.env.local` zostaje nietknięty; istniejącego `.env.development.local` adapter nie nadpisuje bez zachowania kopii; Metro działa bez `CI=1`; pozostawiony plik wykrywa doctor albo start. | Plik ma najwyższy priorytet w dev. Env procesu przegrywa z plikami w dev, a `.env.<mode>` nie ładuje się od SDK 58. |
+
 ## Spike (jedna sesja, przed Etapem 2)
 
 Na świeżym projekcie Expo SDK 58: Uniwind (TextInput + className, line-height, `translate` w %, `boxShadow` na Androidzie,

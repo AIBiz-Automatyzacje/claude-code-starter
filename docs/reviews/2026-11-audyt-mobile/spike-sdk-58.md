@@ -230,6 +230,13 @@ Uwaga: `builder-rn` przeczytał `expo-router/references/form-sheet.md` i sam zau
 sprawdził `.d.ts` w `node_modules`. Wersja 1.13.9 nie ma w `SKILL.md` ani referencjach słów „SDK 58” (grep). Zdanie planu
 „świeżość zapewnia upstream” ma granicę: oficjalny marketplace przypina SHA, który może być starszy od bieżącego SDK.
 
+## Decyzje operatora (2026-11-05)
+
+Przyjęte rekomendacje: D6 `expo@claude-plugins-official` + `deny` także dla `submit-expo-feedback`; D11 `zastap` zostaje z
+powodem „obcy Metro może serwować paczkę innego projektu”; D13 `.env.development.local` zamiast swapu. Zapis:
+`00-decyzje.md`, sekcja „Korekty po spike'u SDK 58”; plan: IU-2.3, IU-2.7, sekcja „Decyzje”. Sekcja niżej zostaje jako zapis
+stanu przed decyzją.
+
 ## Rozjazdy z planem i audytem
 
 1. **D6 / IU-2.7 / A0.2: nazwa pluginu.** Plan: `expo@expo-plugins`. [Dokumentacja Expo](https://docs.expo.dev/agents/claude/)
@@ -252,7 +259,9 @@ sprawdził `.d.ts` w `node_modules`. Wersja 1.13.9 nie ma w `SKILL.md` ani refer
    `src/global.css`. Plan i A0.5 piszą `app/`, `components/`, `lib/`, `global.css`.
 6. **Sekcje `rules/stack.md`:** projekt z A0.5 §2 nie ma sekcji, do których odsyła rdzeń (lista niżej).
 
-## Proponowane korekty planu (jeszcze nienaniesione)
+## Proponowane korekty planu
+
+Naniesione po decyzjach z 2026-11-05: logika env w IU-2.3 oraz nazwa pluginu i `deny` w IU-2.7. Reszta tej listy jeszcze nienaniesiona.
 
 **`rules/stack.md` mobile (IU-2.8).** Rdzeń odsyła po nazwie do sekcji, których projekt A0.5 §2 nie ma. Doliczyć je obok grup
 tematycznych, z treścią:

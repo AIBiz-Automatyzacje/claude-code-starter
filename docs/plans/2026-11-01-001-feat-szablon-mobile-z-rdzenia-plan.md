@@ -178,7 +178,8 @@ Wynik: notatka z PASS/FAIL per punkt → korekty `rules/stack.md` mobile i Etapu
 
 **Stan (2026-11-05):** spike zrobiony, wyniki i proponowane korekty w
 [`docs/reviews/2026-11-audyt-mobile/spike-sdk-58.md`](../reviews/2026-11-audyt-mobile/spike-sdk-58.md). D7 i D8 potwierdzone;
-przed Etapem 2 decyzje operatora: źródło pluginu Expo (D6) i alternatywa dla swapu (D13). Korekt jeszcze nie naniesiono.
+korekty D6, D11 i D13 przyjęte przez operatora (sekcja „Decyzje”) i naniesione w IU-2.3 i IU-2.7. Pozostałe korekty z notatki
+jeszcze nienaniesione.
 
 ### Etap 1 — Szwy w rdzeniu (repo web, zachowanie web bez zmian)
 
@@ -283,7 +284,9 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
   bez findingu OPERATOR, `flow` z linii także przy braku pliku (→ `scenariusz-niewykonalny`, D17), nie bootuje urządzeń
   i nie pisze do `.maestro/`; `--test-output-dir` w folderze zadania (Maestro ≥ 2.8), dowody z `takeScreenshot`.
 - IU-2.3 Adapter E2E `scripts/e2e/adapter.mjs` dla Expo: logika z promptu env-up mobile (`dev-autopilot-wf.js` mobile
-  l.463–701) **przeniesiona do skryptu** — swap `EXPO_PUBLIC_*` w `.env.local` z rollbackiem, Metro z PID na :8081,
+  l.463–701) **przeniesiona do skryptu** — `EXPO_PUBLIC_*` e2e w `.env.development.local` zapisywanym i usuwanym przez
+  adapter (D13: `.env.local` nietknięty, reload po zapisie, Metro bez `CI=1`, pozostawiony plik wykrywa doctor albo start;
+  istniejącego pliku nie nadpisuje bez kopii), Metro z PID na :8081,
   emulator iOS-first z fallbackiem Android, świeżość dev-clienta, canary `.maestro/_canary.yaml`, seedy `.maestro/*-seed.sql`.
   Deterministyczny skrypt zamiast promptu = mniej losowości niż w starym mobile.
 - IU-2.4 Bramka natywna po fazie (prebuild / pod install przy zmianie warstwy natywnej, mobile l.1184–1242) jako slot
@@ -293,8 +296,9 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
   deliverable buildera — D17), `fix-e2e.md`. `expo-doctor` jako bramka w `scripts/bramki/` (D14).
 - IU-2.6 `weryfikacja-setup` wariant Maestro (Launch = dev-client + Metro, Drive = flow Maestro, Evidence = screenshoty)
   — wchłania `e2e-setup` (D24; zostaje wiedza o dev-clientcie, pułapki 6–8, 10, 11, para `EXPO_PUBLIC_E2E_TEST_USER_*`).
-- IU-2.7 Skille (D6, D7): plugin `expo@expo-plugins` w `settings.patch.json` (MCP Expo wyłączony — D19, `deny` dla
-  `@expo/agent-cli feedback`, bramka „plugin zainstalowany” w doctorze); lokalnie: hub stosu (przemianowany z
+- IU-2.7 Skille (D6, D7): plugin `expo@claude-plugins-official` w `settings.patch.json` (MCP Expo wyłączony — D19, `deny`
+  dla `@expo/agent-cli` i `submit-expo-feedback`, bramka „plugin zainstalowany” w doctorze; hub ostrzega, że przypięty plugin
+  może być starszy od SDK); lokalnie: hub stosu (przemianowany z
   `expo-overview`), skill Uniwind (przypięta kopia oficjalnego skilla autorów z audytem świeżości), nowy
   `rn-expo-guidelines` (A0.4 §7), `mobile-e2e-maestro` i `ux-ui-guidelines-mobile` po poprawkach P1/P2 z A0.3.
   Usunąć (`usun.txt`): agent-browser, tailwind-react-guidelines, ux-ui-guidelines, coolify-manager, makieta +
@@ -352,6 +356,9 @@ Przyjęte (operator, 2026-11-01/02):
   swap `.env.local` po sprawdzeniu alternatywy, `expo-doctor` jako bramka, `profil.json`, login canary w rdzeniu,
   `[E2E]` z plikiem flow, fixture smoke RN, MCP Expo wyłączony, `references/stack.md`, `learned-patterns` poza szablonem,
   podział testów CI ról, warianty `-figma`, `e2e-setup` → `weryfikacja-setup`, naprawa hooka).
+- **Korekty po spike'u SDK 58** (operator, 2026-11-05; `00-decyzje.md`, `spike-sdk-58.md`): D6 — plugin
+  `expo@claude-plugins-official`, `deny` także dla `submit-expo-feedback`; D11 — `zastap` zostaje, bo obcy Metro może serwować
+  paczkę innego projektu; D13 — `.env.development.local` zamiast swapu `.env.local`.
 
 Do potwierdzenia przed Etapem 2–3:
 - **D2** `makieta` w mobile: usunąć na start (proxy z iframe nie obsłuży aplikacji natywnej); ewentualny wariant „zrzut z
