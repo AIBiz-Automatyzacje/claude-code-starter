@@ -16,6 +16,10 @@ import { KATALOGI_RDZENIA } from './straznik.mjs'
 const PLIK_USTAWIEN = '.claude/settings.json'
 const PLIK_WERSJI = '.claude/.rdzen-version'
 const POMIJANE_NAZWY = new Set(['.DS_Store', 'settings.local.json'])
+// Claude Code przy `plugin install --scope project` przepisuje settings.json z `permissions` na początku i tymi dwoma kluczami
+// pluginów na końcu (próba 2026-11-05, wersja 2.1.318); inna kolejność brudzi drzewo projektu i zatrzymuje bootstrap autopilota.
+const KLUCZE_NA_POCZATKU = ['permissions']
+const KLUCZE_NA_KONCU = ['enabledPlugins', 'extraKnownMarketplaces']
 
 export class BladWariantu extends Error {
   /** @param {string} kod @param {string} komunikat */
@@ -125,7 +129,10 @@ function ustawieniaWariantu(korzen, katalogStacku) {
   const baza = JSON.parse(readFileSync(join(korzen, PLIK_USTAWIEN), 'utf8'))
   const plikPatcha = join(katalogStacku, 'settings.patch.json')
   const patch = existsSync(plikPatcha) ? JSON.parse(readFileSync(plikPatcha, 'utf8')) : {}
-  return `${JSON.stringify(scalUstawienia(baza, patch), null, 2)}\n`
+  const scalone = scalUstawienia(baza, patch)
+  const reszta = Object.keys(scalone).filter((k) => !KLUCZE_NA_POCZATKU.includes(k) && !KLUCZE_NA_KONCU.includes(k))
+  const kolejnosc = [...KLUCZE_NA_POCZATKU, ...reszta, ...KLUCZE_NA_KONCU].filter((k) => k in scalone)
+  return `${JSON.stringify(Object.fromEntries(kolejnosc.map((k) => [k, scalone[k]])), null, 2)}\n`
 }
 
 /**

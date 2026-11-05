@@ -174,7 +174,7 @@ test('Coolify i Dockerfile → coolify i docker jako UWAGA, nie blokuja', () => 
   const w = doctor(s)
   assert.equal(w.status, 0, w.stdout)
   assert.equal(wiersz(w.stdout, 'coolify')[1], 'UWAGA')
-  assert.match(wiersz(w.stdout, 'coolify')[3], /install_coolify_cli\.sh/)
+  assert.match(wiersz(w.stdout, 'coolify')[3], /install_coolify_cli\.sh|dokumentacji Coolify CLI/)
   assert.equal(wiersz(w.stdout, 'docker')[1], 'UWAGA')
   assert.match(w.stdout, /uwagi: 2\)/)
 }))

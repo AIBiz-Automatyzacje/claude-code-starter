@@ -38,7 +38,7 @@ Datę do plików bierz z `date +%F`.
    - Warunki środowiskowe z findingów OPERATOR nie są pozycjami smoke'u: konieczność restartu dev servera po zmianie `.env` ląduje wyłącznie jako check w „0. Przygotowanie"; kroki stricte pod przebieg E2E (seedy na projekt e2e, start aplikacji w trybie e2e) **nigdy** nie wchodzą do smoke'u — kolidują z sekcją 0 (smoke leci na projekcie głównym).
    - **W całym pliku żadnych wartości haseł/tokenów/kluczy** — także gdy cytujesz known-issues lub review; zastąp nazwą zmiennej (`E2E_TEST_PASSWORD`) lub frazą `<hasło w .env.e2e>`. E-mail konta testowego może zostać.
 
-   **Punkty wizualne** czyta narzędzie makiet (`/makieta`). Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”. Przed pierwszym punktem wizualnym smoke'u stoi zdanie „Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.”. Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik> --pola`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.
+   **Punkty wizualne** przegląda operator (jak: `references/stack.md`, sekcja „Punkty wizualne”). Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”. Przed pierwszym punktem wizualnym smoke'u stoi zdanie z `references/stack.md`, sekcja „Punkty wizualne”. Kontrola makiet po zapisie pliku: wg `references/stack.md`, sekcja „Punkty wizualne”.
 
    Jeśli po zastosowaniu hierarchii źródła (1)–(6) są puste — nie twórz pliku, powiedz „brak pozycji do ręcznego sprawdzenia".
 
@@ -83,7 +83,7 @@ Datę do plików bierz z `date +%F`.
    Wejście: <jak tam dojść w aplikacji>.
    - [ ] <Czynność> → <oczekiwany wynik, konkretny>
    - [ ] **[fizyczne urządzenie]** <dotyk / push / safe-area / responsywność>
-   Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.   ← tylko w smoke'u z punktami wizualnymi, przed pierwszym z nich
+   <zdanie przed punktami z sekcji „Punkty wizualne”>   ← tylko w smoke'u z punktami wizualnymi, przed pierwszym z nich
    - [ ] Telefon: `/p/kawiarnia-u-ani` (slug z seeda) obok `visual-diff/<ekran>-figma.png` (viewport 390×844) → Wejście: <skąd i co kliknąć>. Porównaj: <2–4 elementy z makiety>. Stany: <stan — jak wywołać; „brak”>
 
    ## 2. …
@@ -97,7 +97,7 @@ Datę do plików bierz z `date +%F`.
    Kontynuujemy smoke operatora zadania "<zadanie>" (branch feature/<zadanie>).
    Checklista: docs/operator/YYYY-MM-DD-<zadanie>-smoke.md — prowadź mnie punkt po punkcie,
    odhaczaj za mnie w pliku, a usterki naprawiaj od razu (z testem) zamiast odkładać.
-   Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).
+   <zdanie do ramki z sekcji „Punkty wizualne”>   ← tylko w smoke'u z punktami wizualnymi
    Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania
    bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj.
    ```

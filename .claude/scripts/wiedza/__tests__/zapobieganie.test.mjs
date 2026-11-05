@@ -38,7 +38,6 @@ test('klasa pokryta warstwa stala buildera albo regulami kodu: fraza nadal stoi 
       assert.ok(readFileSync(resolve(REPO, plik), 'utf8').includes(fraza), `${klasa}: brak „${fraza}” w ${plik} — dopisz zdanie do ZDANIA`)
     }
   }
-  assert.match(readFileSync(resolve(REPO, '.claude/skills/ux-ui-guidelines/SKILL.md'), 'utf8'), /^### Dostępność/m, 'checklista, do ktorej odsylaja buildery UI')
 })
 
 test('dobor po plikach: komponent dostaje tylko klasy kodu UI, migracja — klasy SQL, seed — klasy seedu', () => {

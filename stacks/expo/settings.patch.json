@@ -1,1 +1,13 @@
-{}
+{
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
+  },
+  "permissions": {
+    "deny": [
+      "Bash(npx --yes @expo/agent-cli*)",
+      "Bash(npx @expo/agent-cli*)",
+      "Bash(*agent-cli*feedback*)",
+      "Bash(*submit-expo-feedback*)"
+    ]
+  }
+}

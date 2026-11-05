@@ -140,6 +140,16 @@ test('settings.patch.json: wynik scalony w settings.json wariantu', () => {
   })
 })
 
+test('settings.json wariantu w kolejności zapisu Claude Code: permissions na początku, klucze pluginów na końcu', () => {
+  const k = repo({
+    '.claude/settings.json': '{"enabledPlugins":{"a@x":true},"extraKnownMarketplaces":{"x":{}},"hooks":{}}\n',
+    'stacks/expo/settings.patch.json': '{"permissions":{"deny":["Bash(a)"]}}',
+  })
+  const cel = celTymczasowy()
+  zbuduj({ korzen: k, stack: 'expo', katalog: cel })
+  assert.deepEqual(Object.keys(JSON.parse(readFileSync(join(cel, '.claude/settings.json'), 'utf8'))), ['permissions', 'hooks', 'enabledPlugins', 'extraKnownMarketplaces'])
+})
+
 test('scalUstawienia: obiekty rekurencyjnie, tablice bez powtórzeń, prosta wartość nadpisana, null usuwa, baza nietknięta', () => {
   const baza = { a: { b: 1, c: 2 }, l: [{ x: 1 }], s: 'web', d: true }
   const wynik = scalUstawienia(baza, { a: { b: 9 }, l: [{ x: 1 }, { x: 2 }], s: 'expo', d: null, n: [1] })

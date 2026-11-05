@@ -386,67 +386,36 @@ test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /
   assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
 })
 
-// P24 IU-8: punkty wizualne smoke'u w formacie czytanym przez narzedzie makiet (.claude/scripts/makieta/), odeslanie do /makieta
-// przed pierwszym punktem wizualnym i w ramce „Jak kontynuowac”, kontrola formatu skryptem. Te same zdania w workflowie i w skillu.
-test('smoke: format punktu wizualnego, zdanie o /makieta przed punktami i w ramce, kontrola makieta.mjs sprawdz — w workflowie i w skillu', () => {
+// P24 IU-8: punkty wizualne smoke'u mają format czytany przez przegląd stacku; narzędzie i zdania do smoke'u leżą w slocie
+// dev-docs-complete/references/stack.md, sekcja „Punkty wizualne” (IU-2.7, D2). Treść web: stacks/web/__tests__/makieta.test.mjs.
+test('smoke: format punktu wizualnego w workflowie i w skillu, zdania i kontrola ze slotu, zdanie do ramki przed zdaniami końcowymi', () => {
   /** @type {(nazwaZadania: string) => string} */
   // eslint-disable-next-line no-new-func -- jw.
   const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
   const p = smokePrompt('zadanie-x')
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
-  const zdania = [
+  const slot = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/references/stack.md'), 'utf8')
+  assert.match(slot, /^## Punkty wizualne$/m)
+  const splaszczony = skill.replace(/\n\s+/g, ' ')
+  for (const z of [
     'Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”.',
-    'Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke\'u wpisz /makieta.',
-    'Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).',
     'Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×.',
-    'Kontrola makiet po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik> --pola`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.',
-  ]
-  for (const z of zdania) {
+  ]) {
     assert.ok(p.includes(z), `workflow: ${z}`)
-    assert.ok(skill.replace(/\n\s+/g, ' ').includes(z), `skill: ${z}`)
+    assert.ok(splaszczony.includes(z), `skill: ${z}`)
   }
-  for (const tekst of [p, skill.replace(/\n\s+/g, ' ')]) assert.match(tekst, /Przed pierwszym punktem wizualnym smoke'u stoi zdanie:? [„"]Punkty wizualne przejdziesz narzędziem makiet/)
-  // Ramka nadal konczy sie zdaniami o „Następny krok” (P22 B2) — zdanie o /makieta stoi przed nimi.
+  assert.match(p, /Przed pierwszym punktem wizualnym smoke'u stoi zdanie z \.claude\/skills\/dev-docs-complete\/references\/stack\.md, sekcja „Punkty wizualne”/)
+  assert.match(p, /Kontrola makiet po zapisie pliku: wg \.claude\/skills\/dev-docs-complete\/references\/stack\.md, sekcja „Punkty wizualne”/)
+  assert.match(splaszczony, /Przed pierwszym punktem wizualnym smoke'u stoi zdanie z `references\/stack\.md`, sekcja „Punkty wizualne”/)
+  assert.match(splaszczony, /Kontrola makiet po zapisie pliku: wg `references\/stack\.md`, sekcja „Punkty wizualne”/)
+  // Ramka nadal kończy się zdaniami o „Następny krok” (P22 B2) — zdanie do ramki stoi przed nimi.
   const ramka = skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'))
-  assert.ok(ramka.indexOf(zdania[2]) !== -1 && ramka.indexOf(zdania[2]) < ramka.indexOf('Po ostatnim punkcie zakończ linią'))
+  const zdanieRamki = '<zdanie do ramki z sekcji „Punkty wizualne”>'
+  assert.ok(ramka.indexOf(zdanieRamki) !== -1 && ramka.indexOf(zdanieRamki) < ramka.indexOf('Po ostatnim punkcie zakończ linią'))
   assert.match(ramka, /\/dev-pr w tej sesji nie uruchamiaj\.\n {3}```/)
-  assert.ok(p.indexOf(zdania[2]) < p.indexOf('Po ostatnim punkcie zakończ linią'))
-})
-
-// P24 IU-8 po recenzji: szablon kroku 3 daje punkt wizualny, ktory przechodzi kontrole formatu narzedzia; zdanie o /makieta
-// stoi bezposrednio przed nim; skill /makieta uzywa stalych narzedzia (limit Monitora, port w Redirect URLs).
-test('smoke: przykładowy punkt wizualny szablonu przechodzi makieta sprawdzFormat; skill /makieta ze stałymi narzędzia', async () => {
-  const { sprawdzFormat } = await import('../../scripts/makieta/punkty.mjs')
-  const { LIMIT_CZEKANIA_MIN } = await import('../../scripts/makieta/kolejka.mjs')
-  const { DOMYSLNY_PORT } = await import('../../scripts/makieta/proces.mjs')
-  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.ok(p.indexOf('ramka ma zdanie do ramki z tej samej sekcji') < p.indexOf('Po ostatnim punkcie zakończ linią'))
   const linie = skill.split('\n')
   const i = linie.findIndex((l) => /^ {3}- \[ \] .*obok `visual-diff\/<ekran>-figma\.png`/.test(l))
   assert.ok(i > 0, 'szablon ma punkt wizualny')
-  assert.deepEqual(sprawdzFormat(linie[i].trimStart().replaceAll('<ekran>', 'moje-projekty').replaceAll('<trasa>', '/konto')), [], 'po podstawieniu placeholderów')
-  assert.match(linie[i - 1], /^ {3}Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz \/makieta\./)
-  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
-  assert.ok(makieta.includes(`makieta.mjs czekaj --limit-min ${LIMIT_CZEKANIA_MIN}`))
-  assert.ok(makieta.includes(`http://127.0.0.1:${DOMYSLNY_PORT}/**`))
-  assert.ok(makieta.includes('zgloszenia --smoke <plik>'))
-  assert.ok(!/Read[^\n]*PNG|otwórz[^\n]*PNG/i.test(makieta), 'skill nie każe czytać PNG')
-})
-
-// P28 (4): zgloszenia na koniec przegladu — skill zna zdarzenie konca przegladu, tryb „od razu” i dokument ustalen.
-test('skill /makieta: zdarzenie przeglad-zakonczony, --zgloszenia od-razu na prośbę, dokument ustaleń przed poprawkami', () => {
-  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
-  assert.ok(makieta.includes('Zdarzenie `przeglad-zakonczony`'))
-  assert.ok(makieta.includes('`--zgloszenia od-razu`'))
-  assert.ok(makieta.includes('docs/operator/<data>-<zadanie>-makiety-ustalenia.md'))
-  assert.ok(makieta.indexOf('## Koniec przeglądu') < makieta.indexOf('## Droga awaryjna'))
-  assert.match(makieta, /Zakończ\s+przegląd/)
-  assert.match(makieta, /Kolejne `przeglad-zakonczony`[^]*?aktualizuje\s+ten sam dokument ustaleń/)
-  assert.match(makieta, /W trybie „na koniec” po przeglądzie\s+obsłuż je jak w sekcji „Koniec przeglądu”/)
-})
-
-// P28 (6): adres narzedzia w uslugach z lista hostow — skill podaje pole `hosty` startu i wpis Turnstile.
-test('skill /makieta: pole hosty z wyniku startu i host 127.0.0.1 w widgecie Turnstile', () => {
-  const makieta = readFileSync(resolve(KATALOG, '../../skills/makieta/SKILL.md'), 'utf8')
-  assert.ok(makieta.includes('`hosty`'))
-  assert.match(makieta, /Turnstile wymaga `127\.0\.0\.1` w hostach\s+widgetu/)
+  assert.match(linie[i - 1], /^ {3}<zdanie przed punktami z sekcji „Punkty wizualne”>/)
 })

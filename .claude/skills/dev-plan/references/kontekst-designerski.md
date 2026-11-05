@@ -9,7 +9,7 @@ Sprawdź `docs/DESIGN.md` (Read).
 - Istnieje → `design_md: ./docs/DESIGN.md`; ogłoś: „Używam `docs/DESIGN.md` jako źródła tokenów designu projektu.”
 - Nie istnieje → `AskUserQuestion`: „Brak `docs/DESIGN.md` (design system projektu w formacie Google Labs design.md — tokeny YAML + opis). Co robimy?”
   1. `Stwórz teraz — zatrzymaj planowanie` (rekomendowane) — kończysz dev-plan z instrukcją utworzenia `docs/DESIGN.md` (spec: https://github.com/google-labs-code/design.md); plan wznowisz później.
-  2. `Pomiń w tej iteracji` — `design_md: null` i wpis w „Otwarte pytania → Odroczone do implementacji”: „Brak `docs/DESIGN.md` — buildery UI bazują na ux-ui-guidelines i SPEC feature'a. Utwórz przed kolejnym feature'em UI.”
+  2. `Pomiń w tej iteracji` — `design_md: null` i wpis w „Otwarte pytania → Odroczone do implementacji”: „Brak `docs/DESIGN.md` — buildery UI bazują na wytycznych UX stacku i SPEC feature'a. Utwórz przed kolejnym feature'em UI.”
 
 ## Krok C — makiety Figmy tej iteracji
 

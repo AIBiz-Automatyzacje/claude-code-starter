@@ -294,7 +294,11 @@ else
 fi
 if ma_scenariusze_e2e; then sprawdz_narzedzie_jazdy "$PROJEKT"; else sprawdz_narzedzie_jazdy --nie-dotyczy "brak checkboxów [E2E] w docs/"; fi
 if ma_coolify; then
-  narzedzie coolify UWAGA "bash .claude/skills/coolify-manager/scripts/install_coolify_cli.sh" wersja_coolify
+  if [[ -f "$KATALOG_DOCTORA/../../skills/coolify-manager/scripts/install_coolify_cli.sh" ]]; then
+    narzedzie coolify UWAGA "bash .claude/skills/coolify-manager/scripts/install_coolify_cli.sh" wersja_coolify
+  else
+    narzedzie coolify UWAGA "instalacja wg dokumentacji Coolify CLI" wersja_coolify
+  fi
 else
   nie_dotyczy coolify "brak konfiguracji Coolify (CLAUDE.md, .env.example, .github/workflows/)"
 fi
