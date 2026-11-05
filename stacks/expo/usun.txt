@@ -1,0 +1,2 @@
+# Pliki rdzenia, których wariant Expo nie ma. Jedna ścieżka w linii, `/` na końcu = katalog.
+# Wpis, który niczego nie usuwa, zatrzymuje build (stacks/zbuduj.mjs).
