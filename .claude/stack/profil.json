@@ -11,7 +11,8 @@
   },
   "e2e": {
     "katalogSeedow": "e2e/seeds",
-    "katalogRunnerow": "e2e"
+    "katalogRunnerow": "e2e",
+    "plikFlow": null
   },
   "zrodla": {
     "frontend": "^src/"

@@ -44,7 +44,7 @@
     { "plik": ".claude/scripts/telemetria/role.mjs", "rodzaj": "staly", "slowa": ["vite"], "linie": ["'warmup:vitest'"], "powod": "klucz telemetrii rozgrzewki" },
     { "plik": ".claude/scripts/telemetria/run.mjs", "rodzaj": "staly", "slowa": ["agent-browser"], "linie": ["env-up|agent-browser"], "powod": "rozpoznawanie przyczyn porażek runów; wzorzec narzędzia Expo dochodzi obok" },
     { "plik": ".claude/scripts/telemetria/skill.mjs", "rodzaj": "staly", "slowa": ["agent-browser", "tailwind"], "powod": "rozpoznawanie nazw skilli w transkryptach" },
-    { "plik": ".claude/skills/dev-plan/references/szablon-planu.md", "rodzaj": "staly", "slowa": ["vite", "tailwind"], "powod": "przykładowy plan z projektu web (ścieżki src/…)" },
+    { "plik": ".claude/skills/dev-plan/references/szablon-planu.md", "rodzaj": "podmiana", "iu": "IU-2.5", "powod": "przykładowy plan z komendami i ścieżkami web; mobile dostaje kopię z Maestro, jest i plikiem flow" },
     { "plik": ".claude/skills/dev-plan/SKILL.md", "rodzaj": "staly", "slowa": ["vite"], "linie": ["(vitest, jest)"], "powod": "runner testów rozpoznawany w obu stackach" },
     { "plik": ".claude/skills/sync-template/SKILL.md", "rodzaj": "staly", "slowa": ["vite"], "linie": ["vitest albo jest"], "powod": "runner testów rozpoznawany w obu stackach" },
     { "plik": ".claude/skills/sync-template/scripts/sync-template.sh", "rodzaj": "staly", "slowa": ["vite"], "linie": ["vitest/jest"], "powod": "runner testów rozpoznawany w obu stackach" },

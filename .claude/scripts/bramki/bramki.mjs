@@ -26,6 +26,7 @@ import { bramkaMigrationsSum, dopiszSume, scalSume } from './migrations-sum.mjs'
 import { wykryjNarzedzia } from './narzedzia.mjs'
 import { pakietyFazy, scalWyniki } from './pakiety.mjs'
 import { bramkaSizeLimit } from './size-limit.mjs'
+import { bramkaStacku } from './stack.mjs'
 import { bramkaStryker } from './stryker.mjs'
 import { bramkaTestyUsuniete } from './testy-usuniete.mjs'
 import { bramkaTsc } from './tsc.mjs'
@@ -84,6 +85,7 @@ async function bramkiKatalogu(projekt, baza, zmiany) {
     ['testyTypow', () => zNarzedziem(n.vitest, (t) => bramkaVitestTypecheck(projekt, t))],
     ['knip', () => zNarzedziem(n.knip, (t) => bramkaKnip(projekt, t, zmiany))],
     ['sizeLimit', () => zNarzedziem(n.sizeLimit, (t) => bramkaSizeLimit(projekt, t))],
+    ['stack', () => bramkaStacku(projekt, zmiany)],
     ['migracje', () => bramkaNiezmiennoscMigracji(projekt, baza)],
     ['migracjeSuma', () => bramkaMigrationsSum(projekt)],
     ['testyUsuniete', () => bramkaTestyUsuniete(projekt, zmiany)],

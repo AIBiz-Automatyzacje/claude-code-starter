@@ -150,8 +150,8 @@ traktuj jako test bojowy tej fazy.
 
 ## Konwencje dla planów zadań
 
-- Scenariusz E2E zapisuje plan techniczny `/dev-plan` (`[E2E] \`.maestro/<flow>.yaml\` — <kroki> → <oczekiwany stan>`, szablon w
-  `.claude/skills/dev-plan/references/szablon-planu.md`). Plik flow jest częścią dostawy buildera.
+- Scenariusz E2E zapisuje plan techniczny `/dev-plan` (`[E2E] \`<flow>\` — <kroki> → <oczekiwany stan>`, szablon w
+  `.claude/skills/dev-plan/references/szablon-planu.md`). Plik `.maestro/<flow>.yaml` jest częścią dostawy buildera.
 - Seedy: `.maestro/<nazwa-flow>-seed.sql`; db-sync wiąże seed z flow po nazwie. Pisz seedy **idempotentnie**.
 - Logowanie w flow wyłącznie kontem `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` (Maestro nie przejdzie sheetu OAuth).
 - **Re-seed per flow** (izolacja stanu): każdy scenariusz zaczyna od czystego, znanego stanu; seed idempotentny aplikuj przed KAŻDYM scenariuszem.

@@ -26,7 +26,7 @@ export const BUILDERZY = ['feature-builder-ui', 'feature-builder-data', 'feature
 const DELEGACI = [...BUILDERZY, 'feature-builder-ui-figma', 'feature-builder-fullstack-figma']
 const POLA_FRONTMATTERA = ['design_md', 'figma_spec', 'figma_screens', 'operator_prep']
 const PLIK_TESTU = /(?:\.(?:test|spec)\.[cm]?[jt]sx?$|__tests__\/)/
-const { katalogSeedow, katalogRunnerow } = PROFIL.e2e
+const { katalogSeedow, katalogRunnerow, plikFlow } = PROFIL.e2e
 const SEED = new RegExp(`^${doWzorca(katalogSeedow)}\\/[\\w.-]+-seed\\.sql$`)
 // Runner E2E (`<katalog runnerow>/<x>.sh`) w backtickach — scribe uruchomilby go bez srodowiska e2e.
 const RUNNER_E2E = new RegExp(`\`[^\`]*(?<!\\w)${doWzorca(katalogRunnerow)}\\/[^\`\\s]*\\.sh\\b[^\`]*\``)
@@ -142,18 +142,24 @@ function pliki(iu, migracje, w) {
 }
 
 /**
- * @param {Jednostka} iu @param {string} projekt @param {Set<string>} seedyPlanu @param {Map<string, string>} flowy
+ * @param {Jednostka} iu @param {string} projekt @param {{ seedy: Set<string>, pliki: Set<string> }} planu seedy i pliki flow z pól Pliki planu
+ * @param {Map<string, string>} flowy
  * @param {Wynik} w
  */
-function scenariusze(iu, projekt, seedyPlanu, flowy, w) {
+function scenariusze(iu, projekt, planu, flowy, w) {
   for (const s of iu.scenariusze) {
     if (!s.typ) w.bledy.push(`${iu.id}: scenariusz bez typu [Unit] / [E2E] / [Manual]: „${s.tresc}”`)
     if (s.typ !== 'E2E') continue
     if (!s.flow) w.bledy.push(`${iu.id}: [E2E] bez identyfikatora flow w backtickach na początku linii`)
     else if (flowy.has(s.flow)) w.bledy.push(`${iu.id}: flow \`${s.flow}\` ma już linię [E2E] w ${flowy.get(s.flow)} — jeden scenariusz = jedna linia`)
     else flowy.set(s.flow, iu.id)
-    if (s.seed && !seedyPlanu.has(s.seed) && !existsSync(join(projekt, s.seed))) {
+    if (s.seed && !planu.seedy.has(s.seed) && !existsSync(join(projekt, s.seed))) {
       w.bledy.push(`${iu.id}: seed ${s.seed} — nie ma go w polu Pliki (Stwórz (e2e seed)) ani w repo`)
+    }
+    // D17: tester uruchamia plik flow, ale go nie pisze; bez wiersza w polu Pliki nikt go nie stworzy.
+    const plik = s.flow && plikFlow ? plikFlow.replace('<flow>', s.flow) : null
+    if (plik && !planu.pliki.has(plik) && !existsSync(join(projekt, plik))) {
+      w.bledy.push(`${iu.id}: flow \`${s.flow}\` — pliku ${plik} nie ma w polu Pliki (Stwórz (e2e flow)) ani w repo`)
     }
   }
 }
@@ -221,7 +227,8 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   const jednostki = [...plan.bezFazy, ...plan.fazy.flatMap((f) => f.iu)].sort((a, b) => a.start - b.start)
   frontmatter(plan, projekt, w)
   struktura(plan, jednostki, w)
-  const seedyPlanu = new Set(jednostki.flatMap((iu) => iu.pliki.filter((p) => akcja(p).includes('e2e seed')).map((p) => p.sciezka)))
+  const plikiAkcji = (/** @type {string} */ znacznik) => new Set(jednostki.flatMap((iu) => iu.pliki.filter((p) => akcja(p).includes(znacznik)).map((p) => p.sciezka)))
+  const planu = { seedy: plikiAkcji('e2e seed'), pliki: plikiAkcji('e2e flow') }
   /** @type {Map<string, string>} */
   const flowy = new Map()
   const migracje = numeryMigracji(jednostki, projekt)
@@ -231,7 +238,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
     }
     pliki(iu, migracje, w)
     znaczniki(iu, w)
-    scenariusze(iu, projekt, seedyPlanu, flowy, w)
+    scenariusze(iu, projekt, planu, flowy, w)
   }
   for (const iu of jednostki) weryfikacja(iu, flowy, w)
   for (const id of plan.wymagania.filter((r) => !jednostki.some((iu) => new RegExp(`\\b${r}\\b`).test(iu.wymagania)))) {

@@ -11,7 +11,8 @@
   },
   "e2e": {
     "katalogSeedow": ".maestro",
-    "katalogRunnerow": ".maestro"
+    "katalogRunnerow": ".maestro",
+    "plikFlow": ".maestro/<flow>.yaml"
   },
   "zrodla": {
     "frontend": "^(src|app|components|hooks|lib|features|core)/"

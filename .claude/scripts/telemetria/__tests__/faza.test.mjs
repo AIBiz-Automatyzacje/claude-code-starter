@@ -179,7 +179,7 @@ test('faza.sceptyk z przebiegu review: liczniki etykiet i degradacje; przebieg s
 // ── Bramki domkniecia (P6): producent z wyniku agenta domkniecie (EXECUTE_RESULT) ──
 
 // Zmiana kontraktu (P6 sesja 2): klucze = 10 bramek skryptu .claude/scripts/bramki (doszly migracjeSuma i testyUsuniete).
-const BRAMKI = ['eslint', 'knip', 'migracje', 'migracjeSuma', 'sizeLimit', 'stryker', 'testyTypow', 'testyUsuniete', 'typecheck']
+const BRAMKI = ['eslint', 'knip', 'migracje', 'migracjeSuma', 'sizeLimit', 'stack', 'stryker', 'testyTypow', 'testyUsuniete', 'typecheck']
 
 test('faza bez domkniecia: bramki z null na kazdej bramce, testy_usuniete null', () => {
   const f = fazy()[0]

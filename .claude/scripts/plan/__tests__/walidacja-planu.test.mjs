@@ -36,6 +36,8 @@ function projekt(dodatkowe = {}) {
     '.env.e2e': 'X=1\n',
     'docs/brainstorms/2026-10-01-publikacja-ofert-requirements.md': '# Wymagania\n',
     'docs/operator/publikacja-ofert-przygotowanie.md': '# Przygotowanie\n',
+    // Stack z plikiem flow (D17): flow scenariuszy fixture'u są już w repo; wymaganie sprawdza stacks/expo/__tests__/sloty-tekstowe.test.mjs.
+    ...Object.fromEntries((PROFIL.e2e.plikFlow ? ['publikacja-oferty', 'oferta-publiczna'] : []).map((f) => [PROFIL.e2e.plikFlow?.replace('<flow>', f) ?? '', 'appId: x\n'])),
     ...dodatkowe,
   }
   for (const [sciezka, tresc] of Object.entries(pliki)) {

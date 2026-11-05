@@ -208,7 +208,7 @@ Plan pisze bazowe nazwy builderów. Warianty `feature-builder-ui-figma` i `featu
 
 #### 3.6 Tabela plików i budżet pliku
 
-Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |`, jeden plik na wiersz. Akcje: `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e seed)`.
+Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |`, jeden plik na wiersz. Akcje: `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e seed)`; akcje pliku flow, jeśli stack go ma: `.claude/stack/plan-e2e.md`, sekcja „Linia scenariusza”.
 
 - **Kompletność.** Tabela wymienia każdy plik, który IU stworzy lub zmieni: źródła, testy, migracje, seedy, konfigurację. Planner dobiera do promptu buildera reguły wiedzy projektu po tych ścieżkach — plik spoza tabeli to builder bez reguł dla niego.
 - **Linie dziś.** Policz skryptem: `node .claude/scripts/plan/plan.mjs linie <plik> <plik>` — linie kodu jak ESLint `max-lines` (bez pustych i komentarzy). Nowy plik: `0`. Plik z wcześniejszej IU tego planu: „dziś” = jej „po”.
@@ -271,7 +271,7 @@ Wynik fazy: plan bez błędów skryptu, branch `feature/<zadanie>` z commitem in
 Dla każdego scenariusza `[E2E]` w planie prześledź flow po krokach:
 
 - **Natywne okno albo zewnętrzny system** — czego narzędzie jazdy nie wykona, jak to obejść i kiedy krok idzie na `[Manual]`: `.claude/stack/plan-e2e.md`, sekcja „Granice narzędzia jazdy”.
-- **Dane spoza stanu bazowego** konta `E2E_TEST_EMAIL` (nowe rekordy, relacje, uprawnienia) → w IU jest wiersz `Stwórz (e2e seed)` albo ścieżka istniejącego seeda w linii scenariusza (`(seed: e2e/seeds/<x>-seed.sql)`).
+- **Dane spoza stanu bazowego** konta `E2E_TEST_EMAIL` (nowe rekordy, relacje, uprawnienia) → w IU jest wiersz `Stwórz (e2e seed)` albo ścieżka istniejącego seeda w linii scenariusza wg `.claude/stack/plan-e2e.md`, sekcja „Seedy”.
 - **Trasa serwera aplikacji** (zapis albo odczyt przez `/api/…`) → środowisko E2E uruchamia ten serwer wg 3.4b; jeśli skrypt startu dopiero powstaje, pozycja checklisty z `[blokuje: faza N]` jest w planie.
 
 Zatrzymujesz się i pytasz tylko przy: (a) scenariuszu bez identyfikatora flow albo bez wykonalnych kroków — domyślna propozycja to dopisanie flow i kroków do planu, `[Manual]` jako świadomy opt-out; (b) flow z natywnym oknem lub zewnętrznym systemem bez obejścia seedem; (c) danych spoza stanu bazowego bez seeda. Poprawki wprowadzasz w planie technicznym.

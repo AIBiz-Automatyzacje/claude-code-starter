@@ -582,6 +582,19 @@ test('naprawa przebudowy: ostrzeżenie dochodzi do wyniku e2e start i e2e restar
   assert.ok(restart.naprawa.includes(OSTRZEZENIE), restart.naprawa)
 })
 
+test('świeżość na koniec runu: stary dev-client = przebudowa z naprawą; aktualny = ok z urządzeniem; repo bez konfiguracji = ok', async () => {
+  const { swiezosc } = await modul('expo-swiezosc.mjs')
+  const { baza, projekt, app } = uklad()
+  const { wykonaj } = atrapa([symulator(baza, 'iPhone 17', { stan: 'Booted' })], { aplikacja: app })
+  assert.deepEqual(swiezosc(projekt, {}, wykonaj), { ok: true, przebudowa: false, detal: 'ios iPhone 17', naprawa: '' })
+  utimesSync(app, 500, 500)
+  const stary = swiezosc(projekt, {}, wykonaj)
+  assert.deepEqual([stary.ok, stary.przebudowa], [false, true])
+  assert.match(stary.detal, /starszy niż app\.json/)
+  assert.ok(stary.naprawa.includes(OSTRZEZENIE))
+  assert.deepEqual(swiezosc(katalog(), {}, wykonaj), { ok: true, przebudowa: false, detal: 'repo bez konfiguracji Expo', naprawa: '' })
+})
+
 test('adapter: wersja Javy ze starego i nowego formatu; niepoprawny tekst = null', () => {
   assert.equal(adapter.wersjaJavy('openjdk version "21.0.10" 2026-01-20'), 21)
   assert.equal(adapter.wersjaJavy('java version "1.8.0_391"'), 8)

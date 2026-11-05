@@ -11,6 +11,10 @@ układ dokumentu, źródła pozycji i hierarchia stanu są w SKILL.md.
 - Klasa błędów niewidocznych w testach (przykład do „Dlaczego to nie jest formalność”): `lineHeight` w `TextInput` przesuwa na iOS
   wpisany tekst poniżej środka pola, a Android tego nie pokazuje; Jest nie uruchamia natywnego układu.
 - Start aplikacji w sekcji 0: `- [ ] Metro uruchomione (\`npx expo start\`), dev-client aktualny (przebudowany po <data zmiany natywnej>), aplikacja otwiera się na symulatorze`.
+- Kontrola przed zapisem sekcji 0: `node .claude/scripts/e2e/expo-swiezosc.mjs`. Bramka natywna biegnie tylko przed testerem fazy ze
+  scenariuszami, więc zmiana natywna z ostatniej fazy bez scenariuszy albo z fixa wychodzi dopiero tutaj. Przy `przebudowa: true` pierwszą
+  pozycją sekcji 0 jest `- [ ] Przebuduj dev-client: <naprawa>` z powodem z `detal`; datę w pozycji startu aplikacji bierzesz z
+  ostatniego commita zmieniającego `package.json`, lockfile albo `app.json`.
 - Warunek środowiskowy, który nie wchodzi do smoke'u: tymczasowy `.env.development.local` z kluczami e2e.
 
 ## Punkty wizualne

@@ -192,7 +192,7 @@ function sceptykFazy(przebieg) {
 }
 
 // Bramki domkniecia (P6): nazwy jak w kolejce .claude/scripts/bramki/bramki.mjs i w EXECUTE_RESULT dev-docs-execute-wf.
-const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'migracje', 'migracjeSuma', 'testyUsuniete', 'stryker']
+const NAZWY_BRAMEK = ['typecheck', 'eslint', 'testyTypow', 'knip', 'sizeLimit', 'stack', 'migracje', 'migracjeSuma', 'testyUsuniete', 'stryker']
 
 /**
  * Bramki i testy usuniete z wyniku ostatniego domkniecia fazy (EXECUTE_RESULT): per bramka {status, sekundy, trafienia,

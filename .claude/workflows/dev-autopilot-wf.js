@@ -398,7 +398,7 @@ const VALIDATION_RESULT = {
     typecheck: { type: 'string', enum: ['PASS', 'FAIL', 'SKIPPED'] },
     lint: { type: 'string', enum: ['PASS', 'FAIL', 'SKIPPED'] },
     testy: { type: 'string', description: 'PASS/FAIL z liczbami X/Y (+ adnotacje flake-infra)' },
-    build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'krok build wg .claude/stack/walidacja.md (skrypt build z package.json)' },
+    build: { type: 'string', enum: ['PASS', 'FAIL', 'n/a'], description: 'krok build wg .claude/stack/walidacja.md' },
     testyZmodyfikowane: { type: 'array', items: { type: 'string' }, description: 'pliki *.test.* ze ZMIENIONYMI istniejacymi asercjami w commitach fixa (poprawki po review / kontrola diffu naprawczego) — sygnal test-weakeningu' },
     e2eNieuruchomione: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] wciaz NIEZAZNACZONYCH w planie zadania, ktore NIGDY nie przebiegly (bez suffixu "(FAIL:") — wymusza wynik=FAIL (completion-gate). Nie zalezy od istnienia .env.e2e: zrodlem prawdy o wymaganiu E2E jest plan, nie repo' },
     e2eFail: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] z suffixem "(FAIL:" — flow przebiegl i padl na znanym defekcie (known-issues); wymusza wynik=FAIL, ale z inna instrukcja dla operatora (napraw kod, NIE zmieniaj na [Manual])' },
@@ -990,7 +990,7 @@ ${BLOK_DLUGIE_KOMENDY}
 KROK 1 — odkryj komendy (NIE zgaduj): przeczytaj package.json scripts (typecheck/lint/test/build/check),
 wykryj package manager (bun.lockb->bun, pnpm-lock->pnpm, yarn.lock->yarn, package-lock->npm).
 Brak skryptu typecheck -> sprobuj tsc --noEmit jesli jest tsconfig.json. Build: krok build wg .claude/stack/walidacja.md,
-sekcja „Runner testów i build”. Brak skryptu build -> ustaw build="n/a".
+sekcja „Runner testów i build”. Brak kroku build wg tej sekcji -> ustaw build="n/a".
 
 KROK 2 — uruchom w kolejnosci: typecheck -> lint (jesli jest) -> test (pelny suite, wg BLOKU
 DLUGICH KOMEND: tlo + polling; flake infra obsluz wg procedury z bloku i DOKONCZ lancuch) -> build.

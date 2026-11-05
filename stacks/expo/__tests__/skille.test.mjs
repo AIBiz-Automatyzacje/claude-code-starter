@@ -114,8 +114,6 @@ const ZALEGLE_ODESLANIA = [
   '.claude/agents/feature-builder-fullstack.md', // IU-2.1
   '.claude/agents/feature-builder-ui-figma.md', // IU-2.1
   '.claude/agents/feature-builder-ui.md', // IU-2.1
-  '.claude/skills/dev-plan/references/szablon-planu.md', // IU-2.5
-  '.claude/stack/buildery.md', // IU-2.5
 ]
 // Nazwy skilli w telemetrii opisują przebiegi wszystkich wariantów; `doctor.sh` sprawdza skrypt coolify warunkowo; fraza w
 // `zapobieganie.mjs` to prefiks, który pasuje też do `ux-ui-guidelines-mobile` w builderach Expo (IU-2.1).
