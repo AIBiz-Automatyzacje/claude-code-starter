@@ -12,7 +12,7 @@ import { cofnijEnvE2e, PLIK_DEV, plikAdaptera, zapiszEnvE2e } from './expo-env.m
 import { aplikacjaProjektu, przygotujUrzadzenie, REBUILD, zrzutEkranu } from './expo-urzadzenie.mjs'
 
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
-/** @typedef {{ ok: boolean, detal: string, naprawa: string }} WynikKroku */
+/** @typedef {{ ok: boolean, detal: string, naprawa: string, przebudowa?: boolean }} WynikKroku */
 /**
  * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild', naprawa: string }} SygnaturaBlokera
  */

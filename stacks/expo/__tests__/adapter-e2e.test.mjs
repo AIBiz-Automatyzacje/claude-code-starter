@@ -25,6 +25,7 @@ const adapter = await modul('adapter.mjs')
 const env = await modul('expo-env.mjs')
 const urzadzenie = await modul('expo-urzadzenie.mjs')
 const canary = await modul('expo-canary.mjs')
+const natywne = await modul('expo-natywne.mjs')
 /** @param {string} sciezka */
 const czytaj = (sciezka) => readFileSync(join(WARIANT, sciezka), 'utf8')
 
@@ -191,7 +192,7 @@ test('urządzenie: nieznana baza kont nie blokuje, ale idzie jako uwaga', () => 
   assert.deepEqual(w.uwagi, ['iPhone 17: nie sprawdzono konta Apple'])
 })
 
-test('dev-client: starszy od lockfile\'a = STOP z komendą przebudowy i LANG; package.json się nie liczy', () => {
+test('dev-client: starszy od lockfile\'a bez historii git = STOP z komendą przebudowy i LANG (fail-closed); package.json się nie liczy', () => {
   const { baza, projekt, app } = uklad()
   utimesSync(app, 2000, 2000)
   writeFileSync(join(projekt, 'package.json'), '{}')
@@ -200,8 +201,143 @@ test('dev-client: starszy od lockfile\'a = STOP z komendą przebudowy i LANG; pa
   writeFileSync(join(projekt, 'package-lock.json'), '{}')
   const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
   assert.equal(w.ok, false)
-  assert.match(w.detal, /starszy niż package-lock\.json/)
-  assert.match(w.naprawa, /LANG=en_US\.UTF-8 npx expo run:ios --no-bundler/)
+  assert.equal(w.przebudowa, true)
+  assert.match(w.detal, /starszy niż package-lock\.json: nie odczytano historii git/)
+  assert.match(w.naprawa, /LANG=en_US\.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US\.UTF-8 npx expo run:ios --no-bundler/)
+})
+
+test('dev-client: nowszy ios/Podfile.lock = STOP bez pytania o diff; nowszy lockfile po samym checkoucie = uwaga bez przebudowy', () => {
+  const { baza, projekt, app } = uklad()
+  utimesSync(app, 2000, 2000)
+  const { wykonaj } = atrapa([symulator(baza, 'iPhone 17', { stan: 'Booted' })], { aplikacja: app })
+  mkdirSync(join(projekt, 'ios'))
+  writeFileSync(join(projekt, 'ios/Podfile.lock'), '')
+  const w = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.deepEqual([w.ok, w.przebudowa], [false, true])
+  assert.match(w.detal, /starszy niż ios\/Podfile\.lock: warstwa natywna zmieniona po buildzie/)
+  rmSync(join(projekt, 'ios'), { recursive: true })
+  writeFileSync(join(projekt, 'package-lock.json'), '{}')
+  repoGit(projekt)
+  const ok = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(ok.ok, false, 'commit jest nowszy niż binarka z 1970, więc to nadal zmiana do oceny: nowy lockfile bez pakietów')
+  utimesSync(app, new Date(), new Date(Date.now() + 60_000))
+  utimesSync(join(projekt, 'package-lock.json'), new Date(), new Date(Date.now() + 120_000))
+  const poCheckoucie = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, wykonaj)
+  assert.equal(poCheckoucie.ok, true, JSON.stringify(poCheckoucie))
+  assert.match(poCheckoucie.uwagi[0], /przebudowa niepotrzebna: treść konfiguracji bez zmian/)
+})
+
+// --- bramka natywna ---
+
+/** @param {string} p @param {string[]} a */
+const git = (p, a) => spawnSync('git', ['-C', p, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { encoding: 'utf8' })
+
+/** @param {string} p repo z commitem startowym */
+function repoGit(p) {
+  git(p, ['init', '-q'])
+  git(p, ['add', '-A'])
+  git(p, ['commit', '-qm', 'start'])
+}
+
+/** @param {string} p @param {string} nazwa @param {Record<string, string>} pliki pakiet w node_modules */
+function pakiet(p, nazwa, pliki) {
+  for (const [s, t] of Object.entries({ 'package.json': '{}', ...pliki })) {
+    mkdirSync(dirname(join(p, 'node_modules', nazwa, s)), { recursive: true })
+    writeFileSync(join(p, 'node_modules', nazwa, s), t)
+  }
+}
+
+/** @returns {string} projekt w repo git z package.json i app.json */
+function projektNatywny() {
+  const p = katalog()
+  writeFileSync(join(p, 'package.json'), JSON.stringify({ dependencies: { 'stary-js': '1.0.0' } }))
+  writeFileSync(join(p, 'app.json'), JSON.stringify({ expo: { name: 'a', plugins: ['x'] } }))
+  writeFileSync(join(p, '.gitignore'), 'node_modules\n')
+  git(p, ['init', '-q'])
+  git(p, ['add', '-A'])
+  // Commit startowy sprzed builda: `--since` patrzy na datę commitera.
+  spawnSync('git', ['-C', p, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'start'], { env: { ...process.env, GIT_COMMITTER_DATE: '2020-01-01T00:00:00Z', GIT_AUTHOR_DATE: '2020-01-01T00:00:00Z' } })
+  return p
+}
+
+/** @param {string} p @param {string} wiadomosc */
+const commit = (p, wiadomosc) => { git(p, ['add', '-A']); git(p, ['commit', '-qm', wiadomosc]) }
+/** Binarka zbudowana przed następnymi commitami: --since ma sekundową dokładność, więc punkt cofnięty o minutę od HEAD. */
+const POTEM = () => Math.floor(Date.now() / 1000) - 60
+
+test('dowód natywności z dysku: każdy znacznik; pakiet JS = null; brak katalogu = natywny; układ pnpm', () => {
+  const p = katalog()
+  for (const [nazwa, plik] of /** @type {[string, string][]} */ ([['a', 'expo-module.config.json'], ['b', 'ios/x.m'], ['c', 'android/build.gradle'], ['d', 'app.plugin.js'], ['e', 'apple/x.podspec'], ['f', 'build.gradle']])) pakiet(p, nazwa, { [plik]: '' })
+  pakiet(p, 'g', { 'package.json': '{"expo":{}}' })
+  pakiet(p, '@s/js', { 'index.js': '', 'lib/a.js': '' })
+  assert.equal(urzadzenie.przestarzaly(p, Date.now() / 1000 + 100, 'ios'), null)
+  const dowod = natywne.dowodNatywnosci
+  assert.deepEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((n) => dowod(p, n)), ['expo-module.config.json', 'ios', 'android', 'app.plugin.js', 'podspec albo build.gradle', 'podspec albo build.gradle', 'pole expo w package.json'])
+  assert.equal(dowod(p, '@s/js'), null)
+  assert.match(dowod(p, 'brak'), /brak node_modules\/brak, potraktowany jak natywny/)
+  mkdirSync(join(p, 'node_modules/.pnpm/@s+nat@1.0.0/node_modules/@s/nat/ios'), { recursive: true })
+  assert.equal(dowod(p, '@s/nat'), 'ios')
+})
+
+test('lockfile: pakiety z diffu każdego formatu; nieznany format daje pustą listę', () => {
+  assert.deepEqual(natywne.pakietyZLockfile('package-lock.json', ' "node_modules/@s/a": {\n+  "version": "2.0.0",\n-  "version": "1.0.0",\n+"node_modules/b": {\n+  "version": "1.0.0",\n "node_modules/c/node_modules/d": {\n+ "version": "3.0.0"\n'), ['@s/a', 'b', 'd'])
+  assert.deepEqual(natywne.pakietyZLockfile('package-lock.json', '@@ -1 +1 @@\n+  "version": "2.0.0",\n'), ['?'], 'wersja bez nazwy w kontekście')
+  assert.deepEqual(natywne.pakietyZLockfile('pnpm-lock.yaml', "+  '@s/a@2.0.0':\n+  b@1.0.0(react@19.0.0):\n-  c@1.0.0:\n+    dependencies:\n+      d: 1.0.0\n"), ['@s/a', 'b'])
+  assert.deepEqual(natywne.pakietyZLockfile('yarn.lock', '+"@s/a@^2.0.0":\n+b@^1.0.0:\n+  version "1.0.0"\n'), ['@s/a', 'b'])
+  assert.deepEqual(natywne.pakietyZLockfile('bun.lock', '+    "@s/a": ["@s/a@2.0.0", "", {}, "sha"],\n+    "b": ["b@1.0.0"],\n'), ['@s/a', 'b'])
+  assert.deepEqual(natywne.pakietyZLockfile('bun.lockb', 'Binary files differ'), [])
+})
+
+test('zależności: dodane i podbite z obu sekcji; bez zmian i usunięte się nie liczą', () => {
+  assert.deepEqual(natywne.zmienioneZaleznosci({ dependencies: { a: '1', b: '1', c: '1' }, devDependencies: { d: '1' } }, { dependencies: { a: '2', b: '1', n: '1' }, devDependencies: { d: '1', t: '1' } }).sort(), ['a', 'n', 't'])
+})
+
+test('bramka: paczka natywna w commicie po buildzie = przebudowa; paczka JS = bez przebudowy z nazwą', () => {
+  const p = projektNatywny()
+  pakiet(p, 'nowy-natywny', { 'expo-module.config.json': '{}' })
+  pakiet(p, 'nowy-js', { 'index.js': '' })
+  const mtime = POTEM()
+  writeFileSync(join(p, 'package.json'), JSON.stringify({ dependencies: { 'stary-js': '1.0.0', 'nowy-js': '1.0.0' } }))
+  commit(p, 'js')
+  const js = natywne.zmianyNatywne(p, mtime)
+  assert.deepEqual([js.wymagaRebuildu, js.detal], [false, 'zmiany bez kodu natywnego: nowy-js'])
+  writeFileSync(join(p, 'package.json'), JSON.stringify({ dependencies: { 'stary-js': '1.0.0', 'nowy-js': '1.0.0', 'nowy-natywny': '1.0.0' } }))
+  commit(p, 'natywny')
+  const nat = natywne.zmianyNatywne(p, mtime)
+  assert.equal(nat.wymagaRebuildu, true)
+  assert.deepEqual(nat.nowe, ['nowy-natywny (expo-module.config.json)'])
+})
+
+test('bramka: paczka dopisana bez instalacji = natywna; zmiana niezacommitowana też się liczy', () => {
+  const p = projektNatywny()
+  writeFileSync(join(p, 'package.json'), JSON.stringify({ dependencies: { 'stary-js': '2.0.0' } }))
+  const w = natywne.zmianyNatywne(p, Math.floor(Date.now() / 1000) + 100)
+  assert.equal(w.wymagaRebuildu, true)
+  assert.match(w.detal, /stary-js \(brak node_modules\/stary-js, potraktowany jak natywny\)/)
+})
+
+test('bramka: pola natywne app.json i app.config.* wymagają przebudowy, inne pola app.json nie', () => {
+  const p = projektNatywny()
+  const mtime = POTEM()
+  writeFileSync(join(p, 'app.json'), JSON.stringify({ expo: { name: 'b', plugins: ['x'] } }))
+  commit(p, 'nazwa')
+  assert.equal(natywne.zmianyNatywne(p, mtime).wymagaRebuildu, false)
+  writeFileSync(join(p, 'app.json'), JSON.stringify({ expo: { name: 'b', plugins: ['x', 'y'], ios: { bundleIdentifier: 'i' } } }))
+  commit(p, 'plugin')
+  assert.deepEqual(natywne.zmianyNatywne(p, mtime).nowe, ['app.json:plugins', 'app.json:ios'])
+  writeFileSync(join(p, 'app.config.ts'), 'export default {}')
+  commit(p, 'config')
+  assert.ok(natywne.zmianyNatywne(p, mtime).nowe.includes('app.config.ts: zmiana konfiguracji'))
+})
+
+test('bramka: nieczytelny lockfile = przebudowa; repo bez git = przebudowa; sam checkout = bez przebudowy', () => {
+  const p = projektNatywny()
+  const mtime = POTEM()
+  writeFileSync(join(p, 'bun.lockb'), 'binarny')
+  commit(p, 'lock')
+  assert.deepEqual(natywne.zmianyNatywne(p, mtime).nowe, ['bun.lockb: nie rozstrzygnięto'])
+  assert.equal(natywne.zmianyNatywne(katalog(), mtime).wymagaRebuildu, true)
+  assert.deepEqual(natywne.zmianyNatywne(p, Math.floor(Date.now() / 1000) + 100), { wymagaRebuildu: false, nowe: [], detal: 'treść konfiguracji bez zmian od builda' })
 })
 
 test('dev-client: nowszy plik natywny drugiej platformy nie unieważnia binarki', () => {
@@ -231,7 +367,8 @@ test('Android: zapas przy braku iOS; E2E_PLATFORMA wymusza; brak odczytu mtime t
   const w2 = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_PLATFORMA: 'android' }, stary.wykonaj)
   assert.equal(w2.ok, false)
   assert.match(w2.detal, /starszy niż app\.json/)
-  assert.match(w2.naprawa, /npx expo run:android --no-bundler/)
+  assert.equal(w2.przebudowa, true)
+  assert.match(w2.naprawa, /npx expo prebuild --clean --platform android && npx expo run:android --no-bundler/)
 })
 
 test('brak urządzenia = STOP z przyczynami i naprawą obu platform; zła E2E_PLATFORMA = STOP', () => {
@@ -437,9 +574,9 @@ test('profil: klucze EXPO_PUBLIC_*, katalog .maestro, jest, bez pliku e2e o wyż
   assert.ok(!new RegExp(p.zrodla.frontend).test('supabase/functions/x/index.ts'))
 })
 
-test('slot e2e-srodowisko: te same sekcje co web plus przebudowa; bez słów stacku web', () => {
+test('slot e2e-srodowisko: te same sekcje co web; bez słów stacku web', () => {
   const slot = czytaj('.claude/stack/e2e-srodowisko.md')
-  for (const s of ['Start aplikacji', 'Sonda zdrowia', 'Narzędzie jazdy', 'Przebudowa dev-clienta']) assert.match(slot, new RegExp(`^## ${s}$`, 'm'))
+  for (const s of ['Start aplikacji', 'Sonda zdrowia', 'Narzędzie jazdy']) assert.match(slot, new RegExp(`^## ${s}$`, 'm'))
   assert.doesNotMatch(slot, /agent-browser|\bVite\b|5174/)
   assert.match(slot, /sekcja „Aplikacja z osobnym serwerem API”/)
 })

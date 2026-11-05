@@ -166,8 +166,10 @@ export async function startE2e(projekt, sciezka, { uruchom, narzedzia = NARZEDZI
 /**
  * @typedef {{ status: 'pominieto' | 'gotowe' | 'niepowodzenie', faza: number, scenariusze: number, figmaScreens: boolean,
  *   serwer: 'uruchomione' | 'obcy' | 'brak', url: string | null, log: string | null, detal: string,
- *   obcy: import('./serwer.mjs').ObcySerwer | null, naprawa?: string, sygnaturyBlokera: import('./adapter.mjs').SygnaturaBlokera[] }} WynikRestartu
- * sygnaturyBlokera: z adaptera stacku (D12) — autopilot przekazuje je do detekcji blokera w review fazy
+ *   obcy: import('./serwer.mjs').ObcySerwer | null, naprawa?: string, sygnaturyBlokera: import('./adapter.mjs').SygnaturaBlokera[],
+ *   krokStacku?: boolean, przebudowa?: boolean }} WynikRestartu
+ * sygnaturyBlokera: z adaptera stacku (D12) — autopilot przekazuje je do detekcji blokera w review fazy;
+ * krokStacku: porazka kroku stacku przed serwerem, przyczyna poza kodem fazy; przebudowa: restart tego nie usunie, autopilot robi STOP
  */
 
 /**
@@ -192,7 +194,7 @@ export async function restartFazy(projekt, sciezka, faza, { kroki = KROKI_STACKU
   if (!env || !konf || konf.blad) return { ...wynik, status: 'niepowodzenie', detal: konf?.blad ?? `brak ${PLIK_ENV}` }
   // Bez dowodu poStarcie: ten raz na run robi start, a restart stoi przed kazda faza.
   const przed = kroki.przedStartem(projekt, env)
-  if (!przed.ok) return { ...wynik, status: 'niepowodzenie', detal: przed.detal, naprawa: przed.naprawa }
+  if (!przed.ok) return { ...wynik, status: 'niepowodzenie', detal: przed.detal, naprawa: przed.naprawa, krokStacku: true, przebudowa: przed.przebudowa === true }
   const serwer = await uruchomSerwer(projekt, konf, env, { odNowa: true, politykaObcego })
   // Obcy serwer zajal port w trakcie runu: przyczyna poza kodem fazy — bez logu dla correctness; naprawa osobno (operator, log),
   // bo `detal` idzie do testera jako przyczyna trybu bez przegladarki.

@@ -13,8 +13,8 @@ tester, fix i smoke operatora wołają ten sam skrypt.
 - **Test niewykonalny W TRAKCIE runu** (Metro padło, limit usługi zewnętrznej, tester nie dał przebiegu) → linia `[E2E]` przechodzi na
   `[Manual]` z powodem `(MANUAL — <przyczyna>: <powód>)`, **run idzie dalej**, pozycja trafia do smoke'u operatora
   (`docs/operator/…-smoke.md`). Każda faza ze scenariuszami albo makietami zaczyna review od restartu Metro (`e2e.mjs restart`).
-- **Brak modułu natywnego albo entitlements w trakcie runu** → STOP z komendą przebudowy, nie `[Manual]`: po restarcie Metro błąd nie
-  znika, więc każdy kolejny scenariusz padłby tak samo (sygnatury `SYGNATURY_BLOKERA` w adapterze).
+- **Faza zmieniła warstwę natywną, brak modułu natywnego albo entitlements w trakcie runu** → STOP z komendą przebudowy, nie `[Manual]`: po
+  restarcie Metro błąd nie znika, więc każdy kolejny scenariusz padłby tak samo (`.claude/stack/po-fazie.md`, `SYGNATURY_BLOKERA` w adapterze).
 - **Projekt od zera** (repo bez `package.json` albo z `package.json` bez zależności) → start **odroczony**, nie STOP: Metro wstaje
   restartem przed testerem pierwszej fazy, która go potrzebuje.
 - Zadanie bez `[E2E]` i bez makiet `figma_screens` → środowisko pominięte, Metro nie startuje.
@@ -65,12 +65,10 @@ Expo nie ładuje `.env.e2e`, a env procesu Metro przegrywa w trybie dev z plikam
 - **iOS najpierw.** Adapter bierze iPhone'a z dev-clientem, włączone urządzenia najpierw, i włącza wybrany. Nie bierze symulatora z
   zalogowanym kontem Apple: monit „Weryfikacja konta Apple” zasłania aplikację i nie zamyka się wstrzykniętym dotknięciem.
 - **Android jako zapas.** Tylko emulator już działający (`emulator -avd <nazwa>`).
-- **Świeżość.** Binarka starsza od `ios/Podfile.lock` (iOS), `android/build.gradle` (Android), `app.json`, `app.config.*` albo lockfile'a to
-  STOP. `package.json` celowo poza listą, bo jego mtime przestawia każdy checkout. Bez odczytu mtime na Androidzie kontrola odpada z uwagą.
+- **Świeżość.** Zmiana natywna po buildzie to STOP na starcie i przed testerem każdej fazy ze scenariuszami; paczka czysto JS i sam checkout nie
+  zatrzymują. Reguły i komendy przebudowy: `.claude/stack/po-fazie.md`, sekcja „Przebudowa”. Bez odczytu mtime na Androidzie kontrola odpada z uwagą.
 - **Podpis iOS.** Niepodpisany build działa, ale SecureStore nie utrwala sesji, więc logowanie „przechodzi”, a kolejny flow startuje
   wylogowany. Nie buduj z `CODE_SIGNING_ALLOWED=NO`.
-- **Przebudowa.** iOS: `LANG=en_US.UTF-8 npx expo run:ios --no-bundler` (bez `LANG` CocoaPods pada w powłoce bez locale). Android:
-  `npx expo run:android --no-bundler`. `eas build` nie jest potrzebny do E2E.
 
 ## Canary
 
@@ -128,7 +126,7 @@ Zrób one-time setup środowiska E2E wg .claude/templates/e2e-env/README.md:
 4. Dopisz `.env.e2e` do .gitignore i ZWERYFIKUJ: `git check-ignore .env.e2e`.
 5. Skopiuj .claude/templates/e2e-env/_canary.yaml do .maestro/_canary.yaml i dopasuj testID logowania i element za logowaniem.
 6. Sprawdź `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie <dowolne zadanie z [E2E]>`, a potem `e2e.mjs start`:
-   przejdzie, gdy jest aktualny dev-client (LANG=en_US.UTF-8 npx expo run:ios --no-bundler) i canary. Na koniec `e2e.mjs stop`.
+   przejdzie, gdy jest aktualny dev-client i canary (naprawy podaje start). Na koniec `e2e.mjs stop`.
 7. Na koniec smoke: curl do URL projektu e2e + `supabase db push --db-url ... --include-all --yes`
    na pustą bazę (zaaplikuje WSZYSTKIE migracje od zera — to też test, czy
    łańcuch migracji jest kompletny!) i pokaż mi raport co działa, a co wymaga
