@@ -179,7 +179,7 @@ Wynik: notatka z PASS/FAIL per punkt → korekty `rules/stack.md` mobile i Etapu
 **Stan (2026-11-05):** spike zrobiony, wyniki i proponowane korekty w
 [`docs/reviews/2026-11-audyt-mobile/spike-sdk-58.md`](../reviews/2026-11-audyt-mobile/spike-sdk-58.md). D7 i D8 potwierdzone;
 korekty D6, D11 i D13 przyjęte przez operatora (sekcja „Decyzje”) i naniesione w IU-2.3 i IU-2.7. Pozostałe korekty z notatki
-jeszcze nienaniesione.
+naniesione w IU-2.1, 2.3–2.8 i Etapie 5.
 
 ### Etap 1 — Szwy w rdzeniu (repo web, zachowanie web bez zmian)
 
@@ -245,9 +245,9 @@ Przesunięcia zakresu względem listy IU wyżej:
   etykieta agenta `warmup:vitest` (klucz telemetrii), komentarze z historią vibersi.
   Zrealizowane w `stacks/straznik.json` jako wyjątki `staly`, razem z rozpoznawaniem wielu stacków (vitest/jest w doctorze,
   sync-template, dev-plan; `dossier/profil.mjs`, bramki warunkowe, coderabbit-setup) i nazwami skilli w telemetrii.
-- Wpisy strażnika bez IU w planie (`"iu": "Etap 2"`): agenci badawczy `best-practices-researcher`,
-  `framework-docs-researcher`, `repo-research-analyst`, `web-research-specialist` (stos web wpisany w treść) oraz fixture
-  `templates/smoke-autopilot` (D18) — do przypisania przy rozpisaniu Etapu 2.
+- Wpisy strażnika bez IU w planie: agenci badawczy `best-practices-researcher`, `framework-docs-researcher`,
+  `repo-research-analyst`, `web-research-specialist` (stos web wpisany w treść; przypisani do IU-2.9) oraz fixture
+  `templates/smoke-autopilot` (D18; przypisany do IU-2.6).
 - Asercje stacku plików ról: web w `stacks/web/__tests__/`, Expo w `stacks/expo/__tests__/` (Etap 2, IU-2.1/2.2);
   testy w `.claude/**/__tests__/` muszą przejść na każdym wariancie.
 - Zostaje na Etap 2 (IU-2.6): wykrywanie tras routera w `szkielet.mjs`.
@@ -276,51 +276,95 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
 
 ### Etap 2 — Nakładka Expo (w `stacks/expo/`)
 
+- IU-2.0 `stacks/zbuduj.mjs <stack> <katalog>` (przeniesione z Etapu 3, dawne IU-3.1): kopia `.claude/` → usunięcia z
+  `usun.txt` → podmiany i dodatki z nakładki → deep-merge `settings.patch.json` → plik `.claude/.rdzen-version` (SHA rdzenia).
+  Bash-free, testowany, bez CI, sekretów i publikacji. Od tego IU testy rdzenia biegną na zbudowanym wariancie, a liczba
+  padnięć spada do zera na odbiorze. Test „każdy slot ma w nakładce podmianę albo wpis w `usun.txt`” ma listę zaległych slotów,
+  z której każde IU usuwa swoje (pusta na odbiorze).
 - IU-2.1 Buildery `feature-builder-ui|data|fullstack` (+ `-figma`, D23) w wersji RN — **napisane od nowa na szkielecie
   web** (schemat zwrotu, `tools:`, `completed` + `odchylenia`, granice IU, dossier; A0.7 §5). Zasady RN idą do
   `rules/stack.md`, `rn-expo-guidelines` i skilli, nie do agentów. `tools:` z narzędziem `Skill` (ładowanie `expo:*` na
-  żądanie); preload: `rn-expo-guidelines`, `ux-ui-guidelines-mobile`, skill silnika stylowania (D6, D7).
+  żądanie; w próbach spike'u `Skill` w `tools:` wystarczył, zdanie o `expo:*` w treści buildera opcjonalne); preload:
+  `rn-expo-guidelines`, `ux-ui-guidelines-mobile`, skill silnika stylowania (D6, D7).
 - IU-2.2 Tester `feature-tester-e2e` w wersji Maestro — schemat wyniku web bez zmian: pole `przyczyna`, SKIP środowiskowy
   bez findingu OPERATOR, `flow` z linii także przy braku pliku (→ `scenariusz-niewykonalny`, D17), nie bootuje urządzeń
   i nie pisze do `.maestro/`; `--test-output-dir` w folderze zadania (Maestro ≥ 2.8), dowody z `takeScreenshot`.
 - IU-2.3 Adapter E2E `scripts/e2e/adapter.mjs` dla Expo: logika z promptu env-up mobile (`dev-autopilot-wf.js` mobile
   l.463–701) **przeniesiona do skryptu** — `EXPO_PUBLIC_*` e2e w `.env.development.local` zapisywanym i usuwanym przez
   adapter (D13: `.env.local` nietknięty, reload po zapisie, Metro bez `CI=1`, pozostawiony plik wykrywa doctor albo start;
-  istniejącego pliku nie nadpisuje bez kopii), Metro z PID na :8081,
-  emulator iOS-first z fallbackiem Android, świeżość dev-clienta, canary `.maestro/_canary.yaml`, seedy `.maestro/*-seed.sql`.
+  istniejącego pliku nie nadpisuje bez kopii), reload przez `ws://localhost:8081/message`, Metro z PID na :8081 i `CI` usuniętym
+  z env procesu, `LANG=en_US.UTF-8` dla `pod install` (bez tego CocoaPods pada na `Unicode Normalization not appropriate for
+  ASCII-8BIT`), emulator iOS-first z fallbackiem Android, urządzenie bez zalogowanego konta Apple (monit „Weryfikacja konta
+  Apple” zasłania aplikację i nie zamyka się wstrzykniętym dotknięciem; wykrywa doctor albo adapter), obsługa monitu
+  „Otworzyć w…” przy pierwszym deep linku, świeżość dev-clienta, canary `.maestro/_canary.yaml`, seedy `.maestro/*-seed.sql`.
+  Podmiana `templates/e2e-env` na wersję Expo (Metro, canary), z sekcją „Aplikacja z osobnym serwerem API”: rdzeń odsyła do
+  tego README (`srodowisko`, `start`, `szkielet`, `advisors`, dev-plan, dev-prep), więc nie może zniknąć. Sloty Expo tego IU:
+  `.claude/stack/e2e-srodowisko.md` i `.claude/stack/profil.json` (klucze `EXPO_PUBLIC_*`, katalogi `.maestro`, komenda testów).
   Deterministyczny skrypt zamiast promptu = mniej losowości niż w starym mobile.
 - IU-2.4 Bramka natywna po fazie (prebuild / pod install przy zmianie warstwy natywnej, mobile l.1184–1242) jako slot
-  `stack/po-fazie.md` + skrypt; rdzeń woła slot, web ma pusty.
-- IU-2.5 Sloty tekstowe: `buildery.md` (routing po `app/`, `components/`, `lib/`, `supabase/`), `walidacja.md`
-  (jest-expo + RNTL 14 + Jest 30 — D8, rozgrzewka, „nie eas build”), `plan-e2e.md` (Maestro, emulator, plik flow jako
-  deliverable buildera — D17), `fix-e2e.md`. `expo-doctor` jako bramka w `scripts/bramki/` (D14).
+  `stack/po-fazie.md` + skrypt; rdzeń woła slot, web ma pusty. `LANG=en_US.UTF-8` dla `pod install` jak w IU-2.3. Gradle sam
+  dociąga platformę Android 37 przy pierwszym buildzie.
+- IU-2.5 Sloty tekstowe: `buildery.md` (routing po `src/app/` albo `app/`, `src/components/`, `src/hooks/`, `lib/`, `supabase/`;
+  układ szablonu SDK 58 to `src/`), `walidacja.md` (jest-expo + RNTL 14 + Jest 30 — D8, konfiguracja Jest z tabeli w
+  `spike-sdk-58.md` pkt 2, rozgrzewka z `expo customize tsconfig.json` przed typecheckiem na czystym checkoucie, commit
+  `uniwind-types.d.ts`, „nie eas build”), `plan-e2e.md` (Maestro, emulator, plik flow jako deliverable buildera — D17),
+  `fix-e2e.md`, `dev-plan/references/stack.md` oraz przykład `dev-plan/references/szablon-planu.md` ze ścieżkami seedów i runnera
+  (4 testy `skill-dev-plan` z IU-1.7). `expo-doctor` jako bramka w `scripts/bramki/` (D14; 20/20 na zestawie ze spike'u).
 - IU-2.6 `weryfikacja-setup` wariant Maestro (Launch = dev-client + Metro, Drive = flow Maestro, Evidence = screenshoty)
-  — wchłania `e2e-setup` (D24; zostaje wiedza o dev-clientcie, pułapki 6–8, 10, 11, para `EXPO_PUBLIC_E2E_TEST_USER_*`).
+  — wchłania `e2e-setup` (D24; zostaje wiedza o dev-clientcie, pułapki 6–8, 10, 11, para `EXPO_PUBLIC_E2E_TEST_USER_*`,
+  monit konta Apple i „Otworzyć w…” jak w IU-2.3). Wykrywanie tras routera w `szkielet.mjs`. Fixture `templates/smoke-autopilot`
+  w wersji RN (D18): jeden ekran i flow Maestro, zamiast łatki na fixture web (A0.1).
 - IU-2.7 Skille (D6, D7): plugin `expo@claude-plugins-official` w `settings.patch.json` (MCP Expo wyłączony — D19, `deny`
-  dla `@expo/agent-cli` i `submit-expo-feedback`, bramka „plugin zainstalowany” w doctorze; hub ostrzega, że przypięty plugin
-  może być starszy od SDK); lokalnie: hub stosu (przemianowany z
+  dla `@expo/agent-cli` i `Bash(*submit-expo-feedback*)`, bramka „plugin zainstalowany” w doctorze; hub ostrzega, że przypięty
+  plugin może być starszy od SDK); lokalnie: hub stosu (przemianowany z
   `expo-overview`), skill Uniwind (przypięta kopia oficjalnego skilla autorów z audytem świeżości), nowy
   `rn-expo-guidelines` (A0.4 §7), `mobile-e2e-maestro` i `ux-ui-guidelines-mobile` po poprawkach P1/P2 z A0.3.
+  `AGENTS.md` i `.claude/settings.json` przychodzą z szablonu `default@sdk-58`: nakładka ustala, co z nimi przy syncu.
   Usunąć (`usun.txt`): agent-browser, tailwind-react-guidelines, ux-ui-guidelines, coolify-manager, makieta +
-  `scripts/makieta` (D2), `templates/e2e-env` web; nie przenosić `expo-tailwind-setup` (wadliwy pin NativeWind v5 preview).
-- IU-2.8 Reguły/hooki/settings: `rules/stack.md` mobile z projektu w A0.5 §2 (~60 reguł, 10 grup; korekta po spike'u);
+  `scripts/makieta` (D2); nie przenosić `expo-tailwind-setup` (wadliwy pin NativeWind v5 preview).
+  Zmiany w rdzeniu konieczne przy tych usunięciach (web bez zmian zachowania): zdania o `/makieta` i kontrola
+  `makieta.mjs sprawdz` z `dev-docs-complete` (workflow i skill) do `dev-docs-complete/references/stack.md`, a asercje z
+  `start-koniec.test.mjs` do `stacks/web/__tests__/`; wariant Expo: przegląd pary `-figma.png`/`-actual.png` ręcznie w smoke'u;
+  odesłania do usuwanych skilli (`zapobieganie.mjs`, `doctor.sh`, `kontekst-designerski.md`, `skille-tresc.test.mjs`) do
+  slotu albo testów web. Nowy test: rdzeń po usunięciach nie odsyła do plików z `usun.txt`.
+- IU-2.8 Reguły/hooki/settings: `rules/stack.md` mobile z projektu w A0.5 §2 (~60 reguł, 10 grup) i korekt po spike'u;
   `mobile-anti-pattern-check.sh` naprawiony i rozszerzony (D25) w `settings.patch.json`; `learned-patterns.md` **nie**
   przechodzi do szablonu (D21 — indeks projektu); bramki: `eslint-plugin-jest` zamiast `@vitest/eslint-plugin`, runner
   jest dla Strykera, reguła lokalna rozpoznaje `jest.mocked`, bez size-limit.
+
+  Sekcje, do których odsyła rdzeń (obok grup tematycznych A0.5 §2; sprawdza je `reguly-stacku.test.mjs`):
+
+  | Sekcja | Treść | Podstawa |
+  |---|---|---|
+  | Organizacja kodu | testy poza katalogiem tras (`src/app` albo `app`), w `__tests__/` | spike pkt 2, docs |
+  | Zależności | `npx expo install` dla paczek SDK; preferencja z „Zależności natywne” | A0.5, `AGENTS.md` szablonu |
+  | Bezpieczeństwo | rozpoznanie konfiguracji lokalnej/e2e | niesprawdzone, ustalić w tym IU |
+  | Type safety | wyjątki od `as`: bez zawężania DOM; lista do ustalenia | niesprawdzone, ustalić w tym IU |
+  | Performance | bez size-limit; budżet paczki i ładowanie leniwe do ustalenia | A0.5; niesprawdzone, ustalić w tym IU |
+  | Async i React | `AbortSignal.timeout`, timeout rozpoznawany po `signal.reason`, nie po `error.name`; Compiler: `experiments.reactCompiler: true`; `await` także przy `render` i `fireEvent` RNTL 14 | spike pkt 2, 4; log Metro |
+
+  Korekty projektu A0.5 §2: wypada blok „Tylko NativeWind v5” i reguła o helperze zamiast `AbortSignal.timeout` (dotyczy RN 0.88;
+  starsze wersje niesprawdzone). Dochodzą: prefiks `accent-*` dla kolorów `TextInput`, unikanie `lineHeight` w `TextInput` na iOS,
+  priorytet env proces/plik (dev: plik wygrywa, Release i `expo export`: proces wygrywa). `paths:` `global.css` → `**/global.css`;
+  „Testów nie kładziesz w `app/`” obejmuje też `src/app`.
 - IU-2.9 Wspólne skille `security`, `sentry-integration`, `supabase-dev-guidelines`, `dev-prep` — rdzeń = aktualna
   wersja web, różnice mobile (10–14 akapitów na skill wg A0.3) w `references/stack.md` (D20), z poprawkami P1 z A0.3.
   Storage sesji: domyślny wariant Supabase, `LargeSecureStore` jako opcja (D9). Płatności: IAP/RevenueCat zamiast
-  Stripe Checkout dla treści cyfrowych (D10).
+  Stripe Checkout dla treści cyfrowych (D10). Sloty Expo `dev-docs-complete/references/stack.md` (A0.1 #32, ręczny przegląd
+  makiet z IU-2.7) i `dev-compound/references/stack.md`. Agenci badawczy `best-practices-researcher`, `framework-docs-researcher`,
+  `repo-research-analyst`, `web-research-specialist`: stos web i przykłady do slotu, dosłownie dla webu, a ich wpisy strażnika
+  znikają.
 - Odbiór: `zbuduj.mjs expo` daje `.claude/`, na którym przechodzą testy rdzenia + testy nakładki.
 
 ### Etap 3 — Budowanie i publikacja
 
-- IU-3.1 `stacks/zbuduj.mjs <stack> <katalog>`: kopia `.claude/` → usunięcia z `usun.txt` → podmiany i dodatki z nakładki →
-  deep-merge `settings.patch.json` → plik `.claude/.rdzen-version` (SHA rdzenia). Bash-free, testowany.
+- IU-3.1 przeniesione do Etapu 2 jako IU-2.0 (`stacks/zbuduj.mjs`).
 - IU-3.2 `maszyneria.yml`: job `wariant-expo` — build + testy na wyniku + strażnik slotów.
-- IU-3.3 `publikuj-mobile.yml`: push na `main` → build → commit `sync: rdzeń <sha>` do `workspace-template-mobile` (tylko
+- IU-3.3 `publikuj-mobile.yml` (D4): push na `main` ze zmianą w `.claude/`, `stacks/` albo `output-styles/`, po zielonym jobie
+  `wariant-expo` → build → commit `sync: rdzeń <sha>` do `workspace-template-mobile` (tylko
   `.claude/` i `output-styles/`; README/docs repo mobile nietknięte). Sekret: deploy key z prawem zapisu do repo mobile.
-  Fallback ręczny: `node stacks/zbuduj.mjs expo ../workspace-template-mobile && git -C … commit`.
+  Automat włączony dopiero po udanym pilocie (Etap 4). Do tego czasu i jako fallback publikacja ręczna, za zgodą operatora:
+  `node stacks/zbuduj.mjs expo ../workspace-template-mobile && git -C … commit`.
 - IU-3.4 `sync-template` w wariancie Expo ma domyślny URL repo mobile (podmiana slotu albo zmienna w `settings.patch.json`).
 - IU-3.5 README mobile: sekcja „skąd pochodzi `.claude/`” + „nie edytuj `.claude/` w tym repo — zmiany idą do
   `claude-code-starter/stacks/expo`”. Strażnik: CI w repo mobile odrzuca commit zmieniający `.claude/` spoza bota publikacji.
@@ -332,12 +376,15 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
   na wadliwym NativeWind v5 preview + nightly `react-native-css`.
 - `Nawykometr` (dziś na mobile `6fbd49d`): `/sync-template --dry-run`, potem sync; doctor; jedno małe zadanie przez
   `/dev-plan` → autopilot → smoke → `/dev-pr`. Sprawdzić: env-up na emulatorze, tester Maestro, księgowanie [E2E], bramka natywna.
-- Wnioski → poprawki w `stacks/expo/` (publikują się same). Potem `gramywpadla` (dziś `23e0d92`, starszy — najpierw dry-run).
+- Wnioski → poprawki w `stacks/expo/` (publikacja ręczna do końca pilotu, D4). Potem `gramywpadla` (dziś `23e0d92`, starszy —
+  najpierw dry-run). Po udanym pilocie: włączenie automatu z IU-3.3.
 
 ### Etap 5 — Świeżość skilli technicznych Expo
 
-- Skille `expo:*` z pluginu (D6) — świeżość zapewnia upstream; w `ZRODLA-SZABLONU.md` wpis o pluginie i decyzji
-  o przypięciu wersji (źródło `git-subdir` z `sha` we własnym marketplace vs żywa wersja — do rozstrzygnięcia w Etapie 3).
+- Skille `expo:*` z pluginu (D6) — świeżość zapewnia upstream, ale z granicą: marketplace przypina SHA, więc plugin może być
+  starszy od bieżącego SDK (1.13.9 z 2026-10-05 nie wspomina SDK 58, spike pkt 7). W `ZRODLA-SZABLONU.md` wpis o pluginie i
+  decyzji o przypięciu wersji (źródło `git-subdir` z `sha` we własnym marketplace vs wersja z `claude-plugins-official` — do
+  rozstrzygnięcia w Etapie 3).
 - Skill Uniwind: przypięta kopia oficjalnego skilla autorów, odświeżana procedurą jak agent-browser.
 - Własne skille mobile (`rn-expo-guidelines`, `mobile-e2e-maestro`, `ux-ui-guidelines-mobile`, `references/stack.md`
   skilli wspólnych) wchodzą do cyklicznego audytu świeżości razem z webowymi.
@@ -359,11 +406,13 @@ Przyjęte (operator, 2026-11-01/02):
 - **Korekty po spike'u SDK 58** (operator, 2026-11-05; `00-decyzje.md`, `spike-sdk-58.md`): D6 — plugin
   `expo@claude-plugins-official`, `deny` także dla `submit-expo-feedback`; D11 — `zastap` zostaje, bo obcy Metro może serwować
   paczkę innego projektu; D13 — `.env.development.local` zamiast swapu `.env.local`.
-
-Do potwierdzenia przed Etapem 2–3:
-- **D2** `makieta` w mobile: usunąć na start (proxy z iframe nie obsłuży aplikacji natywnej); ewentualny wariant „zrzut z
-  emulatora obok makiety” jako osobne zadanie po pilocie.
-- **D4** Publikacja automatyczna przy każdym pushu na `main` (rekomendacja) vs. ręczna komenda po paczce zmian.
+- **D2** (operator, 2026-11-05) `makieta` w mobile usunięta na start, bo proxy z iframe nie obsłuży aplikacji natywnej; punkty
+  wizualne zostają jako ręczny przegląd pary plików w smoke'u. Rdzeń woła narzędzie wprost, więc IU-2.7 przenosi te odesłania do
+  slotu. Ewentualny wariant „zrzut z emulatora obok makiety” jako osobne zadanie po pilocie.
+- **D4** (operator, 2026-11-05) Publikacja automatyczna przy pushu na `main`, po zielonym jobie `wariant-expo`, z filtrem ścieżek,
+  włączona dopiero po udanym pilocie. Do tego czasu publikacja ręczna za zgodą operatora.
+- **Kolejność** (operator, 2026-11-05): `zbuduj.mjs` powstaje przed nakładką jako IU-2.0 (dawne IU-3.1), bo wymaga go odbiór
+  Etapu 2.
 
 ## Ryzyka
 
