@@ -73,7 +73,7 @@ test('plan-e2e: identyfikator flow i plik jako deliverable, seedy i runner w .ma
 
 test('fix-e2e: ponowne odegranie przez Maestro i pisanie brakującego flow; poprawka wizualna przez hierarchy', () => {
   const f = czytaj('.claude/stack/fix-e2e.md')
-  assert.match(f, /`maestro test \.maestro\/<flow>\.yaml; echo "kod=\$\?"`/)
+  assert.match(f, /`node \.claude\/scripts\/e2e\/expo-flow\.mjs --zadanie <folder> --flow <flow>`/)
   assert.match(f, /„brak flow”, najpierw piszesz `\.maestro\/<flow>\.yaml`/)
   assert.match(f, /`maestro hierarchy --compact`/)
 })

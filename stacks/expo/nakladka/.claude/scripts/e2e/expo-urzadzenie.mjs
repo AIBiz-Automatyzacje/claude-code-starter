@@ -148,11 +148,11 @@ function wlaczony(s, wykonajKomende) {
 
 /**
  * iPhone do E2E: E2E_URZADZENIE (nazwa albo UDID) albo pierwszy bez konta Apple z dev-clientem, włączone najpierw.
- * @param {string} bundleId @param {string | undefined} wskazane @param {Wykonaj} wykonajKomende
+ * @param {string} bundleId @param {string | undefined} wskazane @param {Wykonaj} wykonajKomende @param {boolean} tylkoWlaczone
  * @returns {{ symulator: Symulator | null, uwagi: string[], odpady: string[] }}
  */
-function wybierzSymulator(bundleId, wskazane, wykonajKomende) {
-  const lista = symulatory(wykonajKomende).filter((s) => !wskazane || s.udid === wskazane || s.name === wskazane)
+function wybierzSymulator(bundleId, wskazane, wykonajKomende, tylkoWlaczone) {
+  const lista = symulatory(wykonajKomende).filter((s) => (!wskazane || s.udid === wskazane || s.name === wskazane) && (!tylkoWlaczone || s.state === 'Booted'))
   const odpady = []
   const uwagi = []
   const dobre = []
@@ -210,15 +210,16 @@ function sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende) {
 /**
  * Wybór urządzenia: E2E_PLATFORMA (`ios` albo `android`) i E2E_URZADZENIE z .env.e2e, inaczej iOS, a przy braku Android.
  * @param {string} projekt @param {Aplikacja} aplikacja @param {Record<string, string>} env @param {Wykonaj} [wykonajKomende]
+ * @param {{ tylkoWlaczone?: boolean }} [opcje] tylkoWlaczone: ten sam wybór bez włączania symulatora; tester nie bootuje urządzeń
  * @returns {WynikUrzadzenia}
  */
-export function przygotujUrzadzenie(projekt, aplikacja, env, wykonajKomende = wykonaj) {
+export function przygotujUrzadzenie(projekt, aplikacja, env, wykonajKomende = wykonaj, { tylkoWlaczone = false } = {}) {
   const platforma = env.E2E_PLATFORMA
   if (platforma && !['ios', 'android'].includes(platforma)) return { ok: false, detal: `E2E_PLATFORMA=${platforma}`, naprawa: 'Dozwolone wartości E2E_PLATFORMA: ios, android.' }
   const wskazane = env.E2E_URZADZENIE || undefined
   const odpady = []
   if (platforma !== 'android' && aplikacja.bundleId) {
-    const wybor = wybierzSymulator(aplikacja.bundleId, wskazane, wykonajKomende)
+    const wybor = wybierzSymulator(aplikacja.bundleId, wskazane, wykonajKomende, tylkoWlaczone)
     if (wybor.symulator) return sprawdzIos(projekt, aplikacja, wybor.symulator, wybor.uwagi, wykonajKomende)
     odpady.push(...wybor.odpady)
   }
