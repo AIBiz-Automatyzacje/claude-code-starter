@@ -31,7 +31,7 @@ import { join } from 'node:path'
 import { adresHttp, tenSamSerwer } from './adres.mjs'
 
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
-/** @typedef {{ ok: boolean, detal: string, naprawa: string }} WynikKroku */
+/** @typedef {{ ok: boolean, detal: string, naprawa: string, przebudowa?: boolean }} WynikKroku przebudowa: restart serwera tego nie usunie, autopilot robi STOP */
 /**
  * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild', naprawa: string }} SygnaturaBlokera
  */

@@ -1304,8 +1304,22 @@ function srodowiskoPoRestarcie(stdout) {
   const obcy = Boolean(w) && w.serwer === 'obcy'
   if (w && w.status === 'gotowe') return { srodowisko: 'gotowe', trwale: false, nasz, obcy, detal }
   if (w && w.status === 'pominieto') return { srodowisko: 'pominieto', trwale: false, nasz, obcy, detal }
-  if (w && w.status === 'niepowodzenie') return { srodowisko: 'martwe', trwale: !obcy && /nie odpowiada po \d+ s/.test(detal), nasz, obcy, detal: obcy && w.naprawa ? `${detal}. ${w.naprawa}` : detal, przyczyna: obcy ? detal : null }
+  if (w && w.status === 'niepowodzenie') {
+    // Krok stacku przed serwerem (Expo: urzadzenie, plik env) padl jeszcze przed startem: jak przy obcym serwerze przyczyna poza kodem fazy.
+    const pozaKodem = obcy || w.krokStacku === true
+    return { srodowisko: 'martwe', trwale: !pozaKodem && /nie odpowiada po \d+ s/.test(detal), nasz, obcy, detal: pozaKodem && w.naprawa ? `${detal}. ${w.naprawa}` : detal, przyczyna: pozaKodem ? detal : null, przebudowa: w.przebudowa === true ? { detal, naprawa: String(w.naprawa || '') } : null }
+  }
   return { srodowisko: null, trwale: false, nasz, obcy, detal }
+}
+
+// Bramka po fazie (`.claude/stack/po-fazie.md`, sekcja „Przebudowa”): faza zmienila warstwe natywna, a restart serwera tego nie usunie.
+// STOP przed testerem, zamiast SKIP-ow w tej i kazdej nastepnej fazie. Execute jest juz zapisany, wiec swiezy run wchodzi prosto w review.
+function decyzjaPrzebudowy(po, numerFazy, sciezka) {
+  if (!po.przebudowa) return null
+  return {
+    powod: `Faza ${numerFazy}: ${po.przebudowa.detal}. Tester padlby na brakujacym module natywnym w tej i kazdej nastepnej fazie.`,
+    naprawa: `${po.przebudowa.naprawa} Opis: .claude/stack/po-fazie.md, sekcja „Przebudowa”. Sprawdzenie: node .claude/scripts/e2e/e2e.mjs restart --zadanie ${sciezka} --faza ${numerFazy}. Potem swiezy run (te same args, BEZ resumeFromRunId): execute tej fazy jest zapisany jako done, wiec run wejdzie prosto w review.`,
+  }
 }
 
 // Advisors bazy e2e po db-sync (P17): JSON `e2e.mjs advisors` od agenta -> wejscie security w review. Pola walidowane, bo
@@ -1781,10 +1795,12 @@ for (const numerFazy of kolejka) {
         restart = await agent(e2eRestartPrompt(sciezka, numerFazy), { schema: E2E_RESTART, agentType: 'klasa-mechaniczny', label: `e2e:restart:faza-${numerFazy}` })
       }
       const po = srodowiskoPoRestarcie(restart && restart.stdout)
+      const stopPrzebudowy = decyzjaPrzebudowy(po, numerFazy, sciezka)
+      if (stopPrzebudowy) return await stopRun({ ...stopPrzebudowy, faza: numerFazy, raporty })
       sygnaturyBlokera = sygnaturyZRestartu(restart && restart.stdout)
       if (po.srodowisko) srodowiskoE2E = po.srodowisko
       if (po.srodowisko === 'gotowe') e2eBylaPrzegladarka = true
-      if (po.srodowisko === 'martwe' && po.obcy) przyczynaBezPrzegladarki = po.przyczyna
+      if (po.srodowisko === 'martwe' && po.przyczyna) przyczynaBezPrzegladarki = po.przyczyna
       else if (po.srodowisko === 'martwe') restartBlad = po.detal
       if (po.trwale) e2eTrwaleMartwe = true
       if (po.nasz) serwerNasz = true

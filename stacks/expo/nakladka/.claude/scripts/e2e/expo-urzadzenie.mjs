@@ -6,12 +6,15 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { zmianyNatywne } from './expo-natywne.mjs'
+
 /**
  * @typedef {{ status: number | null, stdout: string, stderr: string, blad?: boolean }} WynikKomendy
  * @typedef {(komenda: string, argumenty: string[], opcje?: { cwd?: string, limitMs?: number }) => WynikKomendy} Wykonaj
  * @typedef {{ bundleId: string | null, appId: string | null, scheme: string | null }} Aplikacja
  * @typedef {{ platforma: 'ios' | 'android', id: string, nazwa: string, sciezkaAplikacji: string | null }} Urzadzenie
- * @typedef {{ ok: true, urzadzenie: Urzadzenie, uwagi: string[] } | { ok: false, detal: string, naprawa: string }} WynikUrzadzenia
+ * @typedef {{ ok: false, detal: string, naprawa: string, przebudowa?: boolean }} PorazkaUrzadzenia
+ * @typedef {{ ok: true, urzadzenie: Urzadzenie, uwagi: string[] } | PorazkaUrzadzenia} WynikUrzadzenia
  * @typedef {{ udid: string, name: string, state: string, dataPath: string, isAvailable: boolean, deviceTypeIdentifier?: string }} Symulator
  */
 
@@ -24,10 +27,14 @@ const KONFIGURACJA = ['app.json', 'app.config.js', 'app.config.ts', ...LOCKFILES
 const NATYWNE = { ios: 'ios/Podfile.lock', android: 'android/build.gradle' }
 // package.json celowo pominięty: jego mtime przestawia każdy checkout i edycja `scripts`.
 
+// `expo run:*` robi prebuild tylko przy braku katalogu natywnego, a docs Expo zalecają `--clean` po zmianie pluginów albo paczki natywnej.
+// LANG: CocoaPods w powłoce bez locale pada na `Unicode Normalization not appropriate for ASCII-8BIT`.
 export const REBUILD = {
-  ios: 'LANG=en_US.UTF-8 npx expo run:ios --no-bundler',
-  android: 'npx expo run:android --no-bundler',
+  ios: 'LANG=en_US.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US.UTF-8 npx expo run:ios --no-bundler',
+  android: 'npx expo prebuild --clean --platform android && npx expo run:android --no-bundler',
 }
+// Operator wkleja komendę ze STOP-u, więc ostrzeżenie idzie w treści naprawy, nie tylko w slocie po-fazie.md, który ma to samo zdanie.
+export const OSTRZEZENIE_CLEAN = '`--clean` usuwa `ios/` i `android/`. Projekt, który trzyma te katalogi w repo, pomija `prebuild` i woła samo `expo run:*`.'
 
 /** @type {Wykonaj} */
 export function wykonaj(komenda, argumenty, { cwd, limitMs = LIMIT_KOMENDY_MS } = {}) {
@@ -116,6 +123,20 @@ export function podpisany(sciezka, wykonajKomende = wykonaj) {
   return w.status === 0 && !/not signed at all/.test(`${w.stdout}${w.stderr}`)
 }
 
+/**
+ * Świeżość binarki: nowszy plik natywny to STOP od razu, a nowszy lockfile albo app.json rozstrzyga diff od builda (bramka natywna).
+ * @param {string} projekt @param {number} mtime sekundy @param {'ios' | 'android'} platforma @param {string} nazwa
+ * @returns {{ stop: PorazkaUrzadzenia | null, uwaga: string | null }}
+ */
+function ocenaSwiezosci(projekt, mtime, platforma, nazwa) {
+  const stary = przestarzaly(projekt, mtime, platforma)
+  if (!stary) return { stop: null, uwaga: null }
+  const zmiany = stary === NATYWNE[platforma] ? null : zmianyNatywne(projekt, mtime)
+  if (zmiany && !zmiany.wymagaRebuildu) return { stop: null, uwaga: `dev-client na ${nazwa} starszy niż ${stary}, ale przebudowa niepotrzebna: ${zmiany.detal}` }
+  const powod = zmiany ? zmiany.detal : 'warstwa natywna zmieniona po buildzie'
+  return { stop: { ok: false, detal: `dev-client na ${nazwa} starszy niż ${stary}: ${powod}`, naprawa: `Przebuduj: ${REBUILD[platforma]}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }, uwaga: null }
+}
+
 /** @param {Symulator} s @param {Wykonaj} wykonajKomende @returns {{ ok: boolean, detal: string }} */
 function wlaczony(s, wykonajKomende) {
   if (s.state === 'Booted') return { ok: true, detal: '' }
@@ -157,11 +178,11 @@ function sprawdzIos(projekt, aplikacja, s, uwagi, wykonajKomende) {
   if (!start.ok) return { ok: false, detal: start.detal, naprawa: `Uruchom symulator ręcznie: xcrun simctl boot ${s.udid}` }
   const kontener = wykonajKomende('xcrun', ['simctl', 'get_app_container', s.udid, String(aplikacja.bundleId)])
   const sciezka = kontener.stdout.trim()
-  if (kontener.status !== 0 || !sciezka) return { ok: false, detal: `${s.name}: brak dev-clienta ${aplikacja.bundleId}`, naprawa: `Zainstaluj dev-client: ${REBUILD.ios}.` }
-  const stary = przestarzaly(projekt, statSync(sciezka).mtimeMs / 1000, 'ios')
-  if (stary) return { ok: false, detal: `dev-client na ${s.name} starszy niż ${stary}: moduły natywne z nowszych zależności nie są w buildzie`, naprawa: `Przebuduj: ${REBUILD.ios}.` }
-  if (!podpisany(sciezka, wykonajKomende)) return { ok: false, detal: `dev-client na ${s.name} bez podpisu: SecureStore nie utrwali sesji`, naprawa: `Przebuduj z podpisem ad-hoc: ${REBUILD.ios}.` }
-  return { ok: true, urzadzenie: { platforma: 'ios', id: s.udid, nazwa: s.name, sciezkaAplikacji: sciezka }, uwagi }
+  if (kontener.status !== 0 || !sciezka) return { ok: false, detal: `${s.name}: brak dev-clienta ${aplikacja.bundleId}`, naprawa: `Zainstaluj dev-client: ${REBUILD.ios}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }
+  const swiezosc = ocenaSwiezosci(projekt, statSync(sciezka).mtimeMs / 1000, 'ios', s.name)
+  if (swiezosc.stop) return swiezosc.stop
+  if (!podpisany(sciezka, wykonajKomende)) return { ok: false, detal: `dev-client na ${s.name} bez podpisu: SecureStore nie utrwali sesji`, naprawa: `Przebuduj z podpisem ad-hoc: ${REBUILD.ios}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }
+  return { ok: true, urzadzenie: { platforma: 'ios', id: s.udid, nazwa: s.name, sciezkaAplikacji: sciezka }, uwagi: swiezosc.uwaga ? [...uwagi, swiezosc.uwaga] : uwagi }
 }
 
 /**
@@ -179,9 +200,9 @@ function sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende) {
     const urzadzenie = /** @type {Urzadzenie} */ ({ platforma: 'android', id, nazwa: id, sciezkaAplikacji: sciezka })
     const mtime = Number(wykonajKomende('adb', ['-s', id, 'shell', 'stat', '-c', '%Y', sciezka]).stdout.trim())
     if (!Number.isFinite(mtime) || mtime <= 0) return { ok: true, urzadzenie, uwagi: [`${id}: nie sprawdzono świeżości dev-clienta (brak odczytu mtime)`] }
-    const stary = przestarzaly(projekt, mtime, 'android')
-    if (stary) return { ok: false, detal: `dev-client na ${id} starszy niż ${stary}: moduły natywne z nowszych zależności nie są w buildzie`, naprawa: `Przebuduj: ${REBUILD.android}.` }
-    return { ok: true, urzadzenie, uwagi: [] }
+    const swiezosc = ocenaSwiezosci(projekt, mtime, 'android', id)
+    if (swiezosc.stop) return swiezosc.stop
+    return { ok: true, urzadzenie, uwagi: swiezosc.uwaga ? [swiezosc.uwaga] : [] }
   }
   return null
 }
@@ -209,7 +230,8 @@ export function przygotujUrzadzenie(projekt, aplikacja, env, wykonajKomende = wy
   return {
     ok: false,
     detal: `brak urządzenia do E2E (${odpady.join('; ') || 'brak iPhone w simctl'})`,
-    naprawa: `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}.`,
+    naprawa: `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}. ${OSTRZEZENIE_CLEAN}`,
+    przebudowa: true,
   }
 }
 

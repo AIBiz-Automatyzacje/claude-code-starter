@@ -31,7 +31,7 @@ function wytnij(zrodlo, kotwica, koniec) {
 
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const A = new Function(`${wytnij(autopilot, '// ── Bramka wejscia (P4)', '// ── Koniec bramki wejscia')}
-  return { decyzjaSrodowiskaE2e, srodowiskoPoReview, srodowiskoPoRestarcie, advisorsZWyniku, sygnaturyZRestartu, decyzjaBlokeraSrodowiska }`)()
+  return { decyzjaSrodowiskaE2e, srodowiskoPoReview, srodowiskoPoRestarcie, decyzjaPrzebudowy, advisorsZWyniku, sygnaturyZRestartu, decyzjaBlokeraSrodowiska }`)()
 // eslint-disable-next-line no-new-func -- jw.
 const R = new Function(`${wytnij(review, 'const SYGNATURY_BLOKERA = [', '// ── Koniec E2E po testerze')}
   return { PRZYCZYNY_SKIP, liczManualE2e, komendaKsiegowania, wykryjBlokerSrodowiska }`)()
@@ -107,6 +107,21 @@ test('restart fazy: gotowe/pominieto ustawia srodowisko fazy; szybki pad = martw
   assert.equal(A.srodowiskoPoRestarcie(undefined).srodowisko, null)
 })
 
+// IU-2.4: krok stacku przed serwerem padl (Expo: urzadzenie, przebudowa). Przyczyna poza kodem fazy, a przebudowa daje STOP przed testerem.
+test('restart fazy: porazka kroku stacku = przyczyna dla testera, nie restartE2e; przebudowa = STOP z naprawa i slotem', () => {
+  const urzadzenie = A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', krokStacku: true, przebudowa: false, detal: 'brak urzadzenia', naprawa: 'Wlacz.' }))
+  assert.deepEqual([urzadzenie.srodowisko, urzadzenie.trwale, urzadzenie.przyczyna, urzadzenie.detal], ['martwe', false, 'brak urzadzenia', 'brak urzadzenia. Wlacz.'])
+  assert.equal(A.decyzjaPrzebudowy(urzadzenie, 2, 'docs/active/z'), null, 'bez przebudowy faza idzie dalej bez urzadzenia')
+  const stara = A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', krokStacku: true, przebudowa: true, detal: 'dev-client starszy', naprawa: 'Przebuduj.' }))
+  const stop = A.decyzjaPrzebudowy(stara, 2, 'docs/active/z')
+  assert.match(stop.powod, /^Faza 2: dev-client starszy\./)
+  assert.match(stop.naprawa, /^Przebuduj\. Opis: \.claude\/stack\/po-fazie\.md, sekcja „Przebudowa”\. Sprawdzenie: node \.claude\/scripts\/e2e\/e2e\.mjs restart --zadanie docs\/active\/z --faza 2\./)
+  assert.equal(A.decyzjaPrzebudowy(A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', detal: 'kod 1' })), 2, 'x'), null, 'restart padniety kodem fazy to nie przebudowa')
+  const petla = wytnij(autopilot, '      const po = srodowiskoPoRestarcie(', "    const review = await workflow('dev-docs-review-wf'")
+  assert.match(petla, /const stopPrzebudowy = decyzjaPrzebudowy\(po, numerFazy, sciezka\)\n\s+if \(stopPrzebudowy\) return await stopRun\(\{ \.\.\.stopPrzebudowy, faza: numerFazy, raporty \}\)/)
+  assert.ok(petla.indexOf('decyzjaPrzebudowy') < petla.indexOf('e2eDbSyncPrompt'), 'STOP przed db-sync i testerem')
+})
+
 // P19: obcy serwer zajal port E2E w trakcie runu — faza bez przegladarki z nazwana przyczyna, bez logu dla correctness
 // (przyczyna poza kodem fazy) i bez „do konca runu” (nastepna faza sprawdza port od nowa).
 test('restart fazy: obcy serwer na porcie = martwe w tej fazie z przyczyna dla testera, nie restartE2e; tester dostaje przyczyne tylko bez przegladarki', () => {
@@ -117,7 +132,7 @@ test('restart fazy: obcy serwer na porcie = martwe w tej fazie z przyczyna dla t
   assert.equal(po.detal, `${detal}. Zatrzymaj go: \`kill 3814\``, 'log operatora z naprawa')
   assert.equal(A.srodowiskoPoRestarcie(JSON.stringify({ status: 'niepowodzenie', detal: 'kod 1' })).przyczyna, null)
   const petla = wytnij(autopilot, '      const po = srodowiskoPoRestarcie(', "    const review = await workflow('dev-docs-review-wf'")
-  assert.match(petla, /if \(po\.srodowisko === 'martwe' && po\.obcy\) przyczynaBezPrzegladarki = po\.przyczyna\n\s+else if \(po\.srodowisko === 'martwe'\) restartBlad = po\.detal/)
+  assert.match(petla, /if \(po\.srodowisko === 'martwe' && po\.przyczyna\) przyczynaBezPrzegladarki = po\.przyczyna\n\s+else if \(po\.srodowisko === 'martwe'\) restartBlad = po\.detal/)
   assert.match(wytnij(autopilot, "    const review = await workflow('dev-docs-review-wf'", '    })'), /\n\s+przyczynaBezPrzegladarki,\n/)
   // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
   const e2ePrompt = new Function('SKILL_WERYFIKACJI', 'BLOK_DLUGIE_KOMENDY', 'BLOK_LIMIT_P3', 'mapaBlok', 'rereviewBlok', `${wytnij(review, 'function e2ePrompt(', '\n}\n')}

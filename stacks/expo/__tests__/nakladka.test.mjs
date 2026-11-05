@@ -69,6 +69,14 @@ test('lista zaległych: bez plików już pokrytych i bez plików spoza kontraktu
   assert.deepEqual(ZALEGLE.filter((p) => !kontrakt.includes(p)), [])
 })
 
+test('slot po-fazie: web bez kroku, Expo z komendami przebudowy i LANG', () => {
+  assert.match(readFileSync(join(KORZEN, '.claude/stack/po-fazie.md'), 'utf8'), /^## Przebudowa\n\nNic do zrobienia\./m)
+  const expo = readFileSync(join(STACK, 'nakladka/.claude/stack/po-fazie.md'), 'utf8')
+  assert.match(expo, /^## Przebudowa$/m)
+  assert.match(expo, /LANG=en_US\.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US\.UTF-8 npx expo run:ios --no-bundler/)
+  assert.match(expo, /npx expo prebuild --clean --platform android && npx expo run:android --no-bundler/)
+})
+
 test('wariant Expo się buduje, a settings.json i wersja rdzenia są na miejscu', () => {
   const { katalog, wynik, sprzataj } = przygotujLawke(KORZEN, 'expo')
   try {

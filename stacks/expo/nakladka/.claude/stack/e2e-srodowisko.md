@@ -16,8 +16,8 @@ konto `E2E_TEST_EMAIL`, polecenia `node .claude/scripts/e2e/e2e.mjs start|restar
 - Urządzenie: iOS najpierw, Android jako zapas. Na iOS odpada symulator z zalogowanym kontem Apple, bo monit „Weryfikacja
   konta Apple” zasłania aplikację i nie zamyka się wstrzykniętym dotknięciem. Wybór ręczny: `E2E_PLATFORMA` (`ios`, `android`)
   i `E2E_URZADZENIE` (nazwa albo UDID symulatora, serial `adb`). Android: tylko emulator już działający.
-- Dev-client: starszy od `ios/Podfile.lock`, `android/build.gradle`, `app.json`, `app.config.*` albo lockfile'a to STOP z
-  komendą przebudowy. Dev-client iOS bez podpisu to też STOP, bo bez podpisu SecureStore nie utrwala sesji.
+- Dev-client: zmiana natywna po buildzie to STOP z komendą przebudowy (`.claude/stack/po-fazie.md`, sekcja „Przebudowa”). Dev-client iOS
+  bez podpisu to też STOP, bo bez podpisu SecureStore nie utrwala sesji.
 
 ## Sonda zdrowia
 
@@ -33,10 +33,3 @@ konto `E2E_TEST_EMAIL`, polecenia `node .claude/scripts/e2e/e2e.mjs start|restar
 - Kontrola narzędzia: `maestro --version`, Java 17+ i próbny zrzut ekranu wybranego urządzenia.
 - Dowód startu (canary): po odpowiedzi Metro adapter wysyła reload i uruchamia `.maestro/_canary.yaml` z logowaniem i asercją za
   logowaniem. Bez tego pliku idzie tymczasowy flow wejścia w dev-client, a wynik mówi, że to słaby dowód.
-
-## Przebudowa dev-clienta
-
-- iOS: `LANG=en_US.UTF-8 npx expo run:ios --no-bundler`. Bez `LANG` CocoaPods pada na `Unicode Normalization not appropriate for
-  ASCII-8BIT` w powłoce bez locale.
-- Android: `npx expo run:android --no-bundler`. Gradle sam dociąga brakującą platformę Androida przy pierwszym buildzie.
-- `eas build` nie jest potrzebny do E2E.

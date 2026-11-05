@@ -9,10 +9,10 @@ import { join } from 'node:path'
 
 import { PLIK_CANARY, przejdzCanary, wyslijReload } from './expo-canary.mjs'
 import { cofnijEnvE2e, PLIK_DEV, plikAdaptera, zapiszEnvE2e } from './expo-env.mjs'
-import { aplikacjaProjektu, przygotujUrzadzenie, REBUILD, zrzutEkranu } from './expo-urzadzenie.mjs'
+import { aplikacjaProjektu, OSTRZEZENIE_CLEAN, przygotujUrzadzenie, REBUILD, zrzutEkranu } from './expo-urzadzenie.mjs'
 
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
-/** @typedef {{ ok: boolean, detal: string, naprawa: string }} WynikKroku */
+/** @typedef {{ ok: boolean, detal: string, naprawa: string, przebudowa?: boolean }} WynikKroku */
 /**
  * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild', naprawa: string }} SygnaturaBlokera
  */
@@ -21,7 +21,7 @@ import { aplikacjaProjektu, przygotujUrzadzenie, REBUILD, zrzutEkranu } from './
 /** @type {'stop' | 'zastap'} */
 export const POLITYKA_OBCEGO = 'zastap'
 
-const NAPRAWA_REBUILDU = `Przebuduj dev-client: iOS \`${REBUILD.ios}\`, Android \`${REBUILD.android}\`.`
+const NAPRAWA_REBUILDU = `Przebuduj dev-client: iOS \`${REBUILD.ios}\`, Android \`${REBUILD.android}\`. ${OSTRZEZENIE_CLEAN}`
 // Brak modułu natywnego albo entitlements nie znika po restarcie Metro: bez przebudowy każdy kolejny scenariusz padnie tak samo (D12).
 /** @type {SygnaturaBlokera[]} */
 export const SYGNATURY_BLOKERA = [
