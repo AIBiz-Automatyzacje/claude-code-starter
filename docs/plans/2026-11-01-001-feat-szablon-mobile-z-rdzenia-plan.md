@@ -356,6 +356,18 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
   znikają.
 - Odbiór: `zbuduj.mjs expo` daje `.claude/`, na którym przechodzą testy rdzenia + testy nakładki.
 
+**Stan Etapu 2.** Kolejność wg zależności: 2.0 → 2.7 → 2.8 → 2.3 → 2.4 → 2.5 → 2.2 → 2.1 → 2.6 → 2.9.
+
+| IU | Gałąź / merge | Co powstało |
+|---|---|---|
+| 2.0 | `popr/zbuduj-wariant` | `stacks/zbuduj.mjs` (walidacja przed zapisem, `usun.txt`, nakładka, deep-merge z `null` = usuń i tablicami bez powtórzeń, `.rdzen-version` z `-dirty`, cel z `.claude/` tylko z `--zastap`); `stacks/testuj-wariant.mjs` (ławka: wariant + `package.json`, `tsconfig`, rejestr, strażnik, `node_modules` pakietów; testy `.claude/**` i typecheck); puste `stacks/expo/usun.txt` i `settings.patch.json`; testy `stacks/__tests__/zbuduj.test.mjs`, `stacks/expo/__tests__/nakladka.test.mjs` z listą `ZALEGLE` (27 pozycji); `tsconfig` bez `stacks/*/nakladka`. Na wariancie bez nakładki: testy 1402/1402, typecheck 0 |
+
+Zasady przyjęte w trakcie (obowiązują w kolejnych IU):
+- Testy nakładki leżą w `stacks/<stack>/__tests__/` (build odrzuca `__tests__` w `nakladka/`) i moduły nakładki importują z ławki
+  (`przygotujLawke`), bo w `nakladka/` względne importy do rdzenia się nie rozwiązują. Z tego samego powodu `nakladka/` jest poza
+  głównym `tsconfig`; typy sprawdza `testuj-wariant.mjs`.
+- Po każdym IU: `node stacks/testuj-wariant.mjs expo`, liczba padnięć w wierszu tabeli; na odbiorze zero i pusta lista `ZALEGLE`.
+
 ### Etap 3 — Budowanie i publikacja
 
 - IU-3.1 przeniesione do Etapu 2 jako IU-2.0 (`stacks/zbuduj.mjs`).
@@ -364,7 +376,7 @@ Odbiór Etapu 1 (2026-11-04): testy, diff instrukcji i przebieg autopilota w vib
   `wariant-expo` → build → commit `sync: rdzeń <sha>` do `workspace-template-mobile` (tylko
   `.claude/` i `output-styles/`; README/docs repo mobile nietknięte). Sekret: deploy key z prawem zapisu do repo mobile.
   Automat włączony dopiero po udanym pilocie (Etap 4). Do tego czasu i jako fallback publikacja ręczna, za zgodą operatora:
-  `node stacks/zbuduj.mjs expo ../workspace-template-mobile && git -C … commit`.
+  `node stacks/zbuduj.mjs expo ../workspace-template-mobile --zastap && git -C … commit`.
 - IU-3.4 `sync-template` w wariancie Expo ma domyślny URL repo mobile (podmiana slotu albo zmienna w `settings.patch.json`).
 - IU-3.5 README mobile: sekcja „skąd pochodzi `.claude/`” + „nie edytuj `.claude/` w tym repo — zmiany idą do
   `claude-code-starter/stacks/expo`”. Strażnik: CI w repo mobile odrzuca commit zmieniający `.claude/` spoza bota publikacji.
