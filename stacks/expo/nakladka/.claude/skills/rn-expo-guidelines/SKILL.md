@@ -59,7 +59,7 @@ Przy nowym ekranie, komponencie, liście, formularzu, animacji i przy naprawie b
 10. Haptyka nie niesie jedynej informacji: na iOS nie działa m.in. w Low Power Mode.
 11. Klas nie budujesz dynamicznie; Tailwind skanuje je w czasie budowania.
 12. `withUniwind` tylko dla komponentów spoza `react-native` i Reanimated, np. `expo-image`.
-13. Testy leżą poza katalogiem tras; `render` i `fireEvent` z RNTL 14 wymagają `await`.
+13. Test leży obok pliku, a test trasy w `__tests__/`; `render` i `fireEvent` z RNTL 14 wymagają `await`.
 
 ## Wersje stosu
 

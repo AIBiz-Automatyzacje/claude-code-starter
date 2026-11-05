@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "jest",
+  "plugins": [
+    "@stryker-mutator/jest-runner"
+  ],
+  "ignorePatterns": [
+    "ios/",
+    "android/",
+    ".expo/",
+    ".maestro/",
+    "dist/"
+  ],
+  "coverageAnalysis": "perTest",
+  "disableTypeChecks": "**/*.{ts,tsx,mts,cts}",
+  "reporters": [
+    "json"
+  ],
+  "jsonReporter": {
+    "fileName": "node_modules/.cache/stryker/mutation.json"
+  },
+  "cleanTempDir": "always",
+  "incremental": false,
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": null
+  },
+  "jest": {
+    "enableFindRelatedTests": true
+  }
+}

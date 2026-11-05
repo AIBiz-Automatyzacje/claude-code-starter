@@ -28,7 +28,6 @@ const ZALEGLE = [
   '.claude/skills/dev-prep/references/stack.md', // IU-2.9
   '.claude/skills/dev-compound/references/stack.md', // IU-2.9
   '.claude/skills/weryfikacja-setup/references/stack.md', // IU-2.6
-  '.claude/rules/stack.md', // IU-2.8
   '.claude/scripts/e2e/adapter.mjs', // IU-2.3
   // wyjątki strażnika `podmiana`
   '.claude/templates/e2e-env/', // IU-2.3
@@ -38,7 +37,6 @@ const ZALEGLE = [
   '.claude/agents/feature-builder-fullstack-figma.md', // IU-2.1
   '.claude/agents/feature-builder-data.md', // IU-2.1
   '.claude/agents/feature-tester-e2e.md', // IU-2.2
-  '.claude/templates/bramki/', // IU-2.8
   '.claude/templates/smoke-autopilot/', // IU-2.6
 ]
 
