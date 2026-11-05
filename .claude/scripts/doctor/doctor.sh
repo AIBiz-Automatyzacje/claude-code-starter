@@ -247,6 +247,19 @@ sprawdz_port_e2e() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Uwaga stacku z adaptera E2E (e2e/adapter.mjs): wiersz tylko wtedy, gdy stack ma co zgłosić.
+sprawdz_uwage_stacku() {
+  local wynik element stan szczegol instalacja
+  command -v node >/dev/null 2>&1 || return 0
+  if ! wynik="$(node "$KATALOG_DOCTORA/uwaga-stacku.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "uwaga stacku" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź .claude/scripts/e2e/adapter.mjs"
+    return
+  fi
+  [[ -n "$wynik" ]] || return 0
+  IFS=$'\t' read -r element stan szczegol instalacja <<< "$wynik"
+  wiersz "$element" "$stan" "$szczegol" "$instalacja"
+}
+
 # Warstwa stała plików ról (P11) — liczba poleceń i zasady pisania, przez node (wiersz TSV z warstwa-rol.mjs).
 # Naruszenie to UWAGA: rola działa, tylko jej plik odjechał od szablonu.
 sprawdz_warstwe() {
@@ -309,6 +322,7 @@ sprawdz_runner
 sprawdz_zapis_hookow
 sprawdz_advisors
 sprawdz_port_e2e
+sprawdz_uwage_stacku
 sprawdz_warstwe
 sprawdz_higiene
 sprawdz_telemetrie

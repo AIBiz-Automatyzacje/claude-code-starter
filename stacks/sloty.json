@@ -51,7 +51,7 @@
     },
     {
       "plik": ".claude/scripts/e2e/adapter.mjs",
-      "opis": "Adapter E2E (slot plikowy): domyślny port i komenda startu, port serwera deweloperskiego, narzędzie jazdy, próbny zrzut, uwagi planowania."
+      "opis": "Adapter E2E (slot plikowy): domyślny port, sonda i komenda startu, port serwera deweloperskiego, narzędzie jazdy, próbny zrzut, uwagi planowania, kroki stacku przed startem, po starcie i po zatrzymaniu, uwaga doctora."
     }
   ]
 }

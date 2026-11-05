@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { DOMYSLNY_PORT, komendaStartu, SZKIELET_WERYFIKACJI } from '../adapter.mjs'
 import { parsujMape } from '../mapa.mjs'
 import { szkieletSkilla, trasyAplikacji, wpisyZrobionych } from '../szkielet.mjs'
 import { PLIK_MAPY, PLIK_SKILLA } from '../weryfikacja.mjs'
@@ -128,29 +129,28 @@ test('szkielet: sekcje Launch / Doctor / Drive / Evidence / Cleanup / Mapa funkc
   const sekcja = (nazwa) => s.slice(s.indexOf(`## ${nazwa}\n`), s.indexOf('\n## ', s.indexOf(`## ${nazwa}\n`) + 1))
   assert.match(sekcja('Launch'), /`node \.claude\/scripts\/e2e\/e2e\.mjs start`/)
   assert.match(sekcja('Launch'), /http:\/\/localhost:5180/)
-  assert.match(sekcja('Launch'), /pnpm run dev -- --mode e2e --port 5180 --strictPort/)
+  assert.ok(sekcja('Launch').includes(komendaStartu('pnpm', 5180)))
   assert.match(sekcja('Doctor'), /`node \.claude\/scripts\/e2e\/e2e\.mjs sprawdz`/)
   assert.match(sekcja('Doctor'), /`node \.claude\/scripts\/e2e\/e2e\.mjs stan`/)
   assert.match(sekcja('Drive'), /`\/oferty`/)
   assert.match(sekcja('Drive'), /`\/logowanie`/)
   assert.match(sekcja('Drive'), /E2E_TEST_EMAIL/)
-  assert.match(sekcja('Drive'), /data-testid/)
+  assert.ok(sekcja('Drive').includes(SZKIELET_WERYFIKACJI.drive))
   assert.match(sekcja('Cleanup'), /`node \.claude\/scripts\/e2e\/e2e\.mjs stop --zadanie <folder zadania>`/)
-  // P22 A3: zrzut pod sciezka bezwzgledna — demon agent-browser liczy wzgledna od swojego katalogu (zrzut w korzeniu repo).
-  assert.match(sekcja('Evidence'), /`agent-browser screenshot "\$\(git rev-parse --show-toplevel\)\/<folder zadania>\/<flow>\.png"`/)
-  assert.match(sekcja('Evidence'), /demon agent-browser/)
+  // Treść narzędzia jazdy web (zrzut pod ścieżką bezwzględną, data-testid): stacks/web/__tests__/e2e-adapter.test.mjs.
+  assert.ok(sekcja('Evidence').includes(SZKIELET_WERYFIKACJI.evidence))
   assert.match(sekcja('Mapa funkcji'), /mapa-funkcji\.md/)
   assert.match(sekcja('Mapa funkcji'), /2 wpis/)
   assert.match(s, /^Przejście na żywo: niewykonane$/m)
   assert.match(s, /<!-- UZUPEŁNIJ:/)
 })
 
-test('szkielet bez .env.e2e: domyslny adres E2E (5174, P19) i wskazanie setupu; obcy serwer na porcie = STOP; bez tras — znacznik do uzupelnienia', () => {
+test('szkielet bez .env.e2e: domyslny adres E2E z adaptera i wskazanie setupu; zachowanie przy obcym serwerze z adaptera; bez tras — znacznik do uzupelnienia', () => {
   const k = projekt({ env: null })
   rmSync(join(k, 'src/app'), { recursive: true })
   const s = szkieletSkilla(k, { wpisowMapy: 0 })
-  assert.match(s, /Adres aplikacji: http:\/\/localhost:5174\./)
-  assert.match(s, /Port zajęty przez serwer spoza pipeline’u\n\(np\. zwykły dev server\) zatrzymuje Launch z PID-em i komendą procesu/)
+  assert.ok(s.includes(`Adres aplikacji: http://localhost:${DOMYSLNY_PORT}.`))
+  assert.ok(s.includes(SZKIELET_WERYFIKACJI.obcySerwer))
   assert.doesNotMatch(s, /zastany/)
   assert.match(s, /\.claude\/templates\/e2e-env\/README\.md/)
   assert.match(s, /<!-- UZUPEŁNIJ: trasy/)

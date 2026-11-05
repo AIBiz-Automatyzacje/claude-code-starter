@@ -4,6 +4,7 @@
 //
 // Kontrakt:
 //   DOMYSLNY_PORT               port serwera E2E, gdy .env.e2e nie podaje E2E_URL
+//   SCIEZKA_ZDROWIA             sciezka doklejana do E2E_URL, gdy .env.e2e nie podaje E2E_HEALTH ('' = sam E2E_URL)
 //   PORT_DEV, OPIS_PORTU_DEV    port zwyklego serwera deweloperskiego stacku (null = brak); E2E na nim = UWAGA w doctorze
 //   komendaStartu(pm, port)     domyslny E2E_START
 //   NARZEDZIE_JAZDY             { nazwa, instalacja, diagnoza } — narzedzie, ktorym tester prowadzi aplikacje
@@ -17,6 +18,10 @@
 //   SYGNATURY_BLOKERA           SygnaturaBlokera[] — awarie srodowiska stacku w trakcie runu (dowod SKIP-u testera) z polityka
 //                               'manual-restart' ([Manual] + restart w nastepnej fazie) albo 'stop-rebuild' (STOP z naprawa,
 //                               D12); rdzen ma wlasne sygnatury dev servera i DNS, stack doklada swoje. Dane JSON (restart).
+//   przedStartem(projekt, env)  WynikKroku: krok stacku przed startem i restartem serwera (Expo: urzadzenie, pliki env)
+//   poStarcie(projekt, env, konf) Promise<WynikKroku>: dowod stacku, gdy serwer juz odpowiada; porazka = STOP startu (Expo: canary)
+//   poZatrzymaniu(projekt)      { detal }: sprzatanie stacku po `e2e.mjs stop` (Expo: plik env)
+//   uwagaDoctora(projekt)       wiersz doctora [element, stan, szczegol, naprawa] albo null
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
@@ -26,9 +31,20 @@ import { join } from 'node:path'
 import { adresHttp, tenSamSerwer } from './adres.mjs'
 
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
+/** @typedef {{ ok: boolean, detal: string, naprawa: string }} WynikKroku */
 /**
  * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild', naprawa: string }} SygnaturaBlokera
  */
+
+// Web nie ma kroku stacku wokol serwera: Vite laduje .env.e2e flaga --mode e2e, a dowodem startu jest sonda zdrowia.
+/** @type {(projekt: string, env: Record<string, string>) => WynikKroku} */
+export const przedStartem = () => ({ ok: true, detal: '', naprawa: '' })
+/** @type {(projekt: string, env: Record<string, string>, konf: { port: number }) => Promise<WynikKroku>} */
+export const poStarcie = async () => ({ ok: true, detal: '', naprawa: '' })
+/** @type {(projekt: string) => { detal: string }} */
+export const poZatrzymaniu = () => ({ detal: '' })
+/** @type {(projekt: string) => [string, string, string, string] | null} */
+export const uwagaDoctora = () => null
 
 // Obcy serwer na porcie E2E to w webie STOP z PID-em (P19): zwykly dev server celuje w baze dev, a restart go nie zmieni.
 /** @type {'stop' | 'zastap'} */
@@ -39,6 +55,7 @@ export const SYGNATURY_BLOKERA = []
 
 // 5174, nie 5173: zwykly `pnpm dev` zajmuje 5173 i start E2E zastawal go jako serwer aplikacji (vibersi etap 2, P19).
 export const DOMYSLNY_PORT = 5174
+export const SCIEZKA_ZDROWIA = ''
 export const PORT_DEV = 5173
 export const OPIS_PORTU_DEV = 'port zwyklego dev servera Vite'
 
@@ -168,6 +185,7 @@ export function uwagiPlanowania(projekt, env) {
 // Szkielet skilla weryfikacji projektu (szkielet.mjs, /weryfikacja-setup): komendy narzedzia jazdy w sekcjach skilla.
 export const SZKIELET_WERYFIKACJI = {
   domyslneParametry: 'domyślne (Vite)',
+  obcySerwer: 'Port zajęty przez serwer spoza pipeline’u\n(np. zwykły dev server) zatrzymuje Launch z PID-em i komendą procesu w polu `naprawa` — dev server zostaje na swoim porcie, E2E na osobnym.',
   doctor: '`agent-browser doctor`',
   drive: 'Przeglądarka: skill `agent-browser` — `open <url>` → `snapshot -i` → akcja na refie → `snapshot -i` po każdej zmianie strony.',
   /** @param {number} testId liczba atrybutow data-testid w kodzie @returns {string} */

@@ -10,7 +10,10 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { DOMYSLNY_PORT, NARZEDZIE_JAZDY, OPIS_PORTU_DEV, PORT_DEV, uwagaDoctora } from '../../e2e/adapter.mjs'
+
 const SKRYPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'doctor.sh')
+const REPO_DOCTORA = dirname(SKRYPT)
 // Adres Supabase klienta z profilu stacku (IU-1.7): test przechodzi na kazdym wariancie profilu.
 const ADRES_SUPABASE = JSON.parse(readFileSync(resolve(dirname(SKRYPT), '..', '..', 'stack', 'profil.json'), 'utf8')).env.adresSupabase
 const NARZEDZIA_SYSTEMOWE = ['cat', 'dirname', 'find', 'grep', 'head', 'tail', 'tr']
@@ -141,27 +144,28 @@ test('projekt z supabase/ wymaga supabase CLI, bez — nie', () => zSrodowiskiem
   assert.equal(doctor(s).status, 0)
 }))
 
-test('checkbox [E2E] w docs/ wymaga agent-browser w PATH; sam lokalny w node_modules/.bin to BRAK', () => zSrodowiskiem((s) => {
+test('checkbox [E2E] w docs/ wymaga narzedzia jazdy w PATH; sam lokalny w node_modules/.bin to BRAK', () => zSrodowiskiem((s) => {
+  const { nazwa, instalacja } = NARZEDZIE_JAZDY
   plik(s.projekt, 'docs/active/x/x-zadania.md', '- [x] Test: [Unit] cos\n')
-  assert.equal(wiersz(doctor(s).stdout, 'agent-browser')[1], 'nie dotyczy')
+  assert.equal(wiersz(doctor(s).stdout, nazwa)[1], 'nie dotyczy')
 
   plik(s.projekt, 'docs/active/x/x-zadania.md', '- [ ] Test: [E2E] `logowanie` — /login → panel\n')
   const brak = doctor(s)
   assert.notEqual(brak.status, 0)
-  assert.equal(wiersz(brak.stdout, 'agent-browser')[1], 'BRAK')
+  assert.equal(wiersz(brak.stdout, nazwa)[1], 'BRAK')
 
-  // skill agent-browser i feature-tester-e2e wolaja gole `agent-browser` — lokalna kopia poza PATH run nie znajdzie
-  plik(s.projekt, 'node_modules/.bin/agent-browser', '#!/bin/sh\necho "agent-browser 0.31.1"\n')
-  chmodSync(join(s.projekt, 'node_modules/.bin/agent-browser'), 0o755)
+  // skill narzedzia i feature-tester-e2e wolaja gola komende — lokalna kopia poza PATH run nie znajdzie
+  plik(s.projekt, `node_modules/.bin/${nazwa}`, `#!/bin/sh\necho "${nazwa} 0.31.1"\n`)
+  chmodSync(join(s.projekt, `node_modules/.bin/${nazwa}`), 0o755)
   const lokalny = doctor(s)
   assert.notEqual(lokalny.status, 0, lokalny.stdout)
-  assert.deepEqual(wiersz(lokalny.stdout, 'agent-browser').slice(1),
-    ['BRAK', 'agent-browser 0.31.1 tylko w node_modules/.bin — pipeline woła agent-browser z PATH', 'npm install -g agent-browser && agent-browser install'])
+  assert.deepEqual(wiersz(lokalny.stdout, nazwa).slice(1),
+    ['BRAK', `${nazwa} 0.31.1 tylko w node_modules/.bin — pipeline woła ${nazwa} z PATH`, instalacja])
 
-  atrapa(s.bin, 'agent-browser', 'echo "agent-browser 0.31.1"')
+  atrapa(s.bin, nazwa, `echo "${nazwa} 0.31.1"`)
   const globalny = doctor(s)
   assert.equal(globalny.status, 0, globalny.stdout)
-  assert.deepEqual(wiersz(globalny.stdout, 'agent-browser').slice(1, 3), ['OK', 'agent-browser 0.31.1'])
+  assert.deepEqual(wiersz(globalny.stdout, nazwa).slice(1, 3), ['OK', `${nazwa} 0.31.1`])
 }))
 
 test('Coolify i Dockerfile → coolify i docker jako UWAGA, nie blokuja', () => zSrodowiskiem((s) => {
@@ -370,22 +374,32 @@ test('advisors: bez Supabase nie dotyczy; baza e2e bez tokenu → UWAGA z napraw
 
 // P19: w vibersi zwykly dev server Vite na 5173 zajal port E2E (domyslny do P19) i start przyjal go jako serwer aplikacji.
 // Doctor mowi o porcie 5173 przed runem — UWAGA z naprawa (nie blokuje); domyslny port E2E (5174) i inny port = OK.
-test('port E2E: bez .env.e2e nie dotyczy; 5173 → UWAGA z naprawa na 5174; domyslny i wlasny port → OK', () => zSrodowiskiem((s) => {
+test('port E2E: bez .env.e2e nie dotyczy; domyslny i wlasny port → OK; rozny port w E2E_START → UWAGA z naprawa', () => zSrodowiskiem((s) => {
   assert.equal(wiersz(doctor(s).stdout, 'port E2E')[1], 'nie dotyczy')
-  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_URL=http://localhost:5173\n')
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_TEST_EMAIL=e2e@x.pl\n')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', `http://localhost:${DOMYSLNY_PORT}`])
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_URL=http://127.0.0.1:3000\n')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://127.0.0.1:3000'])
+  // Stary .env.e2e z samym E2E_START --port innym niz domyslny E2E_URL — UWAGA z naprawa zamiast „OK”.
+  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_START="serwer --port 3999"\n')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 4), ['UWAGA', `E2E_START uruchamia serwer na porcie 3999, a E2E_URL wskazuje port ${DOMYSLNY_PORT}`, `ustaw w .env.e2e E2E_URL=http://localhost:3999 albo zmien --port w E2E_START na ${DOMYSLNY_PORT}`])
+}))
+
+test('port deweloperski stacku w E2E_URL → UWAGA z naprawa na port domyslny, bez blokady runu (stack bez portu deweloperskiego: nie dotyczy)', { skip: PORT_DEV === null && 'stack bez osobnego portu deweloperskiego' }, () => zSrodowiskiem((s) => {
+  writeFileSync(join(s.projekt, '.env.e2e'), `E2E_URL=http://localhost:${PORT_DEV}\n`)
   const w = doctor(s)
   const uwaga = wiersz(w.stdout, 'port E2E')
   assert.deepEqual(uwaga.slice(1, 2), ['UWAGA'])
-  assert.match(uwaga[2], /^http:\/\/localhost:5173 — 5173 to port zwyklego dev servera Vite/)
-  assert.match(uwaga[3], /^E2E_URL=http:\/\/localhost:5174 w \.env\.e2e/)
-  assert.equal(w.status, 0, 'port 5173 nie blokuje runu')
-  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_TEST_EMAIL=e2e@x.pl\n')
-  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://localhost:5174'])
-  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_URL=http://127.0.0.1:3000\n')
-  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 3), ['OK', 'http://127.0.0.1:3000'])
-  // Stary .env.e2e z samym E2E_START --port 5173 (domyslny E2E_URL to teraz 5174) — UWAGA z naprawa zamiast „OK”.
-  writeFileSync(join(s.projekt, '.env.e2e'), 'E2E_START="vite --mode e2e --port 5173 --strictPort"\n')
-  assert.deepEqual(wiersz(doctor(s).stdout, 'port E2E').slice(1, 4), ['UWAGA', 'E2E_START uruchamia serwer na porcie 5173, a E2E_URL wskazuje port 5174', 'ustaw w .env.e2e E2E_URL=http://localhost:5173 albo zmien --port w E2E_START na 5174'])
+  assert.ok(uwaga[2].startsWith(`http://localhost:${PORT_DEV} — ${PORT_DEV} to ${OPIS_PORTU_DEV}`), uwaga[2])
+  assert.ok(uwaga[3].startsWith(`E2E_URL=http://localhost:${DOMYSLNY_PORT} w .env.e2e`), uwaga[3])
+  assert.equal(w.status, 0, 'port deweloperski nie blokuje runu')
+}))
+
+test('uwaga stacku z adaptera: wiersz tylko, gdy adapter go zwraca', () => zSrodowiskiem((s) => {
+  const w = spawnSync(process.execPath, [join(REPO_DOCTORA, 'uwaga-stacku.mjs'), s.projekt], { encoding: 'utf8' })
+  assert.equal(w.status, 0, w.stderr)
+  assert.equal(w.stdout, uwagaDoctora(s.projekt) ? `${uwagaDoctora(s.projekt)?.join('\t')}\n` : '')
+  assert.equal(spawnSync(process.execPath, [join(REPO_DOCTORA, 'uwaga-stacku.mjs')], { encoding: 'utf8' }).status, 2)
 }))
 
 // P22 A1: live-10-demo — `vitest run` bez configu zebral 113 testow maszynerii z .claude/** i autopilot stanal na starcie.
