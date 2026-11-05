@@ -533,6 +533,55 @@ test('adapter: sygnatury blokera łapią komunikaty modułu natywnego i entitlem
   }
 })
 
+// Dosłownie, nie z modułu: test ma paść, gdy ostrzeżenie zniknie albo zmieni sens.
+const OSTRZEZENIE = '`--clean` usuwa `ios/` i `android/`. Projekt, który trzyma te katalogi w repo, pomija `prebuild` i woła samo `expo run:*`.'
+
+test('naprawa przebudowy: każdy STOP z komendą --clean niesie ostrzeżenie, z urządzenia i z sygnatur blokera; slot ma to samo zdanie', () => {
+  const { baza, projekt, app } = uklad()
+  const wlaczony = symulator(baza, 'iPhone 17', { stan: 'Booted' })
+  const adb = 'List of devices attached\nemulator-5554\tdevice\n'
+  const przygotuj = (/** @type {Record<string, string>} */ srodowisko, /** @type {ReturnType<typeof atrapa>} */ a) => urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, srodowisko, a.wykonaj)
+  const przypadki = [
+    { oczekiwany: /brak dev-clienta/, w: przygotuj({}, atrapa([wlaczony])) },
+    { oczekiwany: /bez podpisu/, w: przygotuj({}, atrapa([wlaczony], { aplikacja: app, podpis: `${app}: code object is not signed at all` })) },
+    { oczekiwany: /starszy niż app\.json/, w: przygotuj({ E2E_PLATFORMA: 'android' }, atrapa([], { adb, pmPath: 'package:/data/app/x/base.apk\n', mtimeAdb: '500\n' })) },
+    { oczekiwany: /brak urządzenia do E2E/, w: przygotuj({}, atrapa([])) },
+  ]
+  utimesSync(app, 500, 500)
+  przypadki.push({ oczekiwany: /starszy niż app\.json/, w: przygotuj({}, atrapa([wlaczony], { aplikacja: app })) })
+  for (const { oczekiwany, w } of przypadki) {
+    assert.equal(w.ok, false)
+    assert.match(w.detal, oczekiwany)
+    assert.equal(w.przebudowa, true, w.detal)
+    assert.match(w.naprawa, /prebuild --clean/, w.detal)
+    assert.ok(w.naprawa.includes(OSTRZEZENIE), `${w.detal}: ${w.naprawa}`)
+  }
+  assert.equal(adapter.SYGNATURY_BLOKERA.length, 2)
+  for (const s of adapter.SYGNATURY_BLOKERA) assert.ok(s.naprawa.includes(OSTRZEZENIE), s.klasa)
+  assert.ok(czytaj('.claude/stack/po-fazie.md').includes(OSTRZEZENIE))
+})
+
+test('naprawa przebudowy: ostrzeżenie dochodzi do wyniku e2e start i e2e restart', async () => {
+  const { startE2e, restartFazy } = await modul('start.mjs')
+  const { baza, projekt, app } = uklad()
+  const zadanie = 'docs/active/z'
+  mkdirSync(join(projekt, zadanie), { recursive: true })
+  writeFileSync(join(projekt, zadanie, 'z-zadania.md'), '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a → ok\n')
+  writeFileSync(join(projekt, '.env.e2e'), 'E2E_URL=http://127.0.0.1:8081\nE2E_START=npx expo start\n')
+  writeFileSync(join(projekt, 'package.json'), JSON.stringify({ dependencies: { expo: '58.0.0' } }))
+  utimesSync(app, 500, 500)
+  const { wykonaj } = atrapa([symulator(baza, 'iPhone 17', { stan: 'Booted' })], { aplikacja: app })
+  const przedStartem = (/** @type {string} */ p, /** @type {Record<string, string>} */ e) => urzadzenie.przygotujUrzadzenie(p, APLIKACJA, e, wykonaj)
+  const poStarcie = async () => { throw new Error('poStarcie nie może ruszyć po STOP-ie') }
+  const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }), zrzut: () => ({ ok: true, detal: '' }) }
+  const start = await startE2e(projekt, zadanie, { uruchom: true, narzedzia, kroki: { przedStartem, poStarcie } })
+  assert.equal(start.status, 'niepowodzenie', start.detal)
+  assert.ok(start.naprawa.includes(OSTRZEZENIE), start.naprawa)
+  const restart = await restartFazy(projekt, zadanie, 1, { kroki: { przedStartem } })
+  assert.deepEqual([restart.status, restart.krokStacku, restart.przebudowa], ['niepowodzenie', true, true])
+  assert.ok(restart.naprawa.includes(OSTRZEZENIE), restart.naprawa)
+})
+
 test('adapter: wersja Javy ze starego i nowego formatu; niepoprawny tekst = null', () => {
   assert.equal(adapter.wersjaJavy('openjdk version "21.0.10" 2026-01-20'), 21)
   assert.equal(adapter.wersjaJavy('java version "1.8.0_391"'), 8)

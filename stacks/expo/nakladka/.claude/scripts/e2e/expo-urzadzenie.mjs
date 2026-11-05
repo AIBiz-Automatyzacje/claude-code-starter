@@ -33,6 +33,8 @@ export const REBUILD = {
   ios: 'LANG=en_US.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US.UTF-8 npx expo run:ios --no-bundler',
   android: 'npx expo prebuild --clean --platform android && npx expo run:android --no-bundler',
 }
+// Operator wkleja komendę ze STOP-u, więc ostrzeżenie idzie w treści naprawy, nie tylko w slocie po-fazie.md, który ma to samo zdanie.
+export const OSTRZEZENIE_CLEAN = '`--clean` usuwa `ios/` i `android/`. Projekt, który trzyma te katalogi w repo, pomija `prebuild` i woła samo `expo run:*`.'
 
 /** @type {Wykonaj} */
 export function wykonaj(komenda, argumenty, { cwd, limitMs = LIMIT_KOMENDY_MS } = {}) {
@@ -132,7 +134,7 @@ function ocenaSwiezosci(projekt, mtime, platforma, nazwa) {
   const zmiany = stary === NATYWNE[platforma] ? null : zmianyNatywne(projekt, mtime)
   if (zmiany && !zmiany.wymagaRebuildu) return { stop: null, uwaga: `dev-client na ${nazwa} starszy niż ${stary}, ale przebudowa niepotrzebna: ${zmiany.detal}` }
   const powod = zmiany ? zmiany.detal : 'warstwa natywna zmieniona po buildzie'
-  return { stop: { ok: false, detal: `dev-client na ${nazwa} starszy niż ${stary}: ${powod}`, naprawa: `Przebuduj: ${REBUILD[platforma]}.`, przebudowa: true }, uwaga: null }
+  return { stop: { ok: false, detal: `dev-client na ${nazwa} starszy niż ${stary}: ${powod}`, naprawa: `Przebuduj: ${REBUILD[platforma]}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }, uwaga: null }
 }
 
 /** @param {Symulator} s @param {Wykonaj} wykonajKomende @returns {{ ok: boolean, detal: string }} */
@@ -176,10 +178,10 @@ function sprawdzIos(projekt, aplikacja, s, uwagi, wykonajKomende) {
   if (!start.ok) return { ok: false, detal: start.detal, naprawa: `Uruchom symulator ręcznie: xcrun simctl boot ${s.udid}` }
   const kontener = wykonajKomende('xcrun', ['simctl', 'get_app_container', s.udid, String(aplikacja.bundleId)])
   const sciezka = kontener.stdout.trim()
-  if (kontener.status !== 0 || !sciezka) return { ok: false, detal: `${s.name}: brak dev-clienta ${aplikacja.bundleId}`, naprawa: `Zainstaluj dev-client: ${REBUILD.ios}.`, przebudowa: true }
+  if (kontener.status !== 0 || !sciezka) return { ok: false, detal: `${s.name}: brak dev-clienta ${aplikacja.bundleId}`, naprawa: `Zainstaluj dev-client: ${REBUILD.ios}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }
   const swiezosc = ocenaSwiezosci(projekt, statSync(sciezka).mtimeMs / 1000, 'ios', s.name)
   if (swiezosc.stop) return swiezosc.stop
-  if (!podpisany(sciezka, wykonajKomende)) return { ok: false, detal: `dev-client na ${s.name} bez podpisu: SecureStore nie utrwali sesji`, naprawa: `Przebuduj z podpisem ad-hoc: ${REBUILD.ios}.`, przebudowa: true }
+  if (!podpisany(sciezka, wykonajKomende)) return { ok: false, detal: `dev-client na ${s.name} bez podpisu: SecureStore nie utrwali sesji`, naprawa: `Przebuduj z podpisem ad-hoc: ${REBUILD.ios}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }
   return { ok: true, urzadzenie: { platforma: 'ios', id: s.udid, nazwa: s.name, sciezkaAplikacji: sciezka }, uwagi: swiezosc.uwaga ? [...uwagi, swiezosc.uwaga] : uwagi }
 }
 
@@ -228,7 +230,7 @@ export function przygotujUrzadzenie(projekt, aplikacja, env, wykonajKomende = wy
   return {
     ok: false,
     detal: `brak urządzenia do E2E (${odpady.join('; ') || 'brak iPhone w simctl'})`,
-    naprawa: `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}.`,
+    naprawa: `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}. ${OSTRZEZENIE_CLEAN}`,
     przebudowa: true,
   }
 }
