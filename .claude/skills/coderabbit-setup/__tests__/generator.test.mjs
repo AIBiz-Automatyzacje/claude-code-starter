@@ -158,3 +158,19 @@ test('tone_instructions wylacza uklad Arrange-Act-Assert, docstringi i DRY w tes
   assert.ok(testy, 'brak bloku testow')
   assert.doesNotMatch(testy.instructions, /Arrange-Act-Assert/)
 })
+
+test('template spelnia kontrakt pipeline\'u /dev-pr (CLAUDE.md poza recenzja, docstringi wylaczone)', async () => {
+  const { odstepstwaKontraktu } = await import('../../../scripts/pr/kontrakt-bota.mjs')
+  assert.deepEqual(odstepstwaKontraktu(BAZA, { galaz: 'main' }), [])
+  assert.deepEqual(parse(BAZA.replaceAll('{{CODING_RULES}}', 'a').replaceAll('{{STACK_RULES}}', 'b')).reviews.pre_merge_checks.docstrings, { mode: 'off' })
+})
+
+test('bloki stackow: Node dziala obok frontendu, Drizzle wyklucza pliki generowane', () => {
+  assert.match(BLOKI, /także obok frontendu/)
+  assert.ok(blokiStackow().get('Drizzle (migracje SQL)')?.filtry.includes('!drizzle/meta/**'))
+})
+
+test('instalacja bota: 403 nie znaczy braku aplikacji, rozstrzygaja komentarze takze przy kodzie', () => {
+  assert.match(OPIS, /Błąd 403[\s\S]*nie że aplikacji brak/)
+  assert.match(OPIS, /pulls\/<nr>\/comments/)
+})

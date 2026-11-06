@@ -116,6 +116,10 @@ Mechanizmy stacku do reguł z `.claude/rules/coding-rules.md`; sekcje o tej same
 - Animacja respektuje ograniczenie ruchu (`useReducedMotion`, `ReduceMotion.System`).
 - Haptyka komunikuje wynik (`notificationAsync` w kodzie wywołującym, po zatwierdzeniu), atomy UI nie wołają `Haptics`; haptyka nigdy nie niesie jedynej informacji.
 
+## Testowanie
+
+- Komponent testujesz przez `@testing-library/react-native`; szczegóły w sekcji niżej.
+
 ## Testy jednostkowe (jest-expo + React Native Testing Library)
 
 - Komponent testujesz przez `@testing-library/react-native` (zapytania po roli i tekście, `testID` na końcu); asercja dotyczy zachowania, nigdy `className` ani snapshotu stylów: wygląd sprawdza smoke na urządzeniu.

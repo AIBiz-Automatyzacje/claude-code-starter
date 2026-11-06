@@ -36,7 +36,7 @@ function wytnij(kotwica, koniec) {
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const P = new Function(
   `${wytnij('// ── Decyzje dev-pr (P5)', '// ── Koniec decyzji dev-pr')}
-   return { odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
+   return { bramkaStartu, watkiPoStanie, turaZeStanu, krotkieReviewTury, odczytStanuPr, warunkiMerge, odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
 )()
 
 // ── Guard uzasadnien odrzucenia ───────────────────────────────────────────
@@ -600,9 +600,9 @@ test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krot
   assert.match(krok1, /Gdy jest wśród\nnich `supabase\/migrations\.sum`: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume` przed `git add`/)
 })
 
-test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr --czesc <N+1>” bez startu kolejnej', () => {
-  assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\. Kolejnej części nie uruchamiasz w tej sesji/)
-  assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr --czesc <N\+1>”\./)
+test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>” bez startu kolejnej', () => {
+  assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”\.\s+Kolejnej części nie uruchamiasz w tej sesji/)
+  assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”/)
   assert.doesNotMatch(skillPr, /dalej: \/dev-pr --czesc N\+1\]/)
 })
 
@@ -771,4 +771,78 @@ test('compound z odlozonymi: known-issues.md zadania w pathspec commitu (inaczej
   const krok5 = prompty[0].slice(prompty[0].indexOf('5. Zacommituj'), prompty[0].indexOf('6. '))
   assert.match(krok5, /docs\/completed\/etap-5\/known-issues\.md/)
   assert.match(prompty[0], /Gdy katalog docs\/completed\/etap-5\/ istnieje w drzewie/)
+})
+
+// ── Znaleziska 2026-11: stan PR ze zrodel trwalych ─────────────────────────
+
+const STAN_PR = { pr: 51, czubek: 'c'.repeat(40), reviewDecision: 'CHANGES_REQUESTED', tury: 3, ostatniaTura: null, recenzjaCzubka: { ok: true, powod: 'recenzja bota dotyczy czubka' },
+  watki: [{ id: 'T1', plik: 'a.ts:1', stan: 'rozstrzygniety', decyzja: 'operator' }, { id: 'T2', plik: 'b.ts:2', stan: 'naprawiony-czeka-na-bota', decyzja: 'naprawione' }, { id: 'T3', plik: 'c.ts:3', stan: 'otwarty', decyzja: null }],
+  liczniki: { otwarty: 1, rozstrzygniety: 1, 'naprawiony-czeka-na-bota': 1 } }
+const MERGE_CZYSTY = { mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok' }
+
+test('aa-exam PR #51: rozstrzygniete i czekajace na bota wypadaja z tury, nowy zarzut bota wraca', () => {
+  const watki = [{ id: 'T1', plik: 'a' }, { id: 'T2', plik: 'b' }, { id: 'T3', plik: 'c' }]
+  const r = P.watkiPoStanie(watki, STAN_PR)
+  assert.deepEqual(r.zostaja.map((/** @type {{ id: string }} */ w) => w.id), ['T3'])
+  assert.deepEqual([r.rozstrzygniete.map((/** @type {{ id: string }} */ w) => w.id), r.czekajaNaBota.map((/** @type {{ id: string }} */ w) => w.id)], [['T1'], ['T2']])
+  assert.deepEqual(P.watkiPoStanie([{ id: 'T1', plik: 'a', nowyZarzut: true }], STAN_PR).zostaja.map((/** @type {{ id: string }} */ w) => w.id), ['T1'])
+})
+
+test('nowa sesja nie zeruje licznika tur: tura z argumentu nie cofa sie ponizej commitow PR', () => {
+  assert.equal(P.turaZeStanu(1, STAN_PR), 4)
+  assert.equal(P.turaZeStanu(2, { ...STAN_PR, tury: 1 }), 2)
+  assert.equal(P.turaZeStanu(1, null), 1)
+})
+
+test('piszemy_wirale PR #7: brak recenzji czubka blokuje MERGUJ, a powod trafia do rekomendacji', () => {
+  const r = P.rekomendacja({ ...MERGE_CZYSTY, watkiNapraw: 0, watkiDoOperatora: 0, recenzjaCzubka: { ok: false, powod: 'bot wyczerpal limit planu' } }, 3)
+  assert.match(r, /^NIE MERGUJ — recenzja bota dla czubka \(jest: bot wyczerpal limit planu\)/)
+})
+
+test('aa-exam PR #51: duza ostatnia tura wymaga krotkiego review, a jego wynik zdejmuje warunek', () => {
+  const stan = { ...STAN_PR, ostatniaTura: { sha: 'd'.repeat(40), dodane: 800, plikiKodu: ['src/a.ts'], ryzykowne: [], wymagaReview: true } }
+  const k = P.krotkieReviewTury(stan, false)
+  assert.equal(k.wymagane, true)
+  assert.match(P.rekomendacja({ ...MERGE_CZYSTY, watkiNapraw: 0, watkiDoOperatora: 0, krotkieReview: k }, 3), /krotkie review/)
+  assert.equal(P.krotkieReviewTury(stan, true).wymagane, false)
+})
+
+test('start: niewypchniety main to nie „podziel PR”, a config bota sprawdza kontrakt; decyzja operatora przepuszcza', () => {
+  const k = JSON.stringify({ plik: true, odstepstwa: [], ostrzezenia: ['CLAUDE.md kieruje PR-y do develop, a baza PR to main'] })
+  const glowna = P.bramkaStartu({ niewypchnieteGlowna: 4, kontraktBota: k }, {})
+  assert.match(glowna.powod, /4 commitów bez origin/)
+  assert.deepEqual(glowna.ostrzezenia.length, 1)
+  assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 4, kontraktBota: k }, { zGlowna: true }).powod, null)
+  const zly = JSON.stringify({ plik: false, odstepstwa: ['brak .coderabbit.yaml'], ostrzezenia: [] })
+  assert.match(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, {}).powod, /brak \.coderabbit\.yaml/)
+  assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, { bezKonfigu: true }).powod, null)
+})
+
+test('etap merge: JS liczy watki ze stanu, rozstrzygniete nie blokuja, merge wykonuje agent bez CLAUDE.md, odmowa ma osobny status', async () => {
+  const stan = JSON.stringify({ ...STAN_PR, watki: STAN_PR.watki.slice(0, 2), liczniki: { otwarty: 0, rozstrzygniety: 1, 'naprawiony-czeka-na-bota': 1 } })
+  const ok = await uruchom({ etap: 'merge', zadanie: 'z', auto: true }, [{ ...MERGE_CZYSTY, stanPr: stan }, { zmergowany: true, detal: 'ok' }])
+  assert.equal(ok.wynik.status, 'ZMERGOWANY')
+  assert.deepEqual(ok.wynik.informacje.rozstrzygniete, ['a.ts:1'])
+  assert.match(ok.prompty[1], /Decyzje o merge'u .* podjal operator/)
+  assert.match(zrodlo, /schema: MERGE_WYNIK, agentType: 'klasa-mechaniczny'/)
+  const odmowa = await uruchom({ etap: 'merge', zadanie: 'z', auto: true }, [{ ...MERGE_CZYSTY, stanPr: stan }, { zmergowany: false, detal: 'odmowa' }])
+  assert.equal(odmowa.wynik.status, 'MERGE-NIEUDANY')
+  const nieczytelny = await uruchom({ etap: 'merge', zadanie: 'z', auto: true }, [{ ...MERGE_CZYSTY, stanPr: 'blad' }])
+  assert.equal(nieczytelny.wynik.status, 'GOTOWY-DO-DECYZJI', 'nieczytelny stan nie moze dac merge')
+})
+
+test('etap decyzja: odpowiedz niesie znacznik, etap stan podaje nastepny krok po suficie', async () => {
+  const d = await uruchom({ etap: 'decyzja', zadanie: 'z', decyzje: [{ id: 'T1', tresc: 'limit zostaje' }] }, [{ zapisane: ['T1'], bledy: [] }])
+  assert.equal(d.wynik.status, 'OK')
+  assert.match(d.prompty[0], /Decyzja operatora: limit zostaje/)
+  assert.match(d.prompty[0], /dev-pr:\{\\"decyzja\\":\\"operator\\"\}/)
+  const s = await uruchom({ etap: 'stan', zadanie: 'z' }, [{ stanPr: JSON.stringify(STAN_PR) }])
+  assert.deepEqual([s.wynik.status, s.wynik.sufit, s.wynik.nastepnyKrok], ['OK', true, 'merge'])
+})
+
+test('tryb bez pusha: claude-md i compound nie wypychaja na glowna (aa-exam: push = deploy)', () => {
+  assert.match(zrodlo, /5\. \$\{KROK_PUSH\}\$\{uwagaBezPusha\}/)
+  assert.match(zrodlo, /7\. \$\{KROK_PUSH\}\$\{uwagaBezPusha\}/)
+  assert.match(zrodlo, /TRYB BEZ PUSHA/)
+  assert.match(zrodlo, /git push origin "\$\(git branch --show-current\)"/, 'push bez upstreamu (aa-exam, compound czesci 1)')
 })

@@ -177,6 +177,8 @@ test('sync: stara baza wiedzy w projekcie → linia HIGIENA z naprawa przy kazdy
     execFileSync('cp', [join(skrypty, 'doctor', 'higiena.mjs'), join(zrodlo, '.claude', 'scripts', 'doctor')])
     // higiena importuje wspolny detektor bajtow z wiedza/walidacja.mjs (a ten slownik klas) — szablon niesie caly katalog.
     execFileSync('cp', ['-R', join(skrypty, 'wiedza'), join(zrodlo, '.claude', 'scripts', 'wiedza')])
+    // a kontrakt .coderabbit.yaml z pr/kontrakt-bota.mjs.
+    execFileSync('cp', ['-R', join(skrypty, 'pr'), join(zrodlo, '.claude', 'scripts', 'pr')])
     git(zrodlo, ['add', '.'])
     git(zrodlo, ['commit', '-q', '-m', 'higiena'])
     mkdirSync(join(projekt, '.claude', 'rules'), { recursive: true })

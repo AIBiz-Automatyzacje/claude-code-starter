@@ -107,3 +107,11 @@ test('sciezkaPlanu: linia "Plan techniczny:" (zwykla, pogrubiona, w backtickach)
   assert.equal(sciezkaPlanu('## Źródła\n- **Plan techniczny:** `docs/plans/2026-01-01-001-feat-x-plan.md`\n'), 'docs/plans/2026-01-01-001-feat-x-plan.md')
   assert.equal(sciezkaPlanu('# Plan bez zrodel\n'), null)
 })
+
+test('sekcjaPlanu: granice zakresu z planu do dossier, brak sekcji = null (piszemy_wirale T0)', async () => {
+  const { sekcjaPlanu } = await import('../dokumenty.mjs')
+  const plan = '## Granice zakresu\n\n- Bez nowej infrastruktury testow.\n\n## Kluczowe decyzje techniczne\n\n- D1.\n\n## Fazy\n'
+  assert.match(sekcjaPlanu(plan, 'Granice zakresu') ?? '', /Bez nowej infrastruktury/)
+  assert.doesNotMatch(sekcjaPlanu(plan, 'Granice zakresu') ?? '', /D1/)
+  assert.equal(sekcjaPlanu('## Inne\n', 'Granice zakresu'), null)
+})

@@ -8,7 +8,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  bajtySterujace, higienaProjektu, hookiWUstawieniach, ignorowanePliki, konfiguracjaCodeRabbit, kontekstStartowy,
+  bajtySterujace, bibliotekaTestowKomponentow, dlugieLinieClaudeMd, higienaProjektu, hookiWUstawieniach, ignorowanePliki, konfiguracjaCodeRabbit, kontekstStartowy,
   plikiSpozaSzablonu, PROG_KONTEKSTU_ZN, STARA_WIEDZA, wiedzaProjektu,
 } from '../higiena.mjs'
 
@@ -96,12 +96,37 @@ test('CodeRabbit: brak pliku = UWAGA z /coderabbit-setup; odwolanie do usunietej
   zapisz('.coderabbit.yaml', `reviews:\n  path_instructions:\n    - path: "${STARA_WIEDZA}"\n`)
   assert.match(konfiguracjaCodeRabbit(p).szczegol, /wskazuje usuniety/)
   zapisz(STARA_WIEDZA, 'x')
-  assert.equal(konfiguracjaCodeRabbit(p).stan, 'OK', 'plik jeszcze jest — odwolanie aktualne')
+  assert.match(konfiguracjaCodeRabbit(p).szczegol, /niezgodny z kontraktem/, 'plik jest — odwolanie aktualne, ale config nie spelnia kontraktu')
 }))
 
-test('higienaProjektu: siedem wierszy w stalej kolejnosci; CLI wypisuje je jako TSV', () => zProjektem((p) => {
+test('higienaProjektu: dziewiec wierszy w stalej kolejnosci; CLI wypisuje je jako TSV', () => zProjektem((p) => {
   const elementy = higienaProjektu(p).map((w) => w.element)
-  assert.deepEqual(elementy, ['wiedza projektu', 'kontekst startowy agenta', 'pliki .claude spoza szablonu', 'hooki w ustawieniach', 'pliki poza .gitignore', 'bajty sterujace w wiedzy', 'CodeRabbit'])
+  assert.deepEqual(elementy, ['wiedza projektu', 'kontekst startowy agenta', 'pliki .claude spoza szablonu', 'hooki w ustawieniach', 'pliki poza .gitignore', 'bajty sterujace w wiedzy', 'CodeRabbit', 'CLAUDE.md: dlugie linie', 'testy komponentow'])
   const wyjscie = execFileSync(process.execPath, [join(import.meta.dirname, '../higiena.mjs'), p], { encoding: 'utf8' })
-  assert.deepEqual(wyjscie.trim().split('\n').map((l) => l.split('\t').length), [4, 4, 4, 4, 4, 4, 4])
+  assert.deepEqual(wyjscie.trim().split('\n').map((l) => l.split('\t').length), [4, 4, 4, 4, 4, 4, 4, 4, 4])
+}))
+
+test('CodeRabbit: config spelniajacy kontrakt = OK, odstepstwo = UWAGA z /coderabbit-setup', () => zProjektem((p, zapisz) => {
+  const zgodny = ['language: pl-PL', 'reviews:', '  request_changes_workflow: false', '  review_status: true', '  auto_review:', '    enabled: true', '    auto_incremental_review: true',
+    '  pre_merge_checks:', '    docstrings:', '      mode: "off"', '  path_filters:', '    - "!docs/**"', '    - "!.claude/**"', '    - "!**/CLAUDE.md"',
+    'knowledge_base:', '  code_guidelines:', '    filePatterns:', '      - "CLAUDE.md"', ''].join('\n')
+  zapisz('CLAUDE.md', '# x')
+  zapisz('.coderabbit.yaml', zgodny)
+  assert.equal(konfiguracjaCodeRabbit(p).stan, 'OK')
+  zapisz('.coderabbit.yaml', zgodny.replace('request_changes_workflow: false', 'request_changes_workflow: true'))
+  const w = konfiguracjaCodeRabbit(p)
+  assert.deepEqual([w.stan, w.instalacja], ['UWAGA', '/coderabbit-setup (nadpisanie po potwierdzeniu)'])
+  assert.match(w.szczegol, /request_changes_workflow/)
+}))
+
+test('CLAUDE.md: akapit w jednej linii = UWAGA, tabela nie liczy sie; testy komponentow: React bez biblioteki = decyzja operatora', () => zProjektem((p, zapisz) => {
+  zapisz('CLAUDE.md', `krotka\n| ${'x'.repeat(900)} |\n`)
+  assert.equal(dlugieLinieClaudeMd(p).stan, 'OK')
+  zapisz('CLAUDE.md', `${'x'.repeat(900)}\n`)
+  assert.equal(dlugieLinieClaudeMd(p).stan, 'UWAGA')
+  assert.equal(bibliotekaTestowKomponentow(p).stan, 'OK')
+  zapisz('package.json', '{"dependencies":{"react":"19.0.0"}}')
+  assert.equal(bibliotekaTestowKomponentow(p).instalacja, 'decyzja operatora')
+  zapisz('package.json', '{"dependencies":{"react":"19.0.0"},"devDependencies":{"@testing-library/react":"16.0.0"}}')
+  assert.equal(bibliotekaTestowKomponentow(p).stan, 'OK')
 }))

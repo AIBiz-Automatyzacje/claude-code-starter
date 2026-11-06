@@ -8,7 +8,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { commit, git, noweRepo, usun, zapisz } from '../../bramki/__tests__/repo-testowe.mjs'
-import { ZNACZNIK_UCIECIA, bazaZastepcza, zapiszDiff, zmianyDossier } from '../zmiany.mjs'
+import { ZNACZNIK_UCIECIA, bazaZastepcza, ponumerujDiff, zapiszDiff, zmianyDossier } from '../zmiany.mjs'
 
 test('zmianyDossier: dodane, zmienione, usuniete i niesledzone pliki fazy ze statusem i liczbami linii; diff z trescia', () => {
   const repo = noweRepo()
@@ -104,4 +104,10 @@ test('bazaZastepcza: merge-base z galezia glowna; bez galezi glownej = HEAD', ()
   } finally {
     usun(repo)
   }
+})
+
+test('ponumerujDiff: numer linii w pliku po zmianie przy kontekscie i dodanej, usunieta bez numeru (piszemy_wirale: templates.ts:846)', () => {
+  const wynik = ponumerujDiff(['diff --git a/a.ts b/a.ts', '--- a/a.ts', '+++ b/a.ts', '@@ -10,2 +40,2 @@ fn', ' stara', '-usunieta', '+nowa', '@@ -90 +120 @@', '+druga'].join('\n')).split('\n')
+  assert.deepEqual(wynik.slice(4), ['   40 |  stara', '      | -usunieta', '   41 | +nowa', '@@ -90 +120 @@', '  120 | +druga'])
+  assert.deepEqual(wynik.slice(0, 3), ['diff --git a/a.ts b/a.ts', '--- a/a.ts', '+++ b/a.ts'])
 })

@@ -27,7 +27,7 @@ import { sciezkiArtefaktow } from './sciezki.mjs'
 import { dodaneLinie, preSkan, warstwy } from './sygnaly.mjs'
 import { wiedzaFazy } from './wiedza-blok.mjs'
 import { wycinkiZadania } from './zadanie.mjs'
-import { bazaZastepcza, zapiszDiff, zmianyDossier } from './zmiany.mjs'
+import { bazaZastepcza, ponumerujDiff, zapiszDiff, zmianyDossier } from './zmiany.mjs'
 
 const KOD_ZLYCH_ARGUMENTOW = 2
 const WYJSCIE_DOMYSLNE = '/tmp'
@@ -73,7 +73,7 @@ const opisBazy = a.baza ? baza : `${baza} (zastepcza: merge-base z galezia glown
 const { pliki, diff } = zmianyDossier(a.projekt, baza)
 const dodane = dodaneLinie(diff)
 const sygnaly = preSkan(a.projekt, dodane)
-const zapisDiffu = zapiszDiff(diff, sciezki.diff)
+const zapisDiffu = zapiszDiff(ponumerujDiff(diff), sciezki.diff)
 const zadanie = wycinkiZadania(a.projekt, a.sciezka, a.faza)
 const wiedza = wiedzaFazy(a.projekt, pliki.map((p) => p.plik))
 const plikBramek = a.bramki ?? (existsSync(sciezki.bramki) ? sciezki.bramki : null)
@@ -89,6 +89,8 @@ const tresc = [
   '## Profil stacku', '', profilStacku(a.projekt), '',
   '## Sygnaly diffu (pre-skan: miejsca, nie findingi)', '', sygnaly.map((t) => `- ${t.wzorzec}: ${t.plik}`).join('\n') || '- brak', '',
   '## Bramki domkniecia (ostatni przebieg)', '', blokBramek(plikBramek), '',
+  '## Granice planu (wykluczenia zadania)', '', zadanie.granice, '',
+  '## Kluczowe decyzje planu', '', zadanie.decyzje, '',
   '## Plan techniczny — sekcja fazy', '', zadanie.planFazy, '',
   '## Sledzenie wymagan — wiersze tej fazy', '', zadanie.wymagania, '',
   '## Reguly projektu — wycinek wiedzy dla plikow fazy', '', wiedza.blok, '',

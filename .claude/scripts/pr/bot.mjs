@@ -16,6 +16,13 @@ export const KARENCJA_ODPYTAN = 4
  */
 export const LIMIT_RECENZJI_MS = 2 * 60_000
 
+/**
+ * Bot po wyczerpaniu limitu planu konczy check-run wynikiem success albo neutral z tytulem „Review rate limited” (dashboard PR #110,
+ * piszemy_wirale PR #7). Recenzji czubka wtedy nie ma, wiec tytul rozstrzyga przed wynikiem.
+ */
+export const LIMIT_PLANU = /rate limit|review limit reached/i
+const STAN_LIMITU = 'rate-limit'
+
 /** Znacznik w podsumowaniu bota → stan wyniku. */
 const ZNACZNIKI = /** @type {const} */ ([
   ['failure', 'blad'],
@@ -29,8 +36,8 @@ const ZNACZNIKI = /** @type {const} */ ([
  * @typedef {{ login: string, updated_at: string, body: string }} Komentarz
  * @typedef {{ login: string, commit_id: string, submitted_at: string }} Recenzja
  * @typedef {{ number: number, state: string, headRefOid: string }} StanPr
- * @typedef {'gotowa' | 'blad' | 'pauza' | 'pominieta' | 'pr-zamkniety' | 'limit' | 'blad-gh'} StanBota
- * @typedef {{ stan: StanBota, powod: string, recenzja?: 'jest' | 'brak' }} Rozstrzygniecie
+ * @typedef {'gotowa' | 'blad' | 'pauza' | 'pominieta' | 'pr-zamkniety' | 'limit' | 'limit-recenzji' | 'blad-gh'} StanBota
+ * @typedef {{ stan: StanBota, powod: string, recenzja?: 'jest' | 'brak', czekajMin?: number }} Rozstrzygniecie
  */
 
 /** Wynik zakonczonego check-runu → stan statusu; `skipped` bez statusu (pominiecie rozstrzyga znacznik w komentarzu). */
@@ -47,7 +54,7 @@ export function statusZPrzebiegu(przebieg) {
   if (przebieg.name !== KONTEKST_STATUSU) return null
   const opis = przebieg.output?.title ?? null
   if (przebieg.status !== 'completed') return { context: KONTEKST_STATUSU, state: 'pending', description: opis, created_at: przebieg.started_at }
-  const stan = STAN_PRZEBIEGU[przebieg.conclusion ?? '']
+  const stan = LIMIT_PLANU.test(opis ?? '') ? STAN_LIMITU : STAN_PRZEBIEGU[przebieg.conclusion ?? '']
   return stan ? { context: KONTEKST_STATUSU, state: stan, description: opis, created_at: przebieg.completed_at ?? przebieg.started_at } : null
 }
 
@@ -81,6 +88,20 @@ function opisZnacznika(blok) {
 function zrecenzowanyCommit(body) {
   const trafienia = [...body.matchAll(/between ([0-9a-f]{40}) and ([0-9a-f]{40})/g)]
   return trafienia.length ? trafienia[trafienia.length - 1][2] : null
+}
+
+/**
+ * Minuty oczekiwania z komunikatu bota o limicie („wait 12 minutes and 30 seconds”) albo null.
+ * @param {Komentarz[]} komentarze
+ * @returns {number | null}
+ */
+export function minutyLimitu(komentarze) {
+  for (const k of [...komentarze].filter((x) => LOGIN_BOTA.test(x.login)).sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))) {
+    if (!LIMIT_PLANU.test(k.body)) continue
+    const m = /wait\W+(\d+)\W+min/i.exec(k.body)
+    if (m) return Number(m[1])
+  }
+  return null
 }
 
 /**
@@ -121,6 +142,7 @@ export function rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek }) {
   if (status) {
     const opis = `status ${KONTEKST_STATUSU} ${status.state} „${status.description || ''}” (${status.created_at})`
     if (status.state === 'success') return { stan: 'gotowa', powod: opis }
+    if (status.state === STAN_LIMITU) return { stan: 'limit-recenzji', powod: opis }
     if (status.state === 'failure' || status.state === 'error') return { stan: 'blad', powod: opis }
     return null
   }
@@ -204,6 +226,10 @@ export async function czekajNaBota({ zrodlo, zegar, sha = null, limitMin, coS, o
       const poKarencji = zegar.teraz() - start >= KARENCJA_ODPYTAN * coS * 1000
       const komentarze = pr.state === 'OPEN' && !najnowszyStatus(statusy) && poKarencji ? await zrodlo.komentarze(pr.number) : []
       const wynik = rozstrzygnij({ pr, statusy, komentarze, dataCommita, czubek })
+      if (wynik?.stan === 'limit-recenzji') {
+        const czekajMin = minutyLimitu(await zrodlo.komentarze(pr.number))
+        return { ...wynik, ...(czekajMin === null ? {} : { czekajMin }), sha: czubek, minuty: minuty() }
+      }
       // Status success: gotowa dopiero z recenzja czubka albo po LIMIT_RECENZJI_MS od statusu (P19).
       const recenzja = wynik?.stan === 'gotowa' ? recenzjaCzubka(await recenzjeBezBledu(zrodlo, pr.number, ostrzez), czubek) : null
       bledyZRzedu = 0

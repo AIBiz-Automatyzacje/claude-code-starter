@@ -79,8 +79,8 @@ Sygnały: `vite` w devDependencies + `react` w dependencies, katalog `src/`.
 
 ## Node backend
 
-Sygnały: brak frameworka frontowego, `express`/`fastify`/`hono` w dependencies
-albo czysty serwis TS/JS.
+Sygnały: `express`/`fastify`/`hono` w dependencies albo czysty serwis TS/JS, także obok frontendu (piszemy_wirale: React w `src/`,
+Hono w `server/`). Ścieżki niżej zamień na katalog serwera wykryty w repo (np. `server/routes/**/*.ts`, `server/**/*.ts`).
 
 ```yaml
 # path_filters — dopisz:
@@ -118,4 +118,19 @@ Sygnały: katalog `supabase/`, `@supabase/supabase-js` w dependencies.
         Migracje: każda nowa tabela ma RLS enabled + policies. Funkcje SQL
         z `security definer` ustawiają `search_path = ''`. Indeksy dla
         kolumn używanych w RLS policies i częstych filtrach.
+```
+
+## Drizzle (migracje SQL)
+
+Sygnały: `drizzle-orm` albo `drizzle-kit` w zależnościach, katalog `drizzle/`. Łączy się z dowolnym blokiem. Ścieżki popraw na `out` z `drizzle.config.*`.
+
+```yaml
+# path_filters — dopisz:
+    - "!drizzle/meta/**"
+
+# path_instructions — dopisz:
+    - path: "drizzle/*.sql"
+      instructions: |
+        Migracja: sprawdź kolejność i zgodność z danymi produkcji (nowe ograniczenie, NOT NULL, indeks unikalny),
+        blokady na dużych tabelach i to, czy stary kod działa na nowym schemacie w chwili wdrożenia.
 ```

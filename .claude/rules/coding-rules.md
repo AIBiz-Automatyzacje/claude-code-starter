@@ -36,7 +36,7 @@ W projekcie z konfiguracją ESLint z szablonu te reguły sprawdza maszyna; bez n
 - Każda nowa funkcja publiczna ma test ścieżki poprawnej i test błędu.
 - Unit testy pracują na małych fixture'ach w `tests/fixtures/`, nie na pełnych zbiorach danych.
 - Układ testu: Arrange-Act-Assert w blokach describe/it.
-- Testujesz zachowanie widoczne z zewnątrz (wynik, wyrenderowany interfejs, zapis w bazie), nie stan wewnętrzny; komponent — przez Testing Library, tak jak używa go użytkownik.
+- Testujesz zachowanie widoczne z zewnątrz (wynik, wyrenderowany interfejs, zapis w bazie), nie stan wewnętrzny; komponent — tak, jak używa go użytkownik (narzędzie: `.claude/rules/stack.md`, sekcja „Testowanie”).
 - Callback `waitFor` kończy każdą ścieżkę asercją albo `throw`; cichy `return` kończy czekanie przed zmianą stanu i daje test niestabilny.
 - Testy piszesz wertykalnie: jeden test → jego implementacja → następny test. Wszystkie testy naraz, a potem cała implementacja, dają testy kształtu (struktur i sygnatur), które przechodzą, gdy zachowanie się psuje.
 - Refaktoryzujesz przy zielonych testach; czerwony najpierw doprowadzasz do zielonego.

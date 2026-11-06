@@ -65,6 +65,27 @@ export function zmianyDossier(projekt, baza) {
 }
 
 /**
+ * Diff z numerem linii w pliku po zmianie przed kazda linia kontekstu i dodana. Reviewer czytal zrzut przez Read i podawal numer wiersza
+ * zrzutu jako plik:linia (piszemy_wirale: templates.ts:846 przy pliku 199 linii).
+ * @param {string} diff
+ * @returns {string}
+ */
+export function ponumerujDiff(diff) {
+  let nr = 0
+  return diff.split('\n').map((l) => {
+    const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(l)
+    if (hunk) { nr = Number(hunk[1]); return l }
+    if (nr === 0 || l.startsWith('---') || l.startsWith('+++') || l.startsWith('\\')) return l
+    if (l.startsWith('diff --git')) { nr = 0; return l }
+    if (l.startsWith('-')) return `      | ${l}`
+    if (!l.startsWith('+') && !l.startsWith(' ')) return l
+    const linia = `${String(nr).padStart(5)} | ${l}`
+    nr += 1
+    return linia
+  }).join('\n')
+}
+
+/**
  * Zapis diffu do pliku; powyzej limitu przyciety ze znacznikiem na koncu.
  * @param {string} diff
  * @param {string} plik
