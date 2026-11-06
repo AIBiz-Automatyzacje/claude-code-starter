@@ -265,6 +265,7 @@ Autonomiczne E2E działa na osobnym projekcie Supabase z `.env.e2e`, nigdy na de
 - **`assertVisible` po tekście** to dopasowanie całego tekstu. Fragment sprawdzasz regexem `.*fragment.*` albo przez `testID`.
 - **Drzewo a11y na iOS:** `accessible` z `accessibilityLabel` skleja poddrzewo i pojedyncze `Text` znikają. `accessibilityElementsHidden` na kontenerze ukrywa `testID` dzieci, a `accessibilityViewIsModal` zdejmuje cały ekran pod modalem. Przy fałszywej asercji na widocznym elemencie najpierw podejrzewasz warstwę modalną.
 - **`testID`:** kontener natywnego `<Modal>` i wheel-picker iOS nie mają go w drzewie, więc celujesz w dzieci modala. `testID` na nieinteraktywnym wrapperze nie nadaje się na cel `scrollUntilVisible`.
+- **Element przy dole ekranu:** `scrollUntilVisible` uznaje go za widoczny także pod pływającym paskiem kart albo dymkiem LogBox, a dotknięcie trafia w tę warstwę: aktualna karta przewija ekran do góry, a dymek otwiera pełnoekranowy log. Przed `tapOn` ustawiasz `centerElement: true`.
 
 ## Quick reference
 
