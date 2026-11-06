@@ -7,11 +7,10 @@ wspólna (odznaczanie checkboxów dopiero po PASS, restart serwera `e2e.mjs star
 ## Ponowne odegranie scenariusza
 
 Gdy finding mówi „brak flow”, najpierw piszesz `.maestro/<flow>.yaml` wg pola Pliki i scenariusza IU. Po naprawie przyczyny
-uruchamiasz scenariusz na urządzeniu: `maestro test .maestro/<flow>.yaml; echo "kod=$?"`. Przy kilku włączonych urządzeniach wskazujesz
-jedno: `maestro --device <id> test …`, a id podają `xcrun simctl list devices booted` i `adb devices`. PASS to kod 0 z przejściem
-`assertVisible` z flow.
+uruchamiasz scenariusz na urządzeniu: `node .claude/scripts/e2e/expo-flow.mjs --zadanie <folder> --flow <flow>`. Skrypt wybiera urządzenie
+adaptera i podaje zmienne konta e2e. PASS to status `ok` z przejściem asercji flow.
 
 ## Sprawdzenie poprawki wizualnej
 
 Poprawkę sprawdzasz w aplikacji bez zrzutu: `maestro hierarchy --compact` (elementy, teksty, położenie). Kolorów ta komenda nie pokazuje:
-przy poprawce koloru dopisujesz `takeScreenshot` we flow i oglądasz zrzut z katalogu `--test-output-dir`.
+przy poprawce koloru dopisujesz `takeScreenshot` we flow i oglądasz plik z pola `zrzuty` wyniku `expo-flow.mjs`.

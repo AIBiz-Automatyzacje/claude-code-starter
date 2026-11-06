@@ -24,7 +24,7 @@ command -v maestro >/dev/null 2>&1 && echo "Installed: $(maestro --version)" || 
 1. **Launch:** uruchom emulator + zainstaluj aplikację (build z dev clienta wystarczy)
 2. **Flow YAML:** zapisz scenariusz w pliku `.yaml` (folder `.maestro/`)
 3. **Run:** `maestro test .maestro/login-flow.yaml`
-4. **Inspect:** artefakty domyślnie w `~/.maestro/tests`; lokalizację zmienia `maestro test --test-output-dir=<dir>`. `takeScreenshot: nazwa` zapisuje zrzut w `takeScreenshot/` bundla artefaktów flow, a od Maestro 2.8 ścieżki poza katalogiem artefaktów są odrzucane (`Invalid path`). Wideo powstaje tylko przy jawnym `startRecording`/`stopRecording` (albo `maestro record`)
+4. **Inspect:** artefakty domyślnie w `~/.maestro/tests`; lokalizację zmienia `maestro test --test-output-dir=<dir>`. `takeScreenshot: nazwa` zapisuje zrzut w podkatalogu tego katalogu (Maestro 2.5.1: `screenshots/`), a od Maestro 2.8 ścieżki poza katalogiem artefaktów są odrzucane (`Invalid path`). Pliki `commands-*.json` z tego katalogu i z `~/.maestro/tests` zapisują wartości zmiennych `-e`, także hasła, więc nie kopiujesz ich do repo ani do raportu. Wideo powstaje tylko przy jawnym `startRecording`/`stopRecording` (albo `maestro record`)
 
 ```yaml
 # .maestro/login-flow.yaml
@@ -179,8 +179,10 @@ Tester `feature-tester-e2e` używa tego skilla w fazie review. Listę scenariusz
 
 Jeden flow to jeden przebieg, także gdy pokrywa kilka linii scenariuszy; każda linia dostaje ten sam wynik.
 
+W runie tester i naprawa E2E wołają flow przez `node .claude/scripts/e2e/expo-flow.mjs --zadanie <folder> --flow <flow>`: skrypt wybiera urządzenie adaptera, podaje zmienne i maskuje hasło. Pod spodem biegnie:
+
 ```bash
-maestro test --test-output-dir "$Z/maestro/<flow>" -e KLUCZ=wartosc .maestro/<flow>.yaml; echo "kod=$?"
+maestro --device <id> test --test-output-dir "$Z/maestro/<flow>" -e KLUCZ=wartosc .maestro/<flow>.yaml; echo "kod=$?"
 ```
 
 Dowodem jest kod wyjścia (0 tylko wtedy, gdy wszystkie flow przeszły), ostatnia linia wyjścia i ścieżka zrzutu z bundla pod `--test-output-dir`. `--format JUNIT` albo `HTML` z `--output` daje raport, gdy jest potrzebny.

@@ -453,6 +453,25 @@ test('canary: bez własnego flow idzie plik tymczasowy i nazwany słaby dowód; 
   assert.match(zle.naprawa, /przebuduj/)
 })
 
+test('canary: po porażce katalog roboczy zostaje ze zrzutem, bez zapisu komend z wartościami zmiennych', async () => {
+  const p = katalog()
+  /** @type {string} */
+  let robocze = ''
+  const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'U1', nazwa: 'iPhone 17', sciezkaAplikacji: null }, aplikacja: APLIKACJA }
+  const maestro = async (/** @type {string[]} */ a) => {
+    robocze = a[a.indexOf('--test-output-dir') + 1]
+    assert.ok(a[a.indexOf('--debug-output') + 1].startsWith(robocze), 'zapis debug w katalogu roboczym, nie w ~/.maestro/tests')
+    mkdirSync(join(robocze, 'przebieg'), { recursive: true })
+    writeFileSync(join(robocze, 'przebieg/commands-(canary.yaml).json'), 'tajne')
+    writeFileSync(join(robocze, 'przebieg/zrzut.png'), 'png')
+    return { kod: 1, ogon: 'Assertion is false' }
+  }
+  const w = await canary.przejdzCanary(p, { E2E_TEST_PASSWORD: 'tajne' }, cel, { maestro })
+  assert.equal(w.ok, false)
+  assert.equal(existsSync(join(robocze, 'przebieg/commands-(canary.yaml).json')), false)
+  assert.equal(existsSync(join(robocze, 'przebieg/zrzut.png')), true)
+})
+
 test('canary: uruchomMaestro maskuje hasło w ogonie i na stderr, oddaje kod; brak programu daje wynik zamiast wyjątku', async () => {
   const bin = katalog()
   writeFileSync(join(bin, 'maestro'), '#!/bin/sh\necho "Input text tajne"\nexit 3\n', { mode: 0o755 })

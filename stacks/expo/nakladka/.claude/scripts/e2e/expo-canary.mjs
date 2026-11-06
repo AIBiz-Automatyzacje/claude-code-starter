@@ -4,7 +4,7 @@
 // to jedna linia JSON, a strumień resetuje watchdog ciszy agenta.
 
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -81,6 +81,29 @@ export function uruchomMaestro(argumenty, cwd, sekrety, limitMs = LIMIT_CANARY_M
   })
 }
 
+/** @param {string} katalog */
+function usunZapisKomend(katalog) {
+  for (const w of readdirSync(katalog, { recursive: true, withFileTypes: true })) {
+    if (w.isFile() && /^commands-.*\.json$/.test(w.name)) rmSync(join(w.parentPath, w.name))
+  }
+}
+
+/**
+ * Zmienne flow: te same dla canary i scenariuszy, a klucze `MAESTRO_*` z .env.e2e dla skryptów `runScript`. Wartości tylko w argumentach
+ * procesu, nigdy w YAML.
+ * @param {Record<string, string>} env @param {{ port: number, urzadzenie: Urzadzenie, aplikacja: Aplikacja }} cel
+ * @returns {{ argumenty: string[], sekrety: string[] }}
+ */
+export function zmienneFlow(env, { port, urzadzenie, aplikacja }) {
+  const maestroweKlucze = Object.entries(env).filter(([k]) => k.startsWith('MAESTRO_'))
+  const zmienne = [['APP_ID', urzadzenie.platforma === 'ios' ? aplikacja.bundleId : aplikacja.appId], ['APP_SCHEME', aplikacja.scheme], ['METRO_URL', adresMetro(urzadzenie.platforma, port)],
+    ['E2E_EMAIL', env.E2E_TEST_EMAIL], ['E2E_PASSWORD', env.E2E_TEST_PASSWORD], ...maestroweKlucze]
+  return {
+    argumenty: zmienne.filter(([, v]) => v).flatMap(([k, v]) => ['-e', `${k}=${v}`]),
+    sekrety: [env.E2E_TEST_PASSWORD, ...maestroweKlucze.map(([, v]) => v)],
+  }
+}
+
 /**
  * @param {string} projekt @param {Record<string, string>} env @param {{ port: number, urzadzenie: Urzadzenie, aplikacja: Aplikacja }} cel
  * @param {{ maestro?: typeof uruchomMaestro }} [opcje]
@@ -91,18 +114,17 @@ export async function przejdzCanary(projekt, env, { port, urzadzenie, aplikacja 
   const adres = adresMetro(urzadzenie.platforma, port)
   const robocze = mkdtempSync(join(tmpdir(), 'expo-canary-'))
   const wlasny = existsSync(join(projekt, PLIK_CANARY))
-  const sekrety = [env.E2E_TEST_PASSWORD]
   const flow = wlasny ? PLIK_CANARY : join(robocze, 'canary.yaml')
   if (!wlasny) writeFileSync(flow, flowWejscia(String(idAplikacji), aplikacja.scheme, adres))
-  const zmienne = { APP_ID: idAplikacji, APP_SCHEME: aplikacja.scheme, METRO_URL: adres, E2E_EMAIL: env.E2E_TEST_EMAIL, E2E_PASSWORD: env.E2E_TEST_PASSWORD }
-  const argumentyEnv = Object.entries(zmienne).filter(([, v]) => v).flatMap(([k, v]) => ['-e', `${k}=${v}`])
-  const { kod, ogon } = await maestro(['--device', urzadzenie.id, 'test', '--test-output-dir', robocze, ...argumentyEnv, flow], projekt, sekrety)
+  const { argumenty: argumentyEnv, sekrety } = zmienneFlow(env, { port, urzadzenie, aplikacja })
+  const { kod, ogon } = await maestro(['--device', urzadzenie.id, 'test', '--test-output-dir', robocze, '--debug-output', join(robocze, 'debug'), ...argumentyEnv, flow], projekt, sekrety)
   if (kod === 0) {
     rmSync(robocze, { recursive: true, force: true })
     const typ = wlasny ? `${PLIK_CANARY} przeszedł` : `canary bez logowania przeszedł, to słaby dowód: dodaj ${PLIK_CANARY} (wzór: .claude/templates/e2e-env/_canary.yaml)`
     return { ok: true, detal: `${urzadzenie.platforma} ${urzadzenie.nazwa}: ${typ}`, naprawa: '' }
   }
-  // Katalog roboczy zostaje: ogon wskazuje w nim zrzuty i logi Maestro.
+  // Katalog roboczy zostaje dla zrzutów i logów Maestro, ale bez zapisu komend: `commands-*.json` niesie wartości zmiennych `-e`.
+  usunZapisKomend(robocze)
   const natywny = /cannot find native module/i.test(ogon) ? ' Komunikat o module natywnym oznacza przestarzały dev-client: przebuduj go.' : ''
   return { ok: false, detal: `canary na ${urzadzenie.nazwa}: kod ${kod}\n${ogon}`, naprawa: `Sprawdź ręcznie: maestro --device ${urzadzenie.id} test ${wlasny ? PLIK_CANARY : '<flow>'}.${natywny}` }
 }

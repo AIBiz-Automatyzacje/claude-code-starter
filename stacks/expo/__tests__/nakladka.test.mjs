@@ -27,7 +27,6 @@ const ZALEGLE = [
   '.claude/agents/feature-builder-fullstack.md', // IU-2.1
   '.claude/agents/feature-builder-fullstack-figma.md', // IU-2.1
   '.claude/agents/feature-builder-data.md', // IU-2.1
-  '.claude/agents/feature-tester-e2e.md', // IU-2.2
   '.claude/templates/smoke-autopilot/', // IU-2.6
 ]
 
