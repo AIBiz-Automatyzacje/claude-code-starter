@@ -14,7 +14,8 @@ układ dokumentu, źródła pozycji i hierarchia stanu są w SKILL.md.
 - Kontrola przed zapisem sekcji 0: `node .claude/scripts/e2e/expo-swiezosc.mjs`. Bramka natywna biegnie tylko przed testerem fazy ze
   scenariuszami, więc zmiana natywna z ostatniej fazy bez scenariuszy albo z fixa wychodzi dopiero tutaj. Przy `przebudowa: true` pierwszą
   pozycją sekcji 0 jest `- [ ] Przebuduj dev-client: <naprawa>` z powodem z `detal`; datę w pozycji startu aplikacji bierzesz z
-  ostatniego commita zmieniającego `package.json`, lockfile albo `app.json`.
+  ostatniego commita zmieniającego `package.json`, lockfile albo `app.json`. Przy `ok: false` bez przebudowy (urządzenie wyłączone)
+  pierwszą pozycją sekcji 0 jest `- [ ] Włącz urządzenie i sprawdź dev-client (\`node .claude/scripts/e2e/expo-swiezosc.mjs\`): <naprawa>`, bo świeżości nie sprawdzono.
 - Warunek środowiskowy, który nie wchodzi do smoke'u: tymczasowy `.env.development.local` z kluczami e2e.
 
 ## Punkty wizualne

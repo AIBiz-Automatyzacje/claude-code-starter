@@ -381,6 +381,71 @@ test('brak urządzenia = STOP z przyczynami i naprawą obu platform; zła E2E_PL
   assert.equal(urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_PLATFORMA: 'windows' }, wykonaj).ok, false)
 })
 
+/** @param {{ ok: boolean, detal?: string, naprawa?: string, przebudowa?: boolean }} w @param {RegExp} detal */
+function bezPrzebudowy(w, detal) {
+  assert.equal(w.ok, false)
+  assert.match(String(w.detal), detal)
+  assert.equal(w.przebudowa, undefined, w.detal)
+  assert.doesNotMatch(String(w.naprawa), /prebuild|run:ios|run:android/, w.detal)
+}
+
+test('brak działającego urządzenia = włącz je, bez przebudowy i bez prebuild w naprawie', () => {
+  const { baza, projekt } = uklad()
+  const przygotuj = (/** @type {Record<string, string>} */ srodowisko, /** @type {ReturnType<typeof atrapa>} */ a, opcje = {}) => urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, srodowisko, a.wykonaj, opcje)
+  const wylaczonyEmulator = przygotuj({ E2E_PLATFORMA: 'android' }, atrapa([]))
+  bezPrzebudowy(wylaczonyEmulator, /Android: brak działającego emulatora/)
+  assert.match(wylaczonyEmulator.naprawa, /emulator -avd/)
+  assert.doesNotMatch(wylaczonyEmulator.naprawa, /iOS/)
+  bezPrzebudowy(przygotuj({ E2E_PLATFORMA: 'android' }, atrapa([], { adb: 'List of devices attached\nemulator-5556\toffline\n' })), /Android: brak działającego emulatora/)
+  const nicNieMa = przygotuj({}, atrapa([]))
+  bezPrzebudowy(nicNieMa, /Android: brak działającego emulatora/)
+  assert.match(nicNieMa.naprawa, /simctl boot/)
+  assert.match(nicNieMa.naprawa, /emulator -avd/)
+  const samoKonto = przygotuj({ E2E_PLATFORMA: 'ios' }, atrapa([symulator(baza, 'iPhone 17 Pro', { konto: true })]))
+  bezPrzebudowy(samoKonto, /iPhone 17 Pro: zalogowane konto Apple/)
+  assert.match(samoKonto.naprawa, /bez konta Apple/)
+  assert.doesNotMatch(samoKonto.naprawa, /emulator/)
+  bezPrzebudowy(przygotuj({ E2E_PLATFORMA: 'ios' }, atrapa([symulator(baza, 'iPhone 17', { aplikacja: false })]), { tylkoWlaczone: true }), /brak iPhone w simctl/)
+})
+
+test('brak dev-clienta = przebudowa tylko na wybranej platformie, także na działającym emulatorze', () => {
+  const { baza, projekt } = uklad()
+  const adb = 'List of devices attached\nemulator-5554\tdevice\n'
+  const emulatorBezKlienta = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_PLATFORMA: 'android' }, atrapa([], { adb }).wykonaj)
+  assert.deepEqual([emulatorBezKlienta.ok, emulatorBezKlienta.przebudowa], [false, true])
+  assert.match(emulatorBezKlienta.detal, /Android: działający emulator bez dev-clienta/)
+  assert.ok(emulatorBezKlienta.naprawa.includes(urzadzenie.REBUILD.android), emulatorBezKlienta.naprawa)
+  assert.ok(!emulatorBezKlienta.naprawa.includes(urzadzenie.REBUILD.ios), emulatorBezKlienta.naprawa)
+  assert.ok(emulatorBezKlienta.naprawa.includes(urzadzenie.OSTRZEZENIE_CLEAN), emulatorBezKlienta.naprawa)
+  const symulatorBezKlienta = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, { E2E_PLATFORMA: 'ios' }, atrapa([symulator(baza, 'iPhone 17', { aplikacja: false })]).wykonaj)
+  assert.deepEqual([symulatorBezKlienta.ok, symulatorBezKlienta.przebudowa], [false, true])
+  assert.ok(symulatorBezKlienta.naprawa.includes(urzadzenie.REBUILD.ios), symulatorBezKlienta.naprawa)
+  assert.ok(!symulatorBezKlienta.naprawa.includes(urzadzenie.REBUILD.android), symulatorBezKlienta.naprawa)
+  const obie = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, atrapa([symulator(baza, 'iPhone 17e', { aplikacja: false })]).wykonaj)
+  assert.deepEqual([obie.ok, obie.przebudowa], [false, true])
+  assert.ok(obie.naprawa.includes(urzadzenie.REBUILD.ios) && obie.naprawa.includes(urzadzenie.REBUILD.android), obie.naprawa)
+})
+
+test('wyłączony emulator: restart bez STOP-u przebudowy, a świeżość bez prebuild w naprawie', async () => {
+  const { restartFazy } = await modul('start.mjs')
+  const { swiezosc } = await modul('expo-swiezosc.mjs')
+  const { projekt } = uklad()
+  const zadanie = 'docs/active/z'
+  mkdirSync(join(projekt, zadanie), { recursive: true })
+  writeFileSync(join(projekt, zadanie, 'z-zadania.md'), '## Faza 1 — A\n\n- [ ] Test: [E2E] `a` — /a → ok\n')
+  writeFileSync(join(projekt, '.env.e2e'), 'E2E_URL=http://127.0.0.1:8081\nE2E_START=npx expo start\nE2E_PLATFORMA=android\n')
+  writeFileSync(join(projekt, 'package.json'), JSON.stringify({ dependencies: { expo: '58.0.0' } }))
+  const { wykonaj } = atrapa([])
+  const przedStartem = (/** @type {string} */ p, /** @type {Record<string, string>} */ e) => urzadzenie.przygotujUrzadzenie(p, APLIKACJA, e, wykonaj)
+  const restart = await restartFazy(projekt, zadanie, 1, { kroki: { przedStartem } })
+  assert.deepEqual([restart.status, restart.krokStacku, restart.przebudowa], ['niepowodzenie', true, false])
+  assert.match(restart.naprawa, /emulator -avd/)
+  const w = swiezosc(projekt, { E2E_PLATFORMA: 'android' }, wykonaj)
+  assert.deepEqual([w.ok, w.przebudowa], [false, false])
+  assert.match(w.detal, /brak działającego emulatora/)
+  assert.doesNotMatch(w.naprawa, /prebuild/)
+})
+
 test('aplikacja: identyfikatory z app.json; app.config przez Expo CLI projektu; repo bez konfiguracji = null', () => {
   const { projekt } = uklad()
   assert.deepEqual(urzadzenie.aplikacjaProjektu(projekt), APLIKACJA)
@@ -564,7 +629,7 @@ test('naprawa przebudowy: każdy STOP z komendą --clean niesie ostrzeżenie, z 
     { oczekiwany: /brak dev-clienta/, w: przygotuj({}, atrapa([wlaczony])) },
     { oczekiwany: /bez podpisu/, w: przygotuj({}, atrapa([wlaczony], { aplikacja: app, podpis: `${app}: code object is not signed at all` })) },
     { oczekiwany: /starszy niż app\.json/, w: przygotuj({ E2E_PLATFORMA: 'android' }, atrapa([], { adb, pmPath: 'package:/data/app/x/base.apk\n', mtimeAdb: '500\n' })) },
-    { oczekiwany: /brak urządzenia do E2E/, w: przygotuj({}, atrapa([])) },
+    { oczekiwany: /brak urządzenia do E2E/, w: przygotuj({}, atrapa([symulator(baza, 'iPhone 17e', { aplikacja: false })])) },
   ]
   utimesSync(app, 500, 500)
   przypadki.push({ oczekiwany: /starszy niż app\.json/, w: przygotuj({}, atrapa([wlaczony], { aplikacja: app })) })
