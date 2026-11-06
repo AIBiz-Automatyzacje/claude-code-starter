@@ -367,7 +367,8 @@ const FIX_RESULT = {
       required: ['kod', 'test', 'e2e'],
     },
     e2eReweryfikacja: { type: 'string', description: 'X/Y passed lub "n/a"' },
-    walidacja: { type: 'string', enum: ['PASS', 'FAIL'] },
+    walidacja: { type: 'string', enum: ['PASS', 'FAIL', 'NIE-URUCHOMIONO'], description: 'NIE-URUCHOMIONO = komend nie dalo sie uruchomic przez srodowisko agenta (np. Docker w sandboxie), kod nie padl' },
+    walidacjaPrzyczyna: { type: 'string', description: 'przy NIE-URUCHOMIONO: co zablokowalo i ktore komendy zostaly do uruchomienia' },
     commity: { type: 'array', items: { type: 'string' }, description: 'hashe commitow utworzonych w tym przebiegu — zakres kontroli fixa' },
     nienaprawione: { type: 'array', items: { type: 'string' } },
     nierozwiazaneP1: { type: 'integer', description: 'P1 ktorych fix NIE zamknal (krytyczne -> STOP)' },
@@ -717,9 +718,17 @@ podajesz w raporcie tylko jako sciezke i nie otwierasz ich narzedziem Read: obra
 (rzad 1–3 tys. tokenow na obraz), a opis ekranu ma te same wymiary i teksty. Poprawke sprawdzasz w aplikacji bez zrzutu
 wg .claude/stack/fix-e2e.md, sekcja „Sprawdzenie poprawki wizualnej” (elementy, teksty, wymiary, kolory).
 
-ZAKAZ TEST-WEAKENINGU (twardy): NIE modyfikuj istniejacych testow ani asercji zeby przeszly —
-napraw IMPLEMENTACJE. Mozesz testy DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne;
-walidacja koncowa audytuje git diff testow w commitach fix i zglosi kazda taka zmiane.
+ZAKAZ TEST-WEAKENINGU (twardy): NIE oslabiaj asercji zachowania, zeby test przeszedl — napraw IMPLEMENTACJE. Mozesz testy
+DODAWAC. Oslabienie/usuniecie asercji = niedopuszczalne; walidacja koncowa audytuje git diff testow fixa i zglosi kazda taka zmiane.
+Dozwolone, z uzasadnieniem w commicie: atrape odtwarzajaca sekwencje wywolan przepisujesz, gdy finding wymaga zmiany tej sekwencji
+(aa-exam: P2 zostal nienaprawiony, bo atrapa znala dokladne 4 zapytania); test opisujacy zachowanie, ktore finding kaze zmienic.
+
+GRANICE PLANU: finding, ktorego naprawa przekracza sekcje „Granice zakresu” planu, dodaje zaleznosc albo runner (npm install) albo zmienia
+zachowanie dla uzytkownika w sposob, ktorego nie ma w planie, NIE jest do automatycznej naprawy: zostaw kod, wpisz do nienaprawione[]
+z prefiksem "OPERATOR: <plik:linia> — <co trzeba rozstrzygnac>" i dopisz P2 do known-issues. Zmiany bez findingu kontrola diffu cofa,
+wiec ich nie dokladaj (aa-exam: oslabiony limit magic-linkow, usuniete zdarzenie Sentry).
+Komendy walidacji, ktorych nie da sie uruchomic przez srodowisko agenta (sandbox blokuje Dockera albo port, brak uslugi), to nie FAIL:
+zwroc walidacja "NIE-URUCHOMIONO" z walidacjaPrzyczyna (co zablokowalo, ktore komendy zostaly), zacommituj zmiany jak zwykle. FAIL oznacza, ze kod albo test padl.
 
 ${blokZwinieciaDoPoprawy(sciezka, numerFazy)}
 
@@ -875,7 +884,7 @@ function pozycjeKontroliFixa(kontrola) {
   return [...zList, ...zBramek]
 }
 
-function kontrolaFixaPrompt(sciezka, numerFazy, commity, findingi) {
+function kontrolaFixaPrompt(sciezka, numerFazy, commity, findingi, zastrzezone = []) {
   const p1 = findingi.filter((f) => f.severity === 'P1').map((f) => f.plik)
   const worktree = `/tmp/kontrola-fixa-faza-${numerFazy}`
   const plikBramek = `/tmp/bramki-fix-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${numerFazy}.json`
@@ -887,7 +896,10 @@ ${zakresFixa(numerFazy, commity)}
 
 Findingi, ktore fix naprawial (lista orkiestratora):
 ${JSON.stringify(findingi, null, 2)}
-
+${zastrzezone.length ? `
+ZASTRZEZONE DLA OPERATORA (fix celowo tego nie ruszyl; to nie sa pozycje do poprawy, nawet gdy ryzyko jest realne, opisz je tylko w sprawdzono):
+${JSON.stringify(zastrzezone, null, 2)}
+` : ''}
 Wynik kazdej listy ma pole sprawdzono: co i jaka komenda sprawdziles, takze przy zerze pozycji i gdy warunek listy
 nie zachodzi. Pozycja = {plik: "plik:linia", opis: co commity fixa zmienily albo pominely i co poprawic}. Problemy kodu
 sprzed fixa nie sa pozycjami — ocenialo je review fazy.
@@ -959,6 +971,10 @@ Zasady wg pola zrodlo:
 - bramki: napraw trafienie w kodzie wg reguly; edycja wypchnietej migracji = przywroc plik z rodzica najstarszego
   commita fixa, a zmiane schematu zapisz nowa migracja. Reguly nie wylaczasz (eslint-disable, zmiana konfiguracji).
 Testow sprzed fixa nie oslabiasz i nie zmieniasz, zeby przeszly (reguly kodu, sekcja Testowanie).
+Pozycja, ktorej zamkniecie zmienia zachowanie dla uzytkownika spoza planu albo przekracza „Granice zakresu”, zostaje niezrobiona: wpis w nienaprawione[]
+z prefiksem "OPERATOR: " (piszemy_wirale T1: odpinanie Facebooka weszlo tu bez decyzji, w konflikcie z R11).
+Komendy walidacji, ktorych nie da sie uruchomic przez srodowisko agenta (sandbox blokuje Dockera albo port, brak uslugi), to nie FAIL:
+zwroc walidacja "NIE-URUCHOMIONO" z walidacjaPrzyczyna (co zablokowalo, ktore komendy zostaly), zacommituj zmiany jak zwykle. FAIL oznacza, ze kod albo test padl.
 
 Po poprawkach: pelna walidacja (typecheck, test, build — komendy z package.json), commit
 \`fix(${sciezka.split('/').pop()}): kontrola diffu naprawczego fazy ${numerFazy}\` (temat dokladnie taki) z jawnym pathspec zmienionych plikow
@@ -999,11 +1015,10 @@ wynik kazdego w detalu testu (kopia zasady w BLOK_KOMEND_PROJEKTU dev-pr-wf.js).
 Zatrzymaj sie dopiero na REALNYM FAIL (flake infra PASS-w-izolacji nie jest FAIL).
 
 KROK 3 — AUDYT TESTOW PO FIXACH: commity fixa tego zadania wylacznie z \`${komendaCommitowFixa(sciezka)}\`
-(tematy fixa i kontroli diffu naprawczego; prefiks \`fix(\` maja tez commity implementacji — te nie sa fixem). Dla KAZDEGO
-z nich osobno \`git show --format= <sha> -- '*.test.*' '*.spec.*'\` (nie diff zakresu: miedzy commitami fixa leza commity
-implementacji) — szukaj ZMIAN W ISTNIEJACYCH asercjach/testach (usuniecie testu, oslabienie expect, zmiana oczekiwanej
-wartosci). Nowe testy sa OK. Pusta lista commitow = testyZmodyfikowane: []. Kazda modyfikacje istniejacego testu wpisz
-do testyZmodyfikowane[] (to sygnal test-weakeningu do raportu, nie auto-FAIL).
+(tematy fixa i kontroli diffu naprawczego; prefiks \`fix(\` maja tez commity implementacji — te nie sa fixem). Pogrupuj je po fazie (koncowka tematu „fazy N”).
+Dla kazdej fazy diff NETTO testow: \`git diff <najstarszy commit fixa fazy>^ <najnowszy commit fixa fazy> -- '*.test.*' '*.spec.*'\` (zmiana cofnieta przez kontrole diffu znika,
+aa-exam: fad2ed6 i bc36900 wygladaly jak oslabienie). Szukaj ZMIAN W ISTNIEJACYCH testach. Nowe testy sa OK. Pusta lista commitow = testyZmodyfikowane: [].
+Kazda zmiane wpisz do testyZmodyfikowane[] jako "<plik> — asercja: <co oslabiono lub usunieto>" albo "<plik> — atrapa/setup: <co przepisano>" (sygnal do raportu, nie auto-FAIL).
 
 KROK 4 — jesli REALNY FAIL i potrafisz naprawic prosty problem (import, typ) — napraw, commituj,
 uruchom ponownie. Jak nie potrafisz — zapisz liste bledow z lokalizacjami i ustaw wynik=FAIL,
@@ -1442,6 +1457,36 @@ function skrotPrzebiegu(p) {
 // Dowod: oferty-online faza 5 — 61 pozycji, 55 naprawionych, walidacja PASS; commit opisuje 4 swiadome
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
+// Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
+  const kroki = []
+  if (smoke) kroki.push(`Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z ${smoke}.`)
+  const akcje = []
+  const operator = raporty.reduce((s, r) => s + (r?.liczniki?.operator || 0), 0)
+  if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
+  const decyzje = raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
+  if (decyzje.length) akcje.push(`zmiany spoza planu do decyzji: ${decyzje.join('; ')}`)
+  const p2 = raporty.reduce((s, r) => s + (r?.fix?.nierozwiazaneP2 || 0), 0)
+  if (p2) akcje.push(`${p2} nierozwiazanych P2 w known-issues`)
+  if (propozycjeBramek.length) akcje.push(`${propozycjeBramek.length} propozycji bramek z compoundu`)
+  if (akcje.length) kroki.push(`Akcje operatora: ${akcje.join(', ')}.`)
+  kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
+  return kroki
+}
+
+// Pozycje zostawione operatorowi: fix i tura poprawkowa oznaczaja je prefiksem, a orkiestrator pilnuje, ze kontrola ich nie zawraca.
+function pozycjeOperatora(nienaprawione) {
+  return (Array.isArray(nienaprawione) ? nienaprawione : []).filter((x) => typeof x === 'string' && /^OPERATOR:/i.test(x.trim()))
+}
+
+// Agent bez dostepu do walidacji to nie zepsuty kod (piszemy_wirale T1, faza 6: sesja uruchomila te same testy, 1010/1010).
+function stopBezWalidacji(numerFazy, kto, przyczyna) {
+  return {
+    powod: `Faza ${numerFazy}: ${kto} nie mogl uruchomic walidacji (${przyczyna || 'bez przyczyny'}). Kod jest zacommitowany, ale niesprawdzony; to nie dowod, ze jest zepsuty.`,
+    naprawa: 'Uruchom w sesji typecheck, testy i build. Zielone = SWIEZY run (te same args, BEZ resumeFromRunId): naprawy sie nie powtorza, faza pojdzie dalej. Czerwone = napraw, zacommituj, potem swiezy run.',
+  }
+}
+
 function podsumujKontroleFixa(pozycje, poprawka) {
   const pominiete = Array.isArray(poprawka.nienaprawione) ? poprawka.nienaprawione.filter((x) => typeof x === 'string' && x.trim()) : []
   const naprawione = Number.isInteger(poprawka.naprawione) ? poprawka.naprawione : 0
@@ -1754,6 +1799,7 @@ for (const numerFazy of kolejka) {
   let fixInfo = null
   // Wynik kontroli diffu naprawczego (plan B5) — do raportu fazy i telemetrii.
   let kontrolaFixa = null
+  let doDecyzjiOperatora = []
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
   // Dossier fazy z domkniecia (P7) idzie do review; faza wznowiona z execute: done go nie ma — review-wf odtwarza je
@@ -1920,6 +1966,13 @@ for (const numerFazy of kolejka) {
       })
     }
 
+    if (fix.walidacja === 'NIE-URUCHOMIONO') {
+      // Kod jest zacommitowany, tylko niesprawdzony: pusta lista przy fix=pending to dla swiezego runu faza bez pracy (fix none), wiec naprawa sie nie powtarza.
+      faza.otwarteFindingi = []
+      oznaczStan()
+      return await stopRun({ ...stopBezWalidacji(numerFazy, 'fix', fix.walidacjaPrzyczyna), faza: numerFazy, fix, raporty })
+    }
+
     if (fix.walidacja === 'FAIL' || fix.nierozwiazaneP1 > 0) {
       // Stan NIE oznacza fix=done — resume wroci wprost do fixa z ta sama lista.
       oznaczStan()
@@ -1935,7 +1988,9 @@ for (const numerFazy of kolejka) {
     // KONTROLA DIFFU NAPRAWCZEGO (P8): jeden agent z listami K-1…K-7 katalogu A i bramkami P6 na plikach fixa,
     // zakres z hashy FixResult.commity. Pozycje liczy JS (K-6 z wynikow testow P1 — zastepuje dawny verify-fix).
     // Agent padl = faza idzie dalej bez kontroli (best-effort, jak dotad).
-    const kontrola = await agent(kontrolaFixaPrompt(sciezka, numerFazy, fix.commity, faza.otwarteFindingi), { schema: KONTROLA_FIXA, agentType: 'klasa-sceptyk', effort: 'medium', label: `fix:kontrola:faza-${numerFazy}` })
+    const zastrzezoneFixa = pozycjeOperatora(fix.nienaprawione)
+    doDecyzjiOperatora = zastrzezoneFixa
+    const kontrola = await agent(kontrolaFixaPrompt(sciezka, numerFazy, fix.commity, faza.otwarteFindingi, zastrzezoneFixa), { schema: KONTROLA_FIXA, agentType: 'klasa-sceptyk', effort: 'medium', label: `fix:kontrola:faza-${numerFazy}` })
     if (!kontrola) log(`Faza ${numerFazy}: kontrola diffu fixa zwrocila null — faza idzie dalej bez kontroli (best-effort)`)
     const doPoprawki = pozycjeKontroliFixa(kontrola)
     // JEDEN cykl poprawkowy, twardo. To kontrola wlasnej roboty pipeline'u, nie kolejna runda review —
@@ -1947,12 +2002,18 @@ for (const numerFazy of kolejka) {
         log(`Faza ${numerFazy}: tura poprawkowa zwrocila null — pozycje zostaja otwarte, faza idzie dalej (P3-klasa, nie bramka)`)
       } else {
         kontrolaFixa = podsumujKontroleFixa(doPoprawki.length, poprawka)
+        doDecyzjiOperatora = [...doDecyzjiOperatora, ...pozycjeOperatora(poprawka.nienaprawione)]
         log(`Faza ${numerFazy}: tura poprawkowa — naprawiono ${poprawka.naprawione}/${doPoprawki.length}, walidacja ${poprawka.walidacja}${kontrolaFixa.pominiete.length ? `, pominiete z uzasadnieniem: ${kontrolaFixa.pominiete.length}` : ''}`)
         if (kontrolaFixa.bezSladu > 0) {
           log(`Faza ${numerFazy}: UWAGA — ${kontrolaFixa.bezSladu} pozycji kontroli diffu ani nie naprawiono, ani nie uzasadniono w nienaprawione[]. Walidacja ${poprawka.walidacja} nie mowi nic o tych pozycjach; sprawdz commit "kontrola diffu naprawczego fazy ${numerFazy}".`)
         }
         // Walidacja FAIL po turze poprawkowej JEST bramka: zostawilibysmy faze z niedzialajacym typecheckiem
         // albo czerwonymi testami, a nastepna faza budowalaby na tym.
+        if (poprawka.walidacja === 'NIE-URUCHOMIONO') {
+          faza.otwarteFindingi = []
+          oznaczStan()
+          return await stopRun({ ...stopBezWalidacji(numerFazy, 'tura poprawkowa', poprawka.walidacjaPrzyczyna), faza: numerFazy, fix, poprawka, raporty })
+        }
         if (poprawka.walidacja === 'FAIL') {
           oznaczStan()
           return await stopRun({
@@ -1983,7 +2044,7 @@ for (const numerFazy of kolejka) {
   // strojenia progow: kogo routing pomija, ile dedup sklei, ile verify obala.
   // cykle zawsze liczba (telemetria faza.cykle); P2 zostawione przez fix sa w fix.nierozwiazaneP2 (wczesniej tekst „1 (graceful P2)” = null w telemetrii).
   raporty.push({
-    faza: numerFazy, gate: gateFazy, cykle, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy),
+    faza: numerFazy, gate: gateFazy, cykle, liczniki: licznikiFazy, fix: fixInfo, kontrolaFixa, doDecyzjiOperatora, e2eSync: e2eSync ? `${e2eSync.status}: ${e2eSync.detal}` : 'n/a', przebieg: skrotPrzebiegu(przebiegFazy),
     advisors: advisorsFazy ? { status: advisorsFazy.status, bledy: advisorsFazy.bledy.length, ostrzezenia: advisorsFazy.ostrzezenia.length } : null,
   })
 }
@@ -2356,6 +2417,7 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania }),
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),

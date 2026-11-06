@@ -365,3 +365,20 @@ describe('vibersi PR #14 — check-run CodeRabbit zamiast statusu commita', () =
     assert.equal(String(wynik.stderr), '')
   })
 })
+
+describe('dashboard PR #110 — check-run „Review rate limited” to nie recenzja', () => {
+  const przebieg = { name: 'CodeRabbit', status: 'completed', conclusion: 'success', started_at: '2026-11-02T10:00:00Z', completed_at: '2026-11-02T10:00:05Z', output: { title: 'Review rate limited' } }
+
+  test('tytul rozstrzyga przed wynikiem, takze przy neutral', () => {
+    assert.equal(statusZPrzebiegu(przebieg)?.state, 'rate-limit')
+    assert.equal(statusZPrzebiegu({ ...przebieg, conclusion: 'neutral' })?.state, 'rate-limit')
+  })
+
+  test('czekanie konczy sie stanem limit-recenzji z czasem z komentarza bota', async () => {
+    const statusy = [{ ...statusZPrzebiegu(przebieg), sha: CZUBEK_2 }]
+    const komentarze = [{ login: 'coderabbitai[bot]', updated_at: '2026-11-02T10:00:04Z', body: '## Review limit reached\nPlease wait 12 minutes and 30 seconds' }]
+    const os = odtworzenie({ start: '2026-11-02T10:01:00Z', statusy, komentarze, recenzje: [], commity: { [CZUBEK_2]: '2026-11-02T09:59:00Z' } })
+    const wynik = await czekajNaBota({ ...os, limitMin: 20, coS: 30 })
+    assert.deepEqual([wynik.stan, wynik.czekajMin, wynik.sha], ['limit-recenzji', 12, CZUBEK_2])
+  })
+})

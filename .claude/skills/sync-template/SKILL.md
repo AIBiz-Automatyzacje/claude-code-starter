@@ -112,3 +112,9 @@ każdego pliku z chwili syncu) czyta telemetria: czy run wykonał dokładnie wer
 - Skill narzędzia z własnym upstreamem aktualizuje się przez repo jak każdy inny skill;
   jego twarda synchronizacja z upstreamem to osobny proces opisany w
   `ZRODLA-SZABLONU.md` — nie mieszaj tych dwóch.
+
+## Pierwsze wprowadzenie do projektu
+
+Po pierwszej synchronizacji doprowadź do tego, żeby maszyneria była na zdalnej gałęzi głównej: push `main` (po decyzji operatora, bo może oznaczać deploy) albo osobny PR. Inaczej
+pierwszy `/dev-pr` policzy jej pliki jako część zadania. Linie `HIGIENA:` przejdź przed pierwszym `/dev-pr`, także CodeRabbit: istniejący `.coderabbit.yaml` musi spełniać kontrakt pipeline'u
+(`node .claude/scripts/pr/kontrakt-bota.mjs --galaz main`), a nie tylko istnieć.

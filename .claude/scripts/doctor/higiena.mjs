@@ -20,6 +20,8 @@ import { fileURLToPath } from 'node:url'
 
 import { pozycjaBajtuSterujacego } from '../wiedza/walidacja.mjs'
 
+import { kontraktBota } from '../pr/kontrakt-bota.mjs'
+
 /** @typedef {{ element: string, stan: 'OK' | 'UWAGA' | 'nie dotyczy', szczegol: string, instalacja: string }} Wiersz */
 
 export const STARA_WIEDZA = '.claude/rules/learned-patterns.md'
@@ -167,12 +169,39 @@ export function konfiguracjaCodeRabbit(projekt) {
   if (readFileSync(plik, 'utf8').includes(STARA_WIEDZA) && !existsSync(join(projekt, STARA_WIEDZA))) {
     return { element, stan: 'UWAGA', szczegol: `.coderabbit.yaml wskazuje usuniety ${STARA_WIEDZA}`, instalacja: 'zamien na docs/learned-patterns.md' }
   }
-  return { element, stan: 'OK', szczegol: '.coderabbit.yaml jest', instalacja: '—' }
+  const { odstepstwa } = kontraktBota(projekt)
+  if (odstepstwa.length) return { element, stan: 'UWAGA', szczegol: `niezgodny z kontraktem /dev-pr: ${odstepstwa.join('; ')}`, instalacja: '/coderabbit-setup (nadpisanie po potwierdzeniu)' }
+  return { element, stan: 'OK', szczegol: '.coderabbit.yaml zgodny z kontraktem /dev-pr', instalacja: '—' }
+}
+
+const LINIA_CLAUDE_MD_ZN = 500
+
+/** Akapit w jednej linii wrzuca do kazdej zmiany cala tresc do recenzji i do konfliktow (dashboard PR #110, CLAUDE.md:91). @param {string} projekt @returns {Wiersz} */
+export function dlugieLinieClaudeMd(projekt) {
+  const element = 'CLAUDE.md: dlugie linie'
+  const plik = join(projekt, 'CLAUDE.md')
+  const dlugie = existsSync(plik) ? readFileSync(plik, 'utf8').split('\n').filter((l) => l.length > LINIA_CLAUDE_MD_ZN && !l.trimStart().startsWith('|')).length : 0
+  return dlugie
+    ? { element, stan: 'UWAGA', szczegol: `${dlugie} linii ponad ${LINIA_CLAUDE_MD_ZN} zn poza tabelami`, instalacja: 'jedna regula na linie' }
+    : { element, stan: 'OK', szczegol: 'bez dlugich akapitow', instalacja: '—' }
+}
+
+/** Testy komponentow bez biblioteki z reguly stacku: bot zglasza je przy kazdym PR (aa-exam PR #51). @param {string} projekt @returns {Wiersz} */
+export function bibliotekaTestowKomponentow(projekt) {
+  const element = 'testy komponentow'
+  const plik = join(projekt, 'package.json')
+  if (!existsSync(plik)) return { element, stan: 'OK', szczegol: 'brak package.json', instalacja: '—' }
+  const tresc = readFileSync(plik, 'utf8')
+  /** @type {Wiersz} */
+  const ok = { element, stan: 'OK', szczegol: 'biblioteka jest albo brak frontendu', instalacja: '—' }
+  return /"react(-native)?"\s*:/.test(tresc) && !tresc.includes('@testing-library/')
+    ? { element, stan: 'UWAGA', szczegol: 'projekt z React bez @testing-library/*: decyzja operatora, dodac biblioteke albo zapisac wyjatek w .coderabbit.yaml', instalacja: 'decyzja operatora' }
+    : ok
 }
 
 /** @param {string} projekt @returns {Wiersz[]} */
 export function higienaProjektu(projekt) {
-  return [wiedzaProjektu, kontekstStartowy, plikiSpozaSzablonu, hookiWUstawieniach, ignorowanePliki, bajtySterujace, konfiguracjaCodeRabbit]
+  return [wiedzaProjektu, kontekstStartowy, plikiSpozaSzablonu, hookiWUstawieniach, ignorowanePliki, bajtySterujace, konfiguracjaCodeRabbit, dlugieLinieClaudeMd, bibliotekaTestowKomponentow]
     .map((kontrola) => kontrola(projekt))
 }
 

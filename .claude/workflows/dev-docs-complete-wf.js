@@ -148,7 +148,7 @@ function czesciPr(czesci, nazwaZadania) {
   const zaDuza = lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
   const uwaga = zaDuza || czesci.uwaga
     ? `UWAGA: ${czesci.uwaga || (lista.length === 1 ? `PR powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota` : `część z ${PROG_PLIKOW_PR} lub więcej plikami do recenzji bota (część ma mieć mniej)`)} — ${opis}`
-    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, wysyłka: \`/clear\`, potem \`/dev-pr --czesc 1\`` : null
+    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, po smoke'u: \`/clear\`, potem \`/dev-pr --czesc 1\`` : null
   if (lista.length === 1) return { uwaga, sekcja: null }
   const skrot = (sha) => String(sha).slice(0, 12)
   const zrodlo = czesci.zrodlo === 'plan' ? 'sekcja „Części PR” planu' : 'pomiar na końcach faz'
@@ -159,7 +159,7 @@ function czesciPr(czesci, nazwaZadania) {
     '|---|---|---|---|---|',
     ...lista.map((c, i) => `| ${c.czesc} | ${c.fazy} | ${skrot(c.od)} | ${i === lista.length - 1 ? 'czubek gałęzi' : skrot(c.do)} | ${c.doRecenzji} |`),
     '',
-    `Wysyłka: \`/clear\`, potem \`/dev-pr --czesc 1\`; po merge'u każdej części \`/clear\` i następna, do \`/dev-pr --czesc ${lista.length}\` (rebase na główną gałąź).`,
+    `Wysyłka po smoke'u: \`/clear\`, potem \`/dev-pr --czesc 1\`; po merge'u każdej części \`/clear\` i następna, do \`/dev-pr 3 --bez-merge --czesc ${lista.length}\` (rebase na główną gałąź).`,
   ].join('\n')
   return { uwaga, sekcja }
 }
@@ -236,6 +236,10 @@ formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruc
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
 kazdy z konkretnym oczekiwanym wynikiem. Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
 zamiast mobilnego viewportu) oznacz **[fizyczne urządzenie]**.
+PR WIELOCZESCIOWY: pozycje przypisuj do czesci, w ktorej kod faktycznie wchodzi (sprawdz plik w tabeli czesci, nie w tekscie planu; aa-exam: pole z czesci 4 w sekcji po deployu czesci 3). Przed merge'em kazdej
+czesci pozycja: przejscie kluczowego flow na stanie tej czesci, lokalnie. Odhaczanie miedzy czesciami: plik smoke'u lezy na \`feature/<zadanie>\`, commit lokalny tam jedzie z ostatnia czescia.
+ZMIANA SCHEMATU BEZ TRANSAKCJI (\`db:push\` i podobne): pozycja przed wdrozeniem to podglad SQL i sprawdzenie danych pod KAZDE nowe ograniczenie z tego podgladu, nie tylko to z planu.
+[Manual agent]: wykonaj je w tej sesji smoke'u przed pytaniem operatora, wynik wpisz przy pozycji.
 PUNKTY WIZUALNE: Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy \`docs/active/<zadanie>/visual-diff/<ekran>-figma.png\` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka \`ekrany/<ekran>.md\`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”.
 Przed pierwszym punktem wizualnym smoke'u stoi zdanie z .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
 Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi

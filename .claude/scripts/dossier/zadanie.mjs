@@ -4,10 +4,10 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { czyFigmaScreens, liczE2e, sciezkaPlanu, sekcjaDesignerska, sekcjaFazy, wierszeWymagan } from './dokumenty.mjs'
+import { czyFigmaScreens, liczE2e, sciezkaPlanu, sekcjaDesignerska, sekcjaFazy, sekcjaPlanu, wierszeWymagan } from './dokumenty.mjs'
 
 /**
- * @typedef {{ planFazy: string, wymagania: string, zadaniaFazy: string, designerski: string,
+ * @typedef {{ granice: string, decyzje: string, planFazy: string, wymagania: string, zadaniaFazy: string, designerski: string,
  *   e2eCheckboxy: number, figmaScreens: boolean }} WycinkiZadania
  */
 
@@ -39,6 +39,8 @@ export function wycinkiZadania(projekt, sciezka, faza) {
   const zadaniaFazy = zadania ? sekcjaFazy(zadania.tresc, faza) : null
   const designerski = kontekst ? sekcjaDesignerska(kontekst.tresc) : null
   return {
+    granice: (planTechniczny && sekcjaPlanu(planTechniczny, 'Granice zakresu')) ?? 'Brak sekcji „Granice zakresu” w planie.',
+    decyzje: (planTechniczny && sekcjaPlanu(planTechniczny, 'Kluczowe decyzje techniczne')) ?? 'Brak sekcji „Kluczowe decyzje techniczne” w planie.',
     planFazy: planFazy
       ?? (planTechniczny ? `Brak sekcji "Faza ${faza}" w ${wskaznik}.` : `Brak planu technicznego (wskaznik: ${wskaznik ?? 'brak linii "Plan techniczny:" w plikach zadania'}).`),
     wymagania: (planTechniczny && planFazy && wierszeWymagan(planTechniczny, planFazy)) ?? 'Brak wierszy: plan nie ma sekcji "Sledzenie wymagan" albo faza nie przywoluje ID wymagan.',

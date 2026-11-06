@@ -33,7 +33,7 @@ znacznik `{{STACK_RULES}}`.
    nadpisać. Nie nadpisuj bez potwierdzenia.
 
 2. **Wykryj stack.** Przeczytaj `package.json` (dependencies + devDependencies)
-   i strukturę katalogów. Sygnały detekcji są opisane przy każdym bloku w
+   i strukturę katalogów. Bloki się łączą: frontend i serwer w jednym repo dostają oba, Drizzle i Supabase dokładają swoje. Sygnały detekcji są opisane przy każdym bloku w
    `reference/stack-blocks.md`. Jeśli user podał stack w argumencie — użyj go
    zamiast detekcji. Jeśli detekcja jest niejednoznaczna (np. brak package.json) —
    zapytaj usera o stack, nie zgaduj.
@@ -44,7 +44,10 @@ znacznik `{{STACK_RULES}}`.
    - w `path_instructions` zostaw TYLKO wpisy dla katalogów, które istnieją
      w projekcie (wyjątek: świeży projekt przed init — wtedy zostaw z komentarzem,
      że filtry są przygotowane z wyprzedzeniem); wpisy z template'u bazowego
-     zostają zawsze — `e2e/seeds/` dopisuje pipeline,
+     zostają zawsze — `e2e/seeds/` dopisuje pipeline. Blok bez żadnego pasującego katalogu: dopasuj ścieżki do katalogu z kodem
+     tej warstwy; gdy go nie ma, wymień blok w raporcie, zamiast usuwać po cichu,
+   - śledzone katalogi z samym markdownem poza `docs/` (`git ls-files '*.md' | cut -d/ -f1 | sort -u`) wymień w raporcie jako
+     kandydatów do `path_filters` (piszemy_wirale PR #7: 26 z 27 wątków tury 1 dotyczyło notatek w `dev/`),
    - każdy znacznik `{{CODING_RULES}}` i `{{STACK_RULES}}` zastąp wartością
      stałej z sekcji „Pliki skilla”,
    - w `knowledge_base.code_guidelines.filePatterns` wpisz TYLKO istniejące pliki —
@@ -75,18 +78,20 @@ znacznik `{{STACK_RULES}}`.
    ```
    - Wynik zawiera ownera repo (porównaj z `gh repo view --json owner -q .owner.login`)
      → instalacja jest, odnotuj ✅.
-   - Wynik pusty, brak ownera albo błąd → uznaj instalację za BRAKUJĄCĄ (❌).
-     Sygnał potwierdzający: sprawdź, czy bot komentował ostatnie PR-y —
+   - Wynik pusty albo brak ownera → sprawdź komentarze bota niżej.
+   - Błąd 403 („authenticate with an access token authorized to a GitHub App”) znaczy, że tym tokenem nie da się tego sprawdzić,
+     nie że aplikacji brak. Rozstrzygają komentarze bota na ostatnich PR-ach, w wątku i przy kodzie:
      ```bash
      gh pr list --state merged --limit 3 --json number -q '.[].number'
      gh api "repos/{owner}/{repo}/issues/<nr>/comments" --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length'
+     gh api "repos/{owner}/{repo}/pulls/<nr>/comments" --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length'
      ```
-     Zero komentarzy bota na istniejących PR-ach = na pewno brak instalacji.
+     Komentarze są = ✅. Zero komentarzy na istniejących PR-ach = ❌. Repo bez PR-ów przy błędzie = „nieznana”: podaj link do sprawdzenia w przeglądarce.
 
 7. **Raport dla usera** — wszystkie 4 punkty poniżej, także gdy wszystko jest OK:
    1. Wykryty stack + które bloki weszły do configu.
    2. Pliki wpisane do `code_guidelines.filePatterns`.
-   3. **Instalacja aplikacji GitHub CodeRabbit: ✅ albo ❌** (wynik kroku 6).
+   3. **Instalacja aplikacji GitHub CodeRabbit: ✅, ❌ albo „nieznana”** (wynik kroku 6).
       Przy ❌ powiedz wprost: „**Bez tego config NIE DZIAŁA.** Jednorazowy krok
       ręczny w przeglądarce (nie da się z CLI):
       https://github.com/apps/coderabbitai → Configure → zaznacz to repo."

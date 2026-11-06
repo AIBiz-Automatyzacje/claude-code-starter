@@ -120,3 +120,30 @@ test('fix:poprawka: diff tylko plikow z pozycji K (bez duplikatow, bez "?" i zna
   const bezPlikow = fixPoprawkaPrompt(`docs/active/${ZADANIE}`, 4, [{ zrodlo: 'K-3', plik: '?', opis: 'd' }], ['abc1234'])
   assert.match(bezPlikow, /Diff fixa: `git diff <najstarszy>\^\.\.HEAD`/, 'pozycje bez sciezki = pelny diff jak dotad')
 })
+
+test('punkt 24: walidacja nieuruchomiona przez srodowisko nie jest FAIL, a swiezy run nie powtarza naprawy', () => {
+  const zrodloWf = readFileSync(new URL('../dev-autopilot-wf.js', import.meta.url), 'utf8')
+  assert.match(zrodloWf, /enum: \['PASS', 'FAIL', 'NIE-URUCHOMIONO'\]/)
+  assert.match(zrodloWf, /fix\.walidacja === 'NIE-URUCHOMIONO'\) \{[\s\S]{0,260}faza\.otwarteFindingi = \[\]/)
+  assert.match(zrodloWf, /poprawka\.walidacja === 'NIE-URUCHOMIONO'\) \{\s+faza\.otwarteFindingi = \[\]/)
+})
+
+test('punkt 25: pozycje zastrzezone dla operatora ida do kontroli, a tura poprawkowa nie wprowadza zmian spoza planu', () => {
+  const zrodloWf = readFileSync(new URL('../dev-autopilot-wf.js', import.meta.url), 'utf8')
+  assert.match(zrodloWf, /ZASTRZEZONE DLA OPERATORA/)
+  assert.match(zrodloWf, /prefiksem "OPERATOR: "/)
+  assert.match(zrodloWf, /doDecyzjiOperatora/)
+})
+
+test('punkt 5: wynik autopilota ma kroki w kolejnosci smoke, akcje operatora, dopiero potem PR', () => {
+  const zrodloWf = readFileSync(new URL('../dev-autopilot-wf.js', import.meta.url), 'utf8')
+  const start = zrodloWf.indexOf('function nastepneKroki(')
+  const funkcja = zrodloWf.slice(start, zrodloWf.indexOf('\n}\n', start) + 3)
+  // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
+  const nastepneKroki = new Function(`${funkcja}; return nastepneKroki`)()
+  const kroki = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [{ liczniki: { operator: 2 }, fix: { nierozwiazaneP2: 1 } }], propozycjeBramek: [], czesci: true, zadanie: 'x' })
+  assert.equal(kroki.length, 3)
+  assert.match(kroki[0], /^Smoke w nowej sesji:.*x-smoke\.md/)
+  assert.match(kroki[1], /2 findingow OPERATOR.*1 nierozwiazanych P2/)
+  assert.match(kroki[2], /^Po smoke'u: `\/clear`, potem `\/dev-pr --czesc 1`/)
+})

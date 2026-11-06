@@ -212,7 +212,7 @@ test('straznik P8: brak agentow fix:pre-skan i verify-fix — zastapione listami
   assert.doesNotMatch(zrodlo, /label: `fix:pre-skan/)
   assert.doesNotMatch(zrodlo, /label: `verify-fix/)
   assert.doesNotMatch(zrodlo, /PRE_SKAN_FIXA|POSTFIX_VERDICT|REGRESJA_FIXA/)
-  assert.match(zrodlo, /agent\(kontrolaFixaPrompt\(sciezka, numerFazy, fix\.commity, faza\.otwarteFindingi\), \{ schema: KONTROLA_FIXA/)
+  assert.match(zrodlo, /agent\(kontrolaFixaPrompt\(sciezka, numerFazy, fix\.commity, faza\.otwarteFindingi, zastrzezoneFixa\), \{ schema: KONTROLA_FIXA/)
 })
 
 // Smoke P8 (wf_9317b7cf-cdf): K-7 zglosil edycje pliku zadan (odznaczenie checkboxa, zwiniecie "Do poprawy", ktore fixPrompt sam

@@ -34,11 +34,18 @@ reviews:
       - "WIP"
       - "DO NOT MERGE"
 
+  # Check nie zgłasza defektu, a wraca w każdej recenzji i zajmuje decyzję operatora (aa-exam PR #51).
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+
   # Filtry wspólne. STACK: dołącz dodatkowe wykluczenia z reference/stack-blocks.md.
   path_filters:
     - "!node_modules/**"
     - "!docs/**"
     - "!.claude/**"
+    # CLAUDE.md bot czyta jako wytyczne (code_guidelines), ale go nie recenzuje: jedna edycja wracala 4 turami (dashboard PR #110).
+    - "!**/CLAUDE.md"
     - "!package-lock.json"
     - "!*.lock"
 

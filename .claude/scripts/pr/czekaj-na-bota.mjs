@@ -8,7 +8,8 @@
 //
 // Wynik: DOKLADNIE jedna linia JSON na stdout, potem koniec procesu (jedno zdarzenie Monitora):
 //   { stan, powod, sha, minuty, pr, recenzja? }
-//   stan: gotowa | blad | pauza | pominieta | pr-zamkniety | limit | blad-gh | blad-argumentow
+//   stan: gotowa | blad | pauza | pominieta | pr-zamkniety | limit | limit-recenzji | blad-gh | blad-argumentow
+//   limit = minal czas czekania; limit-recenzji = bot wyczerpal limit planu i NIE zrecenzowal czubka (czekajMin, gdy podal)
 //   recenzja (tylko przy gotowa): jest — recenzja bota z commit_id = czubek; brak — 2 min po statusie success jej nie ma (P19)
 // Bledy pojedynczych odpytan ida na stderr (nie sa zdarzeniami). Kod wyjscia: 0 = stan ustalony, 2 = zle argumenty.
 

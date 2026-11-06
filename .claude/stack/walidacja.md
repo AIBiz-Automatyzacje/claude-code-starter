@@ -28,6 +28,8 @@ są w rdzeniu i obowiązują niezależnie od tego pliku.
 Błąd infrastruktury workera w pełnym suicie: `[vitest-worker]: Timeout calling "fetch"`, `Timeout calling`,
 `worker terminated`, `ENOMEM`, `heap out of memory`.
 
+Vitest w projekcie z szablonem uruchamiasz z `--dir src` (albo katalogiem kodu): bez tego zbiera też testy `node:test` z `.claude/**/__tests__/*.test.mjs`.
+
 ## Rozgrzewka cache
 
 Cel: zbudować cache transformacji vitest (`node_modules/.vite` / optimizeDeps) PRZED fazami implementacji.

@@ -8,6 +8,10 @@ paths:
 
 Mechanizmy stacku do reguł z `.claude/rules/coding-rules.md`; sekcje mają te same nazwy. Przy sprzeczności w kodzie aplikacji wygrywa ten plik.
 
+## Testowanie
+
+- Komponent testujesz przez Testing Library, gdy projekt ją ma. Brak biblioteki w `package.json` nie jest błędem kodu: dodanie jej to decyzja operatora, a test render serwerowy albo DOM wystarcza do tego czasu.
+
 ## Organizacja kodu
 
 - Testy leżą obok plików źródłowych.

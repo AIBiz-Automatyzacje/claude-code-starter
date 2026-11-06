@@ -358,7 +358,8 @@ function mapaBlok(kontekst) {
     ? `
 === PELNY DIFF FAZY (juz przygotowany) ===
 Plik: ${kontekst.diffPlik}
-Zacznij od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam, wiec wlasny \`git diff\` calej fazy to podwojny koszt.${kontekst.diffUciety ? `
+Zacznij od jednego Read tego pliku — to ten sam diff, ktory inaczej generowalbys sam, wiec wlasny \`git diff\` calej fazy to podwojny koszt.
+Kolumna przed \`|\` to numer linii w pliku po zmianie: \`plik:linia\` w findingu bierzesz z niej, nie z numeru wiersza tego zrzutu.${kontekst.diffUciety ? `
 Ten zrzut jest przyciety (limit 300 KB, znacznik uciecia na koncu pliku), wiec nie jest pelnym obrazem zmian.
 Pliki z listy powyzej, ktorych w zrzucie nie ma, dobierz osobno (Read pliku albo \`git diff -- <plik>\`).` : ''}
 Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczyszczone) — zrob wlasny \`git diff\` fazy: brak artefaktu nie zwalnia Cie z obejrzenia pelnego diffu.`
@@ -370,7 +371,7 @@ Gdy Read tego pliku sie nie powiedzie albo plik okaze sie pusty (np. /tmp wyczys
 === DOSSIER FAZY (juz przygotowane) ===
 Plik: ${kontekst.ctxPlik}
 Zawiera: zmiany fazy, profil stacku, sygnaly diffu, wynik bramek domkniecia (ostrzezenia ESLint, knip,
-przezyte mutanty), sekcje planu technicznego tej fazy, przywolane wiersze "Sledzenie wymagan",
+przezyte mutanty), granice i kluczowe decyzje planu, sekcje planu technicznego tej fazy, przywolane wiersze "Sledzenie wymagan",
 wycinek wiedzy projektu dla plikow fazy, zadania fazy i kontekst designerski.
 Zacznij od jednego Read tego pliku. Pelny plan techniczny i dokument wymagan otwieraj wtedy, gdy jednostka
 implementacyjna odsyla do czegos, czego w dossier nie ma (np. decyzja z innej fazy, wymaganie spoza przywolanych
@@ -447,6 +448,7 @@ function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = ''
   return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
 Kazdy finding dostaje wage P1 (blokuje), P2 (wazny) albo P3 (nit) i typ KOD, TEST, E2E albo OPERATOR.
+Finding, ktorego naprawa przekracza „Granice planu” z dossier, dodaje zaleznosc albo runner testow, ma typ OPERATOR (decyzja czlowieka), nawet gdy defekt jest realny.
 Wynik to obiekt {findings:[...]} zgodny ze schematem; pliki projektu zostaja bez zmian.
 ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
@@ -643,7 +645,7 @@ ${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTes
      - [ ] Manual: \`<tresc>\` — wymaga operatora
      - [ ] Niejasne: \`<tresc>\` — wymaga przeformulowania w planie
      - [ ] FAIL: \`<tresc>\` — \`<skrot bledu>\` (P2)
-4. Policz liczniki: p1/p2/p3 (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL; P3 z bookkeepingu: Niejasne.
+4. Policz liczniki: p1/p2/p3 rozlacznie, kazdy finding raz wg swojej wagi (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL; P3 z bookkeepingu: Niejasne.
 5. Ustaw severityGate: BLOKUJE (sa P1) / ZASTRZEZENIA (tylko P2) / CZYSTE (zero P1/P2 — sam P3/OPERATOR nie blokuje gate'u).
 6. Policz e2e {passed, failed, skipped} Z LISTY "Przebiegi E2E" (checkboxy bez wpisu licz jako skipped).
 7. Na koniec raportu wklej DOKLADNIE ten blok (1:1, NIE przeliczaj liczb — sa policzone przez orkiestratora):

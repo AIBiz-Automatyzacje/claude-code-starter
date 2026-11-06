@@ -33,6 +33,17 @@ function sekcja(md, wzorzec) {
 }
 
 /**
+ * Sekcja planu o danym tytule (Granice zakresu, Kluczowe decyzje techniczne): reviewerzy czytaja dossier zamiast planu, wiec bez niej
+ * wykluczen nie widzi nikt (piszemy_wirale T0: P2 „dodaj runner testow” przy planie „bez infrastruktury testow”).
+ * @param {string} md
+ * @param {string} tytul
+ * @returns {string | null}
+ */
+export function sekcjaPlanu(md, tytul) {
+  return sekcja(md, new RegExp(`^#{1,6}\\s+${tytul}\\s*$`, 'i'))
+}
+
+/**
  * Sekcja fazy N (`Faza N` na dowolnym poziomie naglowka; `Faza 1` nie lapie `Faza 10`).
  * @param {string} md
  * @param {number} faza
