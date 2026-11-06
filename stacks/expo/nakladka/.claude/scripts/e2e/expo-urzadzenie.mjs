@@ -35,6 +35,10 @@ export const REBUILD = {
 }
 // Operator wkleja komendę ze STOP-u, więc ostrzeżenie idzie w treści naprawy, nie tylko w slocie po-fazie.md, który ma to samo zdanie.
 export const OSTRZEZENIE_CLEAN = '`--clean` usuwa `ios/` i `android/`. Projekt, który trzyma te katalogi w repo, pomija `prebuild` i woła samo `expo run:*`.'
+const ODPAD_ANDROIDA = {
+  'bez-emulatora': 'Android: brak działającego emulatora',
+  'bez-dev-clienta': 'Android: działający emulator bez dev-clienta',
+}
 
 /** @type {Wykonaj} */
 export function wykonaj(komenda, argumenty, { cwd, limitMs = LIMIT_KOMENDY_MS } = {}) {
@@ -149,24 +153,27 @@ function wlaczony(s, wykonajKomende) {
 /**
  * iPhone do E2E: E2E_URZADZENIE (nazwa albo UDID) albo pierwszy bez konta Apple z dev-clientem, włączone najpierw.
  * @param {string} bundleId @param {string | undefined} wskazane @param {Wykonaj} wykonajKomende @param {boolean} tylkoWlaczone
- * @returns {{ symulator: Symulator | null, uwagi: string[], odpady: string[] }}
+ * @returns {{ symulator: Symulator | null, uwagi: string[], odpady: string[], bezDevClienta: boolean }}
  */
 function wybierzSymulator(bundleId, wskazane, wykonajKomende, tylkoWlaczone) {
   const lista = symulatory(wykonajKomende).filter((s) => (!wskazane || s.udid === wskazane || s.name === wskazane) && (!tylkoWlaczone || s.state === 'Booted'))
   const odpady = []
   const uwagi = []
   const dobre = []
+  let bezDevClienta = false
   for (const s of lista) {
     const konto = maKontoApple(s.dataPath, wykonajKomende)
     if (konto) odpady.push(`${s.name}: zalogowane konto Apple`)
-    else if (!zainstalowanaNaDysku(s.dataPath, bundleId)) odpady.push(`${s.name}: brak dev-clienta`)
-    else {
+    else if (!zainstalowanaNaDysku(s.dataPath, bundleId)) {
+      odpady.push(`${s.name}: brak dev-clienta`)
+      bezDevClienta = true
+    } else {
       if (konto === null) uwagi.push(`${s.name}: nie sprawdzono konta Apple`)
       dobre.push(s)
     }
   }
   dobre.sort((a, b) => Number(b.state === 'Booted') - Number(a.state === 'Booted'))
-  return { symulator: dobre[0] ?? null, uwagi, odpady }
+  return { symulator: dobre[0] ?? null, uwagi, odpady, bezDevClienta }
 }
 
 /**
@@ -188,11 +195,11 @@ function sprawdzIos(projekt, aplikacja, s, uwagi, wykonajKomende) {
 /**
  * Android: tylko emulator już działający. Odczyt mtime bywa niedostępny (`Permission denied`) i wtedy kontrola świeżości odpada z uwagą.
  * @param {string} projekt @param {Aplikacja} aplikacja @param {string | undefined} wskazane @param {Wykonaj} wykonajKomende
- * @returns {WynikUrzadzenia | null} null: brak działającego urządzenia z dev-clientem
+ * @returns {WynikUrzadzenia | keyof typeof ODPAD_ANDROIDA}
  */
 function sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende) {
   const lista = wykonajKomende('adb', ['devices'])
-  if (lista.status !== 0 || !aplikacja.appId) return null
+  if (lista.status !== 0 || !aplikacja.appId) return 'bez-emulatora'
   const seriale = lista.stdout.split('\n').map((l) => l.match(/^(\S+)\s+device$/)?.[1]).filter((s) => s && (!wskazane || s === wskazane))
   for (const id of /** @type {string[]} */ (seriale)) {
     const sciezka = wykonajKomende('adb', ['-s', id, 'shell', 'pm', 'path', aplikacja.appId]).stdout.trim().split('\n')[0].replace(/^package:/, '')
@@ -204,7 +211,23 @@ function sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende) {
     if (swiezosc.stop) return swiezosc.stop
     return { ok: true, urzadzenie, uwagi: swiezosc.uwaga ? [swiezosc.uwaga] : [] }
   }
-  return null
+  return seriale.length > 0 ? 'bez-dev-clienta' : 'bez-emulatora'
+}
+
+/**
+ * Naprawa braku urządzenia. Przebudowa tylko przy stwierdzonym braku dev-clienta: wyłączone urządzenie wystarczy włączyć, a jego
+ * dev-client sprawdzi następny start.
+ * @param {string | undefined} platforma @param {boolean} bezDevClienta @returns {string}
+ */
+function naprawaBrakuUrzadzenia(platforma, bezDevClienta) {
+  const ios = bezDevClienta
+    ? `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e).`
+    : 'iOS: włącz symulator bez konta Apple (xcrun simctl boot <nazwa>, wybór urządzenia: E2E_URZADZENIE w .env.e2e).'
+  const android = bezDevClienta
+    ? `Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}.`
+    : 'Android: uruchom emulator (emulator -avd <nazwa>).'
+  const czesci = [...(platforma === 'android' ? [] : [ios]), ...(platforma === 'ios' ? [] : [android])]
+  return [...czesci, ...(bezDevClienta ? [OSTRZEZENIE_CLEAN] : [])].join(' ')
 }
 
 /**
@@ -218,22 +241,25 @@ export function przygotujUrzadzenie(projekt, aplikacja, env, wykonajKomende = wy
   if (platforma && !['ios', 'android'].includes(platforma)) return { ok: false, detal: `E2E_PLATFORMA=${platforma}`, naprawa: 'Dozwolone wartości E2E_PLATFORMA: ios, android.' }
   const wskazane = env.E2E_URZADZENIE || undefined
   const odpady = []
+  let bezDevClienta = false
   if (platforma !== 'android' && aplikacja.bundleId) {
     const wybor = wybierzSymulator(aplikacja.bundleId, wskazane, wykonajKomende, tylkoWlaczone)
     if (wybor.symulator) return sprawdzIos(projekt, aplikacja, wybor.symulator, wybor.uwagi, wykonajKomende)
     odpady.push(...wybor.odpady)
+    bezDevClienta = wybor.bezDevClienta
   }
   if (platforma !== 'ios') {
     const android = sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende)
-    if (android) return android
-    odpady.push('Android: brak działającego emulatora z dev-clientem')
+    if (typeof android !== 'string') return android
+    odpady.push(ODPAD_ANDROIDA[android])
+    bezDevClienta ||= android === 'bez-dev-clienta'
   }
-  return {
-    ok: false,
+  const porazka = {
+    ok: /** @type {const} */ (false),
     detal: `brak urządzenia do E2E (${odpady.join('; ') || 'brak iPhone w simctl'})`,
-    naprawa: `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}. ${OSTRZEZENIE_CLEAN}`,
-    przebudowa: true,
+    naprawa: naprawaBrakuUrzadzenia(platforma, bezDevClienta),
   }
+  return bezDevClienta ? { ...porazka, przebudowa: true } : porazka
 }
 
 /**

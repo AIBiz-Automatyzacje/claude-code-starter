@@ -16,6 +16,7 @@ scenariuszami, a przy potrzebie przebudowy autopilot robi STOP.
   - zmiana `plugins`, `ios`, `android`, `permissions`, `entitlements` albo `scheme` w `app.json`, a także każda zmiana `app.config.*`, też wymaga przebudowy;
   - czego nie da się rozstrzygnąć (brak `node_modules/<pkg>`, nieznany format lockfile'a, brak historii git), idzie jak zmiana natywna.
 - Paczka czysto JS albo sam checkout: przebudowa niepotrzebna, a wynik startu mówi to w uwadze.
+- Brak działającego urządzenia to nie przebudowa: wystarczy je włączyć. `start` robi STOP z tą naprawą, a `restart` w trakcie runu nie zatrzymuje autopilota: scenariusze idą na `[Manual]` z tym powodem.
 
 Przebudowa:
 

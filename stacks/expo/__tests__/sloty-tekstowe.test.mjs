@@ -135,3 +135,12 @@ test('smoke: kontrola świeżości dev-clienta przed zapisem startu aplikacji', 
   assert.match(czytaj('.claude/skills/dev-docs-complete/references/stack.md'), /`node \.claude\/scripts\/e2e\/expo-swiezosc\.mjs`/)
   assert.ok(existsSync(join(WARIANT, '.claude/scripts/e2e/expo-swiezosc.mjs')))
 })
+
+test('wyłączone urządzenie to nie przebudowa: slot po-fazie i pozycja smoke\'u bez prebuild', () => {
+  const poFazie = czytaj('.claude/stack/po-fazie.md')
+  assert.match(poFazie, /^- Brak działającego urządzenia to nie przebudowa: wystarczy je włączyć\./m)
+  const smoke = czytaj('.claude/skills/dev-docs-complete/references/stack.md')
+  const pozycja = smoke.match(/- \[ \] Włącz urządzenie i sprawdź dev-client[^\n]*/)
+  assert.ok(pozycja, 'brak pozycji sekcji 0 dla wyłączonego urządzenia')
+  assert.doesNotMatch(pozycja[0], /prebuild/)
+})
