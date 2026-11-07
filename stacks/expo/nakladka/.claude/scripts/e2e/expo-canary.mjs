@@ -58,12 +58,12 @@ export function flowWejscia(appId, scheme, adres) {
 export const zamaskuj = (tekst, sekrety) => sekrety.filter(Boolean).reduce((t, s) => t.split(s).join('***'), tekst)
 
 /**
- * @param {string[]} argumenty @param {string} cwd @param {string[]} sekrety @param {number} [limitMs]
+ * @param {string[]} argumenty @param {string} cwd @param {{ sekrety: string[], srodowisko?: Record<string, string> }} zmienne @param {number} [limitMs]
  * @returns {Promise<{ kod: number | string | null, ogon: string }>}
  */
-export function uruchomMaestro(argumenty, cwd, sekrety, limitMs = LIMIT_CANARY_MS) {
+export function uruchomMaestro(argumenty, cwd, { sekrety, srodowisko = {} }, limitMs = LIMIT_CANARY_MS) {
   return new Promise((rozwiaz) => {
-    const proces = spawn('maestro', argumenty, { cwd, stdio: ['ignore', 'pipe', 'pipe'] })
+    const proces = spawn('maestro', argumenty, { cwd, env: { ...process.env, ...srodowisko }, stdio: ['ignore', 'pipe', 'pipe'] })
     let wyjscie = ''
     const zbieraj = (/** @type {Buffer} */ porcja) => {
       const tekst = zamaskuj(porcja.toString(), sekrety)
@@ -89,17 +89,18 @@ function usunZapisKomend(katalog) {
 }
 
 /**
- * Zmienne flow: te same dla canary i scenariuszy, a klucze `MAESTRO_*` z .env.e2e dla skryptów `runScript`. Wartości tylko w argumentach
- * procesu, nigdy w YAML.
+ * Zmienne flow: te same dla canary i scenariuszy, a klucze `MAESTRO_*` z .env.e2e dla skryptów `runScript`. Konto i klucze idą w środowisku
+ * procesu, bo argumenty widać w `ps` i `pgrep -fl`; Maestro sam udostępnia flow zmienne z prefiksem `MAESTRO_`. W `-e` zostają wartości jawne.
  * @param {Record<string, string>} env @param {{ port: number, urzadzenie: Urzadzenie, aplikacja: Aplikacja }} cel
- * @returns {{ argumenty: string[], sekrety: string[] }}
+ * @returns {{ argumenty: string[], srodowisko: Record<string, string>, sekrety: string[] }}
  */
 export function zmienneFlow(env, { port, urzadzenie, aplikacja }) {
   const maestroweKlucze = Object.entries(env).filter(([k]) => k.startsWith('MAESTRO_'))
-  const zmienne = [['APP_ID', urzadzenie.platforma === 'ios' ? aplikacja.bundleId : aplikacja.appId], ['APP_SCHEME', aplikacja.scheme], ['METRO_URL', adresMetro(urzadzenie.platforma, port)],
-    ['E2E_EMAIL', env.E2E_TEST_EMAIL], ['E2E_PASSWORD', env.E2E_TEST_PASSWORD], ...maestroweKlucze]
+  const jawne = [['APP_ID', urzadzenie.platforma === 'ios' ? aplikacja.bundleId : aplikacja.appId], ['APP_SCHEME', aplikacja.scheme], ['METRO_URL', adresMetro(urzadzenie.platforma, port)]]
+  const tajne = [...maestroweKlucze, ['MAESTRO_E2E_EMAIL', env.E2E_TEST_EMAIL], ['MAESTRO_E2E_PASSWORD', env.E2E_TEST_PASSWORD]]
   return {
-    argumenty: zmienne.filter(([, v]) => v).flatMap(([k, v]) => ['-e', `${k}=${v}`]),
+    argumenty: jawne.filter(([, v]) => v).flatMap(([k, v]) => ['-e', `${k}=${v}`]),
+    srodowisko: Object.fromEntries(tajne.filter(([, v]) => v)),
     sekrety: [env.E2E_TEST_PASSWORD, ...maestroweKlucze.map(([, v]) => v)],
   }
 }
@@ -116,14 +117,14 @@ export async function przejdzCanary(projekt, env, { port, urzadzenie, aplikacja 
   const wlasny = existsSync(join(projekt, PLIK_CANARY))
   const flow = wlasny ? PLIK_CANARY : join(robocze, 'canary.yaml')
   if (!wlasny) writeFileSync(flow, flowWejscia(String(idAplikacji), aplikacja.scheme, adres))
-  const { argumenty: argumentyEnv, sekrety } = zmienneFlow(env, { port, urzadzenie, aplikacja })
-  const { kod, ogon } = await maestro(['--device', urzadzenie.id, 'test', '--test-output-dir', robocze, '--debug-output', join(robocze, 'debug'), ...argumentyEnv, flow], projekt, sekrety)
+  const { argumenty: argumentyEnv, srodowisko, sekrety } = zmienneFlow(env, { port, urzadzenie, aplikacja })
+  const { kod, ogon } = await maestro(['--device', urzadzenie.id, 'test', '--test-output-dir', robocze, '--debug-output', join(robocze, 'debug'), ...argumentyEnv, flow], projekt, { sekrety, srodowisko })
   if (kod === 0) {
     rmSync(robocze, { recursive: true, force: true })
     const typ = wlasny ? `${PLIK_CANARY} przeszedł` : `canary bez logowania przeszedł, to słaby dowód: dodaj ${PLIK_CANARY} (wzór: .claude/templates/e2e-env/_canary.yaml)`
     return { ok: true, detal: `${urzadzenie.platforma} ${urzadzenie.nazwa}: ${typ}`, naprawa: '' }
   }
-  // Katalog roboczy zostaje dla zrzutów i logów Maestro, ale bez zapisu komend: `commands-*.json` niesie wartości zmiennych `-e`.
+  // Katalog roboczy zostaje dla zrzutów i logów Maestro, ale bez zapisu komend: `commands-*.json` niesie wartości zmiennych flow, także te ze środowiska.
   usunZapisKomend(robocze)
   const natywny = /cannot find native module/i.test(ogon) ? ' Komunikat o module natywnym oznacza przestarzały dev-client: przebuduj go.' : ''
   return { ok: false, detal: `canary na ${urzadzenie.nazwa}: kod ${kod}\n${ogon}`, naprawa: `Sprawdź ręcznie: maestro --device ${urzadzenie.id} test ${wlasny ? PLIK_CANARY : '<flow>'}.${natywny}` }

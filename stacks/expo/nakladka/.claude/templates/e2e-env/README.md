@@ -153,7 +153,7 @@ traktuj jako test bojowy tej fazy.
 - Scenariusz E2E zapisuje plan techniczny `/dev-plan` (`[E2E] \`<flow>\` — <kroki> → <oczekiwany stan>`, szablon w
   `.claude/skills/dev-plan/references/szablon-planu.md`). Plik `.maestro/<flow>.yaml` jest częścią dostawy buildera.
 - Seedy: `.maestro/<nazwa-flow>-seed.sql`; db-sync wiąże seed z flow po nazwie. Pisz seedy **idempotentnie**.
-- Logowanie w flow wyłącznie kontem `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` (Maestro nie przejdzie sheetu OAuth).
+- Logowanie w flow wyłącznie kontem `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` (Maestro nie przejdzie sheetu OAuth). W YAML to `${MAESTRO_E2E_EMAIL}` i `${MAESTRO_E2E_PASSWORD}`: adapter podaje je w środowisku procesu Maestro, nie przez `-e`, bo argumenty widać w `ps` i `pgrep -fl`. Klucze `MAESTRO_*` z `.env.e2e` idą tą samą drogą.
 - **Re-seed per flow** (izolacja stanu): każdy scenariusz zaczyna od czystego, znanego stanu; seed idempotentny aplikuj przed KAŻDYM scenariuszem.
 - **Wyegzekwuj re-seed skryptem, nie zdaniem w dokumencie**: jeśli seedy etapu resetują ten sam rekord albo konto, są **wzajemnie destrukcyjne** i
   „N/N PASS” jest nieosiągalne, choć każdy scenariusz osobno przechodzi. Dołóż runner `.maestro/<etap>-run-all.sh` przeplatający

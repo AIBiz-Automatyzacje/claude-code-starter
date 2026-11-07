@@ -3,7 +3,7 @@
 //
 // Uruchomienie: node --test stacks/expo/__tests__/tester.test.mjs
 
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, utimesSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -100,13 +100,13 @@ function atrapa(app, dataPath, stan) {
 
 const ENV = { E2E_URL: 'http://127.0.0.1:8081', E2E_TEST_EMAIL: 'e2e@x.pl', E2E_TEST_PASSWORD: 'tajne-haslo', MAESTRO_KLUCZ: 'tajny-klucz', SUPABASE_E2E_DB_URL: 'postgres://nie-do-flow' }
 
-test('odegranie: urządzenie adaptera, zmienne konta i MAESTRO_* w argumentach, dowody w katalogu zadania, zrzuty w wyniku', async () => {
+test('odegranie: urządzenie adaptera, zmienne konta i MAESTRO_* w środowisku, dowody w katalogu zadania, zrzuty w wyniku', async () => {
   const { projekt, app, dataPath } = uklad()
   const { wykonaj } = atrapa(app, dataPath, 'Booted')
-  /** @type {{ argumenty?: string[], cwd?: string, sekrety?: string[] }} */
+  /** @type {{ argumenty?: string[], cwd?: string, sekrety?: string[], srodowisko?: Record<string, string> }} */
   const zapis = {}
-  const maestro = async (/** @type {string[]} */ argumenty, /** @type {string} */ cwd, /** @type {string[]} */ sekrety) => {
-    Object.assign(zapis, { argumenty, cwd, sekrety })
+  const maestro = async (/** @type {string[]} */ argumenty, /** @type {string} */ cwd, /** @type {{ sekrety: string[], srodowisko: Record<string, string> }} */ zmienne) => {
+    Object.assign(zapis, { argumenty, cwd, ...zmienne })
     // Układ wyjścia prawdziwego Maestro 2.5.1: zrzut nazwany, zrzut kroku opcjonalnego i porażki, zapis komend z wartościami zmiennych.
     const katalog = argumenty[argumenty.indexOf('--test-output-dir') + 1]
     mkdirSync(join(katalog, 'screenshots'), { recursive: true })
@@ -123,12 +123,34 @@ test('odegranie: urządzenie adaptera, zmienne konta i MAESTRO_* w argumentach, 
   assert.deepEqual(readdirSync(join(projekt, 'docs/active/z/maestro/notatki')).sort(), ['blad-1.png', 'notatka.png'], 'w repo tylko zrzuty, bez zapisu komend z hasłem')
   assert.equal(zapis.cwd, projekt)
   assert.deepEqual(zapis.sekrety, ['tajne-haslo', 'tajny-klucz'])
+  assert.deepEqual(zapis.srodowisko, { MAESTRO_KLUCZ: 'tajny-klucz', MAESTRO_E2E_EMAIL: 'e2e@x.pl', MAESTRO_E2E_PASSWORD: 'tajne-haslo' })
   const argumenty = zapis.argumenty ?? []
   const robocze = argumenty[argumenty.indexOf('--test-output-dir') + 1]
   assert.ok(!robocze.startsWith(projekt), 'Maestro pisze poza repo')
   assert.equal(existsSync(robocze), false, 'katalog roboczy usunięty')
   assert.deepEqual(argumenty, ['--device', 'UDID-1', 'test', '--test-output-dir', robocze, '--debug-output', argumenty[argumenty.indexOf('--debug-output') + 1],
-    '-e', `APP_ID=${BUNDLE}`, '-e', 'APP_SCHEME=przyklad', '-e', 'METRO_URL=http%3A%2F%2F127.0.0.1%3A8081', '-e', 'E2E_EMAIL=e2e@x.pl', '-e', 'E2E_PASSWORD=tajne-haslo', '-e', 'MAESTRO_KLUCZ=tajny-klucz', '.maestro/notatki.yaml'])
+    '-e', `APP_ID=${BUNDLE}`, '-e', 'APP_SCHEME=przyklad', '-e', 'METRO_URL=http%3A%2F%2F127.0.0.1%3A8081', '.maestro/notatki.yaml'])
+})
+
+test('odegranie: argumenty prawdziwego procesu bez wartości konta i MAESTRO_*, wartości w środowisku procesu', async () => {
+  const { projekt, app, dataPath } = uklad()
+  const { wykonaj } = atrapa(app, dataPath, 'Booted')
+  const bin = mkdtempSync(join(tmpdir(), 'atrapa-maestro-'))
+  writeFileSync(join(bin, 'maestro'), `#!/bin/sh\nprintf '%s\\n' "$@" > "${bin}/argv"\nenv > "${bin}/env"\n`, { mode: 0o755 })
+  const sciezka = process.env.PATH
+  try {
+    process.env.PATH = `${bin}:${sciezka}`
+    const w = await flowy.odegrajFlow({ projekt, zadanie: 'z', flow: 'notatki', env: ENV, wykonajKomende: wykonaj })
+    assert.equal(w.status, 'ok')
+    const argv = readFileSync(join(bin, 'argv'), 'utf8')
+    for (const zakazane of ['e2e@x.pl', 'tajne-haslo', 'tajny-klucz', 'MAESTRO_', 'E2E_']) assert.ok(!argv.includes(zakazane), `argumenty procesu zawierają: ${zakazane}`)
+    assert.ok(argv.includes(`APP_ID=${BUNDLE}`), 'zmienne jawne zostają w -e')
+    const srodowisko = readFileSync(join(bin, 'env'), 'utf8').split('\n')
+    for (const wpis of ['MAESTRO_E2E_EMAIL=e2e@x.pl', 'MAESTRO_E2E_PASSWORD=tajne-haslo', 'MAESTRO_KLUCZ=tajny-klucz']) assert.ok(srodowisko.includes(wpis), wpis.split('=')[0])
+  } finally {
+    process.env.PATH = sciezka
+    rmSync(bin, { recursive: true, force: true })
+  }
 })
 
 test('odegranie: zapis komend znika także przy wyjątku Maestro', async () => {
