@@ -2,7 +2,7 @@
 
 Data: 2026-11-07. Szablon: `cc4e4ce`, CI „maszyneria” zielone (run `42362958177`). Plan: `docs/plans/2026-11-01-001-feat-szablon-mobile-z-rdzenia-plan.md`.
 
-**Status: kryterium z planu spełnione, Etap 2 nieprzyjęty.** Operator zdecydował, że przyjęcie czeka na pełny run autopilota na kopii.
+**Status: kryterium z planu spełnione, run autopilota na kopii przeszedł bez punktu bramek, Etap 2 czeka na decyzję operatora o przyjęciu.**
 
 ## Wynik
 
@@ -13,14 +13,50 @@ Data: 2026-11-07. Szablon: `cc4e4ce`, CI „maszyneria” zielone (run `42362958
 | Testy nakładki | PASS | `pnpm -s test` w worktree: 1711/1711; typecheck 0, lint 0 |
 | Obie listy zaległych puste | PASS | `ZALEGLE = []`, `ZALEGLE_ODESLANIA = []`; w `stacks/straznik.json` brak wpisów `przejsciowy` |
 | CI | PASS | `pnpm typecheck && pnpm test && pnpm lint` na `cc4e4ce`, 1m59s |
-| Pełny run autopilota na kopii | NIESPRAWDZONE | decyzja operatora: przed przyjęciem, w osobnej sesji |
+| Pełny run autopilota na kopii (warunek operatora) | PASS w 3 z 4 punktów „Oczekiwanego wyniku”, punkt 3 NIESPRAWDZONE | `wf_6272905b-2d8` STOP zgodnie z oczekiwaniem, `wf_e05c211e-938` status OK; sekcja niżej |
 
 Uwagi do liczb:
 - Testy wariantu biegną na ławce, a nie w katalogu z CLI. Porównanie sum SHA-256 `.claude/` obu katalogów: 410 plików, zero różnic.
 - Dwa pominięte testy to warunki stacku web: port deweloperski w `E2E_URL` i plik `.env.e2e.local`.
 - `pnpm -s test` w głównym katalogu po merge'u: 1992/1992. Różnica względem 1711 to znany glob, który łapie testy z `.claude/worktrees`.
 - CI nie uruchamia testów rdzenia na wariancie: job `wariant-expo` to IU-3.2. Ten wynik pochodzi tylko z lokalnego biegu, a testy z `stacks/expo/__tests__/` CI uruchamia.
-- W odbiorze nie włączano urządzeń. Próby niżej dotyczą stanów z poszczególnych IU, a `cc4e4ce` jako całość na urządzeniu nie był uruchamiany.
+- Na urządzeniu `cc4e4ce` biegł tylko w runie autopilota, na iPhone 17. Na Androidzie nie był uruchamiany; tam najnowsza próba to IU-2.6.
+
+## Run autopilota na kopii
+
+Kopia klonu `spike-expo-58`, `.rdzen-version` = `cc4e4ce`, iPhone 17 (iOS 26.4), Maestro 2.5.1. Sesja [Pełny run autopilota Expo na kopii spike'a], gałąź `popr/smoke-expo-po-biegu`.
+
+| Run | Wynik | Czas | Koszt |
+|---|---|---|---|
+| `wf_6272905b-2d8`, przebieg (1) | Oczekiwany STOP: `start: srodowisko E2E — zadanie ma 2 scenariuszy [E2E], a repo nie ma .env.e2e` | 1 min | 0,51 USD |
+| `wf_e05c211e-938`, przebieg (2) | Status OK, 2 fazy, 40 agentów | 31 min | 11,71 USD |
+| `wf_e9599c7b-68c`, przerwany | Zabity przez limit zadań w tle `claude -p`, wyniku nie liczę | 10 min | 3,40 USD |
+| `/weryfikacja-setup` | Przejście na żywo, commit `76affd6` | 13 min | 1,02 USD |
+
+| Punkt „Oczekiwanego wyniku” | Wynik | Dowód |
+|---|---|---|
+| 1. Status OK, 2 fazy, gate, archiwum, mapa funkcji | PASS | `status: OK`, `fazyUkonczone: 2`, archiwum `62e14da`, `mapa-funkcji.md` ma oba flow |
+| 2. P2 na teście happy path, fix | PASS | `review-faza-1.md`: P2 na `src/lib/smoke-autopilot.test.ts:13`; fix `81e944e`, kontrola fixa `c629e06` |
+| 3. Bramki `eslint` i `migracje` z porażką i naprawą | NIESPRAWDZONE | Spike nie ma ESLint ani migracji. Wg notatki sesji: `eslint: brak`, `migracje: pominieta`, `stack: pominieta` (pole z wyniku agenta, poza plikiem runu, nie sprawdzałem osobno) |
+| 4. Smoke operatora | PASS | `docs/operator/2026-11-07-smoke-autopilot-smoke.md`, sekcja „E2E do odegrania ręcznie” z flow i powodem, plik w `62e14da` |
+
+Scenariusze: `smoke-strona` PASS na symulatorze (zrzut: nagłówek i „dodajBezpiecznie(2, 3) = 5”, dymek LogBox `fetch failed` wg sesji pochodzi z sondy spike'a). `smoke-strona-faza-2` SKIP `srodowisko` i `[Manual]` z powodem, bo Metro zatrzymano o 12:29:37 (`watcher-stop.log`); `curl` kod 7 w `review-faza-2.md`.
+
+Defekty z runu:
+- **D1, naprawione na `popr/smoke-expo-po-biegu` (`60857d3`), niezmergowane:** README fixture'u kazał wykonać `stop` po domknięciu fazy 1, ale `e2e:restart:faza-2` stawia Metro od nowa, więc flow przeszedłby zamiast iść na `[Manual]`. To samo zdanie ma README web (`.claude/templates/smoke-autopilot/README.md:103`), nietknięte.
+- **D2, naprawione w `60857d3`:** tabele planu fixture'u podawały 18 i 15 linii flow, a treść ma 16 i 13.
+- **D3, otwarte:** `stacks/expo/nakladka/.claude/scripts/e2e/expo-canary.mjs:102` podaje `E2E_EMAIL` i `E2E_PASSWORD` jako `-e KLUCZ=wartość`, więc są jawne w wierszu komendy procesu. Tester wywołał `pgrep -fl` i wartości trafiły do jego transkryptu (w spike'u atrapy, finding OPERATOR w review fazy 1). Do logu i folderu dowodów nie trafiły. Maskowanie wyjścia tego nie pokrywa.
+- **D4, otwarte, rdzeń:** `.claude/scripts/e2e/ksiegowanie.mjs:18` ucina powód `[Manual]` po 160 znakach w połowie zdania, a smoke odsyła po pełny dowód do `docs/active/`, którego po archiwizacji już nie ma.
+- **Do sprawdzenia, moja obserwacja:** plan fixture'u wymaga pustego `catch` w `parsujLiczbe`, a w historii kopii tego pliku nie ma żadnego commita z `catch`. Sesja podaje, że usunął go audyt domknięcia. Jeśli tak jest, punkt 3 w części ESLint może nie wyjść także w projekcie z ESLint.
+
+Drobne, bez wpływu na wynik: etykieta `warmup:vitest` przy runnerze Jest (`.claude/workflows/dev-autopilot-wf.js:1762`), `profil_stacku: null` w telemetrii, `testyTypow` z powodem „brak vitest”.
+
+Odstępstwa od README i zlecenia:
+- Run biegł przez `claude -p --effort medium --dangerously-skip-permissions` w kopii, a nie w sesji desktop.
+- Metro zatrzymano zaraz po `e2e:restart:faza-2`, nie po domknięciu fazy 1 (D1).
+- Commit źródła w klonie przedatowany na 11-05, bo inaczej bramka świeżości słusznie zatrzymałaby start.
+- `przygotuj-kopie.sh` skończył się kodem 8 na `runner testów`, bo Jest spike'a nie ma `testPathIgnorePatterns`; naprawa z doctora osobnym commitem w kopii (`492f2c1`).
+- `pgrep -fl` sesji runu wypisał do jej transkryptu `CLAUDE_CODE_MESSAGING_TOKEN` zakończonej sesji potomnej. Wg sesji token nie był użyty.
 
 ## Co powstało
 
@@ -97,7 +133,7 @@ Lista z akapitów „Do kolejnych kroków” planu. Stan z dat prób, nie sprawd
 - Role badawcze w działaniu, kopie resources poza `SKILL.md` przez builder.
 
 **IU-2.6**
-- Pełny run autopilota na kopii: oba przebiegi z README, defekty review i bramek, `[Manual]` po zatrzymaniu Metro.
+- Z pełnego runu na kopii zostały: defekty bramek (punkt 3), Android, sesja desktop. Reszta przeszła w `wf_e05c211e-938`.
 - `przygotuj-kopie.sh` na pnpm, yarn i bun.
 - Przejście `/weryfikacja-setup` przez agenta (komenda ze slotu sprawdzona ręcznie).
 - Ekran główny za logowaniem, IU-1 i IU-3 fixture'u przez builder.
@@ -152,10 +188,11 @@ Lista z akapitów „Do kolejnych kroków” planu. Stan z dat prób, nie sprawd
 
 **Dopisane w tym odbiorze**
 - Przebieg autopilota w projekcie web po zmianach rdzenia z Etapu 2. Plan i raporty nie mają takiego zapisu, a „web bez zmian zachowania” opiera się na testach. Od `746d862` w `.claude/` zmieniło się 68 plików (+1447, −440), w tym `dev-autopilot-wf.js`, `start.mjs` i zmiany spoza Etapu 2 z `popr/znaleziska-szablonu`. Etap 1 złapał regresję canary właśnie takim przebiegiem, po zielonych testach.
+- Z runu autopilota: bramki `eslint` i `migracje` z defektami fixture'u oraz `expo-doctor` w runie (faza nie zmieniła zależności), run na Androidzie (Pixel_8 nie był włączany, canary spike'a padał na nim w IU-2.6 bez ustalonej przyczyny), baza e2e i db-sync (spike nie ma Supabase), pozycje ręczne ze smoke'a operatora.
 
 ## Sprawy otwarte
 
-1. **Pełny run autopilota na kopii:** warunek przyjęcia Etapu 2 wg decyzji operatora (2026-11-07), osobna sesja.
+1. **Defekty z runu:** D3 (hasło konta e2e w wierszu komendy) i D4 (ucięty powód `[Manual]`) otwarte. `popr/smoke-expo-po-biegu` (D1, D2) czeka na merge. Zdanie z D1 zostaje w README web.
 2. **`paths:` w skillach web:** `supabase-dev-guidelines`, `tailwind-react-guidelines` i `ux-ui-guidelines` nadal mają to pole, więc buildery web dostają te skille tylko czasem (transkrypty vibersi z 2026-11-01 i 11-03). Naprawa zmienia zachowanie webu. Decyzja operatora: po odbiorze, osobna gałąź `popr/*` z usunięciem `paths:` i testem rdzenia „skill w `skills:` bez `paths:`”.
 3. **`dev-browser` w wariancie:** do decyzji, zdjęcie wymaga zmiany `doctor.test.mjs` rdzenia.
 4. **Test „probny zrzut na starcie” w `srodowisko.test.mjs`:** padł raz w pełnym `pnpm test`, przyczyna nieustalona. W trzech pełnych biegach odbioru nie padł.
@@ -163,6 +200,7 @@ Lista z akapitów „Do kolejnych kroków” planu. Stan z dat prób, nie sprawd
 6. **`dowodNatywnosci`:** dev-paczka z katalogiem `ios` (np. `jest-expo`) liczy się jako natywna. Fałszywy STOP kosztuje jedną przebudowę.
 7. **Dysk operatora:** pliki `commands-*.json` z wcześniejszych przebiegów w `~/.maestro/tests` zostają i mogą zawierać wartości `-e`.
 8. **Stan `spike-expo-58`:** `package-lock.json` zmieniony przez `npm install` po próbie Strykera, treści zmiany nie oglądano. `.env.e2e` ma `E2E_PLATFORMA=android` i próbne wartości, jest `.maestro/_canary.yaml`.
+9. **Kopia i klon z runu:** zostają w scratchpadzie sesji runu do decyzji operatora o usunięciu.
 
 ## CI
 
