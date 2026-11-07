@@ -107,7 +107,7 @@ Brak — autopilot może startować od razu.
 | Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |
 |---|---|---|---|---|
 | Modyfikuj | `{{EKRAN_GLOWNY}}` | {{LINIE_EKRANU}} | — | zostaje |
-| Stwórz (e2e flow) | `.maestro/smoke-strona.yaml` | 0 → 18 | — | nowy |
+| Stwórz (e2e flow) | `.maestro/smoke-strona.yaml` | 0 → 16 | — | nowy |
 
 **Delegate to:** feature-builder-ui
 
@@ -162,7 +162,7 @@ Brak — autopilot może startować od razu.
 | Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |
 |---|---|---|---|---|
 | Modyfikuj | `{{EKRAN_GLOWNY}}` | {{LINIE_EKRANU}} | — | zostaje |
-| Stwórz (e2e flow) | `.maestro/smoke-strona-faza-2.yaml` | 0 → 15 | — | nowy |
+| Stwórz (e2e flow) | `.maestro/smoke-strona-faza-2.yaml` | 0 → 13 | — | nowy |
 
 **Delegate to:** feature-builder-ui
 
