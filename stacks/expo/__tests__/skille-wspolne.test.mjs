@@ -38,7 +38,7 @@ const KOPIE = {
   },
   [`${S}/resources/auth-security-patterns.md`]: { linie: ['Wzorce bezpieczenstwa specyficzne', '3. React -- uwazaj', '5. Secrets -- VITE_'], sekcje: [['## 3. React XSS Prevention', '## 4. Walidacja Granic'], ['### Co NIE moze byc', '### Edge Functions -- Zmienne']] },
   [`${E}/SKILL.md`]: { linie: ['description: ', 'Kompleksowy przewodnik', '> - **React SDK', '- **[react-sentry-patterns.md]', '  toast.error('], sekcje: [['### Frontend (React)', '### Edge Functions']] },
-  [`${B}/SKILL.md`]: { linie: ['paths:', '  - "supabase/**"', '  - "**/*.sql"', '  - "src/lib/**"', '  - "src/hooks/**"', 'Przewodnik pracy z Supabase'] },
+  [`${B}/SKILL.md`]: { linie: ['Przewodnik pracy z Supabase'] },
   [`${B}/resources/klient-i-przeglad.md`]: { linie: ['    { auth: { flowType', '    import.meta.env.VITE_SUPABASE_URL', '    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY', 'export const supabase = createClient(', "import { createClient }", '    // Domyślny flowType', ], sekcje: [['### Frontend (.env.local)', '### Edge Functions']] },
   [`${B}/resources/edge-functions.md`]: { linie: [], sekcje: [['## Wywołanie Edge Function z Frontend', '## Zmienne Środowiskowe']] },
   [`${B}/resources/database-patterns.md`]: { linie: ['    import.meta.env.VITE_SUPABASE_URL', '    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY'] },
