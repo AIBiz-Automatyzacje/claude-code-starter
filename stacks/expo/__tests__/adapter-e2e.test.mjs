@@ -482,9 +482,12 @@ test('canary: własny flow dostaje zmienne i urządzenie; hasło nie wychodzi w 
   let argumenty = []
   /** @type {string[]} */
   let sekrety = []
-  const maestro = async (/** @type {string[]} */ a, /** @type {string} */ _cwd, /** @type {string[]} */ s) => {
+  /** @type {Record<string, string>} */
+  let srodowisko = {}
+  const maestro = async (/** @type {string[]} */ a, /** @type {string} */ _cwd, /** @type {{ sekrety: string[], srodowisko: Record<string, string> }} */ z) => {
     argumenty = a
-    sekrety = s
+    sekrety = z.sekrety
+    srodowisko = z.srodowisko
     return { kod: 0, ogon: '' }
   }
   const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'UDID', nazwa: 'iPhone 17', sciezkaAplikacji: 'x' }, aplikacja: APLIKACJA }
@@ -493,7 +496,9 @@ test('canary: własny flow dostaje zmienne i urządzenie; hasło nie wychodzi w 
   assert.match(w.detal, /_canary\.yaml przeszedł/)
   assert.deepEqual(argumenty.slice(0, 3), ['--device', 'UDID', 'test'])
   assert.equal(argumenty.at(-1), canary.PLIK_CANARY)
-  for (const z of [`APP_ID=${BUNDLE}`, 'APP_SCHEME=przyklad', 'METRO_URL=http%3A%2F%2F127.0.0.1%3A8081', 'E2E_EMAIL=e2e@a.test', 'E2E_PASSWORD=tajne']) assert.ok(argumenty.includes(z), z)
+  for (const z of [`APP_ID=${BUNDLE}`, 'APP_SCHEME=przyklad', 'METRO_URL=http%3A%2F%2F127.0.0.1%3A8081']) assert.ok(argumenty.includes(z), z)
+  assert.ok(!argumenty.some((a) => /e2e@a\.test|tajne|E2E_|MAESTRO_/.test(a)), 'konto poza argumentami procesu')
+  assert.deepEqual(srodowisko, { MAESTRO_E2E_EMAIL: 'e2e@a.test', MAESTRO_E2E_PASSWORD: 'tajne' })
   assert.deepEqual(sekrety, ['tajne'])
   assert.equal(canary.zamaskuj('Input text tajne', sekrety), 'Input text ***')
 })
@@ -547,11 +552,11 @@ test('canary: uruchomMaestro maskuje hasło w ogonie i na stderr, oddaje kod; br
   process.stderr.write = /** @type {typeof process.stderr.write} */ ((/** @type {string} */ t) => { stderr.push(t); return true })
   try {
     process.env.PATH = `${bin}:${sciezka}`
-    const w = await canary.uruchomMaestro(['test'], bin, ['tajne'])
+    const w = await canary.uruchomMaestro(['test'], bin, { sekrety: ['tajne'] })
     assert.deepEqual(w, { kod: 3, ogon: 'Input text ***' })
     assert.deepEqual(stderr, ['Input text ***\n'])
     process.env.PATH = katalog()
-    const brak = await canary.uruchomMaestro(['test'], bin, [])
+    const brak = await canary.uruchomMaestro(['test'], bin, { sekrety: [] })
     assert.match(String(brak.kod), /ENOENT/)
   } finally {
     process.stderr.write = pisz
@@ -741,7 +746,8 @@ test('wzór canary: stopApp przed każdym openLink, zmienne z adaptera, bez kont
   const c = czytaj('.claude/templates/e2e-env/_canary.yaml')
   const kroki = c.split('\n').filter((l) => /^- (launchApp|stopApp|openLink)/.test(l)).map((l) => l.replace(/^- (\w+).*/, '$1'))
   assert.deepEqual(kroki, ['launchApp', 'stopApp', 'openLink', 'stopApp', 'openLink'])
-  for (const z of ['${APP_ID}', '${APP_SCHEME}', '${METRO_URL}', '${E2E_EMAIL}', '${E2E_PASSWORD}']) assert.ok(c.includes(z), z)
+  for (const z of ['${APP_ID}', '${APP_SCHEME}', '${METRO_URL}', '${MAESTRO_E2E_EMAIL}', '${MAESTRO_E2E_PASSWORD}']) assert.ok(c.includes(z), z)
+  assert.doesNotMatch(c, /\$\{E2E_/, 'zmienna spoza prefiksu MAESTRO_ nie dojdzie do flow ze środowiska')
 })
 
 test('wzór canary przechodzi maestro check-syntax', { skip: spawnSync('maestro', ['--version']).error ? 'brak maestro' : false }, () => {

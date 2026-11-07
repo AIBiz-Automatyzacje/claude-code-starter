@@ -182,7 +182,7 @@ Jeden flow to jeden przebieg, także gdy pokrywa kilka linii scenariuszy; każda
 W runie tester i naprawa E2E wołają flow przez `node .claude/scripts/e2e/expo-flow.mjs --zadanie <folder> --flow <flow>`: skrypt wybiera urządzenie adaptera, podaje zmienne i maskuje hasło. Pod spodem biegnie:
 
 ```bash
-maestro --device <id> test --test-output-dir "$Z/maestro/<flow>" -e KLUCZ=wartosc .maestro/<flow>.yaml; echo "kod=$?"
+MAESTRO_KLUCZ=wartosc maestro --device <id> test --test-output-dir "$Z/maestro/<flow>" -e JAWNY=wartosc .maestro/<flow>.yaml; echo "kod=$?"
 ```
 
 Dowodem jest kod wyjścia (0 tylko wtedy, gdy wszystkie flow przeszły), ostatnia linia wyjścia i ścieżka zrzutu z bundla pod `--test-output-dir`. `--format JUNIT` albo `HTML` z `--output` daje raport, gdy jest potrzebny.
@@ -219,7 +219,7 @@ Maestro steruje WYŁĄCZNIE elementami w accessibility tree **Twojej aplikacji**
 **Skrypt `runScript`/inject leci w GraalJS Maestro, NIE w Node**:
 - **Brak `fs` i `require`.** `body` przekazujesz inline jako string albo base64. Plik wysyłasz wyłącznie przez `multipartForm` z `filePath`.
 - Tylko czysty REST (`http`), bez modułów Node.
-- Sekrety (URL i klucz sekretny Supabase, ID rekordu itp.) **NIGDY jako wartości w bloku `env:` pliku flow** (plik leży w repo) — przekaż przez `maestro test -e KEY="wartość"` (np. wczytane z `.env.e2e`) albo zmienną środowiskową z prefiksem `MAESTRO_` (`export MAESTRO_SUPABASE_URL=...`). Wewnątrz `.js` skryptu zmienna jest dostępna jako goły identyfikator JS (np. `MAESTRO_SUPABASE_URL`), w YAML flow wyłącznie jako referencja `${KEY}`.
+- Sekrety (URL i klucz sekretny Supabase, ID rekordu itp.) **NIGDY jako wartości w bloku `env:` pliku flow** (plik leży w repo) ani jako `maestro test -e KEY="wartość"` (argumenty widać w `ps` i `pgrep -fl`) — przekaż przez zmienną środowiskową z prefiksem `MAESTRO_` (`export MAESTRO_SUPABASE_URL=...`, np. wczytane z `.env.e2e`); Maestro sam udostępnia ją flow. Wewnątrz `.js` skryptu zmienna jest dostępna jako goły identyfikator JS (np. `MAESTRO_SUPABASE_URL`), w YAML flow wyłącznie jako referencja `${KEY}`.
 
 **Minimalny szablon inline** (`.maestro/inject-example.js`):
 
@@ -250,7 +250,7 @@ if (response.status !== 201) {
 
 ## Środowisko
 
-Autonomiczne E2E działa na osobnym projekcie Supabase z `.env.e2e`, nigdy na dev ani prod. Konto testowe, seedy i start aplikacji opisuje skill weryfikacji projektu oraz `.claude/templates/e2e-env/README.md`. Sekrety przechodzą przez `-e` albo `MAESTRO_*`, nigdy w YAML ani JS.
+Autonomiczne E2E działa na osobnym projekcie Supabase z `.env.e2e`, nigdy na dev ani prod. Konto testowe, seedy i start aplikacji opisuje skill weryfikacji projektu oraz `.claude/templates/e2e-env/README.md`. Sekrety przechodzą przez środowisko procesu (`MAESTRO_*`), nigdy przez `-e`, w YAML ani JS. Konto e2e w flow to `${MAESTRO_E2E_EMAIL}` i `${MAESTRO_E2E_PASSWORD}`.
 
 ## Common gotchas
 

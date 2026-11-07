@@ -51,7 +51,7 @@ Scenariusze: `smoke-strona` PASS na symulatorze (zrzut: nagłówek i „dodajBez
 Defekty z runu:
 - **D1, naprawione na `popr/smoke-expo-po-biegu` (`60857d3`), niezmergowane:** README fixture'u kazał wykonać `stop` po domknięciu fazy 1, ale `e2e:restart:faza-2` stawia Metro od nowa, więc flow przeszedłby zamiast iść na `[Manual]`. To samo zdanie ma README web (`.claude/templates/smoke-autopilot/README.md:103`), nietknięte.
 - **D2, naprawione w `60857d3`:** tabele planu fixture'u podawały 18 i 15 linii flow, a treść ma 16 i 13.
-- **D3, otwarte:** `stacks/expo/nakladka/.claude/scripts/e2e/expo-canary.mjs:102` podaje `E2E_EMAIL` i `E2E_PASSWORD` jako `-e KLUCZ=wartość`, więc są jawne w wierszu komendy procesu. Tester wywołał `pgrep -fl` i wartości trafiły do jego transkryptu (w spike'u atrapy, finding OPERATOR w review fazy 1). Do logu i folderu dowodów nie trafiły. Maskowanie wyjścia tego nie pokrywa.
+- **D3, naprawione na `popr/maestro-env-bez-argv`, czeka na merge:** `zmienneFlow` w `stacks/expo/nakladka/.claude/scripts/e2e/expo-canary.mjs` podawało `E2E_EMAIL` i `E2E_PASSWORD` jako `-e KLUCZ=wartość`, więc były jawne w wierszu komendy procesu. Tester wywołał `pgrep -fl` i wartości trafiły do jego transkryptu (w spike'u atrapy, finding OPERATOR w review fazy 1). Do logu i folderu dowodów nie trafiły. Teraz konto i klucze idą w środowisku procesu Maestro jako `MAESTRO_E2E_EMAIL`, `MAESTRO_E2E_PASSWORD` i `MAESTRO_*`. Próba na iPhone 17: canary i flow przeszły, 198 próbek `ps` i `pgrep -fl` bez wartości, `~/.maestro/tests` i dowody bez nich. Zostaje `ps -E`, które tym samym użytkownikiem pokazuje środowisko Maestro i Metro. Android nie biegł.
 - **D4, otwarte, rdzeń:** `.claude/scripts/e2e/ksiegowanie.mjs:18` ucina powód `[Manual]` po 160 znakach w połowie zdania, a smoke odsyła po pełny dowód do `docs/active/`, którego po archiwizacji już nie ma.
 - **Do sprawdzenia, moja obserwacja:** plan fixture'u wymaga pustego `catch` w `parsujLiczbe`, a w historii kopii tego pliku nie ma żadnego commita z `catch`. Sesja podaje, że usunął go audyt domknięcia. Jeśli tak jest, punkt 3 w części ESLint może nie wyjść także w projekcie z ESLint.
 
@@ -198,7 +198,7 @@ Lista z akapitów „Do kolejnych kroków” planu. Stan z dat prób, nie sprawd
 
 ## Sprawy otwarte
 
-1. **Defekty z runu:** D3 (hasło konta e2e w wierszu komendy) i D4 (ucięty powód `[Manual]`) otwarte. `popr/smoke-expo-po-biegu` (D1, D2) czeka na merge. Zdanie z D1 zostaje w README web.
+1. **Defekty z runu:** D3 (hasło konta e2e w wierszu komendy) naprawione na `popr/maestro-env-bez-argv`, czeka na merge. D4 (ucięty powód `[Manual]`) otwarte. `popr/smoke-expo-po-biegu` (D1, D2) czeka na merge. Zdanie z D1 zostaje w README web.
 2. **`paths:` w skillach web:** `supabase-dev-guidelines`, `tailwind-react-guidelines` i `ux-ui-guidelines` nadal mają to pole, więc buildery web dostają te skille tylko czasem (transkrypty vibersi z 2026-11-01 i 11-03). Naprawa zmienia zachowanie webu. Decyzja operatora: po odbiorze, osobna gałąź `popr/*` z usunięciem `paths:` i testem rdzenia „skill w `skills:` bez `paths:`”.
 3. **`dev-browser` w wariancie:** do decyzji, zdjęcie wymaga zmiany `doctor.test.mjs` rdzenia.
 4. **Test „probny zrzut na starcie” w `srodowisko.test.mjs`:** padł raz w pełnym `pnpm test`, przyczyna nieustalona. W trzech pełnych biegach odbioru nie padł.

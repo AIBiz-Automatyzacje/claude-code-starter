@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Uruchomienie flow Maestro przez testera i naprawę E2E. Urządzenie wybiera ta sama logika co start, tylko bez włączania symulatora, bo
-// adapter nie zapisuje wyboru między procesami. Hasło i klucze idą w argumentach procesu i są maskowane, więc nie trafiają do wyniku agenta,
+// adapter nie zapisuje wyboru między procesami. Konto i klucze idą w środowisku procesu (w argumentach widać je w `ps`), a hasło i klucze są maskowane, więc nie trafiają do wyniku agenta,
 // a limit czasu daje wynik zamiast zawieszonej komendy. Wyjście Maestro idzie na stderr, co resetuje watchdog ciszy agenta.
 //
 // Użycie (z korzenia projektu albo z --projekt <katalog>):
@@ -43,7 +43,7 @@ export function urzadzenieTestera({ projekt, env = envE2e(projekt) ?? {}, wykona
 
 /**
  * Do katalogu zadania idą tylko zrzuty: `takeScreenshot` pod własną nazwą i zrzut porażki jako `blad-<n>.png`, bez zrzutów pominiętych
- * kroków opcjonalnych. Pliki `commands-*.json` zapisują wartości zmiennych `-e`, więc nigdy nie trafiają do repo.
+ * kroków opcjonalnych. Pliki `commands-*.json` zapisują wartości zmiennych flow, także te ze środowiska, więc nigdy nie trafiają do repo.
  * @param {string} robocze @param {string} katalog @param {string} projekt @returns {string[]} ścieżki od korzenia projektu
  */
 function przeniesZrzuty(robocze, katalog, projekt) {
@@ -69,11 +69,11 @@ export async function odegrajFlow({ projekt, zadanie, flow, plik = `.maestro/${f
   if (!c.ok) return c
   const katalog = join(projekt, zadanie, 'maestro', flow)
   mkdirSync(katalog, { recursive: true })
-  const { argumenty, sekrety } = zmienneFlow(env, { port: konfiguracja(projekt, env).port, urzadzenie: c.urzadzenie, aplikacja: c.aplikacja })
+  const { argumenty, srodowisko, sekrety } = zmienneFlow(env, { port: konfiguracja(projekt, env).port, urzadzenie: c.urzadzenie, aplikacja: c.aplikacja })
   // Praca poza repo: zabity proces nie zostawia w katalogu zadania pliku z hasłem. `--debug-output` zabiera ten sam zapis z ~/.maestro/tests.
   const robocze = mkdtempSync(join(tmpdir(), 'expo-flow-'))
   try {
-    const { kod, ogon } = await maestro(['--device', c.urzadzenie.id, 'test', '--test-output-dir', join(robocze, 'wynik'), '--debug-output', join(robocze, 'debug'), ...argumenty, plik], projekt, sekrety, LIMIT_FLOW_MS)
+    const { kod, ogon } = await maestro(['--device', c.urzadzenie.id, 'test', '--test-output-dir', join(robocze, 'wynik'), '--debug-output', join(robocze, 'debug'), ...argumenty, plik], projekt, { sekrety, srodowisko }, LIMIT_FLOW_MS)
     const status = kod === 0 ? 'ok' : typeof kod === 'number' ? 'porazka' : kod === 'SIGKILL' ? 'zawieszony' : 'blad-maestro'
     return { status, flow, kod, ogon, urzadzenie: c.urzadzenie.nazwa, katalog: relative(projekt, katalog), zrzuty: przeniesZrzuty(robocze, katalog, projekt) }
   } finally {
