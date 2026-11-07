@@ -51,7 +51,7 @@ Potem otwórz kopię w osobnej sesji desktop (efort `medium`) i uruchom `/dev-au
 1. **Przebieg (1), bez środowiska:** kopia prosto ze skryptu (bez `.env.e2e`) → oczekiwany STOP `start: srodowisko E2E — …` przed fazą 1, z naprawą ze skryptu.
 2. **Środowisko:** `.env.e2e` w korzeniu kopii (w `.gitignore` projektu) według `.claude/templates/e2e-env/README.md`. Canary: `cp .claude/templates/e2e-env/_canary.yaml .maestro/` i dopasowanie. Pusta baza e2e: `supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all --yes` raz przed runem. Sprawdzenie: `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/smoke-autopilot` = `gotowe`.
 3. **Skill weryfikacji:** `/weryfikacja-setup` w kopii.
-4. **Przebieg (2):** świeży run; po domknięciu fazy 1 z drugiego terminala w kopii `node .claude/scripts/e2e/e2e.mjs stop`. Oczekiwane: `smoke-strona` PASS, `smoke-strona-faza-2` → `[Manual]` z powodem, 0 STOP-ów w trakcie, run OK.
+4. **Przebieg (2):** świeży run; zaraz po agencie `e2e:restart:faza-2` (log `E2E restart fazy 2`) z drugiego terminala w kopii `node .claude/scripts/e2e/e2e.mjs stop`. Wcześniejszy stop nic nie da, bo ten restart stawia Metro od nowa, a tester rusza kilka sekund po nim: spóźniony stop kończy się PASS i gałąź `[Manual]` zostaje nieprzećwiczona. Oczekiwane: `smoke-strona` PASS, `smoke-strona-faza-2` → `[Manual]` z powodem, 0 STOP-ów w trakcie, run OK.
 
 ## Pliki
 
