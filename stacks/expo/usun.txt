@@ -20,3 +20,5 @@
 .claude/templates/smoke-autopilot/__tests__/
 .claude/templates/smoke-autopilot/pakiet/
 .claude/templates/smoke-autopilot/wstaw-pakiet.mjs
+# Wzorce SDK Sentry web; w Expo: resources/react-native-sentry-patterns.md.
+.claude/skills/sentry-integration/resources/react-sentry-patterns.md

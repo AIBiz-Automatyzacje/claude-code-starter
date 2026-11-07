@@ -1,0 +1,452 @@
+# Wzorce Bezpieczenstwa Auth
+
+Wzorce bezpieczenstwa specyficzne dla auth flow w stacku Expo + React Native + Supabase + Edge Functions.
+
+---
+
+## 1. Supabase RLS Patterns
+
+### Read Own Data
+
+Uzytkownik widzi tylko swoje dane. Najpopularniejszy wzorzec.
+
+```sql
+-- Profil uzytkownika
+CREATE POLICY "users_read_own_profile"
+ON profiles FOR SELECT
+TO authenticated
+USING ((SELECT auth.uid()) = id);
+```
+
+### Read Public Data
+
+Dane dostepne dla wszystkich (opublikowane posty, publiczne profile).
+
+```sql
+-- Opublikowane posty -- dostepne dla kazdego
+CREATE POLICY "anyone_read_published_posts"
+ON posts FOR SELECT
+TO anon, authenticated
+USING (published = true);
+
+-- Wlasne posty (w tym nieopublikowane) -- tylko wlasciciel
+CREATE POLICY "owners_read_own_posts"
+ON posts FOR SELECT
+TO authenticated
+USING ((SELECT auth.uid()) = user_id);
+```
+
+### Write Own Data
+
+Uzytkownik moze tworzyc i edytowac tylko swoje dane.
+
+```sql
+-- INSERT -- wymuszenie user_id na biezacego uzytkownika
+CREATE POLICY "users_insert_own_data"
+ON posts FOR INSERT
+TO authenticated
+WITH CHECK ((SELECT auth.uid()) = user_id);
+
+-- UPDATE -- tylko wlasne rekordy
+CREATE POLICY "users_update_own_data"
+ON posts FOR UPDATE
+TO authenticated
+USING ((SELECT auth.uid()) = user_id)
+WITH CHECK ((SELECT auth.uid()) = user_id);
+```
+
+### Dostęp administracyjny (role)
+
+> **Rola nie pochodzi z `user_metadata`.** Pole `raw_user_meta_data` (czyli claim `user_metadata` w JWT) jest **edytowalne przez samego użytkownika** — wystarczy `supabase.auth.updateUser({ data: { role: 'admin' } })` z konsoli/DevTools i atakujący podnosi sobie rolę, po czym RLS przepuszcza go do cudzych danych (privilege escalation).
+> Do autoryzacji używaj **`app_metadata`** (ustawiane wyłącznie server-side, użytkownik go nie zmieni) albo **dedykowanej tabeli ról**.
+> Nie używaj też top-levelowego claimu `role` w policy — to zarezerwowany claim Postgres/PostgREST (`authenticated` / `anon` / `service_role`), nie rola aplikacyjna.
+
+```sql
+-- ŹLE: user_metadata jest edytowalne przez klienta -> privilege escalation
+-- USING ((SELECT auth.jwt() -> 'user_metadata' ->> 'role') = 'admin')   -- NIGDY
+
+-- Opcja 1: app_metadata (ustawiane server-side, immutable dla usera)
+CREATE POLICY "admins_full_access"
+ON posts FOR ALL
+TO authenticated
+USING (
+    (SELECT auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+);
+
+-- Opcja 2: dedykowana tabela rol (preferowane przy RBAC / wielu rolach)
+CREATE POLICY "admins_manage_posts"
+ON posts FOR ALL
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM admin_users
+        WHERE admin_users.user_id = (SELECT auth.uid())
+    )
+);
+```
+
+Rolę w `app_metadata` ustawiasz **tylko z backendu** przez Admin API (klucz `service_role`) — nigdy z klienta:
+
+```ts
+// Server-side only (service_role) -- np. Edge Function, nigdy w przegladarce
+await supabaseAdmin.auth.admin.updateUserById(userId, {
+    app_metadata: { role: 'admin' },
+});
+```
+
+### Typowe Bledy RLS
+
+| Blad | Konsekwencja | Poprawka |
+|------|-------------|----------|
+| Brak `ENABLE ROW LEVEL SECURITY` | Pelny dostep dla kazdego | Zawsze wlaczaj RLS |
+| Brak policy na DELETE | Nikt nie moze usuwac (lub kazdy, jesli RLS wylaczony) | Dodaj explicit DELETE policy |
+| `auth.email()` w policy | Email jest mutowalny -- uzytkownik moze zmienic | Uzywaj `auth.uid()` (UUID immutable) |
+| Rola z `user_metadata` w policy | User edytuje `user_metadata` z DevTools i podnosi sobie rolę (privilege escalation) | Używaj `app_metadata` (server-side) lub tabeli ról; nie top-level `role` |
+| `auth.uid()` bez subquery | Wolniejsze -- ewaluowane per row | Uzywaj `(SELECT auth.uid())` -- ewaluowane raz |
+| Brak policy = brak dostepu | Tabela jest niedostepna dla klientow | Zamierzone dla service-only tabel, blad dla reszty |
+| Policy na SELECT ale nie na INSERT | Uzytkownik widzi dane ale nie moze tworzyc | Sprawdz kazda operacje osobno |
+
+---
+
+## 2. Edge Functions Auth
+
+### JWT Verification -- Standardowy Wzorzec
+
+Kazda chroniona Edge Function musi weryfikowac JWT.
+
+**Edge Function z withSupabase({ auth: 'user' }).** Wedlug wytycznych Supabase (AI-prompt
+`edge-functions.md`, pkt 7-8) eksportujesz domyslny obiekt z handlerem `fetch` owinietym
+w `withSupabase` z `npm:@supabase/server@^1`; `Deno.serve` to wzorzec legacy. Wrapper odrzuca
+request bez waznego JWT **przed** wejsciem do handlera, buduje klienta `ctx.supabase` (RLS
+w kontekscie usera) i `ctx.supabaseAdmin` (secret key, omija RLS) oraz dodaje naglowki CORS
+(`cors: 'default'`). Zweryfikowana tozsamosc masz w `ctx.userClaims` (`id` = user_id).
+
+```typescript
+import { withSupabase } from 'npm:@supabase/server@^1';
+
+export default {
+    // auth: 'user' -- request bez waznego JWT dostaje 401 zanim handler ruszy.
+    // Tryby: 'user' | 'publishable' | 'secret' | 'none' (lub tablica, np. ['user', 'secret']).
+    // Dla trybu innego niz 'user' ustaw verify_jwt = false w supabase/config.toml.
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        try {
+            // ctx.userClaims.id to zweryfikowany user_id -- NIE czytaj go z body/naglowkow
+            const userId = ctx.userClaims?.id;
+
+            // Wrapper NIE robi za Ciebie: walidacji Zod, autoryzacji zasobu, rate limitu.
+            // ctx.supabase respektuje RLS -- to pierwsza linia autoryzacji zasobu.
+            const { data, error } = await ctx.supabase
+                .from('posts')
+                .select('id, title')
+                .eq('user_id', userId);
+            if (error) throw error;
+
+            return Response.json({ data });
+        } catch (error) {
+            // Loguj bez wrazliwych danych
+            console.error('Edge Function error:', error instanceof Error ? error.message : 'Unknown');
+            return Response.json(
+                { error: { code: 'INTERNAL', message: 'Blad serwera' } },
+                { status: 500 }
+            );
+        }
+    }),
+};
+```
+
+> Pin `npm:@supabase/server@^1` -- aktualna 1.4.1 (npm, 2026-08). Przy podbiciu majora sprawdz
+> w README (github.com/supabase/server) sygnature `withSupabase`, pola `SupabaseContext`
+> i kształt opcji `cors` (`'default' | 'disabled' | { headers }`; formy `true`/`false` sa deprecated).
+
+**getClaims() / getUser() -- gdy weryfikujesz token recznie.** Potrzebne tylko poza wrapperem
+(np. `auth: 'none'` z wlasna logika auth albo token z innego zrodla niz naglowek). Od
+1 pazdziernika 2025 nowe projekty Supabase domyslnie uzywaja asymetrycznych kluczy JWT --
+`getClaims()` weryfikuje token lokalnie przez JWKS (bez round-tripu do serwera Auth), wiec jest
+szybsze niz `getUser()`. Na projektach z symetrycznym secretem JWT `getClaims()` wykonuje
+fallback do weryfikacji zdalnej (jak `getUser()`) -- dziala, ale bez zysku wydajnosci;
+`getUser()` pozostaje rownowazna alternatywa.
+
+```typescript
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+// Wewnatrz handlera withSupabase({ auth: 'none' }, ...) -- recznie weryfikujesz token
+const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+if (!token) {
+    return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Brak tokena' } }, { status: 401 });
+}
+
+const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}').default // legacy: SUPABASE_ANON_KEY
+);
+
+// Weryfikacja lokalna przez JWKS (asymetryczne klucze) lub zdalna (symetryczne)
+const { data, error: claimsError } = await supabase.auth.getClaims(token);
+if (claimsError || !data) {
+    return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Nieprawidlowy token' } }, { status: 401 });
+}
+// data.claims.sub = zweryfikowany user_id
+```
+
+### Service Role -- Kiedy i Jak
+
+Service role omija RLS. Uzywaj TYLKO gdy operacja wymaga dostepu do danych innych uzytkownikow lub tabel bez policies.
+
+```typescript
+// Klient admin jest gotowy na ctx.supabaseAdmin (withSupabase) -- TYLKO w Edge Functions, NIGDY na froncie.
+// Bez wrappera: createClient(SUPABASE_URL, JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!).default)
+// (legacy: SUPABASE_SERVICE_ROLE_KEY).
+
+// Przyklad: webhook Stripe (auth: 'none') musi zaktualizowac subskrypcje dowolnego uzytkownika
+const { error } = await ctx.supabaseAdmin
+    .from('subscriptions')
+    .update({ status: 'active' })
+    .eq('stripe_customer_id', customerId);
+```
+
+**Zasady service_role:**
+- NIGDY nie zwracaj danych pobranych przez service_role bezposrednio w odpowiedzi -- filtruj
+- NIGDY nie przekazuj service_role key w headerach odpowiedzi
+- NIGDY nie loguj service_role key
+- Uzywaj service_role client tylko do konkretnych operacji, nie jako domyslny client
+
+### CORS Handling
+
+`withSupabase` domyslnie (`cors: 'default'`) dodaje standardowe naglowki CORS supabase-js.
+Do produkcji ogranicz origin przez `cors: { headers: {...} }`; dla webhookow serwer-serwer
+wylacz CORS (`cors: 'disabled'`).
+
+```typescript
+// supabase/functions/_shared/cors.ts
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://myapp.com';
+
+export const corsHeaders: Record<string, string> = {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+};
+
+// index.ts -- przekaz naglowki do wrappera zamiast obslugiwac OPTIONS recznie
+export default {
+    fetch: withSupabase({ auth: 'user', cors: { headers: corsHeaders } }, async (req, ctx) => {
+        // ...
+    }),
+};
+```
+
+### Walidacja Inputow (Zod)
+
+Kazdy input do Edge Function musi byc walidowany.
+
+```typescript
+import { z } from 'npm:zod@4';
+
+const CreatePostSchema = z.object({
+    title: z.string().min(1).max(200),
+    content: z.string().min(1).max(10000),
+    published: z.boolean().default(false),
+});
+
+export default {
+    // withSupabase weryfikuje JWT, ale NIE waliduje body -- Zod jest nadal obowiazkowy
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        const body = await req.json();
+        const parsed = CreatePostSchema.safeParse(body);
+
+        if (!parsed.success) {
+            return Response.json(
+                {
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Nieprawidlowe dane',
+                        details: parsed.error.flatten().fieldErrors,
+                    },
+                },
+                { status: 400 }
+            );
+        }
+
+        // Uzyj parsed.data -- typowany i zwalidowany
+        const { title, content, published } = parsed.data;
+        // ...
+    }),
+};
+```
+
+---
+
+## 3. Tresc i URL-e z danych w RN
+
+RN renderuje tekst w `<Text>` bez interpretacji, wiec ryzyko to `WebView` i URL z danych.
+
+- HTML z danych uzytkownika sanitujesz na serwerze albo go nie renderujesz: DOMPurify w RN rzuca `TypeError`, bo nie ma `window.document`.
+- `injectedJavaScript` bez danych uzytkownika, `WebView` z lista dozwolonych URL, `onMessage` po walidacji.
+
+```typescript
+function bezpiecznyUrl(url: string): string | null {
+    const adres = new URL(url);
+    return ['https:', 'http:', 'mailto:'].includes(adres.protocol) ? adres.href : null;
+}
+```
+
+`new URL()` rzuca przy zlym adresie: lapiesz konkretny `TypeError` i pokazujesz fallback (`Image` bez `source`, link nieaktywny).
+
+---
+
+## 4. Walidacja Granic Systemu
+
+Kazdy punkt wejscia danych musi miec walidacje Zod. Ponizej lista wymaganych walidacji per typ operacji.
+
+### Create (INSERT)
+
+```typescript
+const CreateItemSchema = z.object({
+    // Wymagane pola z ograniczeniami
+    name: z.string().min(1, 'Nazwa wymagana').max(200, 'Nazwa za dluga'),
+    description: z.string().max(5000).optional(),
+    // Enumeracje zamiast dowolnych stringow
+    status: z.enum(['draft', 'published', 'archived']),
+    // Numeryczne z zakresem
+    priority: z.number().int().min(1).max(5),
+    // Tablice z limitem
+    tags: z.array(z.string().max(50)).max(10).default([]),
+});
+```
+
+### Update (UPDATE)
+
+```typescript
+// Partial -- kazde pole opcjonalne, ale z tymi samymi ograniczeniami
+const UpdateItemSchema = CreateItemSchema.partial().refine(
+    (data) => Object.keys(data).length > 0,
+    { message: 'Przynajmniej jedno pole wymagane' }
+);
+```
+
+### Delete (DELETE)
+
+```typescript
+const DeleteItemSchema = z.object({
+    id: z.string().uuid('Nieprawidlowy format ID'),
+});
+```
+
+### Query (SELECT z filtrami)
+
+```typescript
+const QueryItemsSchema = z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    status: z.enum(['draft', 'published', 'archived']).optional(),
+    search: z.string().max(200).optional(),
+    sortBy: z.enum(['created_at', 'updated_at', 'name']).default('created_at'),
+    sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+```
+
+### Wzorzec Uzycia na Granicy
+
+```typescript
+// Edge Function
+export default {
+    fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
+        const body = await req.json();
+        const result = CreateItemSchema.safeParse(body);
+
+        if (!result.success) {
+            return Response.json(
+                {
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Nieprawidlowe dane wejsciowe',
+                        details: result.error.flatten().fieldErrors,
+                    },
+                },
+                { status: 400 }
+            );
+        }
+
+        // Od tego momentu result.data jest typowane i bezpieczne
+        const item = result.data;
+        // ...
+    }),
+};
+
+// React Hook Form + Zod (frontend)
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+function CreateItemForm() {
+    const form = useForm({
+        resolver: zodResolver(CreateItemSchema),
+        defaultValues: { name: '', status: 'draft' as const, priority: 1, tags: [] },
+    });
+
+    const onSubmit = form.handleSubmit(async (data) => {
+        // data jest juz zwalidowane przez Zod
+        await supabase.from('items').insert(data);
+    });
+}
+```
+
+---
+
+## 5. Secrets Management
+
+### Co NIE moze byc w EXPO_PUBLIC_* (jawny tekst w paczce aplikacji)
+
+- Klucz sekretny i `service_role`, klucze Stripe, tokeny platnych API, `SENTRY_AUTH_TOKEN`.
+
+### Co MOZE byc w EXPO_PUBLIC_*
+
+- `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (ograniczony przez RLS), `EXPO_PUBLIC_SENTRY_DSN`.
+
+`.env.example` idzie do repo bez wartosci, a `.env.local` zostaje w `.gitignore`.
+
+### Edge Functions -- Zmienne Srodowiskowe
+
+Edge Functions maja dostep do zmiennych ustawionych przez CLI lub Dashboard.
+
+```bash
+# Ustawianie secretow przez CLI
+supabase secrets set STRIPE_SECRET_KEY=sk_live_...
+supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
+supabase secrets set ALLOWED_ORIGIN=https://myapp.com
+
+# Sprawdzanie ustawionych secretow (bez wartosci)
+supabase secrets list
+```
+
+**Uzycie w Edge Function:**
+```typescript
+// Zmienne dostepne przez Deno.env.get()
+const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+
+// Zmienne Supabase dostepne automatycznie:
+// SUPABASE_URL, SUPABASE_PUBLISHABLE_KEYS, SUPABASE_SECRET_KEYS (JSON-mapy, klucz 'default');
+// legacy: SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY. Z withSupabase nie czytasz ich
+// recznie -- klienci sa gotowi na ctx.supabase / ctx.supabaseAdmin.
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+```
+
+**Zasady:**
+- NIGDY nie hardcoduj secretow w kodzie Edge Functions
+- NIGDY nie loguj wartosci secretow
+- Rozne wartosci dla dev/staging/prod (Supabase CLI profiles)
+- Rotuj klucze regularnie (przynajmniej co 90 dni dla kluczy produkcyjnych)
+
+---
+
+## Podsumowanie
+
+**Najwazniejsze zasady:**
+1. RLS zawsze wlaczony, policies na kazdej operacji, `(SELECT auth.uid())` zamiast `auth.email()`
+2. Edge Functions -- `export default { fetch: withSupabase({ auth: 'user' }, ...) }` weryfikuje JWT za Ciebie; recznie `getClaims()` (`getUser()` tylko jako rownowazny fallback), `ctx.supabaseAdmin` / secret key tylko gdy konieczne
+3. RN -- `WebView`, URL-e z danych i parametry deep linku traktujesz jak wejscie z zewnatrz
+4. Zod na kazdej granicy systemu (Edge Functions, formularze, query params)
+5. Secrets -- EXPO_PUBLIC_* tylko dla publicznych kluczy, reszta w Edge Functions env vars
+
+**Zobacz takze:**
+- [owasp-react-supabase.md](owasp-react-supabase.md) -- OWASP Top 10 mapowanie

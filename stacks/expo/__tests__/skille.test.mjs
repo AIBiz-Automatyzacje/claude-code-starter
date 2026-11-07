@@ -108,9 +108,8 @@ test('mobile-e2e-maestro: bez zakazu dev-clienta i bez permissions all allow; ko
 })
 
 // Pliki rdzenia, które wciąż odsyłają do usuniętego skilla, bo ich wariant Expo robi dalsze IU. Lista kurczy się razem z nimi.
-const ZALEGLE_ODESLANIA = [
-  '.claude/agents/best-practices-researcher.md', // IU-2.9
-]
+/** @type {string[]} */
+const ZALEGLE_ODESLANIA = []
 // Nazwy skilli w telemetrii opisują przebiegi wszystkich wariantów; `doctor.sh` sprawdza skrypt coolify warunkowo; fraza w
 // `zapobieganie.mjs` to prefiks, który pasuje też do `ux-ui-guidelines-mobile` w builderach Expo (IU-2.1).
 const STALE_ODESLANIA = ['.claude/scripts/telemetria/skill.mjs', '.claude/scripts/doctor/doctor.sh', '.claude/scripts/wiedza/zapobieganie.mjs']
