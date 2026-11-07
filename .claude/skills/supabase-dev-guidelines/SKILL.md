@@ -1,11 +1,6 @@
 ---
 name: supabase-dev-guidelines
 description: Auth (Google/Facebook OAuth, email), Database (PostgreSQL, RLS policies, SECURITY DEFINER), Edge Functions, Realtime subscriptions. Uzywaj przy pracy z autentykacja, baza danych, migracjami, bezpieczenstwem.
-paths:
-  - "supabase/**"
-  - "**/*.sql"
-  - "src/lib/**"
-  - "src/hooks/**"
 ---
 
 # Supabase Development Guidelines
