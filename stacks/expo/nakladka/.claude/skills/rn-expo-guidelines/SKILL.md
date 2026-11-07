@@ -1,9 +1,6 @@
 ---
 name: rn-expo-guidelines
 description: "Wytyczne kodu React Native + Expo SDK 58 + Uniwind: komponenty i tokeny, listy FlashList, expo-image, safe area, klawiatura, Reanimated 4, haptyka, dostępność, Dynamic Type, ciemny motyw, kod per platforma, testy RNTL. Używaj przy pisaniu ekranów i komponentów RN, 'ekran', 'lista', 'formularz', 'animacja', przy review kodu UI mobile."
-paths:
-  - "**/*.tsx"
-  - "**/global.css"
 ---
 
 # Wytyczne RN + Expo

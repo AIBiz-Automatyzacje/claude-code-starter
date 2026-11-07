@@ -1,13 +1,6 @@
 ---
 name: ux-ui-guidelines-mobile
 description: Wytyczne UX/UI dla aplikacji mobilnych (Expo + React Native + Uniwind, ale stack-agnostic w pryncypiach). Platform conventions (iOS HIG vs Material 3), typografia natywna (SF Pro/Roboto, Dynamic Type, type scale), 8pt grid + safe areas, semantic colors + dark mode jako redesign, ikony (SF Symbols vs Lucide vs Material Symbols), motion i micro-interactions (Reanimated — aktualny major 4.x, wymaga New Architecture; 3.x legacy — easing, stagger), haptics + native gestures (expo-haptics, RNGH 3.x), stany loading/empty/error, formy + klawiatura mobilna, navigation patterns (tabs/drawer/stack/modal), bottom sheets i modale, listy (FlashList v2, swipe actions), accessibility (VoiceOver, TalkBack, Dynamic Type), pułapki AI-generowanego UI, teardowny premium apek (Things 3, Bear, Linear, Wellspoken), app icon i splash screen. Używaj przy projektowaniu ekranów mobilnych, budowie design system pod mobile, decyzjach iOS vs Android, "ekran wygląda tanio", "feels off na mobile", "native feel vs web feel", review designu mobilnego, mobile polish.
-paths:
-  - "src/app/**/*.tsx"
-  - "src/components/**/*.tsx"
-  - "src/screens/**/*.tsx"
-  - "app/**/*.tsx"
-  - "components/**/*.tsx"
-  - "screens/**/*.tsx"
 ---
 
 # UX/UI Guidelines — Mobile

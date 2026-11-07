@@ -22,11 +22,6 @@ const ZALEGLE = [
   '.claude/skills/dev-compound/references/stack.md', // IU-2.9
   '.claude/skills/weryfikacja-setup/references/stack.md', // IU-2.6
   // wyjątki strażnika `podmiana`
-  '.claude/agents/feature-builder-ui.md', // IU-2.1
-  '.claude/agents/feature-builder-ui-figma.md', // IU-2.1
-  '.claude/agents/feature-builder-fullstack.md', // IU-2.1
-  '.claude/agents/feature-builder-fullstack-figma.md', // IU-2.1
-  '.claude/agents/feature-builder-data.md', // IU-2.1
   '.claude/templates/smoke-autopilot/', // IU-2.6
 ]
 
