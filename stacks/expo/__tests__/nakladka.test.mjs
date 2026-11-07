@@ -16,11 +16,8 @@ import { przygotujLawke } from '../../testuj-wariant.mjs'
 const KORZEN = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const STACK = join(KORZEN, 'stacks/expo')
 
-const ZALEGLE = [
-  // sloty
-  '.claude/skills/dev-prep/references/stack.md', // IU-2.9
-  '.claude/skills/dev-compound/references/stack.md', // IU-2.9
-]
+/** @type {string[]} */
+const ZALEGLE = []
 
 /** @returns {string[]} */
 function plikiNakladki() {

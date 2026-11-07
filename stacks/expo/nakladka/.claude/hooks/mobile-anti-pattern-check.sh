@@ -61,15 +61,15 @@ while IFS= read -r file; do
 
     # Klient Supabase w wariancie domyślnym (D9) używa polyfillu localStorage z expo-sqlite.
     if ! grep -q 'expo-sqlite/localStorage' "$file"; then
-        dopisz "$(trafienia '\b(localStorage|sessionStorage)\b' "$file")" "localStorage/sessionStorage -> expo-secure-store (sekrety) albo AsyncStorage (cache):"
+        dopisz "$(trafienia '\b(localStorage|sessionStorage)\b' "$file")" "localStorage/sessionStorage → expo-secure-store (sekrety) albo AsyncStorage (cache):"
     fi
-    dopisz "$(trafienia '<(div|span|button|input|a)[ />]' "$file")" "HTML elementy -> <View>, <Text>, <Pressable>, <TextInput>, <Link> z expo-router:"
-    dopisz "$(trafienia "from ['\"]react-router(-dom)?['\"]" "$file")" "react-router -> expo-router:"
-    dopisz "$(trafienia '\b(useNavigate|useLocation)[[:space:]]*\(' "$file")" "useNavigate/useLocation -> useRouter()/usePathname() z expo-router:"
-    dopisz "$(trafienia '\b(window|document)\.' "$file")" "window./document. -> crash w RN (brak DOM); plik .web.tsx albo warunek process.env.EXPO_OS === 'web':"
-    dopisz "$(trafienia 'import\.meta\.env' "$file")" "import.meta.env -> process.env.EXPO_PUBLIC_*:"
-    dopisz "$(trafienia "import[^;]*\bSafeAreaView\b[^;]*from ['\"]react-native['\"]" "$file")" "SafeAreaView z react-native -> react-native-safe-area-context:"
-    dopisz "$(trafienia 'process\.env\[' "$file")" "process.env[...] -> odczyt przez kropkę; Expo nie podstawi dynamicznego klucza:"
+    dopisz "$(trafienia '<(div|span|button|input|a)[ />]' "$file")" "HTML elementy → <View>, <Text>, <Pressable>, <TextInput>, <Link> z expo-router:"
+    dopisz "$(trafienia "from ['\"]react-router(-dom)?['\"]" "$file")" "react-router → expo-router:"
+    dopisz "$(trafienia '\b(useNavigate|useLocation)[[:space:]]*\(' "$file")" "useNavigate/useLocation → useRouter()/usePathname() z expo-router:"
+    dopisz "$(trafienia '\b(window|document)\.' "$file")" "window./document. → crash w RN (brak DOM); plik .web.tsx albo warunek process.env.EXPO_OS === 'web':"
+    dopisz "$(trafienia 'import\.meta\.env' "$file")" "import.meta.env → process.env.EXPO_PUBLIC_*:"
+    dopisz "$(trafienia "import[^;]*\bSafeAreaView\b[^;]*from ['\"]react-native['\"]" "$file")" "SafeAreaView z react-native → react-native-safe-area-context:"
+    dopisz "$(trafienia 'process\.env\[' "$file")" "process.env[...] → odczyt przez kropkę; Expo nie podstawi dynamicznego klucza:"
 
     zglos_plik "$file"
 done <<< "$KOD"
