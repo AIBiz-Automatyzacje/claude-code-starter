@@ -16,3 +16,7 @@
 .claude/templates/bramki/.size-limit.json
 # Testy konfiguracji Vitest; wersję jest ma stacks/expo/__tests__/bramki.test.mjs.
 .claude/templates/bramki/__tests__/
+# Pakiet workspace fixture'u web (Vitest, size-limit); fixture RN pisze kod w projekcie, a jego testy są w stacks/expo/__tests__/smoke-fixture.test.mjs.
+.claude/templates/smoke-autopilot/__tests__/
+.claude/templates/smoke-autopilot/pakiet/
+.claude/templates/smoke-autopilot/wstaw-pakiet.mjs

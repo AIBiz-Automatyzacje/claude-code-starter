@@ -20,9 +20,6 @@ const ZALEGLE = [
   // sloty
   '.claude/skills/dev-prep/references/stack.md', // IU-2.9
   '.claude/skills/dev-compound/references/stack.md', // IU-2.9
-  '.claude/skills/weryfikacja-setup/references/stack.md', // IU-2.6
-  // wyjątki strażnika `podmiana`
-  '.claude/templates/smoke-autopilot/', // IU-2.6
 ]
 
 /** @returns {string[]} */

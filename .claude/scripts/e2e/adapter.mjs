@@ -187,6 +187,10 @@ export const SZKIELET_WERYFIKACJI = {
   domyslneParametry: 'domyślne (Vite)',
   obcySerwer: 'Port zajęty przez serwer spoza pipeline’u\n(np. zwykły dev server) zatrzymuje Launch z PID-em i komendą procesu w polu `naprawa` — dev server zostaje na swoim porcie, E2E na osobnym.',
   doctor: '`agent-browser doctor`',
+  gdzieJazda: 'w przeglądarce',
+  atrybutSelektora: 'data-testid',
+  /** @type {(pliki: string[], projekt: string) => string[]} trasy z samej struktury plików; web bierze je z konfiguracji routera */
+  trasyZPlikow: () => [],
   drive: 'Przeglądarka: skill `agent-browser` — `open <url>` → `snapshot -i` → akcja na refie → `snapshot -i` po każdej zmianie strony.',
   /** @param {number} testId liczba atrybutow data-testid w kodzie @returns {string} */
   selektory: (testId) => (testId

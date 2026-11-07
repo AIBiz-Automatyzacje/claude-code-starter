@@ -49,6 +49,7 @@ test('walidacja: konfiguracja Jest z tabeli spike\'a, krok build bez eas, typy n
   const jest = JSON.parse(blok[1])
   assert.equal(jest.preset, 'jest-expo')
   assert.equal(jest.resolver, 'react-native-reanimated/jest/resolver')
+  assert.deepEqual(jest.testPathIgnorePatterns, ['/node_modules/', '<rootDir>/.claude/'])
   for (const paczka of ['standard-navigation', 'uniwind']) assert.ok(jest.transformIgnorePatterns[0].includes(paczka), paczka)
   assert.deepEqual(Object.keys(jest.moduleNameMapper), ['\\.css$', '^@/assets/(.*)$'])
   assert.match(w, /`npx expo export --platform ios --platform android --output-dir \.expo\/export-walidacja`/)

@@ -108,6 +108,9 @@ test('szkielet web: dowód zrzutem pod ścieżką bezwzględną i selektory data
   assert.match(SZKIELET_WERYFIKACJI.evidence, /`agent-browser screenshot "\$\(git rev-parse --show-toplevel\)\/<folder zadania>\/<flow>\.png"`/)
   assert.match(SZKIELET_WERYFIKACJI.evidence, /demon agent-browser/)
   assert.match(SZKIELET_WERYFIKACJI.selektory(1), /data-testid/)
+  assert.equal(SZKIELET_WERYFIKACJI.atrybutSelektora, 'data-testid')
+  assert.equal(SZKIELET_WERYFIKACJI.gdzieJazda, 'w przeglądarce')
+  assert.deepEqual(SZKIELET_WERYFIKACJI.trasyZPlikow(['src/app/index.tsx'], '/x'), [])
 })
 
 // Przeniesione z plan/__tests__/skill-dev-plan.test.mjs.
