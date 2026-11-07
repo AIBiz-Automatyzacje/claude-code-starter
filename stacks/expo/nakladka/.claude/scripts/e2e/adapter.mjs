@@ -9,6 +9,7 @@ import { join } from 'node:path'
 
 import { PLIK_CANARY, przejdzCanary, wyslijReload } from './expo-canary.mjs'
 import { cofnijEnvE2e, PLIK_DEV, plikAdaptera, zapiszEnvE2e } from './expo-env.mjs'
+import { trasyExpoRouter } from './expo-trasy.mjs'
 import { aplikacjaProjektu, OSTRZEZENIE_CLEAN, przygotujUrzadzenie, REBUILD, zrzutEkranu } from './expo-urzadzenie.mjs'
 
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
@@ -137,14 +138,17 @@ export const SZKIELET_WERYFIKACJI = {
   domyslneParametry: 'domyślne (Metro na 8081)',
   obcySerwer: 'Proces spoza pipeline’u na tym porcie (np. zwykłe `expo start`)\nLaunch zatrzymuje i stawia własne Metro: obce mogłoby serwować paczkę innego projektu.',
   doctor: '`maestro --version`, `xcrun simctl list devices booted` albo `adb devices`',
-  drive: 'Urządzenie: skill `mobile-e2e-maestro`: flow `.maestro/<flow>.yaml` przez `maestro --device <id> test`.',
+  gdzieJazda: 'na urządzeniu',
+  atrybutSelektora: 'testID',
+  trasyZPlikow: trasyExpoRouter,
+  drive: 'Urządzenie: skill `mobile-e2e-maestro`: flow `.maestro/<flow>.yaml` przez `node .claude/scripts/e2e/expo-flow.mjs --zadanie <folder zadania> --flow <flow>`.',
   /** @param {number} testId liczba atrybutów testID w kodzie @returns {string} */
   selektory: (testId) => (testId
     ? `Selektory: kod ma ${testId} atrybutów \`testID\`: w flow wskazuj je polem \`id\`.`
     : 'Selektory: kod nie ma atrybutów `testID`: elementy wskazuj widocznym tekstem.'),
   evidence: [
-    'Dowód scenariusza = kod wyjścia Maestro + stan po akcji + skutek uboczny. Stan: `assertVisible` i `takeScreenshot` w flow, zrzuty w',
-    '`--test-output-dir "$(git rev-parse --show-toplevel)/<folder zadania>/maestro/<flow>"`. Skutek uboczny (zapis, wysyłka): wiersz bazy e2e.',
+    'Dowód scenariusza = status flow + stan po akcji + skutek uboczny. Stan: `assertVisible` i `takeScreenshot` w flow, uruchomionym przez',
+    '`node .claude/scripts/e2e/expo-flow.mjs --zadanie <folder zadania> --flow <flow>`: zrzuty idą do `<folder zadania>/maestro/<flow>`, a zapis komend z hasłem zostaje poza repo. Skutek uboczny (zapis, wysyłka): wiersz bazy e2e.',
   ].join('\n'),
   cleanup: 'Urządzenie zostaje włączone. `node .claude/scripts/e2e/e2e.mjs stop` zatrzymuje Metro i sprząta plik env.',
 }

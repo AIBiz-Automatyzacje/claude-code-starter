@@ -27,6 +27,7 @@ Wzorzec `transformIgnorePatterns` z docs Expo nie wystarcza. Klucz `jest` w `pac
 {
   "preset": "jest-expo",
   "resolver": "react-native-reanimated/jest/resolver",
+  "testPathIgnorePatterns": ["/node_modules/", "<rootDir>/.claude/"],
   "transformIgnorePatterns": [
     "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|uniwind))",
     "/node_modules/react-native-reanimated/plugin/",
@@ -43,6 +44,7 @@ Plik `jest-css-stub.js` w korzeniu to `module.exports = {};`. Skrypt testów: `"
 
 | Objaw | Przyczyna | Naprawa |
 |---|---|---|
+| Doctor: `jest zbiera <n> plików testów maszynerii z .claude/**` | Jest zbiera testy szablonu, których nie umie uruchomić, więc run staje na starcie | `testPathIgnorePatterns` wyżej |
 | `Must use import to load ES Module: standard-navigation` | wzorzec z docs nie ma `standard-navigation`, a Expo Router 58 go wymaga | wzorzec wyżej |
 | to samo dla `uniwind/src/index.ts` | kod testowany importuje z `uniwind` | wzorzec wyżej |
 | `SyntaxError` na `@import 'tailwindcss'` | import `@/global.css` | `moduleNameMapper` na `\.css$` |

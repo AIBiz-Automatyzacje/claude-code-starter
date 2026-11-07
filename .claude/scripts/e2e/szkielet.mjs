@@ -1,5 +1,5 @@
 // Generator skilla weryfikacji projektu (P14, PANEL-WEJSCIE §2 pkt 14; wolany przez /weryfikacja-setup): szkielet SKILL.md
-// z faktow repo (parametry .env.e2e, menedzer pakietow, trasy z kodu, konwencja data-testid) i mapa funkcji zasiana z planow
+// z faktow repo (parametry .env.e2e, menedzer pakietow, trasy z kodu, atrybut selektora ze stacku) i mapa funkcji zasiana z planow
 // zrobionych zadan. Launch, Doctor i Cleanup to polecenia e2e.mjs — te same, ktore wola autopilot — wiec skill nie ma
 // wlasnego przepisu na srodowisko. Znaczniki „UZUPEŁNIJ” zostawiaja miejsca, ktore agent generatora wypelnia z kodu
 // i sprawdza w jednym przejsciu na zywo.
@@ -82,13 +82,14 @@ function plikiKodu(projekt) {
 
 /**
  * Trasy ekranow z kodu: `path: '/x'` (konfiguracja routera), `<Route path="/x">`, trasy wzgledne zagniezdzonego routera, stale
- * `*_PATH`/`*_ROUTE` i katalogi stron app routera Next.js — bez tras API i plikow statycznych.
+ * `*_PATH`/`*_ROUTE`, katalogi stron app routera Next.js i trasy plikowe stacku z adaptera — bez tras API i plikow statycznych.
  * @param {string} projekt
  * @returns {{ trasy: string[], obcieto: number }} posortowane, bez powtorzen; obcieto = trasy ponad limit listy
  */
 export function trasyAplikacji(projekt) {
-  const trasy = new Set()
-  for (const p of plikiKodu(projekt)) {
+  const sciezki = plikiKodu(projekt)
+  const trasy = new Set(SZKIELET_WERYFIKACJI.trasyZPlikow(sciezki, projekt))
+  for (const p of sciezki) {
     const next = STRONA_NEXT.exec(p)
     if (next) trasy.add(`/${next[1].split('/').filter((s) => !/^\(.*\)$/.test(s)).join('/')}`.replace(/\/$/, '') || '/')
     const kod = readFileSync(join(projekt, p), 'utf8')
@@ -100,8 +101,8 @@ export function trasyAplikacji(projekt) {
   return { trasy: ekrany.slice(0, MAKS_TRAS), obcieto: Math.max(0, ekrany.length - MAKS_TRAS) }
 }
 
-/** @param {string} projekt @returns {number} liczba atrybutow data-testid w kodzie */
-const liczTestId = (projekt) => plikiKodu(projekt).reduce((n, p) => n + (readFileSync(join(projekt, p), 'utf8').match(/data-testid=/g)?.length ?? 0), 0)
+/** @param {string} projekt @returns {number} liczba atrybutow selektora ze stacku w kodzie */
+const liczTestId = (projekt) => plikiKodu(projekt).reduce((n, p) => n + readFileSync(join(projekt, p), 'utf8').split(`${SZKIELET_WERYFIKACJI.atrybutSelektora}=`).length - 1, 0)
 
 /** @param {string} projekt @returns {string} */
 function nazwaProjektu(projekt) {
@@ -140,7 +141,7 @@ export function szkieletSkilla(projekt, { wpisowMapy }) {
   return [
     '---',
     'name: weryfikacja',
-    `description: "Weryfikacja aplikacji ${nazwa} na żywo: uruchomienie (Launch), sprawdzenie środowiska (Doctor), prowadzenie aplikacji w przeglądarce (Drive), dowody (Evidence), sprzątanie (Cleanup) i mapa funkcji. Używaj przy scenariuszach [E2E], sprawdzaniu funkcji w działającej aplikacji, odtwarzaniu zgłoszenia i smoke'u operatora."`,
+    `description: "Weryfikacja aplikacji ${nazwa} na żywo: uruchomienie (Launch), sprawdzenie środowiska (Doctor), prowadzenie aplikacji ${SZKIELET_WERYFIKACJI.gdzieJazda} (Drive), dowody (Evidence), sprzątanie (Cleanup) i mapa funkcji. Używaj przy scenariuszach [E2E], sprawdzaniu funkcji w działającej aplikacji, odtwarzaniu zgłoszenia i smoke'u operatora."`,
     '---', '',
     `# Weryfikacja — ${nazwa}`, '',
     'Przejście na żywo: niewykonane', '',
@@ -159,7 +160,7 @@ export function szkieletSkilla(projekt, { wpisowMapy }) {
     env?.E2E_TEST_EMAIL
       ? `Logowanie: konto \`E2E_TEST_EMAIL\` / \`E2E_TEST_PASSWORD\` z \`${PLIK_ENV}\` (wartości nie trafiają do logów)${logowanie.length ? ` na ${logowanie.map((t) => `\`${t}\``).join(', ')}` : ''}.`
       : `Logowanie: ${ZNACZNIK} konto testowe i trasa logowania; bez logowania wpisz „nie dotyczy” -->`,
-    `${ZNACZNIK} pola formularza logowania i nawigacja do głównych ekranów (etykiety, role, data-testid) -->`, '',
+    `${ZNACZNIK} pola formularza logowania i nawigacja do głównych ekranów (etykiety, role, ${SZKIELET_WERYFIKACJI.atrybutSelektora}) -->`, '',
     SZKIELET_WERYFIKACJI.selektory(testId), '',
     '## Evidence', '',
     SZKIELET_WERYFIKACJI.evidence,
