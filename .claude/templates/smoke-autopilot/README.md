@@ -66,9 +66,9 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
 1. Status OK, 2 fazy, gate CZYSTE lub ZASTRZEZENIA, zadanie zarchiwizowane, `mapa-funkcji.md` skilla weryfikacji z wpisami `smoke-strona` i `smoke-strona-faza-2`.
 2. Review: >= 1 potwierdzony P2 na tescie happy path; fix go naprawia.
 2a. Bramki (wynik agenta `domkniecie:faza-1` w `journal.jsonl`, pole `bramki`): `eslint` porazka z `no-empty`,
-   `migracje` porazka; `poNaprawie` obu = `ok`; `stryker` z trafieniami (pole `mutanty` niepuste — test `typeof` przepuszcza
-   mutanty sumy); suma `sekundy` bramek <= 143. Commit fazy: migracja bez zmian wzgledem bazy, `catch` raportuje albo rzuca,
-   nowy `supabase/migrations.sum`. Rekord telemetrii fazy: `bramki.eslint.status = "porazka"`.
+   `migracje` porazka; `poNaprawie` obu = `ok`; `stryker` z trafieniami (pole `trafienia` > 0 przy statusie `ok` — test `typeof` przepuszcza
+   mutanty sumy; ktore mutanty, podaje finding review); suma `sekundy` bramek <= 143. Commit fazy: migracja bez zmian wzgledem bazy, `catch` raportuje albo rzuca,
+   `supabase/migrations.sum` nowy, a w projekcie, ktory juz go ma, bez zmian. Rekord telemetrii fazy: `bramki.eslint.status = "porazka"`.
 3. Asercje fazy "Smoke operatora" (complete-wf):
    - log complete-wf: `Smoke operatora: docs/operator/<data>-smoke-autopilot-smoke.md (N pozycji)` BEZ fragmentu
      `UWAGA: ... [E2E] nieuruchomionych` (e2eNieuruchomione musi byc 0: `smoke-strona` odznaczony po PASS,
@@ -97,11 +97,11 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
    i komenda startu samej aplikacji z Vite — w monorepo `pnpm run dev` korzenia uruchamia wszystkie pakiety i przekazuje im flagi
    Vite. Przyklad monorepo z pakietem `@oferty/dashboard`: `E2E_START="pnpm --filter @oferty/dashboard exec vite --mode e2e --port 5174 --strictPort"`.
    Pusta baza e2e: `supabase db push --db-url "$SUPABASE_E2E_DB_URL" --include-all --yes` raz przed runem (db-sync fazy jest wtedy
-   przyrostowy). Sprawdzenie: `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/smoke-autopilot` = `gotowe`.
+   przyrostowy). Baza z lokalnego `supabase start` poza kopia: port bazy musi byc rowny `[db] port` z `supabase/config.toml` kopii, bo `db push --db-url` na innym porcie wymusza TLS i dostaje odmowe. Sprawdzenie: `node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/smoke-autopilot` = `gotowe`.
 3. **Skill weryfikacji:** `/weryfikacja-setup` w kopii (szkielet, fakty z kodu, przejscie na zywo, commit) — tester czyta
    `.claude/skills/weryfikacja/`, a archiwizacja dopisuje flow zadania do `mapa-funkcji.md`.
-4. **Przebieg (2):** swiezy run; po domknieciu fazy 1 (log `Faza 2` / execute fazy 2 w toku) z drugiego terminala w kopii
-   `node .claude/scripts/e2e/e2e.mjs stop`. Oczekiwane: `smoke-strona` PASS z dowodem, `smoke-strona-faza-2` → `[Manual]`
+4. **Przebieg (2):** swiezy run; zaraz po agencie `e2e:restart:faza-2` (log `E2E restart fazy 2`) z drugiego terminala w kopii
+   `node .claude/scripts/e2e/e2e.mjs stop`. Wczesniejszy stop nic nie da, bo ten restart stawia serwer od nowa (`restartFazy`, `odNowa: true`). Oczekiwane: `smoke-strona` PASS z dowodem, `smoke-strona-faza-2` → `[Manual]`
    z powodem, 0 STOP-ow w trakcie, run OK; telemetria `faza.e2e.manual` = 1 w fazie 2, `run.manual_razem` = 1.
 
 ## Test resume (scenariusz celowy)

@@ -64,6 +64,49 @@ Odstępstwa od README i zlecenia:
 - `przygotuj-kopie.sh` skończył się kodem 8 na `runner testów`, bo Jest spike'a nie ma `testPathIgnorePatterns`; naprawa z doctora osobnym commitem w kopii (`492f2c1`).
 - `pgrep -fl` sesji runu wypisał do jej transkryptu `CLAUDE_CODE_MESSAGING_TOKEN` zakończonej sesji potomnej. Wg sesji token nie był użyty.
 
+## Run autopilota na kopii: web
+
+Przebieg po przyjęciu Etapu 2, które na nim nie czekało. Kopia klonu `vibersi` (`5597449`), szablon `53a17e7`, lokalny Supabase w Dockerze z 37 migracjami kopii, konto testowe tylko w tej bazie. Gałąź `popr/smoke-web-po-biegu`.
+
+| Run | Wynik | Czas | Koszt |
+|---|---|---|---|
+| `wf_57525432-d15`, przebieg (1) | Oczekiwany STOP: `start: srodowisko E2E — zadanie ma 2 scenariuszy [E2E], a repo nie ma .env.e2e` | 3 min | 0,55 USD |
+| `wf_78488c6d-20c`, przebieg (2) | Status OK, 2 fazy, 39 agentów | 43 min | 11,56 USD |
+
+| Punkt „Oczekiwanego wyniku” | Wynik | Dowód |
+|---|---|---|
+| Przebieg (1): STOP przed fazą 1 | PASS | Wynik `wf_57525432-d15`; fazy `pending` |
+| Środowisko: `sprawdz` i konto | PASS | `status: gotowe`, `bazaE2e: true`; log startu: konto utworzone przez admin API |
+| Przebieg (2): `smoke-strona` PASS, `smoke-strona-faza-2` na `[Manual]`, 0 STOP-ów | PASS | Zrzut `smoke-strona.png`; telemetria: faza 2 `manual: 1`, `run.manual_razem: 1`; serwer zatrzymany o 14:15:16 |
+| 1. Status OK, 2 fazy, gate, archiwum, mapa funkcji | PASS | Gate CZYSTE w obu fazach, archiwum `540728a`, `mapa-funkcji.md` z oboma flow |
+| 2. P2 na teście happy path, fix | PASS | `review-faza-1.md`: P2 `src/lib/smoke-autopilot.test.ts:7`; sceptycy `agree` 3/3; fix `7b8c970` daje `toBe(5)`; kontrola `aa19308` |
+| 2a. Bramki | PASS | `eslint` `porazka` z `no-empty`, `migracje` i `migracjeSuma` `porazka`, po naprawie `ok`; `stryker` 2 trafienia; suma 17,8 s; telemetria `bramki.eslint.status = porazka`; diff `supabase/` względem bazy pusty |
+| 3. Smoke operatora | PASS | `docs/operator/2026-11-07-smoke-autopilot-smoke.md` (5 pozycji), sekcja ręcznego E2E z powodem, plik w `540728a`, wartości sekretów: 0 trafień |
+| 3. Wariant negatywny (drugi run) | NIESPRAWDZONE | Nie uruchamiałem, to kolejny pełny run |
+| 4. Ogrodnik | PASS | `ogrod:pomiar` po `compound-refresh`, przed `smoke-operatora`; bez `ogrod:ocena`, log podaje powód; sekcja `## Ogród`; `run.ogrod.status = ok` |
+
+Punkt 2a domyka uwagę z runu Expo: pusty `catch` z planu wszedł w `e81b111`, a ESLint go zgłosił.
+
+**Regresji względem webu nie znalazłem.** Porównanie z `wf_6ce4e483-5b6` (smoke P17, też vibersi, sprzed `746d862`): te same role poza `fix:poprawka` (dodatkowa tura kontroli fixa) i `review:performance` (routing), 39 zamiast 45 agentów, 3,18 M zamiast 4,49 M jednostek, 43 zamiast 41 min. P17 miał 4 buildy i 29 oraz 27 plików w review, więc koszt nie jest wprost porównywalny. Pominięcie 5 reviewerów w fazie 2 to nie zmiana: to samo robił `wf_1a28a396-1e1` sprzed Etapu 2.
+
+Defekty z runu:
+- **D1, naprawione na `popr/smoke-web-po-biegu`:** moment `stop` w `.claude/templates/smoke-autopilot/README.md`. W runie stop nastąpił po `e2e:restart:faza-2`.
+- **D4, otwarte, potwierdzone w webie:** `.claude/scripts/e2e/ksiegowanie.mjs:18` uciął powód na `Preflight: curl -sS http://localhost:5184`. Smoke odsyła po dziennik do `docs/active/`, a po archiwizacji plik jest w `docs/completed/`.
+- **D5, otwarte, niska waga, nie z Etapu 2:** `stan:zapis` (`.claude/workflows/dev-autopilot-wf.js:1693`, `klasa-mechaniczny`, haiku) odmówił nadpisania stanu, bo uznał przejście fazy na `fix: done` za utratę findingów, wbrew poleceniu. Retry z `:1698` zapisał plik. To samo zdarzyło się w `wf_1a28a396-1e1`.
+- **D6, naprawione na `popr/smoke-web-po-biegu`:** punkt 2a README wymagał pola `mutanty`, którego nie ma w wyniku bramek, i nowego `migrations.sum`, które vibersi już ma.
+
+Poza szablonem, w projekcie: 8 testów vibersi pada bez `.env` (`VITE_TURNSTILE_SITE_KEY`, `VITE_SUPABASE_*`), 2 kolejne padły raz pod obciążeniem przy starcie Dockera, a `src/components/layout/menu-telefonu.test.tsx:411` padł w 1 z 5 biegów fazy 2, przyczyny nie ustalono.
+
+Odstępstwa:
+- `claude -p --effort medium --dangerously-skip-permissions` za zgodą operatora, bez sesji desktop.
+- `.env` kopii z atrapami, bo `przygotuj-kopie.sh` skończył się kodem 7 przez te testy. Bazowe bramki potem 3547/3547.
+- `E2E_START` to samo Vite na porcie 5184, bo 5174 zajmuje obcy proces, a `pnpm e2e:start` wymaga adresu `*.supabase.co`. Serwer Hono nie działał.
+- Bez `/weryfikacja-setup`: vibersi ma skill, w kopii poprawiony tylko Launch (`c271b0d`), bez przejścia na żywo.
+
+Niesprawdzone: wgranie nowej migracji przez db-sync (fazy jej nie dodają, wynik `aktualna`), advisors (brak tokenu i brak zmian w migracjach), login canary z captchą, trasy serwera, sesja desktop, pozycje ze smoke'u operatora, test resume, źródło „2 agentów z pustym wynikiem” z raportu sesji runu (journal: 39 wyników na 39 startów).
+
+Kontrola granic: polecenia agentów bez `Kodowanie/vibersi` i `.supabase.co`, transkrypty runów bez wartości klucza i hasła e2e, prawdziwe vibersi bez zmian (`5597449`, `main`, czyste).
+
 ## Co powstało
 
 Pełne opisy: tabela „Stan Etapu 2” w planie.
