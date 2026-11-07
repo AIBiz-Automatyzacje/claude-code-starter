@@ -4,11 +4,11 @@ Data: 2026-11-07. Szablon: `cc4e4ce`, CI „maszyneria” zielone (run `42362958
 
 **Status: Etap 2 przyjęty przez operatora 2026-11-07, z zastrzeżeniami.** Kryterium z planu spełnione, run autopilota na kopii przeszedł bez punktu bramek.
 
-Zastrzeżenia:
-- Punkt bramek ESLint i migracji przechodzi do pilota w Etapie 4.
-- D3 naprawiane przed Etapem 3, na osobnej gałęzi `popr/*`, z próbą na iPhone 17.
-- Przebieg autopilota web na kopii w osobnej sesji. Przyjęcie na niego nie czeka, a wynik może dodać poprawki.
-- `paths:` w skillach web po odbiorze, na osobnej gałęzi `popr/*`.
+Zastrzeżenia i ich stan:
+- Punkt bramek ESLint i migracji w wariancie Expo przechodzi do pilota w Etapie 4. Otwarte.
+- D3 naprawiane przed Etapem 3: zrobione, merge `ea23fce`, próba na iPhone 17. Android nie biegł, a `ps -E` nadal pokazuje wartości temu samemu użytkownikowi.
+- Przebieg autopilota web na kopii: zrobiony po przyjęciu, regresji nie znaleziono, merge poprawek README `d1ce766`.
+- `paths:` w skillach web: usunięte po przebiegu web, merge `3b5eede`. Ta zmiana nie miała prawdziwego runu autopilota web.
 
 ## Wynik
 
@@ -49,11 +49,11 @@ Kopia klonu `spike-expo-58`, `.rdzen-version` = `cc4e4ce`, iPhone 17 (iOS 26.4),
 Scenariusze: `smoke-strona` PASS na symulatorze (zrzut: nagłówek i „dodajBezpiecznie(2, 3) = 5”, dymek LogBox `fetch failed` wg sesji pochodzi z sondy spike'a). `smoke-strona-faza-2` SKIP `srodowisko` i `[Manual]` z powodem, bo Metro zatrzymano o 12:29:37 (`watcher-stop.log`); `curl` kod 7 w `review-faza-2.md`.
 
 Defekty z runu:
-- **D1, naprawione na `popr/smoke-expo-po-biegu` (`60857d3`), niezmergowane:** README fixture'u kazał wykonać `stop` po domknięciu fazy 1, ale `e2e:restart:faza-2` stawia Metro od nowa, więc flow przeszedłby zamiast iść na `[Manual]`. To samo zdanie ma README web (`.claude/templates/smoke-autopilot/README.md:103`), nietknięte.
-- **D2, naprawione w `60857d3`:** tabele planu fixture'u podawały 18 i 15 linii flow, a treść ma 16 i 13.
-- **D3, naprawione na `popr/maestro-env-bez-argv`, czeka na merge:** `zmienneFlow` w `stacks/expo/nakladka/.claude/scripts/e2e/expo-canary.mjs` podawało `E2E_EMAIL` i `E2E_PASSWORD` jako `-e KLUCZ=wartość`, więc były jawne w wierszu komendy procesu. Tester wywołał `pgrep -fl` i wartości trafiły do jego transkryptu (w spike'u atrapy, finding OPERATOR w review fazy 1). Do logu i folderu dowodów nie trafiły. Teraz konto i klucze idą w środowisku procesu Maestro jako `MAESTRO_E2E_EMAIL`, `MAESTRO_E2E_PASSWORD` i `MAESTRO_*`. Próba na iPhone 17: canary i flow przeszły, 198 próbek `ps` i `pgrep -fl` bez wartości, `~/.maestro/tests` i dowody bez nich. Zostaje `ps -E`, które tym samym użytkownikiem pokazuje środowisko Maestro i Metro. Android nie biegł.
+- **D1, naprawione, merge `1f165d9` (Expo) i `d1ce766` (web):** README fixture'u kazał wykonać `stop` po domknięciu fazy 1, ale `e2e:restart:faza-2` stawia Metro od nowa, więc flow przeszedłby zamiast iść na `[Manual]`.
+- **D2, naprawione, merge `1f165d9`:** tabele planu fixture'u podawały 18 i 15 linii flow, a treść ma 16 i 13.
+- **D3, naprawione, merge `ea23fce`:** `zmienneFlow` w `stacks/expo/nakladka/.claude/scripts/e2e/expo-canary.mjs` podawało `E2E_EMAIL` i `E2E_PASSWORD` jako `-e KLUCZ=wartość`, więc były jawne w wierszu komendy procesu. Tester wywołał `pgrep -fl` i wartości trafiły do jego transkryptu (w spike'u atrapy, finding OPERATOR w review fazy 1). Do logu i folderu dowodów nie trafiły. Teraz konto i klucze idą w środowisku procesu Maestro jako `MAESTRO_E2E_EMAIL`, `MAESTRO_E2E_PASSWORD` i `MAESTRO_*`. Próba na iPhone 17: canary i flow przeszły, 198 próbek `ps` i `pgrep -fl` bez wartości, `~/.maestro/tests` i dowody bez nich. Zostaje `ps -E`, które tym samym użytkownikiem pokazuje środowisko Maestro i Metro. Android nie biegł.
 - **D4, otwarte, rdzeń:** `.claude/scripts/e2e/ksiegowanie.mjs:18` ucina powód `[Manual]` po 160 znakach w połowie zdania, a smoke odsyła po pełny dowód do `docs/active/`, którego po archiwizacji już nie ma.
-- **Do sprawdzenia, moja obserwacja:** plan fixture'u wymaga pustego `catch` w `parsujLiczbe`, a w historii kopii tego pliku nie ma żadnego commita z `catch`. Sesja podaje, że usunął go audyt domknięcia. Jeśli tak jest, punkt 3 w części ESLint może nie wyjść także w projekcie z ESLint.
+- **Do sprawdzenia, moja obserwacja:** plan fixture'u wymaga pustego `catch` w `parsujLiczbe`, a w historii kopii tego pliku nie ma żadnego commita z `catch`. Sesja podaje, że usunął go audyt domknięcia. Jeśli tak jest, punkt 3 w części ESLint może nie wyjść także w projekcie Expo z ESLint. W przebiegu web `catch` wszedł do commita i ESLint go zgłosił, ale projekt miał tam ESLint, więc pytanie o Expo zostaje otwarte do pilota.
 
 Drobne, bez wpływu na wynik: etykieta `warmup:vitest` przy runnerze Jest (`.claude/workflows/dev-autopilot-wf.js:1762`), `profil_stacku: null` w telemetrii, `testyTypow` z powodem „brak vitest”.
 
@@ -85,7 +85,7 @@ Przebieg po przyjęciu Etapu 2, które na nim nie czekało. Kopia klonu `vibersi
 | 3. Wariant negatywny (drugi run) | NIESPRAWDZONE | Nie uruchamiałem, to kolejny pełny run |
 | 4. Ogrodnik | PASS | `ogrod:pomiar` po `compound-refresh`, przed `smoke-operatora`; bez `ogrod:ocena`, log podaje powód; sekcja `## Ogród`; `run.ogrod.status = ok` |
 
-Punkt 2a domyka uwagę z runu Expo: pusty `catch` z planu wszedł w `e81b111`, a ESLint go zgłosił.
+Punkt 2a dotyczy webu: pusty `catch` z planu wszedł w `e81b111`, a ESLint go zgłosił. Nie zamyka to pytania z runu Expo, gdzie takiego commita nie ma, a projekt nie ma ESLint.
 
 **Regresji względem webu nie znalazłem.** Porównanie z `wf_6ce4e483-5b6` (smoke P17, też vibersi, sprzed `746d862`): te same role poza `fix:poprawka` (dodatkowa tura kontroli fixa) i `review:performance` (routing), 39 zamiast 45 agentów, 3,18 M zamiast 4,49 M jednostek, 43 zamiast 41 min. P17 miał 4 buildy i 29 oraz 27 plików w review, więc koszt nie jest wprost porównywalny. Pominięcie 5 reviewerów w fazie 2 to nie zmiana: to samo robił `wf_1a28a396-1e1` sprzed Etapu 2.
 
@@ -236,13 +236,13 @@ Lista z akapitów „Do kolejnych kroków” planu. Stan z dat prób, nie sprawd
 - README używa `npx`; pnpm i bun niesprawdzone.
 
 **Dopisane w tym odbiorze**
-- Przebieg autopilota w projekcie web po zmianach rdzenia z Etapu 2. Plan i raporty nie mają takiego zapisu, a „web bez zmian zachowania” opiera się na testach. Od `746d862` w `.claude/` zmieniło się 68 plików (+1447, −440), w tym `dev-autopilot-wf.js`, `start.mjs` i zmiany spoza Etapu 2 z `popr/znaleziska-szablonu`. Etap 1 złapał regresję canary właśnie takim przebiegiem, po zielonych testach.
+- Przebieg autopilota w projekcie web po zmianach rdzenia z Etapu 2: wykonany na kopii po przyjęciu, sekcja „Run autopilota na kopii: web”. W chwili przyjęcia „web bez zmian zachowania” opierało się na testach: od `746d862` w `.claude/` zmieniło się 68 plików (+1447, −440), w tym `dev-autopilot-wf.js`, `start.mjs` i zmiany spoza Etapu 2 z `popr/znaleziska-szablonu`.
 - Z runu autopilota: bramki `eslint` i `migracje` z defektami fixture'u oraz `expo-doctor` w runie (faza nie zmieniła zależności), run na Androidzie (Pixel_8 nie był włączany, canary spike'a padał na nim w IU-2.6 bez ustalonej przyczyny), baza e2e i db-sync (spike nie ma Supabase), pozycje ręczne ze smoke'a operatora.
 
 ## Sprawy otwarte
 
-1. **Defekty z runu:** D3 (hasło konta e2e w wierszu komendy) naprawione na `popr/maestro-env-bez-argv`, czeka na merge. D4 (ucięty powód `[Manual]`) otwarte. `popr/smoke-expo-po-biegu` (D1, D2) czeka na merge. Zdanie z D1 zostaje w README web.
-2. **`paths:` w skillach web:** `supabase-dev-guidelines`, `tailwind-react-guidelines` i `ux-ui-guidelines` nadal mają to pole, więc buildery web dostają te skille tylko czasem (transkrypty vibersi z 2026-11-01 i 11-03). Naprawa zmienia zachowanie webu. Decyzja operatora: po odbiorze, osobna gałąź `popr/*` z usunięciem `paths:` i testem rdzenia „skill w `skills:` bez `paths:`”.
+1. **Defekty z runów:** D4 (ucięty powód `[Manual]`, odesłanie do `docs/active/`) i D5 (`stan:zapis` odmawia nadpisania stanu, niska waga, nie z Etapu 2) otwarte. D1, D2, D3 i D6 zmergowane.
+2. **`paths:` w skillach web, naprawione, merge `3b5eede`:** pole zniknęło z `supabase-dev-guidelines`, `tailwind-react-guidelines` i `ux-ui-guidelines`, doszedł test rdzenia `.claude/workflows/__tests__/skille-preload.test.mjs`. Zmiana zachowania webu zamówiona przez operatora. Prawdziwe projekty dostaną ją dopiero przez `sync-template`. Niesprawdzone wg raportu sesji naprawy: role `-fullstack` i `-figma` (tylko test frontmattera, bez próby), prawdziwy run autopilota web z tą zmianą.
 3. **`dev-browser` w wariancie:** do decyzji, zdjęcie wymaga zmiany `doctor.test.mjs` rdzenia.
 4. **Test „probny zrzut na starcie” w `srodowisko.test.mjs`:** padł raz w pełnym `pnpm test`, przyczyna nieustalona. W trzech pełnych biegach odbioru nie padł.
 5. **`create_session` Figmy z A0.7 §4:** dalej poza allowlistą, jak na webie.
@@ -250,11 +250,14 @@ Lista z akapitów „Do kolejnych kroków” planu. Stan z dat prób, nie sprawd
 7. **Dysk operatora:** pliki `commands-*.json` z wcześniejszych przebiegów w `~/.maestro/tests` zostają i mogą zawierać wartości `-e`.
 8. **Stan `spike-expo-58`:** `package-lock.json` zmieniony przez `npm install` po próbie Strykera, treści zmiany nie oglądano. `.env.e2e` ma `E2E_PLATFORMA=android` i próbne wartości, jest `.maestro/_canary.yaml`.
 9. **Kopia i klon z runu:** zostają w scratchpadzie sesji runu do decyzji operatora o usunięciu.
+10. **D3 po merge'u:** `ps -E` pokazuje wartości temu samemu użytkownikowi (zakaz w roli testera, bez technicznej blokady), Android nie biegł, runner `.maestro/<etap>-run-all.sh` niesprawdzony, a klucze `MAESTRO_*` z `.env.e2e` są teraz w środowisku samego CLI i mogą wpływać na jego ustawienia. Flow używające starych `${E2E_EMAIL}` i `${E2E_PASSWORD}` przestają działać.
+11. **Kopia i wolumeny z przebiegu web:** `kopia-vibersi`, `baza-e2e` i wolumeny Dockera `supabase_db_kopia-smoke-vibersi`, `supabase_storage_kopia-smoke-vibersi` zostają do decyzji operatora o usunięciu.
 
 ## CI
 
 | Commit | Run | Wynik |
 |---|---|---|
 | `cc4e4ce` (merge IU-2.9, z IU-2.4a, 2.1 i 2.6) | `42362958177` | success, 1m59s |
+| `53a17e7` (raport odbioru, D1 i D2 Expo) | `42370428123` | success, 1m20s |
 
-Push objął 9 commitów nad `36273e1`, a `main..origin/main` był pusty po `git fetch` przed pushem.
+Push `cc4e4ce` objął 9 commitów nad `36273e1`, a `main..origin/main` był pusty po `git fetch` przed pushem.
