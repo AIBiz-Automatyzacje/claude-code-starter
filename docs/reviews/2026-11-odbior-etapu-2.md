@@ -2,7 +2,13 @@
 
 Data: 2026-11-07. Szablon: `cc4e4ce`, CI „maszyneria” zielone (run `42362958177`). Plan: `docs/plans/2026-11-01-001-feat-szablon-mobile-z-rdzenia-plan.md`.
 
-**Status: kryterium z planu spełnione, run autopilota na kopii przeszedł bez punktu bramek, Etap 2 czeka na decyzję operatora o przyjęciu.**
+**Status: Etap 2 przyjęty przez operatora 2026-11-07, z zastrzeżeniami.** Kryterium z planu spełnione, run autopilota na kopii przeszedł bez punktu bramek.
+
+Zastrzeżenia:
+- Punkt bramek ESLint i migracji przechodzi do pilota w Etapie 4.
+- D3 naprawiane przed Etapem 3, na osobnej gałęzi `popr/*`, z próbą na iPhone 17.
+- Przebieg autopilota web na kopii w osobnej sesji. Przyjęcie na niego nie czeka, a wynik może dodać poprawki.
+- `paths:` w skillach web po odbiorze, na osobnej gałęzi `popr/*`.
 
 ## Wynik
 
