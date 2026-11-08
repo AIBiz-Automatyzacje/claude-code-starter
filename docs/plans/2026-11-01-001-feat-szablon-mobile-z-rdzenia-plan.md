@@ -498,6 +498,13 @@ strażnika: 0 różnic. `straznik-claude` na GitHubie zielony (run `42500118233`
 OK). Zostają: deploy key i sekret `MOBILE_DEPLOY_KEY`, próbny `workflow_dispatch`. Te wpisy: gałąź
 `popr/plan-stan-etapu-3`, bramki `pnpm -s test` 1748/1748; typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0, 411 plików.
 
+Klucz publikacji (2026-11-08): operator założył deploy key `publikuj-mobile (claude-code-starter)` z prawem zapisu i sekret
+`MOBILE_DEPLOY_KEY`; sprawdzone tylko nazwy. Defekty z runów: D4 naprawiany przed pilotem (decyzja operatora), D5 po pilocie.
+
+| Defekt | Gałąź / merge | Co powstało | Liczby |
+|---|---|---|---|
+| D4 | `popr/d4-powod-manual` (`177b54a`), bez merge'a | Zmiana w rdzeniu: `ksiegowanie.mjs` skraca powód `[Manual]` do 160 znaków na ostatniej spacji z „…” (twardo, gdy spacji brak w drugiej połowie okna); scribe review zapisuje pełny dowód testera w Bookkeeping raportu fazy; smoke (workflow i skill) odsyła do `docs/completed/<zadanie>/review-faza-<faza>.md` i ogólnie pisze odsyłacze przez `docs/completed/` | `pnpm -s test` 1751/1751 (+3); typecheck 0; lint 0; wariant 1280/1282, 2 pominięte, 0 padnięć, typecheck 0, 411 plików. Niesprawdzone: prawdziwy run z pozycją `[Manual]` (sprawdzi pilot) |
+
 ### Etap 4 — Pilot na projekcie mobile
 
 - Przed syncem każdego projektu: konwersja jego `.claude/rules/learned-patterns.md` (gramywpadla 49 reguł, Nawykometr 7)
