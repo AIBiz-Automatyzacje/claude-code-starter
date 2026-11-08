@@ -489,9 +489,14 @@ wyłączony).
 
 Próba z GitHuba (2026-11-08): `claude plugin marketplace add AIBiz-Automatyzacje/claude-code-starter` i
 `claude plugin install expo@claude-code-starter --scope project` w zbudowanym wariancie dają plugin 1.14.3 z `gitCommitSha`
-`a9e5bd3`, a `settings.json` wariantu się nie zmienia. Zostają: pierwsza publikacja do repo mobile, deploy key i sekret
-`MOBILE_DEPLOY_KEY`, próbny `workflow_dispatch`. Ten wpis: gałąź `popr/plan-stan-etapu-3`, bramki `pnpm -s test` 1748/1748;
-typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0, 411 plików.
+`a9e5bd3`, a `settings.json` wariantu się nie zmienia.
+
+Pierwsza publikacja ręczna (2026-11-08, za zgodą operatora): build z czystego `9fee09b` (`.rdzen-version` bez `-dirty`,
+`sprawdz-wersje` OK, 0 plików ignorowanych przez `.gitignore` repo mobile), push `6fbd49d..0615a5a` do repo mobile: `cc67525`
+`sync: rdzeń 9fee09b…` (504 pliki, tylko `.claude/`), `52ae294` README, `0615a5a` workflow strażnika. Lokalna symulacja
+strażnika: 0 różnic. `straznik-claude` na GitHubie zielony (run `42500118233`, job `wariant-z-rdzenia` 7 s, krok porównania
+OK). Zostają: deploy key i sekret `MOBILE_DEPLOY_KEY`, próbny `workflow_dispatch`. Te wpisy: gałąź
+`popr/plan-stan-etapu-3`, bramki `pnpm -s test` 1748/1748; typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0, 411 plików.
 
 ### Etap 4 — Pilot na projekcie mobile
 
