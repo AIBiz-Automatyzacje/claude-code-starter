@@ -460,6 +460,7 @@ wyłączony flagą w pliku workflowu, `workflow_dispatch` jako ręczna publikacj
 | IU | Gałąź / merge | Co powstało | Liczby |
 |---|---|---|---|
 | 3.2 | `popr/wariant-expo-ci` (`2533056`), bez merge'a | Job `wariant-expo` w `maszyneria.yml` (build, `stacks/sprawdz-wersje.mjs`, strażnik i nakładka, `testuj-wariant.mjs`); akcje: `pnpm/action-setup` v6.1.1, `setup-node` v7.1.0 | `pnpm -s test` 1723/1723; typecheck 0; lint 0; wariant 1273/1275, 2 pominięte, 0 padnięć, typecheck 0, 411 plików; kroki joba lokalnie: strażnik i nakładka 256/256; actionlint 0. Job na runnerze GitHuba niesprawdzony (bez pusha) |
+| 3.5 | `popr/repo-mobile-tresc` (`3a89824`), bez merge'a; repo mobile nietknięte | `stacks/expo/repo-mobile/`: README od nowa (pochodzenie `.claude/`, zakaz edycji, instalacja, sync, przejście ze starego mobile) i `.github/workflows/straznik-claude.yml` (build z SHA w `.rdzen-version`, `diff -r` z `.claude/` i `output-styles/`); test `repo-mobile.test.mjs` | `pnpm -s test` 1719/1719 (+2); typecheck 0; lint 0; wariant 1273/1275, 2 pominięte, 0 padnięć, typecheck 0; actionlint 0. Symulacja kroków strażnika lokalnie: czysty build OK, zmieniony plik, dodatkowy plik i `-dirty` odrzucone. Niesprawdzone: bieg na GitHubie, checkout startera po SHA. README zakłada IU-3.4 i IU-3.4b |
 
 ### Etap 4 — Pilot na projekcie mobile
 
