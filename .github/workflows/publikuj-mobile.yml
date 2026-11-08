@@ -1,0 +1,100 @@
+# Publikacja wariantu Expo do workspace-template-mobile (plan szablonu mobile z rdzenia, IU-3.3, decyzja D4).
+# Po zielonym biegu `maszyneria` na main (z jobem wariant-expo) buduje wariant z tego commitu i robi w repo mobile commit
+# `sync: rdzeń <sha>` z samymi .claude/ i output-styles/. README, docs/ i .github/ repo mobile zostają nietknięte.
+# Filtr ścieżek (.claude/, stacks/, output-styles/) liczy stacks/publikuj-mobile.mjs względem SHA ostatniej publikacji.
+# Dostęp do repo mobile: deploy key z prawem zapisu w sekrecie MOBILE_DEPLOY_KEY (instrukcja: stacks/expo/PUBLIKACJA.md).
+#
+# AUTOMAT WYŁĄCZONY do udanego pilota w Etapie 4 (D4): gałąź workflow_run w warunku joba zaczyna się od `false`.
+# Do tego czasu publikacja tylko ręczna, za zgodą operatora: workflow_dispatch z main albo lokalnie zbuduj.mjs --zastap.
+name: publikuj-mobile
+
+on:
+  workflow_run:
+    workflows: [maszyneria]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: publikuj-mobile
+  cancel-in-progress: false
+
+jobs:
+  publikuj:
+    # Włączenie automatu po pilocie: usuń `false &&` z drugiej linii warunku.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (false && github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Sekret deploy key
+        env:
+          MA_KLUCZ: ${{ secrets.MOBILE_DEPLOY_KEY != '' }}
+        run: |
+          if [ "$MA_KLUCZ" != "true" ]; then
+            echo "::error::brak sekretu MOBILE_DEPLOY_KEY (instrukcja: stacks/expo/PUBLIKACJA.md)"
+            exit 1
+          fi
+      - name: Zielony wariant-expo dla tego SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow maszyneria.yml --commit "$SHA" --branch main --event push --status success --limit 1 --json databaseId --jq '.[0].databaseId')"
+          if [ -z "$run_id" ]; then
+            echo "::error::brak zielonego biegu maszyneria (push na main) dla $SHA"
+            exit 1
+          fi
+          wynik="$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json jobs --jq '.jobs[] | select(.name == "wariant-expo") | .conclusion')"
+          if [ "$wynik" != "success" ]; then
+            echo "::error::job wariant-expo w biegu $run_id: ${wynik:-brak joba}"
+            exit 1
+          fi
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.SHA }}
+          fetch-depth: 0
+          path: starter
+          persist-credentials: false
+      - uses: actions/checkout@v7.0.1
+        with:
+          repository: AIBiz-Automatyzacje/workspace-template-mobile
+          ref: main
+          path: mobile
+          ssh-key: ${{ secrets.MOBILE_DEPLOY_KEY }}
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+      - name: Decyzja
+        id: decyzja
+        run: node starter/stacks/publikuj-mobile.mjs starter mobile "$SHA" >> "$GITHUB_OUTPUT"
+      - name: Build wariantu do repo mobile
+        if: steps.decyzja.outputs.decyzja == 'publikuj'
+        run: |
+          node starter/stacks/zbuduj.mjs expo mobile --zastap
+          node starter/stacks/sprawdz-wersje.mjs mobile "$SHA"
+      - name: Commit i push
+        if: steps.decyzja.outputs.decyzja == 'publikuj'
+        working-directory: mobile
+        run: |
+          ignorowane="$(git status --porcelain --ignored -- .claude output-styles | grep '^!!' || true)"
+          if [ -n "$ignorowane" ]; then
+            echo "::error::pliki wariantu ignorowane przez .gitignore repo mobile (strażnik repo mobile by je odrzucił):"
+            echo "$ignorowane"
+            exit 1
+          fi
+          git add -A -- .claude output-styles
+          if git diff --cached --quiet -- . ':(exclude).claude/.rdzen-version'; then
+            echo "Wariant bez zmian poza .rdzen-version: bez commitu."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "sync: rdzeń $SHA" \
+            -m "Zbudowane z $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$SHA w biegu $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+          git push origin HEAD:main
