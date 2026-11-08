@@ -1,6 +1,7 @@
 # Bramka zmian maszynerii szablonu (PLAN-POPRAWY P2): testy, typecheck i lint skryptów oraz workflowów z .claude/.
-# Bez `claude plugin validate --strict` i `claude plugin eval`: repo nie jest pluginem (brak .claude-plugin/),
-# validate przechodzi wtedy bez sprawdzenia czegokolwiek, a eval wymaga zestawu evals/ i klucza API.
+# Bez `claude plugin eval`: repo nie jest pluginem (brak plugin.json), a eval wymaga zestawu evals/ i klucza API.
+# .claude-plugin/marketplace.json (przypięcie pluginu expo dla wariantu Expo) sprawdza stacks/__tests__/marketplace.test.mjs;
+# `claude plugin validate` biegnie w tym teście tylko tam, gdzie jest claude CLI (lokalnie), na runnerze jest pomijany.
 name: maszyneria
 
 on:

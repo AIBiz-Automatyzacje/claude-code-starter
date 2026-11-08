@@ -11,7 +11,7 @@ Ustalenia tego szablonu, których nie ma w oficjalnym pluginie `expo`. Treść p
 
 - Wersję SDK czytasz z `expo` w `package.json`, a dokumentację z `https://docs.expo.dev/versions/v<major>.0.0/`.
 - Paczki SDK dodajesz przez `npx expo install`, nie przez menedżera pakietów.
-- Skille `expo:*` pochodzą z pluginu `expo@claude-plugins-official`. Marketplace przypina wersję, która może być starsza od bieżącego SDK: plugin 1.13.9 z 2026-10-05 nie wspomina o SDK 58, a jego `expo-router/references/form-sheet.md` opisuje API z SDK 55. Gdy skill mówi coś innego niż `.d.ts` w `node_modules`, wygrywają typy zainstalowanej paczki.
+- Skille `expo:*` pochodzą z pluginu `expo@claude-code-starter`. Marketplace `claude-code-starter` (repo szablonu) przypina `expo/skills` na jednym commicie (plugin 1.14.3 z 2026-11-01), więc plugin nie aktualizuje się sam, a jego wersja może być starsza od bieżącego SDK. Gdy skill mówi coś innego niż `.d.ts` w `node_modules`, wygrywają typy zainstalowanej paczki.
 - `AGENTS.md` z szablonu `create-expo-app` należy do projektu. Sync szablonu go nie dotyka; obejmuje tylko `.claude/`.
 
 ## Którego skilla użyć

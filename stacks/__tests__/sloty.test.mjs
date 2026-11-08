@@ -86,6 +86,14 @@ test('profil web: wartości stacku web', () => {
   })
 })
 
+// Pluginy webu: test profilu w doctor.test.mjs rdzenia sprawdza każdy włączony plugin, ale biegnie też na wariancie, więc nie
+// wymaga listy webu. Tę listę pilnuje ten test (biegnie tylko w repo szablonu).
+test('settings.json rdzenia (web): dev-browser z marketplace sawyerhood i figma', () => {
+  const ustawienia = JSON.parse(czytaj('.claude/settings.json'))
+  assert.deepEqual(ustawienia.enabledPlugins, { 'dev-browser@dev-browser-marketplace': true, 'figma@claude-plugins-official': true })
+  assert.deepEqual(ustawienia.extraKnownMarketplaces, { 'dev-browser-marketplace': { source: { source: 'github', repo: 'sawyerhood/dev-browser' } } })
+})
+
 test('w .claude/stack/ nie ma plików spoza rejestru', () => {
   const naDysku = readdirSync(resolve(KORZEN, KATALOG_SLOTOW)).map((n) => `${KATALOG_SLOTOW}/${n}`)
   assert.deepEqual(naDysku.filter((p) => !pliki.includes(p)), [])

@@ -20,6 +20,16 @@
     ]
   },
   "enabledPlugins": {
-    "expo@claude-plugins-official": true
+    "dev-browser@dev-browser-marketplace": null,
+    "expo@claude-code-starter": true
+  },
+  "extraKnownMarketplaces": {
+    "dev-browser-marketplace": null,
+    "claude-code-starter": {
+      "source": {
+        "source": "github",
+        "repo": "AIBiz-Automatyzacje/claude-code-starter"
+      }
+    }
   }
 }
