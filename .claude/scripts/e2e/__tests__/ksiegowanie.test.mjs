@@ -77,6 +77,23 @@ test('SKIP z przyczyna srodowiska -> [Manual] z kategoria i powodem, bez kopii w
   assert.equal(liczE2e(tekst), 1 + 0)
 })
 
+test('D4: dlugi powod [Manual] ucina sie na granicy slowa z wielokropkiem, nie w polowie wyrazu', () => {
+  const dowod = `Preflight: curl -sS http://localhost:5184/health zwrocil ${'connection refused '.repeat(10)}po 3 probach`
+  const { zmiany } = zaksiegujFaze(ZADANIA, 1, [wpis('SKIP', 'mail-powitalny', 'srodowisko', dowod)])
+  const { powod } = zmiany.manual[0]
+  // Okno 159 znakow: prefiks (57) + 5x "connection refused " (95) + "connect"; ostatnia spacja konczy 5. powtorzenie.
+  assert.equal(powod, `Preflight: curl -sS http://localhost:5184/health zwrocil ${'connection refused '.repeat(4)}connection refused…`)
+  assert.equal(powod.length, 152)
+  // Krotki powod zostaje bez zmian i bez wielokropka.
+  const krotki = zaksiegujFaze(ZADANIA, 1, [wpis('SKIP', 'mail-powitalny', 'srodowisko', 'Metro nie wstal')])
+  assert.equal(krotki.zmiany.manual[0].powod, 'Metro nie wstal')
+})
+
+test('D4: powod bez spacji w drugiej polowie okna ucina sie twardo, z wielokropkiem', () => {
+  const { zmiany } = zaksiegujFaze(ZADANIA, 1, [wpis('SKIP', 'mail-powitalny', 'harness', `blad ${'x'.repeat(300)}`)])
+  assert.equal(zmiany.manual[0].powod, `blad ${'x'.repeat(154)}…`)
+})
+
 test('SKIP z przyczyna po stronie kodu zostaje [E2E] z suffixem SKIP i kopia w Operator checklist (jak dzis)', () => {
   const { tekst, zmiany } = zaksiegujFaze(ZADANIA, 1, [
     wpis('SKIP', 'zapis-formularza', 'brak-seeda', 'brak e2e/seeds/formularz-seed.sql'), wpis('PASS', 'mail-powitalny'), wpis('PASS', 'tryb-ciemny'),

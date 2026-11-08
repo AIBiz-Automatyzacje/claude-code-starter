@@ -32,9 +32,21 @@ export function rodzajPrzyczyny(przyczyna) {
   return przyczyna && Object.hasOwn(PRZYCZYNY_SKIP, przyczyna) ? /** @type {'manual' | 'fix'} */ (PRZYCZYNY_SKIP[/** @type {keyof typeof PRZYCZYNY_SKIP} */ (przyczyna)]) : 'skip'
 }
 
+/**
+ * Skraca tekst do `limit` znakow razem z wielokropkiem: na ostatniej spacji w drugiej polowie okna, inaczej twardo (D4: powod
+ * uciety w polowie wyrazu byl nieczytelny; pelny dowod testera trafia do sekcji Bookkeeping raportu review).
+ * @param {string} tekst @param {number} limit @returns {string}
+ */
+function skroc(tekst, limit) {
+  if (tekst.length <= limit) return tekst
+  const okno = tekst.slice(0, limit - 1)
+  const spacja = okno.lastIndexOf(' ')
+  return `${(spacja >= limit / 2 ? okno.slice(0, spacja) : okno).trimEnd()}…`
+}
+
 /** @param {string | undefined} dowod @returns {string} jedna linia bez nawiasow okraglych (suffix konczy sie nawiasem) */
 function powodZDowodu(dowod) {
-  const powod = String(dowod ?? '').replace(/\s+/g, ' ').replace(/\(/g, '[').replace(/\)/g, ']').trim().slice(0, DLUGOSC_POWODU)
+  const powod = skroc(String(dowod ?? '').replace(/\s+/g, ' ').replace(/\(/g, '[').replace(/\)/g, ']').trim(), DLUGOSC_POWODU)
   return powod || 'brak powodu w przebiegu testera'
 }
 

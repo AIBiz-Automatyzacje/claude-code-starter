@@ -635,7 +635,7 @@ ${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTes
      ## Bookkeeping checkboxow Weryfikacja: / Test: [E2E]
      - Odznaczone automatycznie (CLI/grep): X
      - [E2E] odznaczone na podstawie przebiegow testera: Y
-     - [E2E] przeniesione w trakcie runu na [Manual]: M (lista: flow — przyczyna: powod)
+     - [E2E] przeniesione w trakcie runu na [Manual]: M (lista: flow — przyczyna: PELNY dowod testera z "Przebiegi E2E" 1:1, w jednej linii; linia [Manual] w zadaniach ma go skroconego, a smoke odsyla tutaj)
      - [E2E] SKIP do naprawy albo bez wpisu testera: S
      - Pozostawione dla operatora (Manual): Z
      - Niejasne (P3): W

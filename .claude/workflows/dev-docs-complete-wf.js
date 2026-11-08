@@ -206,7 +206,8 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
 4b. Scenariusze [E2E] przeniesione w trakcie runu na [Manual] (srodowisko padlo, limit zewnetrzny, harness, pad testera — automat
    ich nie wykonal): \`node .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/${nazwaZadania}\` (JSON: pozycje z faza,
    tresc, przyczyna, powod). Sekcja "## E2E do odegrania recznie (srodowisko w trakcie runu)" na poczatku dokumentu, po czerwonych
-   flagach z (5): jeden checkbox na pozycje — scenariusz i oczekiwany stan z tresci linii, powod ("<przyczyna>: <powod>").
+   flagach z (5): jeden checkbox na pozycje — scenariusz i oczekiwany stan z tresci linii, powod ("<przyczyna>: <powod>";
+   powod bywa skrocony z "…") i pelny powod: docs/completed/${nazwaZadania}/review-faza-<faza>.md, sekcja "Bookkeeping checkboxow".
    To nie jest czerwona flaga: run swiadomie oddal je czlowiekowi. W sekcjach ekranow ich nie powtarzaj.
 5. CZERWONA FLAGA: niezaznaczone checkboxy [E2E] (\`grep -nE '^- \\[ \\].*\\[E2E\\]' docs/active/${nazwaZadania}/*-zadania.md | grep -vE 'Operator:|\\[P[123]\\]'\`
    — ten sam grep co completion-gate autopilota; kopie "Operator:" w Operator checklist i pozycje findingow [P1]/[P2]/[P3] w "Do poprawy" nie sa scenariuszami;
@@ -234,7 +235,8 @@ W przeciwnym razie zapisz docs/operator/<YYYY-MM-DD>-${nazwaZadania}-smoke.md (d
 \`mkdir -p docs/operator\`) wedlug ukladu ze skilla: naglowek ze statusem, akapit "dlaczego to nie jest
 formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruchomic apke; jakie dane/konta
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
-kazdy z konkretnym oczekiwanym wynikiem. Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
+kazdy z konkretnym oczekiwanym wynikiem. ODSYLACZE w smoke'u do plikow zadania pisz jako docs/completed/${nazwaZadania}/…:
+operator czyta smoke po archiwizacji, a docs/active/${nazwaZadania}/ juz wtedy nie istnieje (punkty wizualne maja wlasny format nizej). Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
 zamiast mobilnego viewportu) oznacz **[fizyczne urządzenie]**.
 PR WIELOCZESCIOWY: pozycje przypisuj do czesci, w ktorej kod faktycznie wchodzi (sprawdz plik w tabeli czesci, nie w tekscie planu; aa-exam: pole z czesci 4 w sekcji po deployu czesci 3). Przed merge'em kazdej
 czesci pozycja: przejscie kluczowego flow na stanie tej czesci, lokalnie. Odhaczanie miedzy czesciami: plik smoke'u lezy na \`feature/<zadanie>\`, commit lokalny tam jedzie z ostatnia czescia.
