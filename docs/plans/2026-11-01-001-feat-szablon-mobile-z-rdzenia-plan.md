@@ -502,12 +502,11 @@ Klucz publikacji (2026-11-08): operator założył deploy key `publikuj-mobile (
 `MOBILE_DEPLOY_KEY`; sprawdzone tylko nazwy. Próbny `workflow_dispatch` za zgodą operatora (run `42529947406`, `main` =
 `4046f6f`): job `publikuj` zielony (9 s), kroki sekretu, zielonego `wariant-expo` i checkoutu repo mobile kluczem przeszły,
 decyzja `bez-zmian` („od 9fee09b… brak zmian w .claude, output-styles, stacks”), build i commit pominięte, `main` repo mobile
-dalej `0615a5a`. Niesprawdzone: push kluczem deploy (pierwsza publikacja z CI). **Etap 3 zamknięty.** Defekty z runów: D4
-naprawiany przed pilotem (decyzja operatora), D5 po pilocie.
+dalej `0615a5a`. **Etap 3 zamknięty.** Defekty z runów: D4 naprawiany przed pilotem (decyzja operatora), D5 po pilocie.
 
 | Defekt | Gałąź / merge | Co powstało | Liczby |
 |---|---|---|---|
-| D4 | `popr/d4-powod-manual` (`177b54a`), bez merge'a | Zmiana w rdzeniu: `ksiegowanie.mjs` skraca powód `[Manual]` do 160 znaków na ostatniej spacji z „…” (twardo, gdy spacji brak w drugiej połowie okna); scribe review zapisuje pełny dowód testera w Bookkeeping raportu fazy; smoke (workflow i skill) odsyła do `docs/completed/<zadanie>/review-faza-<faza>.md` i ogólnie pisze odsyłacze przez `docs/completed/` | `pnpm -s test` 1751/1751 (+3); typecheck 0; lint 0; wariant 1280/1282, 2 pominięte, 0 padnięć, typecheck 0, 411 plików. Niesprawdzone: prawdziwy run z pozycją `[Manual]` (sprawdzi pilot) |
+| D4 | `popr/d4-powod-manual` (`177b54a`), merge `76d41f3`, push i CI zielone (run `42530346991`) | Zmiana w rdzeniu: `ksiegowanie.mjs` skraca powód `[Manual]` do 160 znaków na ostatniej spacji z „…” (twardo, gdy spacji brak w drugiej połowie okna); scribe review zapisuje pełny dowód testera w Bookkeeping raportu fazy; smoke (workflow i skill) odsyła do `docs/completed/<zadanie>/review-faza-<faza>.md` i ogólnie pisze odsyłacze przez `docs/completed/` | `pnpm -s test` 1751/1751 (+3); typecheck 0; lint 0; wariant 1280/1282, 2 pominięte, 0 padnięć, typecheck 0, 411 plików. Niesprawdzone: prawdziwy run z pozycją `[Manual]` (sprawdzi pilot) |
 
 ### Etap 4 — Pilot na projekcie mobile
 
@@ -518,6 +517,29 @@ naprawiany przed pilotem (decyzja operatora), D5 po pilocie.
   `/dev-plan` → autopilot → smoke → `/dev-pr`. Sprawdzić: env-up na emulatorze, tester Maestro, księgowanie [E2E], bramka natywna.
 - Wnioski → poprawki w `stacks/expo/` (publikacja ręczna do końca pilotu, D4). Potem `gramywpadla` (dziś `23e0d92`, starszy —
   najpierw dry-run). Po udanym pilocie: włączenie automatu z IU-3.3.
+
+Pierwsza publikacja przez CI (2026-11-08, za zgodą operatora): `workflow_dispatch` (run `42530552390`) dla `76d41f3`, decyzja
+`publikuj`, commit bota `fb79426` `sync: rdzeń 76d41f3…` w repo mobile (6 plików D4 i `.rdzen-version`), push kluczem deploy
+przeszedł; `straznik-claude` zielony (run `42530575933`). Cała ścieżka starter → CI → repo mobile → strażnik działa; automat
+po pushu dalej wyłączony.
+
+**Decyzja operatora 2026-11-08: pilot dwustopniowy.**
+1. **Kopia Nawykometru** w osobnym katalogu (lokalny klon ze wszystkimi gałęziami, `pushurl` origin odpięty, żeby nic nie
+   poszło do `nawykometr-app`): konwersja `learned-patterns.md`, `/sync-template --dry-run`, sync, doctor, plugin expo, jedno
+   małe zadanie `/dev-plan` → autopilot → smoke. Wnioski → poprawki w `stacks/expo/` (albo rdzeniu, gdy bez tego się nie da),
+   publikacja przez `workflow_dispatch` za zgodą, ponowny sync kopii. E2E tylko na bazie z `.env.e2e`, nigdy na bazie z `.env`.
+2. **Prawdziwy Nawykometr** po zielonej kopii: konwersja reguł (gotowa z kopii), sync na osobnej gałęzi `popr/*`, jedno małe
+   zadanie z pełnym `/dev-pr` (tego kopia nie sprawdzi: brak repo na GitHubie i bota). Za osobną zgodą operatora.
+3. Potem `gramywpadla` tą samą drogą (49 reguł, najpierw dry-run na kopii).
+
+Stan Nawykometru (odczyt 2026-11-08, bez zmian w projekcie): `main` `5ad1445` (2026-11-01), drzewo czyste, gałęzie
+`feature/e5-e4-hardening-energia` i `feature/e6-notyfikacje-dogfooding`; szablon `6fbd49d` (`.template-version`, brak
+`.rdzen-version`); `learned-patterns.md` 7 punktów, `docs/solutions/` 3 wpisy. Stack: `expo` ~55.0.28, `react-native` 0.83.10,
+`nativewind` 5.0.0-preview.2 z `react-native-css` 3.0.7, `tailwindcss` 4.3.1, `jest` ~29.7.0 z `jest-expo` ^55.0.18, `eslint`
+~9.25.0, `package-lock.json`; są `.env`, `.env.e2e`, `supabase/migrations`, `.maestro/` (36 plików), `ios/`. Wariant zakłada
+SDK 58, Uniwind i Jest 30, więc pilot sprawdzi też szablon na projekcie ze starszym stackiem i NativeWind; rozjazdy notować jako
+wnioski, bez aktualizacji stacku projektu w ramach pilota. Do sprawdzenia w żywych źródłach: czy `react-native-css` 3.0.7 z
+`nativewind` 5.0.0-preview.2 to wadliwe połączenie z punktu wyżej.
 
 ### Etap 5 — Świeżość skilli technicznych Expo
 
