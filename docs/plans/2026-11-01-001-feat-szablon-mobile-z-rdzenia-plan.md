@@ -499,7 +499,11 @@ OK). Zostają: deploy key i sekret `MOBILE_DEPLOY_KEY`, próbny `workflow_dispat
 `popr/plan-stan-etapu-3`, bramki `pnpm -s test` 1748/1748; typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0, 411 plików.
 
 Klucz publikacji (2026-11-08): operator założył deploy key `publikuj-mobile (claude-code-starter)` z prawem zapisu i sekret
-`MOBILE_DEPLOY_KEY`; sprawdzone tylko nazwy. Defekty z runów: D4 naprawiany przed pilotem (decyzja operatora), D5 po pilocie.
+`MOBILE_DEPLOY_KEY`; sprawdzone tylko nazwy. Próbny `workflow_dispatch` za zgodą operatora (run `42529947406`, `main` =
+`4046f6f`): job `publikuj` zielony (9 s), kroki sekretu, zielonego `wariant-expo` i checkoutu repo mobile kluczem przeszły,
+decyzja `bez-zmian` („od 9fee09b… brak zmian w .claude, output-styles, stacks”), build i commit pominięte, `main` repo mobile
+dalej `0615a5a`. Niesprawdzone: push kluczem deploy (pierwsza publikacja z CI). **Etap 3 zamknięty.** Defekty z runów: D4
+naprawiany przed pilotem (decyzja operatora), D5 po pilocie.
 
 | Defekt | Gałąź / merge | Co powstało | Liczby |
 |---|---|---|---|
