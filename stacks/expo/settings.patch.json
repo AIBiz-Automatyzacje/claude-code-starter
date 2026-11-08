@@ -20,6 +20,10 @@
     ]
   },
   "enabledPlugins": {
+    "dev-browser@dev-browser-marketplace": null,
     "expo@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "dev-browser-marketplace": null
   }
 }

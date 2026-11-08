@@ -33,6 +33,10 @@ test('settings.json: plugin expo i blokady feedbacku; reguły jak w próbie D6',
   const ustawienia = JSON.parse(czytaj('.claude/settings.json'))
   assert.equal(ustawienia.enabledPlugins['expo@claude-plugins-official'], true)
   assert.equal(ustawienia.enabledPlugins['expo@expo-plugins'], undefined)
+  // dev-browser (przeglądarka do ręcznej pracy na webie) zdjęty z wariantu decyzją operatora 2026-11-08: pipeline go nie woła,
+  // a aplikację natywną testuje Maestro.
+  assert.equal('dev-browser@dev-browser-marketplace' in ustawienia.enabledPlugins, false)
+  assert.deepEqual(ustawienia.extraKnownMarketplaces, {})
   assert.equal(ustawienia.enabledPlugins['figma@claude-plugins-official'], true, 'warianty -figma wymagają pluginu (D23)')
   assert.deepEqual(ustawienia.permissions.deny, [
     'Bash(npx --yes @expo/agent-cli*)',

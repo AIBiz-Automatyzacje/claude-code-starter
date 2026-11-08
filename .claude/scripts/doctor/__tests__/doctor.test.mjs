@@ -229,16 +229,27 @@ test('plugin zainstalowany dla innego projektu sie nie liczy; nieznany marketpla
   ])
 }))
 
-test('profil szablonu (.claude/settings.json): oba pluginy projektu z komenda instalacji per projekt, bez blokady', () => zSrodowiskiem((s) => {
-  plik(s.projekt, '.claude/settings.json', readFileSync(resolve(dirname(SKRYPT), '..', '..', 'settings.json'), 'utf8'))
+// Komendy instalacji pluginów, które może włączyć profil szablonu (web albo wariant stacku, plan szablonu mobile z rdzenia).
+// Plugin spoza tej listy zatrzymuje test: nowy plugin w profilu wymaga dopisania jego komendy tutaj.
+const INSTALACJA_PLUGINOW_PROFILU = {
+  'dev-browser@dev-browser-marketplace':
+    'claude plugin marketplace add sawyerhood/dev-browser && claude plugin install dev-browser@dev-browser-marketplace --scope project',
+  'figma@claude-plugins-official': 'claude plugin install figma@claude-plugins-official --scope project',
+  'expo@claude-plugins-official': 'claude plugin install expo@claude-plugins-official --scope project',
+}
+
+test('profil szablonu (.claude/settings.json): każdy plugin projektu z komendą instalacji per projekt, bez blokady', () => zSrodowiskiem((s) => {
+  const profil = readFileSync(resolve(dirname(SKRYPT), '..', '..', 'settings.json'), 'utf8')
+  plik(s.projekt, '.claude/settings.json', profil)
+  const wlaczone = Object.entries(JSON.parse(profil).enabledPlugins ?? {}).filter(([, wl]) => wl === true).map(([id]) => id)
+  assert.ok(wlaczone.includes('figma@claude-plugins-official'), 'warianty -figma builderów wymagają pluginu figma (D23)')
   const w = doctor(s)
   assert.equal(w.status, 0, w.stdout)
-  assert.deepEqual(wiersz(w.stdout, 'plugin dev-browser@dev-browser-marketplace').slice(1), [
-    'UWAGA', 'nie zainstalowany',
-    'claude plugin marketplace add sawyerhood/dev-browser && claude plugin install dev-browser@dev-browser-marketplace --scope project',
-  ])
-  assert.deepEqual(wiersz(w.stdout, 'plugin figma@claude-plugins-official').slice(1),
-    ['UWAGA', 'nie zainstalowany', 'claude plugin install figma@claude-plugins-official --scope project'])
+  for (const id of wlaczone) {
+    assert.ok(id in INSTALACJA_PLUGINOW_PROFILU, `plugin ${id} bez oczekiwanej komendy instalacji w teście`)
+    assert.deepEqual(wiersz(w.stdout, `plugin ${id}`).slice(1),
+      ['UWAGA', 'nie zainstalowany', INSTALACJA_PLUGINOW_PROFILU[/** @type {keyof typeof INSTALACJA_PLUGINOW_PROFILU} */ (id)]], id)
+  }
 }))
 
 test('profil szablonu: pluginy na koncu w kolejnosci zapisu Claude Code — install --scope project nie brudzi drzewa', () => {
