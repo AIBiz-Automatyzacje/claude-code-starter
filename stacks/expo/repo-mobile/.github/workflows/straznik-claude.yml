@@ -1,0 +1,58 @@
+# Strażnik .claude/ i output-styles/ (plan szablonu mobile z rdzenia, IU-3.5). Oba katalogi powstają w claude-code-starter
+# (rdzeń + nakładka stacks/expo) i trafiają tu commitem `sync: rdzeń <sha>`. Strażnik buduje wariant z SHA zapisanego
+# w .claude/.rdzen-version i porównuje wynik z repo: zmiana tych katalogów inna niż build nie przejdzie, kto by jej nie
+# zrobił. Nie zależy od tożsamości bota publikacji.
+name: straznik-claude
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  wariant-z-rdzenia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          path: mobile
+      - name: SHA rdzenia z .rdzen-version
+        id: rdzen
+        run: |
+          plik=mobile/.claude/.rdzen-version
+          if [ ! -f "$plik" ]; then
+            echo "::error::brak .claude/.rdzen-version: .claude/ nie pochodzi z publikacji claude-code-starter"
+            exit 1
+          fi
+          sha="$(cat "$plik")"
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error file=.claude/.rdzen-version::oczekiwany pełny SHA commitu claude-code-starter bez -dirty, jest: $sha"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7.0.1
+        with:
+          repository: AIBiz-Automatyzacje/claude-code-starter
+          ref: ${{ steps.rdzen.outputs.sha }}
+          path: starter
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+      - name: Build wariantu z tego SHA
+        run: node starter/stacks/zbuduj.mjs expo "$RUNNER_TEMP/wariant"
+      - name: Porównanie z repo
+        run: |
+          status=0
+          for katalog in .claude output-styles; do
+            if ! diff -r "$RUNNER_TEMP/wariant/$katalog" "mobile/$katalog"; then
+              status=1
+            fi
+          done
+          if [ "$status" -ne 0 ]; then
+            echo "::error::.claude/ albo output-styles/ różni się od builda claude-code-starter@${{ steps.rdzen.outputs.sha }}. Zmiany wprowadzaj w claude-code-starter (rdzeń albo stacks/expo/), nie w tym repo."
+          fi
+          exit "$status"
