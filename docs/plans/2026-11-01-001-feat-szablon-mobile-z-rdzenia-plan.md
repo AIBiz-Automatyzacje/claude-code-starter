@@ -471,6 +471,17 @@ lokalnie: build, `sprawdz-wersje` (`dd1cede`, bez `-dirty`), strażnik i nakład
 Konflikty przy merge'ach tylko w tej tabeli. Otwarte: push i bieg CI, IU-3.4b, deploy key i sekret, decyzja o `dev-browser`,
 pierwsza publikacja.
 
+Push `c594025..5327555` (2026-11-08): CI `maszyneria` zielone (run `42478048191`; `bramka` 109 s, `wariant-expo` 78 s), więc
+job wariantu działa na runnerze GitHuba. `publikuj-mobile` (run `42478183825`) wystartował po `maszyneria`, a job `publikuj`
+został pominięty (automat wyłączony).
+
+IU-3.4b po próbie operatora: marketplace typu `settings` się nie zarejestrował (`known_marketplaces.json` bez `aibiz-expo`,
+folder próby z `hasTrustDialogAccepted: false`). Gałąź `popr/plugin-expo-pin` bez merge'a; droga do decyzji operatora.
+
+| IU | Gałąź / merge | Co powstało | Liczby |
+|---|---|---|---|
+| dev-browser | `popr/expo-bez-dev-browser` (`ca2eda4`), bez merge'a | Decyzja operatora 2026-11-08: `dev-browser` zdjęty z wariantu Expo (`null` w `settings.patch.json`). Zmiana testu rdzenia: test profilu w `doctor.test.mjs` sprawdza każdy włączony plugin z tabelą komend zamiast listy webu; lista webu w nowym teście `stacks/__tests__/sloty.test.mjs` | `pnpm -s test` 1745/1745 (+1); typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0. Próba: `claude plugin install expo@claude-plugins-official --scope project` w zbudowanym wariancie nie zmienia `settings.json` (pusty `extraKnownMarketplaces`), plugin po próbie odinstalowany |
+
 ### Etap 4 — Pilot na projekcie mobile
 
 - Przed syncem każdego projektu: konwersja jego `.claude/rules/learned-patterns.md` (gramywpadla 49 reguł, Nawykometr 7)
