@@ -1,0 +1,20 @@
+{
+  "name": "claude-code-starter",
+  "description": "Pluginy przypięte przez szablon claude-code-starter dla wariantów stacku (Expo: plugin expo na jednym commicie expo/skills).",
+  "owner": {
+    "name": "AIBiz-Automatyzacje"
+  },
+  "plugins": [
+    {
+      "name": "expo",
+      "description": "Oficjalne skille Expo (expo/skills, plugins/expo) przypięte na commicie wybranym przez szablon.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/expo/skills.git",
+        "path": "plugins/expo",
+        "ref": "main",
+        "sha": "a9e5bd3fa00b4e61f632e43f85da73aee1942582"
+      }
+    }
+  ]
+}

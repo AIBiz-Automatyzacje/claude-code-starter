@@ -30,11 +30,12 @@ README, `docs/` i `.github/` tego repo edytujesz normalnie.
 Wszystko instalujesz w projekcie, nie globalnie na koncie.
 
 1. Skopiuj folder `.claude/` do katalogu projektu Expo i zacommituj go (`.claude/settings.local.json` zostaje tylko Twój).
-2. Otwórz projekt w Claude Code i zaakceptuj zaufanie folderu. Dopiero wtedy Claude Code rejestruje marketplace `aibiz-expo`
-   zapisany w `.claude/settings.json`, który przypina plugin `expo` (skille `expo:*`) na jednym commicie
-   [`expo/skills`](https://github.com/expo/skills). Potem w katalogu projektu:
+2. Zainstaluj pluginy projektu (Claude Code sam ich nie instaluje). Plugin `expo` (skille `expo:*`) pochodzi z marketplace'u
+   w repo [`claude-code-starter`](https://github.com/AIBiz-Automatyzacje/claude-code-starter), który przypina
+   [`expo/skills`](https://github.com/expo/skills) na jednym commicie. W katalogu projektu:
    ```bash
-   claude plugin install expo@aibiz-expo --scope project
+   claude plugin marketplace add AIBiz-Automatyzacje/claude-code-starter
+   claude plugin install expo@claude-code-starter --scope project
    claude plugin install figma@claude-plugins-official --scope project
    ```
    `figma` czyta makiety; bez makiet jest niepotrzebny.

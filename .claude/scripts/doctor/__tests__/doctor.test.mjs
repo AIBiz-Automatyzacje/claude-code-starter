@@ -235,7 +235,8 @@ const INSTALACJA_PLUGINOW_PROFILU = {
   'dev-browser@dev-browser-marketplace':
     'claude plugin marketplace add sawyerhood/dev-browser && claude plugin install dev-browser@dev-browser-marketplace --scope project',
   'figma@claude-plugins-official': 'claude plugin install figma@claude-plugins-official --scope project',
-  'expo@claude-plugins-official': 'claude plugin install expo@claude-plugins-official --scope project',
+  'expo@claude-code-starter':
+    'claude plugin marketplace add AIBiz-Automatyzacje/claude-code-starter && claude plugin install expo@claude-code-starter --scope project',
 }
 
 test('profil szablonu (.claude/settings.json): każdy plugin projektu z komendą instalacji per projekt, bez blokady', () => zSrodowiskiem((s) => {

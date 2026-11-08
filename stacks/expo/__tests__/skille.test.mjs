@@ -31,12 +31,17 @@ function pliki(katalog) {
 
 test('settings.json: plugin expo i blokady feedbacku; reguły jak w próbie D6', () => {
   const ustawienia = JSON.parse(czytaj('.claude/settings.json'))
-  assert.equal(ustawienia.enabledPlugins['expo@claude-plugins-official'], true)
+  // Plugin expo przypięty przez marketplace w korzeniu repo szablonu (decyzja operatora 2026-11-08, zamiast
+  // expo@claude-plugins-official, który Anthropic przypina na starszej wersji). Treść przypięcia: stacks/__tests__/marketplace.test.mjs.
+  assert.equal(ustawienia.enabledPlugins['expo@claude-code-starter'], true)
+  assert.equal(ustawienia.enabledPlugins['expo@claude-plugins-official'], undefined, 'jedno źródło skilli expo:*')
   assert.equal(ustawienia.enabledPlugins['expo@expo-plugins'], undefined)
   // dev-browser (przeglądarka do ręcznej pracy na webie) zdjęty z wariantu decyzją operatora 2026-11-08: pipeline go nie woła,
   // a aplikację natywną testuje Maestro.
   assert.equal('dev-browser@dev-browser-marketplace' in ustawienia.enabledPlugins, false)
-  assert.deepEqual(ustawienia.extraKnownMarketplaces, {})
+  assert.deepEqual(ustawienia.extraKnownMarketplaces, {
+    'claude-code-starter': { source: { source: 'github', repo: 'AIBiz-Automatyzacje/claude-code-starter' } },
+  })
   assert.equal(ustawienia.enabledPlugins['figma@claude-plugins-official'], true, 'warianty -figma wymagają pluginu (D23)')
   assert.deepEqual(ustawienia.permissions.deny, [
     'Bash(npx --yes @expo/agent-cli*)',
@@ -59,7 +64,8 @@ test('doctor zgłasza niezainstalowany plugin expo z komendą instalacji w zakre
   writeFileSync(join(projekt, '.claude/settings.json'), czytaj('.claude/settings.json'))
   const w = spawnSync(process.execPath, [join(WARIANT, '.claude/scripts/doctor/ustawienia.mjs'), projekt], { encoding: 'utf8', env: { ...process.env, HOME: dom } })
   assert.equal(w.status, 0, w.stderr)
-  assert.ok(w.stdout.includes('plugin expo@claude-plugins-official\tUWAGA\tnie zainstalowany\tclaude plugin install expo@claude-plugins-official --scope project'), w.stdout)
+  // Marketplace z repo GitHub, nieznany na świeżym koncie: komenda dodaje go z CLI, bez okna zaufania folderu (próba IU-3.4b).
+  assert.ok(w.stdout.includes('plugin expo@claude-code-starter\tUWAGA\tnie zainstalowany\tclaude plugin marketplace add AIBiz-Automatyzacje/claude-code-starter && claude plugin install expo@claude-code-starter --scope project'), w.stdout)
 })
 
 test('usunięcia: skille i skrypty web znikają, skille Expo są', () => {
