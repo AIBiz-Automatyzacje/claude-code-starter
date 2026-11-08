@@ -307,6 +307,17 @@ test('smoke operatora: pozycje przeniesione w trakcie runu na [Manual] z powodem
   assert.match(complete, /## E2E do odegrania recznie \(srodowisko w trakcie runu\)/)
 })
 
+test('D4: pelny dowod [Manual] w raporcie review, smoke odsyla do sciezki po archiwizacji (docs/completed/)', () => {
+  // Linia [Manual] ma powod skrocony do 160 znakow; pelny dowod testera zapisuje scribe w Bookkeeping raportu fazy.
+  assert.match(review, /przeniesione w trakcie runu na \[Manual\]: M \(lista: flow — przyczyna: PELNY dowod testera z "Przebiegi E2E"/)
+  // Smoke czyta operator po archiwizacji: odsylacz do raportu i do plikow zadania przez docs\/completed\/, nie docs\/active\/.
+  assert.match(complete, /pelny powod: docs\/completed\/\$\{nazwaZadania\}\/review-faza-<faza>\.md, sekcja "Bookkeeping/)
+  assert.match(complete, /ODSYLACZE w smoke'u do plikow zadania pisz jako docs\/completed\/\$\{nazwaZadania\}\//)
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.match(skill, /pełny powód: `docs\/completed\/\$ARGUMENTS\/review-faza-<faza>\.md`, sekcja „Bookkeeping/)
+  assert.match(skill, /Odsyłacze w smoke'u do plików zadania piszesz jako `docs\/completed\/\$ARGUMENTS\/…`/)
+})
+
 test('telemetria: faza.e2e.manual z przebiegu (bylo null)', () => {
   const faza = readFileSync(resolve(KATALOG, '../../scripts/telemetria/faza.mjs'), 'utf8')
   assert.match(faza, /manual: liczbaLubNull\(przebieg\.e2eManual\)/)
