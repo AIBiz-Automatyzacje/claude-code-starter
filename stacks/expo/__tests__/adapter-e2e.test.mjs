@@ -725,6 +725,11 @@ test('profil: klucze EXPO_PUBLIC_*, katalog .maestro, jest, bez pliku e2e o wyż
   assert.ok(!new RegExp(p.zrodla.frontend).test('supabase/functions/x/index.ts'))
 })
 
+test('profil: sync-template zaciąga wariant z repo mobile (IU-3.4)', () => {
+  const p = JSON.parse(czytaj('.claude/stack/profil.json'))
+  assert.equal(p.szablon.repo, 'https://github.com/AIBiz-Automatyzacje/workspace-template-mobile.git')
+})
+
 test('slot e2e-srodowisko: te same sekcje co web; bez słów stacku web', () => {
   const slot = czytaj('.claude/stack/e2e-srodowisko.md')
   for (const s of ['Start aplikacji', 'Sonda zdrowia', 'Narzędzie jazdy']) assert.match(slot, new RegExp(`^## ${s}$`, 'm'))

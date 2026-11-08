@@ -20,5 +20,8 @@
   "testy": {
     "powiazane": "jest --watchAll=false --findRelatedTests"
   },
-  "komendyCli": ["jest", "expo"]
+  "komendyCli": ["jest", "expo"],
+  "szablon": {
+    "repo": "https://github.com/AIBiz-Automatyzacje/workspace-template-mobile.git"
+  }
 }

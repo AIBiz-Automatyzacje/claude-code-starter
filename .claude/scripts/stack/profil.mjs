@@ -11,8 +11,9 @@ import { readFileSync } from 'node:fs'
  *   kluczSupabase: klucz klienta i jego zamienniki legacy; plikiDev: pliki env bazy dev; plikE2eLokalny: plik env, ktory
  *   w trybie e2e wygrywa z .env.e2e (null = stack go nie ma); aplikacjaE2e: kto w trybie e2e czyta pliki env (komunikaty)
  * @typedef {{ opis: string, env: EnvStacku, e2e: { katalogSeedow: string, katalogRunnerow: string, plikFlow: string | null }, zrodla: { frontend: string },
- *   testy: { powiazane: string }, komendyCli: string[] }} Profil
+ *   testy: { powiazane: string }, komendyCli: string[], szablon: { repo: string } }} Profil
  *   plikFlow: wzor sciezki pliku flow scenariusza z `<flow>`, deliverable buildera (D17); null = tester gra scenariusz z opisu linii
+ *   szablon.repo: repo, z ktorego sync-template zaciaga wariant stacku (czyta je sync-template.sh, IU-3.4)
  */
 
 /** @type {Profil} */

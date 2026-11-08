@@ -12,7 +12,8 @@
 #   sync-template.sh --force      # aplikuj nawet gdy SHA szablonu == ostatni sync
 #
 # Zmienne środowiskowe (nadpisania, głównie do testów):
-#   TEMPLATE_REPO_URL   domyślnie https://github.com/AIBiz-Automatyzacje/claude-code-starter.git
+#   TEMPLATE_REPO_URL   domyślnie szablon.repo z .claude/stack/profil.json projektu, bez niego
+#                       https://github.com/AIBiz-Automatyzacje/claude-code-starter.git
 #   TEMPLATE_BRANCH     domyślnie main
 #   TEMPLATE_LOCAL_SRC  lokalna ścieżka do źródła zamiast klonowania (do testów)
 #   PROJECT_DIR         katalog projektu docelowego (domyślnie: $CLAUDE_PROJECT_DIR / git toplevel / pwd)
@@ -23,7 +24,7 @@
 {
 set -euo pipefail
 
-REPO_URL="${TEMPLATE_REPO_URL:-https://github.com/AIBiz-Automatyzacje/claude-code-starter.git}"
+DOMYSLNE_REPO="https://github.com/AIBiz-Automatyzacje/claude-code-starter.git"
 BRANCH="${TEMPLATE_BRANCH:-main}"
 LOCAL_SRC="${TEMPLATE_LOCAL_SRC:-}"
 
@@ -54,6 +55,28 @@ else
 fi
 
 command -v git >/dev/null 2>&1 || { echo "BŁĄD: brak 'git' w PATH." >&2; exit 3; }
+
+# --- Ustal repo szablonu ---
+# Wariant stacku publikuje się do własnego repo (Expo: workspace-template-mobile), więc domyślny adres niesie profil stacku
+# projektu: klucz szablon.repo w .claude/stack/profil.json (plan szablonu mobile z rdzenia, IU-3.4). Bez profilu, klucza albo
+# node zostaje claude-code-starter; TEMPLATE_REPO_URL wygrywa z oboma. Niepoprawny klucz to błąd, nie cichy powrót do
+# claude-code-starter: projekt mobile dostałby wariant web.
+repo_z_profilu() {
+  local profil="$PROJECT_DIR/$MANAGED_ROOT/stack/profil.json"
+  [[ -f "$profil" ]] && command -v node >/dev/null 2>&1 || return 0
+  node -e '
+    const profil = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))
+    const repo = profil.szablon?.repo
+    if (repo === undefined) process.exit(0)
+    if (typeof repo !== "string" || !/^(https:\/\/|ssh:\/\/|git@|file:\/\/)\S+$/.test(repo)) process.exit(1)
+    process.stdout.write(repo)
+  ' "$profil"
+}
+if ! PROFIL_REPO="$(repo_z_profilu)"; then
+  echo "BŁĄD: niepoprawny szablon.repo w $MANAGED_ROOT/stack/profil.json (oczekiwany adres git)." >&2
+  exit 7
+fi
+REPO_URL="${TEMPLATE_REPO_URL:-${PROFIL_REPO:-$DOMYSLNE_REPO}}"
 
 VERSION_FILE="$PROJECT_DIR/$MANAGED_ROOT/.template-version"
 MANIFEST_FILE="$PROJECT_DIR/$MANAGED_ROOT/.template-manifest"
