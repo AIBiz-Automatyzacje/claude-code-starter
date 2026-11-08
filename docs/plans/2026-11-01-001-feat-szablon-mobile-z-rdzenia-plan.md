@@ -450,6 +450,17 @@ przechodzi do pilota w Etapie 4; D3 (`expo-canary.mjs`) naprawiane przed Etapem 
 - IU-3.5 README mobile: sekcja „skąd pochodzi `.claude/`” + „nie edytuj `.claude/` w tym repo — zmiany idą do
   `claude-code-starter/stacks/expo`”. Strażnik: CI w repo mobile odrzuca commit zmieniający `.claude/` spoza bota publikacji.
 
+Decyzje operatora na start Etapu 3 (2026-11-08, wg rekomendacji): domyślny URL `sync-template` z `szablon.repo` w slocie
+`profil.json`; przypięcie pluginu expo przez marketplace typu `settings` z `git-subdir` i `sha`, po próbie na klonie (inaczej
+zostaje `claude-plugins-official`); strażnik repo mobile przez przebudowę z SHA w `.rdzen-version`; automat publikacji
+wyłączony flagą w pliku workflowu, `workflow_dispatch` jako ręczna publikacja przez CI; README repo mobile napisane od nowa.
+
+**Stan Etapu 3**
+
+| IU | Gałąź / merge | Co powstało | Liczby |
+|---|---|---|---|
+| 3.2 | `popr/wariant-expo-ci` (`2533056`), bez merge'a | Job `wariant-expo` w `maszyneria.yml` (build, `stacks/sprawdz-wersje.mjs`, strażnik i nakładka, `testuj-wariant.mjs`); akcje: `pnpm/action-setup` v6.1.1, `setup-node` v7.1.0 | `pnpm -s test` 1723/1723; typecheck 0; lint 0; wariant 1273/1275, 2 pominięte, 0 padnięć, typecheck 0, 411 plików; kroki joba lokalnie: strażnik i nakładka 256/256; actionlint 0. Job na runnerze GitHuba niesprawdzony (bez pusha) |
+
 ### Etap 4 — Pilot na projekcie mobile
 
 - Przed syncem każdego projektu: konwersja jego `.claude/rules/learned-patterns.md` (gramywpadla 49 reguł, Nawykometr 7)
