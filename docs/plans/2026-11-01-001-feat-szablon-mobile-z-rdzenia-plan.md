@@ -480,8 +480,23 @@ folder próby z `hasTrustDialogAccepted: false`). Gałąź `popr/plugin-expo-pin
 
 | IU | Gałąź / merge | Co powstało | Liczby |
 |---|---|---|---|
-| dev-browser | `popr/expo-bez-dev-browser` (`ca2eda4`), bez merge'a | Decyzja operatora 2026-11-08: `dev-browser` zdjęty z wariantu Expo (`null` w `settings.patch.json`). Zmiana testu rdzenia: test profilu w `doctor.test.mjs` sprawdza każdy włączony plugin z tabelą komend zamiast listy webu; lista webu w nowym teście `stacks/__tests__/sloty.test.mjs` | `pnpm -s test` 1745/1745 (+1); typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0. Próba: `claude plugin install expo@claude-plugins-official --scope project` w zbudowanym wariancie nie zmienia `settings.json` (pusty `extraKnownMarketplaces`), plugin po próbie odinstalowany |
-| plugin expo | `popr/expo-marketplace-startera` (`520e9f2`, od `popr/expo-bez-dev-browser`), bez merge'a; zastępuje `popr/plugin-expo-pin` (IU-3.4b) | Decyzja operatora 2026-11-08: `.claude-plugin/marketplace.json` w korzeniu startera (marketplace `claude-code-starter`, `expo` z `git-subdir` `expo/skills` `plugins/expo`, sha `a9e5bd3`); wariant: `expo@claude-code-starter` z marketplace'u `github` `AIBiz-Automatyzacje/claude-code-starter`; hub, README repo mobile, komentarz `maszyneria.yml`; `stacks/__tests__/marketplace.test.mjs` | `pnpm -s test` 1748/1748 (+3); typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0; actionlint 0; `claude plugin validate` OK. Próba: marketplace z lokalnego katalogu, install w zbudowanym wariancie: 1.14.3, `gitCommitSha` `a9e5bd3`, 23 skille, `settings.json` bez zmian; po próbie usunięte. Niesprawdzone: `marketplace add` z GitHuba (plik dopiero po pushu) |
+| dev-browser | `popr/expo-bez-dev-browser` (`ca2eda4`), merge `9fee09b` (razem z wierszem niżej) | Decyzja operatora 2026-11-08: `dev-browser` zdjęty z wariantu Expo (`null` w `settings.patch.json`). Zmiana testu rdzenia: test profilu w `doctor.test.mjs` sprawdza każdy włączony plugin z tabelą komend zamiast listy webu; lista webu w nowym teście `stacks/__tests__/sloty.test.mjs` | `pnpm -s test` 1745/1745 (+1); typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0. Próba: `claude plugin install expo@claude-plugins-official --scope project` w zbudowanym wariancie nie zmienia `settings.json` (pusty `extraKnownMarketplaces`), plugin po próbie odinstalowany |
+| plugin expo | `popr/expo-marketplace-startera` (`520e9f2`, od `popr/expo-bez-dev-browser`), merge `9fee09b`; zastępuje `popr/plugin-expo-pin` (IU-3.4b) | Decyzja operatora 2026-11-08: `.claude-plugin/marketplace.json` w korzeniu startera (marketplace `claude-code-starter`, `expo` z `git-subdir` `expo/skills` `plugins/expo`, sha `a9e5bd3`); wariant: `expo@claude-code-starter` z marketplace'u `github` `AIBiz-Automatyzacje/claude-code-starter`; hub, README repo mobile, komentarz `maszyneria.yml`; `stacks/__tests__/marketplace.test.mjs` | `pnpm -s test` 1748/1748 (+3); typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0; actionlint 0; `claude plugin validate` OK. Próba: marketplace z lokalnego katalogu, install w zbudowanym wariancie: 1.14.3, `gitCommitSha` `a9e5bd3`, 23 skille, `settings.json` bez zmian; po próbie usunięte. `marketplace add` z GitHuba sprawdzony po pushu (akapit niżej) |
+
+Push `5327555..9fee09b` (2026-11-08): CI `maszyneria` zielone (run `42496841642`; `bramka` 111 s, `wariant-expo` 71 s).
+`publikuj-mobile` (run `42497002613`, `workflow_run`) wystartował po `maszyneria`, a job `publikuj` został pominięty (automat
+wyłączony).
+
+Próba z GitHuba (2026-11-08): `claude plugin marketplace add AIBiz-Automatyzacje/claude-code-starter` i
+`claude plugin install expo@claude-code-starter --scope project` w zbudowanym wariancie dają plugin 1.14.3 z `gitCommitSha`
+`a9e5bd3`, a `settings.json` wariantu się nie zmienia.
+
+Pierwsza publikacja ręczna (2026-11-08, za zgodą operatora): build z czystego `9fee09b` (`.rdzen-version` bez `-dirty`,
+`sprawdz-wersje` OK, 0 plików ignorowanych przez `.gitignore` repo mobile), push `6fbd49d..0615a5a` do repo mobile: `cc67525`
+`sync: rdzeń 9fee09b…` (504 pliki, tylko `.claude/`), `52ae294` README, `0615a5a` workflow strażnika. Lokalna symulacja
+strażnika: 0 różnic. `straznik-claude` na GitHubie zielony (run `42500118233`, job `wariant-z-rdzenia` 7 s, krok porównania
+OK). Zostają: deploy key i sekret `MOBILE_DEPLOY_KEY`, próbny `workflow_dispatch`. Te wpisy: gałąź
+`popr/plan-stan-etapu-3`, bramki `pnpm -s test` 1748/1748; typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0, 411 plików.
 
 ### Etap 4 — Pilot na projekcie mobile
 
