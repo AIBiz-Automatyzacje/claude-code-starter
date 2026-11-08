@@ -460,6 +460,7 @@ wyłączony flagą w pliku workflowu, `workflow_dispatch` jako ręczna publikacj
 | IU | Gałąź / merge | Co powstało | Liczby |
 |---|---|---|---|
 | 3.2 | `popr/wariant-expo-ci` (`2533056`), bez merge'a | Job `wariant-expo` w `maszyneria.yml` (build, `stacks/sprawdz-wersje.mjs`, strażnik i nakładka, `testuj-wariant.mjs`); akcje: `pnpm/action-setup` v6.1.1, `setup-node` v7.1.0 | `pnpm -s test` 1723/1723; typecheck 0; lint 0; wariant 1273/1275, 2 pominięte, 0 padnięć, typecheck 0, 411 plików; kroki joba lokalnie: strażnik i nakładka 256/256; actionlint 0. Job na runnerze GitHuba niesprawdzony (bez pusha) |
+| 3.4 | `popr/sync-template-url` (`1dd7f1d`), bez merge'a | Zmiana w rdzeniu: `sync-template.sh` bierze domyślne repo z `szablon.repo` w `profil.json` (web: claude-code-starter, Expo: workspace-template-mobile), `TEMPLATE_REPO_URL` wygrywa, zły klucz = kod 7; SKILL.md | `pnpm -s test` 1722/1722 (+5); typecheck 0; lint 0; wariant 1277/1279, 2 pominięte, 0 padnięć, typecheck 0, 411 plików. Sync z prawdziwego GitHuba niesprawdzony (testy klonują przez `file://`) |
 
 ### Etap 4 — Pilot na projekcie mobile
 

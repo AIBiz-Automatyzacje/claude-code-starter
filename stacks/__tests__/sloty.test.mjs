@@ -82,6 +82,7 @@ test('profil web: wartości stacku web', () => {
     zrodla: { frontend: '^src/' },
     testy: { powiazane: 'vitest related --run' },
     komendyCli: ['vitest'],
+    szablon: { repo: 'https://github.com/AIBiz-Automatyzacje/claude-code-starter.git' },
   })
 })
 

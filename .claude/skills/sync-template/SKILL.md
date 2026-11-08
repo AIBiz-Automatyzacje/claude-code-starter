@@ -1,13 +1,15 @@
 ---
 name: sync-template
-description: "Aktualizuje maszynerię workflow (.claude/: skille, agenci, reguły, hooki, workflows, templates + settings.json) w bieżącym projekcie, zaciągając najnowszą wersję z repo szablonu claude-code-starter. Jednym uruchomieniem sprawdza czy w szablonie pojawiły się jakiekolwiek zmiany i automatycznie je aplikuje. Używaj gdy: „zaktualizuj szablon\", „zsynchronizuj .claude\", „zaciągnij zmiany z szablonu\", „sync template\", „czy są nowe skille/agenci\", „update workflow\", „odśwież folder Claude\" — a także po wrzuceniu tego szablonu do nowego projektu, żeby dociągnąć maszynerię. Wywołuj TEN skill zawsze gdy user chce zsynchronizować konfigurację Claude Code z centralnym szablonem, nawet jeśli nie nazwie tego wprost „synchronizacją\"."
+description: "Aktualizuje maszynerię workflow (.claude/: skille, agenci, reguły, hooki, workflows, templates + settings.json) w bieżącym projekcie, zaciągając najnowszą wersję z repo szablonu (claude-code-starter albo repo wariantu stacku z profilu projektu). Jednym uruchomieniem sprawdza czy w szablonie pojawiły się jakiekolwiek zmiany i automatycznie je aplikuje. Używaj gdy: „zaktualizuj szablon\", „zsynchronizuj .claude\", „zaciągnij zmiany z szablonu\", „sync template\", „czy są nowe skille/agenci\", „update workflow\", „odśwież folder Claude\" — a także po wrzuceniu tego szablonu do nowego projektu, żeby dociągnąć maszynerię. Wywołuj TEN skill zawsze gdy user chce zsynchronizować konfigurację Claude Code z centralnym szablonem, nawet jeśli nie nazwie tego wprost „synchronizacją\"."
 argument-hint: "[opcjonalnie: --dry-run (tylko podgląd), --force (aplikuj mimo tej samej wersji)]"
 ---
 
 # sync-template — aktualizacja maszynerii workflow z szablonu
 
-Zaciąga najnowszą wersję folderu `.claude/` z centralnego repo szablonu
-**`AIBiz-Automatyzacje/claude-code-starter`** (branch `main`) do bieżącego projektu.
+Zaciąga najnowszą wersję folderu `.claude/` z repo szablonu (branch `main`) do bieżącego projektu.
+Adres repo bierze z klucza `szablon.repo` w `.claude/stack/profil.json` projektu: wariant stacku publikuje się do
+własnego repo, a bez profilu albo klucza zostaje **`AIBiz-Automatyzacje/claude-code-starter`**. Zmienna
+`TEMPLATE_REPO_URL` wygrywa z obu.
 Powstał, żeby po wrzuceniu szablonu do innego projektu nie trzeba było ręcznie
 dyktować linku i prosić o aktualizację — jedno uruchomienie sprawdza, czy w
 szablonie coś się zmieniło, i automatycznie to aplikuje.
@@ -82,6 +84,9 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
   Przekaż userowi stderr z git i zasugeruj `gh auth login` / sprawdzenie sieci.
   **Nie** ponawiaj w kółko tej samej komendy.
 - `BŁĄD: brak 'git' w PATH` → git nie jest zainstalowany; zgłoś to userowi.
+- `BŁĄD: niepoprawny szablon.repo w .claude/stack/profil.json` (kod 7) → profil stacku projektu ma klucz, który nie jest
+  adresem git. Skrypt niczego nie ruszył i celowo nie wrócił do claude-code-starter, bo projekt innego stacku dostałby
+  cudzy wariant. Przekaż userowi wartość klucza; poprawny adres podaje profil w repo szablonu tego stacku.
 - `syntax error` w `sync-template.sh` (kod wyjścia bywa 0) albo brak linii `APPLIED`/`STATUS` → sync podmienił własny skrypt
   w trakcie działania: pliki są już nowe, a marker wersji i manifest nie. Uruchom skrypt **ponownie** (ten sam, już nowy) —
   zaktualizuje marker i manifest, pliki ma identyczne. Od wersji z blokiem `{ …; exit; }` skrypt jest parsowany w całości

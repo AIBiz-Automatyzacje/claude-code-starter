@@ -246,3 +246,84 @@ test('sync podmieniajacy wlasny skrypt w projekcie konczy sie poprawnie: marker 
     rmSync(projekt, { recursive: true, force: true })
   }
 })
+
+// --- Repo szablonu z profilu stacku (plan szablonu mobile z rdzenia, IU-3.4) ---
+// Wariant Expo publikuje się do osobnego repo; domyślny adres niesie klucz szablon.repo w .claude/stack/profil.json projektu.
+// Klon idzie przez file://, żeby test nie potrzebował sieci; GIT_ALLOW_PROTOCOL=file blokuje https bez łączenia się.
+
+/** @param {string} projekt @param {unknown} repo */
+function profilProjektu(projekt, repo) {
+  mkdirSync(join(projekt, '.claude', 'stack'), { recursive: true })
+  writeFileSync(join(projekt, '.claude', 'stack', 'profil.json'), `${JSON.stringify({ opis: 'p', szablon: repo === undefined ? undefined : { repo } })}\n`)
+}
+
+/** @param {string} projekt @param {Record<string, string>} env */
+function syncBezZrodlaLokalnego(projekt, env) {
+  const reszta = { ...process.env }
+  delete reszta.TEMPLATE_LOCAL_SRC
+  delete reszta.TEMPLATE_REPO_URL
+  return spawnSync('bash', [SKRYPT], { encoding: 'utf8', env: { ...reszta, PROJECT_DIR: projekt, GIT_ALLOW_PROTOCOL: 'file', ...env } })
+}
+
+/** @param {string} zrodlo */
+const galaz = (zrodlo) => git(zrodlo, ['rev-parse', '--abbrev-ref', 'HEAD'])
+
+test('profil z szablon.repo: sync klonuje to repo i zapisuje jego SHA', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    profilProjektu(projekt, `file://${zrodlo}`)
+    const w = syncBezZrodlaLokalnego(projekt, { TEMPLATE_BRANCH: galaz(zrodlo) })
+    assert.equal(w.status, 0, w.stdout + w.stderr)
+    assert.match(w.stdout, /APPLIED: zaaplikowano zmiany\./)
+    assert.equal(readFileSync(join(projekt, '.claude', '.template-version'), 'utf8').trim(), git(zrodlo, ['rev-parse', 'HEAD']))
+    assert.equal(readFileSync(join(projekt, '.claude', 'workflows', 'dev-x-wf.js'), 'utf8'), "export const meta = { name: 'dev-x-wf' }\nlog('zażółć')\n")
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
+test('TEMPLATE_REPO_URL wygrywa z szablon.repo z profilu', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    profilProjektu(projekt, `file://${zrodlo}-nie-istnieje`)
+    const w = syncBezZrodlaLokalnego(projekt, { TEMPLATE_BRANCH: galaz(zrodlo), TEMPLATE_REPO_URL: `file://${zrodlo}` })
+    assert.equal(w.status, 0, w.stdout + w.stderr)
+    assert.equal(readFileSync(join(projekt, '.claude', '.template-version'), 'utf8').trim(), git(zrodlo, ['rev-parse', 'HEAD']))
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
+test('profil bez szablon.repo i bez profilu: domyślnie claude-code-starter', () => {
+  for (const zProfilem of [true, false]) {
+    const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+    try {
+      if (zProfilem) profilProjektu(projekt, undefined)
+      const w = syncBezZrodlaLokalnego(projekt, {})
+      assert.equal(w.status, 5, w.stdout + w.stderr)
+      assert.match(w.stderr, /nie udało się sklonować szablonu z https:\/\/github\.com\/AIBiz-Automatyzacje\/claude-code-starter\.git /)
+    } finally {
+      rmSync(projekt, { recursive: true, force: true })
+    }
+  }
+})
+
+test('niepoprawny szablon.repo: błąd z kodem 7, bez cichego powrotu do claude-code-starter i bez zmian w projekcie', () => {
+  for (const zly of ['nie-adres', 'https://x y', 42, '']) {
+    const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+    try {
+      profilProjektu(projekt, zly)
+      const w = syncBezZrodlaLokalnego(projekt, {})
+      assert.equal(w.status, 7, `${JSON.stringify(zly)}: ${w.stdout}${w.stderr}`)
+      assert.match(w.stderr, /BŁĄD: niepoprawny szablon\.repo w \.claude\/stack\/profil\.json/)
+      assert.doesNotMatch(w.stderr, /claude-code-starter/)
+      assert.throws(() => statSync(join(projekt, '.claude', '.template-version')))
+    } finally {
+      rmSync(projekt, { recursive: true, force: true })
+    }
+  }
+})

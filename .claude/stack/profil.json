@@ -20,5 +20,8 @@
   "testy": {
     "powiazane": "vitest related --run"
   },
-  "komendyCli": ["vitest"]
+  "komendyCli": ["vitest"],
+  "szablon": {
+    "repo": "https://github.com/AIBiz-Automatyzacje/claude-code-starter.git"
+  }
 }
