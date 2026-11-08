@@ -17,10 +17,32 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: pnpm/action-setup@v6.1.0
-      - uses: actions/setup-node@v7.0.0
+      - uses: pnpm/action-setup@v6.1.1
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck && pnpm test && pnpm lint
+
+  # Wariant Expo (plan szablonu mobile z rdzenia, IU-3.2): build z rdzenia i nakładki, testy rdzenia na wyniku, strażnik slotów.
+  # Zielony job jest warunkiem publikacji do workspace-template-mobile (publikuj-mobile.yml, D4).
+  wariant-expo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build wariantu
+        run: node stacks/zbuduj.mjs expo "$RUNNER_TEMP/wariant-expo"
+      - name: Wersja rdzenia bez -dirty
+        run: node stacks/sprawdz-wersje.mjs "$RUNNER_TEMP/wariant-expo" "$GITHUB_SHA"
+      - name: Strażnik slotów i testy nakładki
+        run: node --test 'stacks/__tests__/*.test.mjs' 'stacks/expo/__tests__/*.test.mjs'
+      - name: Testy rdzenia na wariancie
+        run: node stacks/testuj-wariant.mjs expo
