@@ -66,11 +66,27 @@ test('sprawdzMakiety: ekran spoza figma_screens = blad; UI bez pola = uwaga; dat
     iu('IU-3', 'feature-builder-data', null), iu('IU-4', 'feature-builder-ui', '—')].join('\n'))
   const w = sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu), tmpdir())
   assert.deepEqual(w.bledy, ['IU-1: Makiety reset — brak w figma_screens (dozwolone: logowanie, rejestracja)'])
-  assert.deepEqual(w.uwagi.map((u) => u.split(':')[0]), ['IU-2'])
+  // Zmiana kontraktu (punkt 30): `rejestracja` nie jest w polu zadnej jednostki — dochodzi uwaga o ekranie bez jednostki.
+  assert.deepEqual(w.uwagi.map((u) => u.split(':')[0]), ['IU-2', 'figma_screens'])
   const bez = plan([iu('IU-1', 'feature-builder-ui', '`logowanie`'), iu('IU-2', 'feature-builder-ui', '—')].join('\n'),
     'design_md: null\nfigma_spec: null\nfigma_screens: {}\noperator_prep: null')
   assert.deepEqual(sprawdzMakiety(bez, bez.fazy.flatMap((f) => f.iu), tmpdir()).bledy,
     ['IU-1: pole Makiety, a frontmatter nie ma figma_screens — usuń pole albo dodaj makiety'], '„—” bez makiet nie jest bledem; nazwa nie jest „obca”')
+})
+
+// Punkt 30 (dashboard E2): tester E2E porownuje tylko ekrany z pol Makiety jednostek fazy. Ekran z figma_screens, ktorego nie
+// wymienia zadna jednostka, wypadlby z porownan i ze smoke'u bez sladu — walidacja planu nazywa go w uwadze.
+test('sprawdzMakiety: ekran bez jednostki w planie z polem Makiety (takze samo „—”) = uwaga z nazwa; komplet i plan bez pola = bez tej uwagi', () => {
+  const oEkranach = (/** @type {ReturnType<typeof parsujPlan>} */ p) => sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu), tmpdir()).uwagi.filter((u) => u.startsWith('figma_screens:'))
+  const zLuka = plan([iu('IU-1', 'feature-builder-ui', '`logowanie`'), iu('IU-2', 'feature-builder-data', null)].join('\n'))
+  assert.deepEqual(oEkranach(zLuka), ['figma_screens: rejestracja — żadna jednostka nie wymienia tych ekranów w polu Makiety, a tester E2E porównuje z makietą ekrany z pól Makiety jednostek fazy; dopisz je do jednostki, która je buduje, albo usuń z figma_screens'])
+  assert.deepEqual(sprawdzMakiety(zLuka, zLuka.fazy.flatMap((f) => f.iu), tmpdir()).bledy, [], 'uwaga, nie blad')
+  const komplet = plan([iu('IU-1', 'feature-builder-ui', '`logowanie`'), iu('IU-2', 'feature-builder-fullstack', '`rejestracja`')].join('\n'))
+  assert.deepEqual(oEkranach(komplet), [])
+  const sameKreski = plan(iu('IU-1', 'feature-builder-ui', '—'))
+  assert.deepEqual(oEkranach(sameKreski), ['figma_screens: logowanie, rejestracja — żadna jednostka nie wymienia tych ekranów w polu Makiety, a tester E2E porównuje z makietą ekrany z pól Makiety jednostek fazy; dopisz je do jednostki, która je buduje, albo usuń z figma_screens'])
+  const bezPola = plan([iu('IU-1', 'feature-builder-ui', null), iu('IU-2', 'feature-builder-data', null)].join('\n'))
+  assert.deepEqual(oEkranach(bezPola), [], 'plan sprzed pola: tester bierze wszystkie ekrany, uwage ma juz jednostka UI')
 })
 
 test('blokDesignerski: SPEC per ekran — builder dostaje naglowek SPEC, SPEC i PNG tylko swoich ekranow', (t) => {

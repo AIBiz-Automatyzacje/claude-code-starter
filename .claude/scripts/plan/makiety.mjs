@@ -33,7 +33,8 @@ function budujeUi(iu) {
 
 /**
  * Bledy i uwagi walidacji planu: nazwa spoza `figma_screens` = blad (builder dostalby nieistniejacy ekran), jednostka UI bez pola
- * Makiety w planie z makietami = uwaga (dostanie wszystkie ekrany), pole Makiety w planie bez makiet = blad.
+ * Makiety w planie z makietami = uwaga (dostanie wszystkie ekrany), pole Makiety w planie bez makiet = blad, ekran bez jednostki
+ * w planie z polem Makiety = uwaga (tester E2E porownuje ekrany z pol Makiety jednostek fazy).
  * @param {Plan} plan
  * @param {Jednostka[]} jednostki
  * @param {string} projekt katalog projektu (pliki SPEC ekranow)
@@ -59,6 +60,14 @@ export function sprawdzMakiety(plan, jednostki, projekt) {
     if (iu.makiety.length && !ekrany.size) w.bledy.push(`${iu.id}: pole Makiety, a frontmatter nie ma figma_screens — usuń pole albo dodaj makiety`)
     const obce = iu.makiety.filter((n) => ekrany.size && !ekrany.has(n))
     if (obce.length) w.bledy.push(`${iu.id}: Makiety ${obce.join(', ')} — brak w figma_screens (dozwolone: ${[...ekrany].join(', ')})`)
+  }
+  // Punkt 30 (dashboard E2, 45 ekranow): tester E2E porownuje z makieta tylko ekrany z pol Makiety jednostek fazy, wiec ekran,
+  // ktorego nie wymienia zadna jednostka, nie trafia do zadnego porownania ani do punktow wizualnych smoke'u. Plan bez zadnego pola
+  // (sprzed P21) pomijamy: tester bierze tam wszystkie ekrany, a kazda jednostka UI ma juz uwage wyzej.
+  const wymienione = new Set(jednostki.flatMap((iu) => iu.makiety ?? []))
+  const bezJednostki = jednostki.some((iu) => iu.makiety !== null) ? [...ekrany].filter((n) => !wymienione.has(n)) : []
+  if (bezJednostki.length) {
+    w.uwagi.push(`figma_screens: ${bezJednostki.join(', ')} — żadna jednostka nie wymienia tych ekranów w polu Makiety, a tester E2E porównuje z makietą ekrany z pól Makiety jednostek fazy; dopisz je do jednostki, która je buduje, albo usuń z figma_screens`)
   }
   return w
 }

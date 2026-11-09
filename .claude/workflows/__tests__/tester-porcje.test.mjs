@@ -92,5 +92,5 @@ test('plik roli: porcja odgrywa tylko swoj zakres listy skryptu; makiety i runne
   const linia = tester.split('\n').find((l) => l.startsWith('- (porcja w poleceniu')) ?? ''
   assert.match(linia, /`Porcja <nr> z <z>: scenariusze <od>–<do>`/)
   assert.match(linia, /tylko scenariusze o numerach od `<od>` do `<do>` w kolejności listy skryptu \(numeracja od 1\)/)
-  assert.match(linia, /makiety `figma_screens` i linię runnera `[^`]*\/<etap>-run-all\.sh` obsługuje tylko porcja 1/)
+  assert.match(linia, /makiety fazy i linię runnera `[^`]*\/<etap>-run-all\.sh` obsługuje tylko porcja 1/)
 })

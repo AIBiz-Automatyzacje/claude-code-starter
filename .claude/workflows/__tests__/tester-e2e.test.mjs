@@ -116,8 +116,24 @@ test('plik roli: makiety — visual-diff z findingiem OPERATOR; w trybie bez prz
   assert.match(sekcja, /figma_screens/)
   assert.match(sekcja, /visual-diff\/<ekran>-actual\.png/)
   assert.match(sekcja, /Operator: \[Manual\] <ekran>: visual review — Operator action:/)
-  assert.match(sekcja, /W trybie `bez-interakcji` zrzutu nie robisz, a każdy ekran z `figma_screens`[^\n]*finding OPERATOR P3/)
-  assert.match(tester, /Przy zerze scenariuszy i bez makiet `figma_screens`/)
+  assert.match(sekcja, /W trybie `bez-interakcji` zrzutu nie robisz, a każdy ekran fazy nadal idzie do człowieka[^\n]*finding OPERATOR P3/)
+  assert.match(tester, /Przy zerze scenariuszy i zerze ekranów fazy \(sekcja o makietach\) zwróć od razu `\{findings: \[\], przebiegi: \[\]\}`/)
+})
+
+// Punkt 30 (dashboard E2, plan z 45 ekranami i okolo 10 fazami UI): tester bral cale `figma_screens` zadania w kazdej fazie,
+// wiec porownywal ekrany, ktorych kod powstaje dopiero w pozniejszych fazach. Zmiana kontraktu: ekrany z pol Makiety
+// jednostek biezacej fazy; plan sprzed pola idzie regula zapasowa z jednym zdaniem w wyniku.
+test('plik roli: makiety — tylko ekrany z pol Makiety jednostek fazy; regula zapasowa dla planu sprzed pola ze zdaniem w wyniku', () => {
+  const regula = tester.split('\n').find((l) => l.startsWith('- (niepuste pole `figma_screens`')) ?? ''
+  assert.match(regula, /Porównujesz tylko ekrany fazy: nazwy z pól `\*\*Makiety:\*\*` jednostek tej fazy w planie technicznym \(dossier, sekcja „Plan techniczny — sekcja fazy”\)/)
+  assert.match(regula, /Pole `—` i jednostka `feature-builder-data` bez pola to zero ekranów\./)
+  assert.match(regula, /Gdy żadna jednostka fazy nie ma pola, a faza ma jednostkę inną niż `feature-builder-data` \(plan sprzed pola `Makiety`\), bierzesz wszystkie ekrany z `figma_screens`/)
+  assert.match(regula, /na końcu opisu findingu OPERATOR pierwszego ekranu dopisujesz zdanie „Jednostki fazy nie mają pola Makiety: porównano wszystkie ekrany zadania\.”/)
+  assert.match(regula, /Faza z zerem ekranów nie dostaje zrzutów ani findingów o makietach\./)
+  const sekcja = tester.slice(tester.indexOf('### Makiety'))
+  assert.doesNotMatch(sekcja, /Dla każdego ekranu odczytaj|każdy ekran z `figma_screens`/, 'zadna linia sekcji nie bierze juz wszystkich ekranow zadania')
+  assert.match(sekcja, /^- Dla każdego ekranu fazy odczytaj wymiary PNG/m)
+  assert.ok(sekcja.indexOf('Porównujesz tylko ekrany fazy') < sekcja.indexOf('Dla każdego ekranu fazy'), 'wybor ekranow przed pierwszym zrzutem')
 })
 
 test('plik roli: finding seeda kontra migracja ma linie checkbox: scenariusza, ktory uzywa seeda (fix odznacza po PASS)', () => {
