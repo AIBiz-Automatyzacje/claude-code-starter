@@ -243,6 +243,8 @@ Faza do wykonania: ${faza}
    na jednej lokalnej bazie i nadpisuja ten sam plik typow.
    Jesli IU korzysta z pliku, ktory tworzy inny IU tej fazy (hook, serwis, schemat, typy) — strategia serial i IU tworzacy
    plik przed IU, ktory go uzywa: przy parallel import jeszcze nie istnieje i typecheck buildera pada.
+   Jesli IU usuwa plik, ktorego importera zmienia albo usuwa inny IU tej fazy — strategia serial i IU usuwajacy plik
+   po IU, ktory zmienia importera: builder nie usunie pliku z zywym importem i faza skonczy sie jako partial.
 5. Dla kazdego IU zbuduj KOMPLETNY prompt builderowi:
    - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Teksty (verbatim), Wzorce, Scenariusze testowe, Weryfikacja)
    - DOMKNIJ ODWOLANIA DO DECYZJI. Builder pracuje w OSOBNYM kontekscie i nie widzi planu: odwolanie

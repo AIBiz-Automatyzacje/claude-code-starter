@@ -137,6 +137,13 @@ test('planner: pliki innych IU tej fazy w prompcie i serial — builder UI nie w
   assert.match(p, /Jesli IU korzysta z pliku, ktory tworzy inny IU tej fazy \(hook, serwis, schemat, typy\) — strategia serial/)
 })
 
+// Znaleziska 2026-11-02 pkt 33 (dashboard E2, faza 6): builder nie usunal pliku, ktory importowal plik zmieniany przez inna IU,
+// i execute zwrocil partial.
+test('planner: IU usuwajacy plik idzie po IU tej fazy, ktory zmienia jego importera', () => {
+  assert.match(plannerPrompt('docs/active/x', 2),
+    /Jesli IU usuwa plik, ktorego importera zmienia albo usuwa inny IU tej fazy — strategia serial i IU usuwajacy plik\s+po IU, ktory zmienia importera/)
+})
+
 test('planner: kontekst designerski dla UI i fullstack, warianty -figma przy makietach', () => {
   const p = plannerPrompt('docs/active/x', 2)
   // P21 B2: blok liczy skrypt z pola Makiety jednostki (naglowek „Mandatory designerski kontekst” sprawdza makiety.test.mjs)
