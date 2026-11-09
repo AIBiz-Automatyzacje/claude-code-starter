@@ -83,6 +83,14 @@ test('tester: przed porownaniem z makieta po padzie probnego zrzutu — jedno po
   assert.ok(makiety.indexOf('ponów próbny zrzut') < makiety.indexOf('zapisz zrzut jako'), 'ponowienie przed zrzutem makiety')
 })
 
+// Punkt 30 (dashboard E2): viewport i trasę tester ustawia tylko dla ekranów fazy wybranych regułą o polach Makiety.
+test('tester (punkt 30): wymiary, viewport i trasa dla ekranów fazy, po regule wyboru z pól Makiety', () => {
+  const makiety = tester.slice(tester.indexOf('### Makiety'))
+  assert.match(makiety, /^- Dla każdego ekranu fazy odczytaj wymiary PNG \(`identify -format "%w %h" <png>`[^\n]*ustaw viewport na te wymiary i otwórz trasę ekranu wskazaną polem Pliki jednostki planu \(`src\/pages\/<trasa>\.tsx`\)/m)
+  assert.ok(makiety.indexOf('Porównujesz tylko ekrany fazy') !== -1 && makiety.indexOf('Porównujesz tylko ekrany fazy') < makiety.indexOf('ustaw viewport na te wymiary'))
+  assert.doesNotMatch(makiety, /Dla każdego ekranu odczytaj/, 'bez ograniczenia do fazy tester porownywal ekrany przyszlych faz')
+})
+
 // P22 A3: `cd <zadanie> && agent-browser screenshot x.png` zapisal x.png w korzeniu repo — demon agent-browser liczy sciezke
 // wzgledna od swojego katalogu. Plik roli kaze zapisywac zrzut pod sciezka bezwzgledna w katalogu zadania.
 test('plik roli: zrzut pod sciezka bezwzgledna w katalogu zadania ($Z od git rev-parse --show-toplevel), z powodem; dowod wzgledny', () => {
