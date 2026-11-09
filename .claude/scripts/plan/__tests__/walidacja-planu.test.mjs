@@ -3,6 +3,7 @@
 //
 // Uruchomienie:  node --test .claude/scripts/plan/__tests__/walidacja-planu.test.mjs
 
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -254,6 +255,27 @@ test('bez regul wzgledem repo (bramka po fazie 1): plik zmieniony przez faze nie
   try {
     assert.equal(sprawdzPlan(parsujPlan(FIXTURE), korzen).bledy.length, 1)
     assert.deepEqual(sprawdzPlan(parsujPlan(FIXTURE), korzen, { wzgledemRepo: false }).bledy, [])
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})
+
+// Znaleziska 2026-11-02 pkt 33 (dashboard E2, faza 6): IU usuwala plik importowany przez plik zmieniany dopiero w pozniejszej IU.
+// Skan importerow czyta repo, wiec bramka gotowosci (wzgledemRepo=false, takze po wykonanych fazach) go nie robi.
+test('wiersz Usuń pliku z importerem zmienianym w pozniejszej IU daje uwage (nie blad); bez regul wzgledem repo — bez uwagi', () => {
+  const md = zmien(WIERSZ_SERWISU, `${WIERSZ_SERWISU}\n| Usuń | \`src/services/stary-serwis.ts\` | 3 → — | — | — |`)
+  const korzen = projekt({
+    'src/services/stary-serwis.ts': linie(3),
+    'src/features/oferty/components/lista-ofert.tsx': `import { stary } from '../../../services/stary-serwis'\n${linie(7)}`,
+  })
+  try {
+    execFileSync('git', ['-C', korzen, 'init', '-q'])
+    execFileSync('git', ['-C', korzen, 'add', '.'])
+    const w = sprawdzPlan(parsujPlan(md), korzen)
+    assert.deepEqual(w.bledy, [])
+    assert.equal(w.uwagi.length, 1)
+    assert.match(w.uwagi[0], /^IU-1: Usuń `src\/services\/stary-serwis\.ts` — importerzy, których plan nie zmienia do tej IU: `src\/features\/oferty\/components\/lista-ofert\.tsx` \(plan zmienia go dopiero w IU-2\)/)
+    assert.deepEqual(sprawdzPlan(parsujPlan(md), korzen, { wzgledemRepo: false }), { bledy: [], uwagi: [] })
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }

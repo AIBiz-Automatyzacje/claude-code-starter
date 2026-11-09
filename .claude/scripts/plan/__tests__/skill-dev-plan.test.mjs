@@ -143,6 +143,19 @@ test('kolumna linii: szacunek z tyldą albo bez strzałki to błąd zapisu, a pl
   assert.match(sprawdz(mutacja('| 0 → 70 |', '| 0 → — |')).bledy.join('\n'), /notatki-service\.ts` — brak liczby linii po zmianie/)
 })
 
+// Znaleziska 2026-11-02 pkt 33: akcję „Usuń” znał tylko skrypt (budzet-pliku.mjs, czesci-pr.mjs), kontrakt planu jej nie wymieniał —
+// dashboard E2 usuwał plik z żywym importerem (IU-19 przed IU-32), a skill nie mówił, w której IU plik wolno usunąć.
+test('SKILL.md i szablon: akcja Usuń na liście akcji, z regułą importerów; wiersz Usuń bez liczby „po” przechodzi sprawdz', () => {
+  const tabela = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.6 Tabela plików'), SKILL_MD.indexOf('#### 3.6b'))
+  assert.match(tabela, /Akcje: `Stwórz`, `Modyfikuj`, `Usuń`, `Test \(unit\)`/)
+  assert.match(tabela, /każdy plik, który go importuje, ma wiersz `Usuń` albo `Modyfikuj` w tej samej albo wcześniejszej IU/)
+  assert.match(tabela, /`plan\.mjs sprawdz` szuka importerów w repo i daje uwagę/)
+  assert.match(SZABLON, /akcje `Stwórz`, `Modyfikuj`, `Usuń`, `Test \(unit\)`/)
+  assert.match(SZABLON, /wiersz `Usuń` ma `—` po strzałce \(`45 → —`\)/)
+  const wiersz = '| Stwórz | `src/services/notatki-limity.ts` | 0 → 3 | — | nowy |'
+  assert.deepEqual(sprawdz(mutacja(wiersz, `${wiersz}\n| Usuń | \`src/services/klienci-service.ts\` | 1 → — | — | — |`)).bledy, [])
+})
+
 // Katalog runnerów i komenda testów ze stacku (IU-2.5): ostatnia pozycja Weryfikacji przykładu podmieniona na runner bez znacznika.
 test('Weryfikacja z runnerem E2E bez znacznika [E2E] jest odrzucona — scribe uruchomiłby go bez środowiska e2e', () => {
   const ostatnia = przykladPlanu().match(/^- `[^`]+` przechodzi$/gm)?.at(-1) ?? ''

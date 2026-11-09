@@ -209,7 +209,7 @@ Plan pisze bazowe nazwy builderów. Warianty `feature-builder-ui-figma` i `featu
 
 #### 3.6 Tabela plików i budżet pliku
 
-Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |`, jeden plik na wiersz. Akcje: `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e seed)`; akcje pliku flow, jeśli stack go ma: `.claude/stack/plan-e2e.md`, sekcja „Linia scenariusza”.
+Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |`, jeden plik na wiersz. Akcje: `Stwórz`, `Modyfikuj`, `Usuń`, `Test (unit)`, `Stwórz (e2e seed)`; akcje pliku flow, jeśli stack go ma: `.claude/stack/plan-e2e.md`, sekcja „Linia scenariusza”.
 
 - **Kompletność.** Tabela wymienia każdy plik, który IU stworzy lub zmieni: źródła, testy, migracje, seedy, konfigurację. Planner dobiera do promptu buildera reguły wiedzy projektu po tych ścieżkach — plik spoza tabeli to builder bez reguł dla niego.
 - **Linie dziś.** Policz skryptem: `node .claude/scripts/plan/plan.mjs linie <plik> <plik>` — linie kodu jak ESLint `max-lines` (bez pustych i komentarzy). Nowy plik: `0`. Plik z wcześniejszej IU tego planu: „dziś” = jej „po”.
@@ -217,6 +217,7 @@ Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Wer
 - **Próg 300 linii na plik.** Plik kodu, który po zmianie przekracza 300, dostaje ocenę wymiarów w kolumnie Wymiary: powody zmiany (ile niezależnych powodów, by plik się zmieniał), eksporty między warstwami, importy z wielu domen, test-lustro (czy test da się podzielić tak jak plik), reguła 5 s (czy w 5 sekund wiesz, co plik robi). Wymiar pęknięty → werdykt `wydziel <co>` i wiersz `Stwórz` nowego modułu w tej samej IU, a „po” liczysz po wydzieleniu.
 - **Próg 360 linii na plik** (300 + 20% tolerancji) to próg ESLint i bota PR: plik powyżej 360 po zmianie zawsze dostaje wydzielenie.
 - Werdykt bez przekroczeń: `nowy` albo `zostaje`.
+- **Usuń.** Wiersz usuwanego pliku ma „dziś” z repo i `—` po strzałce (`45 → —`), a werdykt `—`. Plik usuwasz w tej IU, w której znika jego ostatni importer, albo później: każdy plik, który go importuje, ma wiersz `Usuń` albo `Modyfikuj` w tej samej albo wcześniejszej IU. Builder nie usuwa pliku z żywym importem, więc faza kończy się jako częściowa i autopilot staje (dashboard E2: IU-19 usuwała komponent importowany przez plik usuwany dopiero w IU-32). `plan.mjs sprawdz` szuka importerów w repo i daje uwagę z nazwą importera i IU, w której plan go zmienia.
 
 `plan.mjs sprawdz` (6.2) liczy „dziś” w repo i odrzuca tabelę z rozjazdem ponad tolerancję, plik powyżej 360, przekroczenie 300 bez wymiarów i `wydziel` bez wiersza `Stwórz`.
 

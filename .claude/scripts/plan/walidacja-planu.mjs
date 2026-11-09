@@ -7,6 +7,7 @@ import { join } from 'node:path'
 
 import { akcja, sprawdzBudzet } from './budzet-pliku.mjs'
 import { sprawdzCzesci } from './czesci-pr.mjs'
+import { uwagiImporterow } from './importerzy.mjs'
 import { ekranyFigmy, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
 import { sprawdzMakiety } from './makiety.mjs'
 import { sciezkaWzgledna } from './przygotowanie.mjs'
@@ -218,7 +219,7 @@ export function uwagiRozmiaruIu(jednostki) {
 /**
  * @param {Plan} plan sparsowany plan techniczny
  * @param {string} projekt katalog projektu (sciezki planu sa wzgledne wobec niego)
- * @param {{ wzgledemRepo?: boolean }} [opcje] wzgledemRepo=false: bez regul budzetu wobec stanu repo (bramka po fazie 1)
+ * @param {{ wzgledemRepo?: boolean }} [opcje] wzgledemRepo=false: bez regul budzetu i importerow wobec stanu repo (bramka po fazie 1)
  * @returns {Wynik}
  */
 export function sprawdzPlan(plan, projekt, opcje = {}) {
@@ -245,6 +246,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
     w.uwagi.push(`${id}: wymaganie ze „Śledzenia wymagań” bez IU (pole Wymagania żadnej jednostki go nie wymienia)`)
   }
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
+  if (opcje.wzgledemRepo !== false) w.uwagi.push(...uwagiImporterow(jednostki, projekt))
   w.uwagi.push(...uwagiRozmiaruFaz(plan.fazy))
   w.uwagi.push(...uwagiRozmiaruIu(jednostki))
   w.uwagi.push(...uwagiRejestru(plan, jednostki))

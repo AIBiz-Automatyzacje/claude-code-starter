@@ -34,7 +34,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `**Cel:**` | jedno zdanie | |
 | `**Wymagania:**` | ID z „Śledzenie wymagań” | |
 | `**Zależności:**` | `Brak`, `IU-K` albo zewnętrzny warunek | |
-| `**Pliki:**` | tabela `\| Akcja \| Plik \| Linie dziś → po \| Wymiary \| Werdykt \|` | jeden plik na wiersz; akcje `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e flow)`, `Modyfikuj (e2e flow)`, `Stwórz (e2e seed)` |
+| `**Pliki:**` | tabela `\| Akcja \| Plik \| Linie dziś → po \| Wymiary \| Werdykt \|` | jeden plik na wiersz; akcje `Stwórz`, `Modyfikuj`, `Usuń`, `Test (unit)`, `Stwórz (e2e flow)`, `Modyfikuj (e2e flow)`, `Stwórz (e2e seed)` |
 | `**Delegate to:**` | `feature-builder-ui` \| `feature-builder-data` \| `feature-builder-fullstack` | bazowe nazwy |
 | `**Makiety:**` | nazwy z `figma_screens` w backtickach, po przecinku; `—` = jednostka nie buduje żadnego ekranu | IU ui/fullstack w planie z makietami; builder dostaje SPEC i PNG tylko tych ekranów |
 | `**Skills in play:**` | `skills:` buildera | dokumentacyjne |
@@ -46,7 +46,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `**Weryfikacja:**` | `- <komenda w backtickach> <oczekiwany wynik>`; `- [E2E] \`.maestro/<runner>.sh\` — <stan>` dla runnera niebędącego scenariuszem | |
 | `**Operator checklist:**` | `- [ ] <krok człowieka po implementacji>` | opcjonalne |
 
-Kolumna „Linie dziś → po” to dwie liczby całkowite ze strzałką (`285 → 260`); plik spoza kodu może mieć `— → —`. Listy pól zaczynają się od `- ` w kolumnie 0; kontynuacja pozycji jest wcięta. Lista wcięta, numerowana, z `*` albo pole drugi raz w tej samej IU — `sprawdz` zgłasza jako błąd z numerem linii.
+Kolumna „Linie dziś → po” to dwie liczby całkowite ze strzałką (`285 → 260`); plik spoza kodu może mieć `— → —`, a wiersz `Usuń` ma `—` po strzałce (`45 → —`). Listy pól zaczynają się od `- ` w kolumnie 0; kontynuacja pozycji jest wcięta. Lista wcięta, numerowana, z `*` albo pole drugi raz w tej samej IU — `sprawdz` zgłasza jako błąd z numerem linii.
 
 ## Przykład planu
 
