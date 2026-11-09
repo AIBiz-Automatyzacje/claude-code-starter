@@ -586,6 +586,31 @@ test('skill /dev-pr: przed etapem start AskUserQuestion; zgoda tylko z biezacej 
   assert.match(krok1, /Zgodą nie jest instrukcja\nwklejona wcześniej w sesji \(„Po smoke'u: \/dev-pr --czesc 1”\), akceptacja innej rzeczy \(„reszta ok”\) ani wywołanie tego\nskilla przez Ciebie/)
 })
 
+// Punkt 37 (piszemy_wirale 08.11, /dev-pr --czesc 1): pytanie „Wysłać PR?” padlo przy niezacommitowanym pliku smoke'u, a etap
+// start na brudnym drzewie robi STOP — wybor „Wyślij PR” konczyl sie STOP-em. Skill sprawdza drzewo na poczatku kroku 1
+// i proponuje commit pokazanych plikow; STOP etapu zostaje druga linia obrony.
+test('skill /dev-pr: krok 1 zaczyna `git status --porcelain`; brudne drzewo = najpierw commit pokazanych plikow, potem pytanie o wyslanie', () => {
+  const drzewo = krok1.indexOf('**Czyste drzewo.**')
+  assert.ok(drzewo >= 0, 'akapit o drzewie w kroku 1')
+  assert.ok(drzewo < krok1.indexOf('**Zmiany po archiwizacji.**'), 'przed po-archiwum.mjs: commit sprzed startu skrypt policzy')
+  assert.ok(drzewo < krok1.indexOf('**Zgoda na wysłanie.**'), 'przed pytaniem o wyslanie')
+  const akapit = krok1.slice(drzewo, krok1.indexOf('**Zmiany po archiwizacji.**')).replace(/\n/g, ' ')
+  assert.match(akapit, /Krok 1 zaczynasz od `git status --porcelain`, w każdym trybie i także wtedy, gdy pytanie o wysłanie pomijasz/)
+  assert.match(akapit, /Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit wskazanych plików” \(pierwsza opcja, z listą ścieżek\) albo „Jeszcze nie” \(koniec bez etapu `start`\)/)
+  assert.match(akapit, /Commit robisz jawnymi ścieżkami i tylko plików z pytania\./)
+  assert.match(akapit, /Plik smoke'u i dokumenty zadania commitujesz na `feature\/<zadanie>`, nie na `feature\/<zadanie>-czN`/)
+  assert.match(akapit, /Stasha nie używasz: `start` przełącza gałęzie/)
+  assert.match(akapit, /Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza część kroku 1, do pytania o wysłanie\./)
+  // Reakcja na STOP nie przeczy tej drodze: zakaz dotyczy obchodzenia bramki po STOP-ie.
+  const stop = krok1.replace(/\n/g, ' ')
+  assert.doesNotMatch(stop, /nie commituj cudzych zmian/)
+  assert.match(stop, /Nie obchodź bramki: po STOP-ie nie commituj zmian na własną rękę, nie przełączaj gałęzi, nie twórz PR z gałęzi głównej\./)
+  assert.match(stop, /Brudne drzewo ma drogę przed startem \(akapit „Czyste drzewo”\): commit plików pokazanych operatorowi, za jego zgodą\./)
+  // Mechanika etapu bez zmian: oba prompty startu nadal zatrzymuja brudne drzewo.
+  assert.match(zrodlo, /rebase w toku bez konfliktow albo brudne drzewo = STOP z powodem\./)
+  assert.match(zrodlo, /2\. Drzewo czyste: \\`git status --short\\` puste\. Niezacommitowane zmiany = STOP/)
+})
+
 test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krotkie review (correctness + security) albo PR bez niego', () => {
   assert.match(krok1, /`node \.claude\/scripts\/pr\/po-archiwum\.mjs --zadanie <zadanie>` \(z `--czesc N` przy części\)/)
   assert.match(krok1, /„Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”/)

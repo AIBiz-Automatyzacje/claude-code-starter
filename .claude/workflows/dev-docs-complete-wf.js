@@ -246,8 +246,10 @@ PUNKTY WIZUALNE: Punktem wizualnym jest pozycja ze źródeł (1)–(6), która p
 Przed pierwszym punktem wizualnym smoke'u stoi zdanie z .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
 Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi
 ramka ma zdanie do ramki z tej samej sekcji przed zdaniami koncowymi. Ramka konczy sie zdaniami:
-"Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
-„Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej.
+"Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez \`git add -A\`): /dev-pr wymaga czystego drzewa.
+Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
+„Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej,
+a odhaczony plik bez commita zatrzymuje etap start /dev-pr na brudnym drzewie (piszemy_wirale 08.11).
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji.
 
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;

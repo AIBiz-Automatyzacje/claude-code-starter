@@ -63,6 +63,14 @@ wysyłać mimo to. To miękka bramka: decyduje operator.
 
 ### 1. Start — bramka wejścia i pull request
 
+**Czyste drzewo.** Krok 1 zaczynasz od `git status --porcelain`, w każdym trybie i także wtedy, gdy pytanie o wysłanie
+pomijasz: etap `start` przełącza gałęzie i przy brudnym drzewie kończy STOP-em, przy części dopiero po pomiarze rozmiaru.
+Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit wskazanych plików” (pierwsza opcja, z listą
+ścieżek) albo „Jeszcze nie” (koniec bez etapu `start`). Commit robisz jawnymi ścieżkami i tylko plików z pytania. Plik
+smoke'u i dokumenty zadania commitujesz na `feature/<zadanie>`, nie na `feature/<zadanie>-czN`: plik smoke'u leży na gałęzi
+zadania, a jej commity po cięciu jadą z ostatnią częścią. Stasha nie używasz: `start` przełącza gałęzie i nikt go potem
+nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza część kroku 1, do pytania o wysłanie.
+
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
 żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → pytanie
@@ -121,8 +129,9 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 deploy) albo „Jadą w tym PR” (znów krok 1 z `zGlowna: true`). `status: "STOP"` z polem `konfigBota` → pokaż `odstepstwa` i pytaj: „/coderabbit-setup”
 (uruchamiasz skill, commit na tej gałęzi, znów krok 1) albo „Bez poprawnego configu” (krok 1 z `bezKonfigu: true`).
 
-`status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
-przełączaj gałęzi, nie twórz PR z gałęzi głównej.
+`status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: po STOP-ie nie commituj zmian na własną rękę, nie
+przełączaj gałęzi, nie twórz PR z gałęzi głównej. Brudne drzewo ma drogę przed startem (akapit „Czyste drzewo”): commit
+plików pokazanych operatorowi, za jego zgodą. Po STOP-ie z tego powodu operator wraca `/dev-pr` i przechodzi ją od początku.
 
 `status: "STOP"` z polem `rozmiar` (część albo jeden PR ≥ 150 plików do recenzji po przeliczeniu czubka — commity po
 archiwizacji dołożyły pliki do liczby z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`)
