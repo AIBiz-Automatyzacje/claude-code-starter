@@ -67,10 +67,18 @@ znacznik `{{STACK_RULES}}`.
    parserem YAML). Błąd = napraw plik, nie pomijaj walidacji. Schemat CodeRabbit
    odrzuca `tone_instructions` dłuższe niż 250 znaków i nieznane klucze
    najwyższego poziomu — wtedy bot ignoruje cały plik bez komunikatu w PR.
-   Template skilla jest sprawdzany schematem w teście
-   `__tests__/generator.test.mjs`; dokładaj więc tylko klucze, które w nim są.
+   Template skilla jest sprawdzany schematem w teście repo szablonu
+   (`__tests__/generator.test.mjs`); dokładaj więc tylko klucze, które w nim są.
 
-6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit** — zawsze, bo bez
+6. **Sformatuj Prettierem projektu**, gdy projekt go ma: zależność `prettier` w `package.json` albo plik konfiguracji
+   (`.prettierrc*`, `prettier.config.*`, klucz `prettier` w `package.json`). Uruchom przez menedżer pakietów projektu, np.:
+   ```bash
+   npx prettier --write .coderabbit.yaml
+   ```
+   Template trzyma domyślny styl Prettiera, ale projekt może mieć własny (np. `singleQuote`). Bez tego kroku pierwszy PR
+   z configiem pada na `format:check` (aa-exam PR #52). Projekt bez Prettiera: pomiń krok.
+
+7. **Zweryfikuj instalację aplikacji GitHub CodeRabbit** — zawsze, bo bez
    zainstalowanej aplikacji config jest martwym plikiem, a z repo tego nie widać.
    Instalacji nie da się wykonać z CLI, ale da się ją wykryć:
    ```bash
@@ -88,10 +96,10 @@ znacznik `{{STACK_RULES}}`.
      ```
      Komentarze są = ✅. Zero komentarzy na istniejących PR-ach = ❌. Repo bez PR-ów przy błędzie = „nieznana”: podaj link do sprawdzenia w przeglądarce.
 
-7. **Raport dla usera** — wszystkie 4 punkty poniżej, także gdy wszystko jest OK:
+8. **Raport dla usera** — wszystkie 4 punkty poniżej, także gdy wszystko jest OK:
    1. Wykryty stack + które bloki weszły do configu.
    2. Pliki wpisane do `code_guidelines.filePatterns`.
-   3. **Instalacja aplikacji GitHub CodeRabbit: ✅, ❌ albo „nieznana”** (wynik kroku 6).
+   3. **Instalacja aplikacji GitHub CodeRabbit: ✅, ❌ albo „nieznana”** (wynik kroku 7).
       Przy ❌ powiedz wprost: „**Bez tego config NIE DZIAŁA.** Jednorazowy krok
       ręczny w przeglądarce (nie da się z CLI):
       https://github.com/apps/coderabbitai → Configure → zaznacz to repo."

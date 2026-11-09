@@ -103,7 +103,8 @@ doctor_pierwszej_instalacji() {
 }
 
 # Runner testów projektu (P22 A1) — przy każdym syncu, nie tylko pierwszym: vitest/jest bez wykluczenia .claude/**
-# zbiera testy maszynerii (node:test) i autopilot zatrzymuje się na `npm test` na starcie. Linia tylko przy problemie, z gotową poprawką.
+# zbiera pliki testów spod .claude/ (testy sprzed wykluczenia __tests__/ z synca, ich kopie w .backups/, własne testy projektu)
+# i autopilot zatrzymuje się na `npm test` na starcie. Linia tylko przy problemie, z gotową poprawką.
 runner_testow() {
   local skrypt="$PROJECT_DIR/$MANAGED_ROOT/scripts/doctor/runner-testow.mjs" wynik element stan szczegol poprawka
   [[ -f "$skrypt" ]] && command -v node >/dev/null 2>&1 || return 0
@@ -169,16 +170,23 @@ if [[ "$FORCE" -eq 0 && -n "$LOCAL_SHA" && "$LOCAL_SHA" == "$UPSTREAM_SHA" ]]; t
   exit 0
 fi
 
-# --- Zbuduj listę plików zarządzanych przez szablon ($MANAGED_ROOT/**, trackowane, bez wykluczeń) ---
+# --- Zbuduj listę plików zarządzanych przez szablon ($MANAGED_ROOT/**, trackowane, bez wykluczeń i bez testów) ---
 is_excluded() {
   local p="$1"
   for ex in "${EXCLUDE_PATHS[@]}"; do [[ "$p" == "$ex" ]] && return 0; done
   return 1
 }
 
+# Testy maszynerii (__tests__/) to testy repo szablonu: importują ajv, yaml i stacks/, których projekt nie ma, a w projekcie
+# nic ich nie uruchamia (aa-exam po syncu: 11 z 1390 czerwonych wyglądało jak uszkodzony sync). Filtr stoi tutaj, a nie
+# w EXCLUDE_PATHS: plik spoza MANAGED, który jest w manifeście poprzedniego syncu, trafia do REMOVE (backup, usunięcie),
+# więc testy zsynchronizowane wcześniej znikają, zamiast zostać jako pliki spoza szablonu.
+is_test_path() { [[ "$1" == */__tests__/* ]]; }
+
 declare -a MANAGED=()
 while IFS= read -r -d '' rel; do
   is_excluded "$rel" && continue
+  is_test_path "$rel" && continue
   MANAGED+=("$rel")
 done < <(git -C "$SRC" ls-files -z "$MANAGED_ROOT")
 

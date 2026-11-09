@@ -15,6 +15,8 @@ import { parseArgs } from 'node:util'
 import { filtrySciezek } from './rozmiar.mjs'
 
 export const WYMAGANE_WYKLUCZENIA = ['!.claude/**', '!docs/**', '!**/CLAUDE.md']
+// Tytul PR synca szablonu (/sync-template, sekcja „Domkniecie synca”) zaczyna sie od tego slowa, a config z szablonu ma je w ignore_title_keywords.
+export const SLOWO_SYNCA = 'chore(szablon)'
 const PLIK = '.coderabbit.yaml'
 const KOD_ZLYCH_ARGUMENTOW = 2
 
@@ -98,6 +100,17 @@ export function ostrzezeniaBazy(claudeMd, galaz) {
   return [...new Set(inne)].filter((g) => g !== galaz).map((g) => `CLAUDE.md kieruje PR-y do ${g}, a baza PR to ${galaz}`)
 }
 
+/**
+ * Config bez slowa synca: PR synca szablonu czeka na recenzje bota (aa-exam PR #52, dashboard PR #127). Ostrzezenie, nie
+ * odstepstwo: odstepstwo zatrzymaloby start /dev-pr w kazdym projekcie z configiem sprzed tej zmiany.
+ * @param {string} tresc
+ * @returns {string[]}
+ */
+export function ostrzezeniaSynca(tresc) {
+  if (lista(tresc, 'ignore_title_keywords')?.includes(SLOWO_SYNCA)) return []
+  return [`ignore_title_keywords bez "${SLOWO_SYNCA}": PR synca szablonu poczeka na recenzje bota (dopisz slowo albo /coderabbit-setup)`]
+}
+
 /** @param {string} projekt @param {string[]} argumenty */
 function git(projekt, argumenty) {
   const w = spawnSync('git', argumenty, { cwd: projekt, encoding: 'utf8' })
@@ -114,7 +127,7 @@ export function kontraktBota(projekt, { czubek, galaz } = {}) {
   const tresc = czytaj(PLIK)
   const ostrzezenia = ostrzezeniaBazy(czytaj('CLAUDE.md') ?? '', galaz ?? null)
   if (tresc === null) return { plik: false, odstepstwa: [`brak ${PLIK}`], ostrzezenia }
-  return { plik: true, odstepstwa: odstepstwaKontraktu(tresc, { galaz: galaz ?? null, istnieje: (p) => czytaj(p) !== null }), ostrzezenia }
+  return { plik: true, odstepstwa: odstepstwaKontraktu(tresc, { galaz: galaz ?? null, istnieje: (p) => czytaj(p) !== null }), ostrzezenia: [...ostrzezenia, ...ostrzezeniaSynca(tresc)] }
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {

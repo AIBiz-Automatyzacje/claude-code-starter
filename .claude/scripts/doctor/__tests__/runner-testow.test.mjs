@@ -2,7 +2,9 @@
 // bez configu — 113 plikow node:test zebranych, STOP autopilota na starcie; potem config z include tests/, commit 1bf65f8)
 // i vibersi (config z dwoma projektami i include src/, server/). Werdykt daje lista runnera (`vitest list --filesOnly
 // --json`, `jest --listTests --json`) — tu atrapa w node_modules/.bin, ktora zapisuje argumenty i wypisuje liste z fixture'a.
-// Bez runnera zostaje odczyt statyczny: brak configu = BRAK, reszta = UWAGA.
+// Bez runnera zostaje odczyt statyczny: brak configu = BRAK, reszta = UWAGA — o ile pod .claude/ leza pliki testow.
+// Sync nie wozi testow maszynerii do projektow (aa-exam: 11 z 1390 padalo przez srodowisko), wiec projekt bez testow
+// pod .claude/ dostaje „nie dotyczy” zamiast falszywego BRAK.
 
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -14,6 +16,8 @@ import { argumentySkryptu, sprawdzRunnerTestow } from '../runner-testow.mjs'
 
 const PAKIET_VITEST = JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '5.0.5' } })
 const TESTY_MASZYNERII = Array.from({ length: 113 }, (_, i) => `.claude/scripts/x/__tests__/t${i}.test.mjs`)
+// Wlasny test projektu pod .claude/ — sync go nie rusza, a runner bez wykluczenia go zbiera.
+const TEST_PROJEKTU = { '.claude/skills/wlasny/__tests__/a.test.mjs': '' }
 
 /**
  * @param {Record<string, string>} pliki
@@ -72,19 +76,38 @@ test('argumenty skryptu test ida do listy: -c, --dir, filtr; bez trybu run/watch
   assert.deepEqual(argumentySkryptu('tsc && echo', 'vitest'), [])
 })
 
-test('runner niezainstalowany: bez configu → BRAK (pewne); z configiem → UWAGA z poprawka; vite.config bez test = brak configu', () => {
-  const bez = sprawdz({ 'package.json': PAKIET_VITEST }).wynik
+test('runner niezainstalowany, testy pod .claude/: bez configu → BRAK (pewne); z configiem → UWAGA z poprawka; vite.config bez test = brak configu', () => {
+  const bez = sprawdz({ 'package.json': PAKIET_VITEST, ...TEST_PROJEKTU }).wynik
   assert.equal(bez.stan, 'BRAK')
   assert.match(bez.szczegol, /^vitest bez configu testów zbiera testy maszynerii z \.claude\/\*\* .*; brak node_modules\/\.bin\/vitest$/)
-  const z = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.mts': 'export default {}' }).wynik
+  const z = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.mts': 'export default {}', ...TEST_PROJEKTU }).wynik
   assert.equal(z.stan, 'UWAGA')
   assert.match(z.szczegol, /^nie sprawdzono listy testów \(brak node_modules\/\.bin\/vitest\); vitest\.config\.mts/)
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default { plugins: [] }' }).wynik.stan, 'BRAK')
-  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default { test: { include: ["src/**"] } }' }).wynik.stan, 'UWAGA')
+  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default { plugins: [] }', ...TEST_PROJEKTU }).wynik.stan, 'BRAK')
+  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vite.config.ts': 'export default { test: { include: ["src/**"] } }', ...TEST_PROJEKTU }).wynik.stan, 'UWAGA')
+})
+
+test('runner niezainstalowany, pod .claude/ nie ma plikow testow → nie dotyczy z powodem, bez poprawki (vitest i jest, z configiem i bez)', () => {
+  const bez = sprawdz({ 'package.json': PAKIET_VITEST, '.claude/scripts/doctor/doctor.sh': '', '.claude/skills/x/node_modules/y/y.test.js': '' }).wynik
+  assert.deepEqual(bez, { stan: 'nie dotyczy', runner: 'vitest', szczegol: 'pod .claude/ nie ma plików testów, więc vitest nie ma tam czego zebrać; listy testów nie sprawdzono (brak node_modules/.bin/vitest)', poprawka: '—' })
+  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': 'export default {}' }).wynik.stan, 'nie dotyczy')
+  const jest = sprawdz({ 'package.json': JSON.stringify({ scripts: { test: 'jest' }, devDependencies: { jest: '30' } }) }).wynik
+  assert.deepEqual([jest.stan, jest.runner, jest.poprawka], ['nie dotyczy', 'jest', '—'])
+})
+
+test('plik testu pod .claude/ to takze kopia w .backups/ i plik *.spec.*; kod pod __tests__/ bez .test w nazwie zbiera tylko jest', () => {
+  const pakietJest = JSON.stringify({ scripts: { test: 'jest' }, devDependencies: { jest: '30' } })
+  for (const plik of ['.claude/.backups/20261107-101500/.claude/scripts/x/__tests__/a.test.mjs', '.claude/skills/wlasny/b.spec.ts']) {
+    assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, [plik]: '' }).wynik.stan, 'BRAK', plik)
+  }
+  const pomocnik = { '.claude/skills/wlasny/__tests__/pomocnik.js': '' }
+  assert.equal(sprawdz({ 'package.json': PAKIET_VITEST, ...pomocnik }).wynik.stan, 'nie dotyczy')
+  assert.equal(sprawdz({ 'package.json': pakietJest, ...pomocnik }).wynik.stan, 'BRAK')
+  assert.equal(sprawdz({ 'package.json': pakietJest, '.claude/skills/wlasny/__tests__/fixtures/dane.json': '{}' }).wynik.stan, 'nie dotyczy')
 })
 
 test('lista runnera pada (stara wersja, blad configu) → odczyt statyczny z bledem w szczegole', () => {
-  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST }, { lista: [], kod: 1 })
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST, ...TEST_PROJEKTU }, { lista: [], kod: 1 })
   assert.equal(wynik.stan, 'BRAK')
   assert.match(wynik.szczegol, /; vitest list: ostrzezenie vite$/)
 })
@@ -101,8 +124,8 @@ test('jest: --listTests z .claude → BRAK z testPathIgnorePatterns; czysta list
   assert.equal(zly.wynik.stan, 'BRAK')
   assert.match(zly.wynik.poprawka, /testPathIgnorePatterns: \['\/node_modules\/', '<rootDir>\/\.claude\/'\]/)
   assert.equal(sprawdz({ 'package.json': pakiet }, { runner: 'jest', lista: ['src/a.test.js'] }).wynik.stan, 'OK')
-  assert.equal(sprawdz({ 'package.json': pakiet }).wynik.stan, 'BRAK')
-  assert.equal(sprawdz({ 'package.json': pakiet, 'jest.config.js': 'module.exports = {}' }).wynik.stan, 'UWAGA')
+  assert.equal(sprawdz({ 'package.json': pakiet, ...TEST_PROJEKTU }).wynik.stan, 'BRAK')
+  assert.equal(sprawdz({ 'package.json': pakiet, 'jest.config.js': 'module.exports = {}', ...TEST_PROJEKTU }).wynik.stan, 'UWAGA')
 })
 
 test('wykrycie runnera: skrypt przed zaleznosciami; sama zaleznosc tez; brak obu → nie dotyczy', () => {
@@ -112,7 +135,34 @@ test('wykrycie runnera: skrypt przed zaleznosciami; sama zaleznosc tez; brak obu
   assert.equal(runner({ scripts: { test: 'npm run unit' }, devDependencies: { jest: '30' } }), 'jest')
   assert.equal(runner({ devDependencies: { vitest: '5' } }), 'vitest')
   assert.equal(sprawdz({ 'package.json': JSON.stringify({ scripts: { test: "node --test '.claude/**/*.test.mjs'" } }) }).wynik.stan, 'nie dotyczy')
-  assert.equal(sprawdz({}).wynik.stan, 'nie dotyczy')
+  assert.deepEqual(sprawdz({}).wynik, { stan: 'nie dotyczy', runner: null, szczegol: 'brak runnera vitest/jest w repo (package.json w korzeniu i w katalogach pierwszego poziomu)', poprawka: '—' })
+})
+
+// Dashboard (Vite w frontend/, backend w Pythonie): doctor i bramka gotowosci pisaly „projekt nie używa vitest ani jest”,
+// choc vitest byl w frontend/package.json. Runner z podkatalogu nie zbiera .claude/**, wiec wynik zostaje nieblokujacy —
+// komunikat mowi tylko, ze niczego nie sprawdzano.
+test('runner w podpakiecie pierwszego poziomu → nie dotyczy z katalogiem i runnerem w komunikacie, bez uruchamiania listy', () => {
+  const podpakiet = JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '5' } })
+  const { wynik } = sprawdz({ 'frontend/package.json': podpakiet, 'backend/pyproject.toml': '', ...TEST_PROJEKTU })
+  assert.deepEqual(wynik, { stan: 'nie dotyczy', runner: null, szczegol: 'runner w podpakiecie frontend/ (vitest): nie sprawdzano (uruchamiany w podkatalogu nie zbiera .claude/** z korzenia)', poprawka: '—' })
+  const dwa = sprawdz({
+    'package.json': JSON.stringify({ scripts: { test: 'npm test --prefix web' } }),
+    'web/package.json': podpakiet,
+    'api/package.json': JSON.stringify({ devDependencies: { jest: '30' } }),
+    'narzedzia/package.json': JSON.stringify({ scripts: { test: 'node --test' } }),
+    'zepsuty/package.json': '{ "scripts": ',
+    'node_modules/vitest/package.json': podpakiet,
+    '.ukryty/package.json': podpakiet,
+    'apps/glebiej/package.json': podpakiet,
+  }).wynik
+  assert.equal(dwa.stan, 'nie dotyczy')
+  assert.match(dwa.szczegol, /^runner w podpakiecie api\/ \(jest\), web\/ \(vitest\): nie sprawdzano /)
+})
+
+test('runner w korzeniu wygrywa z podpakietem: werdykt z listy korzenia', () => {
+  const podpakiet = JSON.stringify({ devDependencies: { jest: '30' } })
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': 'x', 'api/package.json': podpakiet }, { lista: ['src/a.test.ts'] })
+  assert.deepEqual([wynik.stan, wynik.runner], ['OK', 'vitest'])
 })
 
 test('package.json, ktory sie nie parsuje → UWAGA z przyczyna, bez wyjatku', () => {
