@@ -15,8 +15,9 @@ const WPIS_WIEDZY = {
     regula: { type: 'string', description: 'pole regula z frontmattera' },
     szczebel: { type: 'string', enum: ['regula', 'kod', 'lint'] },
     szczebelPowod: { type: 'string', description: 'pole szczebel_powod z frontmattera' },
+    mechanizm: { type: ['string', 'null'], description: 'plik:linia na biezacym drzewie, gdy mechanizm z pola regula juz stoi w kodzie (sprawdzone grepem); inaczej null. Nie jest polem frontmattera' },
   },
-  required: ['plik', 'klasa', 'regula', 'szczebel', 'szczebelPowod'],
+  required: ['plik', 'klasa', 'regula', 'szczebel', 'szczebelPowod', 'mechanizm'],
 }
 
 const COMPOUND_RESULT = {
@@ -50,10 +51,31 @@ const COMPOUND_RESULT = {
 
 // Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): operator decyduje o bramce, a do jej
 // wdrozenia (pole `bramka`) lekcja idzie do indeksu i wycinka jak regula. Kopia w dev-pr-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
+// Punkt 43 (piszemy_wirale PR #9, 09.11): raport pokazal jako „do decyzji operatora” unie typow i funkcje, ktore poprawki tur
+// juz wprowadzily — compound pisze regule z poprawki, wiec przy szczeblu kod mechanizm zwykle stoi w kodzie. Agent podaje jego
+// miejsce (plik:linia, nie commit: po squashu commitow tur nie ma w historii glownej), a JS dzieli wpisy na propozycje i wdrozone.
+// Pola `bramka` w solution to nie ustawia: lekcja zostaje w indeksie i wycinku jak regula. Kopia w dev-pr-wf.js (rownosc: compound-wiedza.test.mjs).
+const MECHANIZM_W_KODZIE = `MECHANIZM JUZ W KODZIE (pole mechanizm wpisu; tylko szczebel kod albo lint, przy szczeblu regula null):
+   poprawka czesto sama wprowadza mechanizm z pola regula (typ, unia, jedno miejsce w architekturze, regula lint). Znajdz go
+   na biezacym drzewie: \`git grep -n "<nazwa typu, funkcji albo reguly>"\`, potem przeczytaj trafiona linie. Mechanizm tam stoi =>
+   mechanizm = "<sciezka od korzenia repo>:<numer linii>", sama sciezka i numer, bez opisu. Grep bez trafien, trafienie tylko
+   w komentarzu, tescie albo docs/, albo mechanizm dopiero do napisania => mechanizm null. Nie podawaj commita: po squashu
+   z --delete-branch commitow galezi nie ma w historii glownej. Wpis z mechanizmem raport pokazuje jako wdrozony, bez pytania
+   do operatora — bez sprawdzenia grepem zostaw null.`
+// Wartosc o innym ksztalcie niz plik:linia (opis, sam hash, sciezka bezwzgledna) = brak mechanizmu: wpis idzie do operatora.
+function miejsceMechanizmu(w) {
+  const m = typeof w.mechanizm === 'string' ? w.mechanizm.trim() : ''
+  return /^[^\s:/][^\s:]*:[1-9]\d*$/.test(m) ? m : null
+}
 function propozycjeBramek(wpisy) {
   return wpisy
-    .filter((w) => w.szczebel === 'kod' || w.szczebel === 'lint')
+    .filter((w) => (w.szczebel === 'kod' || w.szczebel === 'lint') && !miejsceMechanizmu(w))
     .map((w) => ({ szczebel: w.szczebel, klasa: w.klasa, propozycja: w.regula, powod: w.szczebelPowod, solution: w.plik }))
+}
+function bramkiWdrozone(wpisy) {
+  return wpisy
+    .filter((w) => (w.szczebel === 'kod' || w.szczebel === 'lint') && miejsceMechanizmu(w))
+    .map((w) => ({ szczebel: w.szczebel, klasa: w.klasa, regula: w.regula, mechanizm: miejsceMechanizmu(w), solution: w.plik }))
 }
 
 function compoundPrompt(sciezka) {
@@ -85,6 +107,7 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
    z solutions (szczebel regula oraz kod/lint bez pola bramka — do wdrozenia bramki lekcja dziala jak regula). \`zapisany: true\` -> indeks=zapisany;
    \`zapisany: false\` (bramka koszyka "zawsze" albo rozmiaru) -> indeks=bramka, indeksu nie edytujesz recznie. Brak solution -> indeks="bez zmian".
    Szczebel kod albo lint jest tez propozycja bramki dla operatora. Pola bramka nie ustawiasz: dopisuje je wdrozenie bramki.
+6a. ${MECHANIZM_W_KODZIE}
 7. Slownik domenowy (sekcja skilla o docs/CONCEPTS.md): jesli w materiale pojawil sie/uscisnil termin domenowy o znaczeniu
    PROJEKTOWO-SPECYFICZNYM (encja, nazwany proces, status/enum o niestandardowym sensie) — dodaj/zaktualizuj
    JEDNO haslo w docs/CONCEPTS.md (cienki indeks: 1-2 zdania + link do CLAUDE.md; tylko domenowe, nie techniczne;
@@ -111,7 +134,10 @@ const sciezka = typeof args === 'string' ? args : args && args.sciezka
 phase('Compound')
 const wynik = await agent(compoundPrompt(sciezka || null), { schema: COMPOUND_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: 'compound' })
 if (!wynik) return null
-const bramki = propozycjeBramek(wynik.wiedza ? [wynik.wiedza] : [])
+const wpisy = wynik.wiedza ? [wynik.wiedza] : []
+const bramki = propozycjeBramek(wpisy)
+const wdrozone = bramkiWdrozone(wpisy)
+if (wdrozone.length) log(`compound: mechanizm z reguly juz w kodzie — ${wdrozone.map((b) => b.mechanizm).join(', ')} (bez propozycji bramki)`)
 if (wynik.odmowa) log(`compound: odmowa zapisu solution — ${wynik.odmowa}`)
 if (wynik.indeks === 'bramka') log('compound: bramka indeksu docs/learned-patterns.md — indeks bez zmian, porzadkuje dev-compound-refresh')
-return { ...wynik, propozycjeBramek: bramki }
+return { ...wynik, propozycjeBramek: bramki, bramkiWdrozone: wdrozone }

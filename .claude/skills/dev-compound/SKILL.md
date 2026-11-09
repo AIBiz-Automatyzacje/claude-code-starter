@@ -219,7 +219,9 @@ Po zapisie pliku:
    z solutions (szczebel `regula` oraz `kod`/`lint` bez pola `bramka`). `zapisany: false` z `bledy` (koszyk „zawsze” albo
    rozmiar indeksu) = indeks zostaje bez zmian; podaj błędy w podsumowaniu, porządkuje je `/dev-compound-refresh`.
    Indeksu nie edytujesz ręcznie.
-3. Szczebel `kod` albo `lint`: w podsumowaniu także **Propozycja bramki** (typ albo reguła lint do wdrożenia),
+3. Szczebel `kod` albo `lint`: sprawdź grepem, czy mechanizm z pola `regula` już stoi w kodzie (poprawka często sama go
+   wprowadza). Stoi → w podsumowaniu **Bramka wdrożona w `<plik:linia>`**, bez pytania do operatora; pola `bramka` nie
+   ustawiasz. Nie stoi → w podsumowaniu **Propozycja bramki** (typ albo reguła lint do wdrożenia),
    decyzja operatora. Klasa zapisanego solution w `doBramki` wyniku indeksu (suma ucieczek ≥ 3) — też propozycja bramki,
    nawet przy szczeblu `regula`, bo kolejna linia reguły tej klasy jej nie zatrzymała.
 
@@ -237,6 +239,7 @@ uruchom /dev-compound --full w tej samej sesji, póki rozmowa o problemie jest w
 
 Wiedza: szczebel [regula|kod|lint] — [indeks zapisany / bramka indeksu: błędy]
 Propozycja bramki (kod, lint): [kod|lint] [klasa] — [reguła] ([szczebel_powod])
+Bramka wdrożona (zamiast propozycji, gdy mechanizm już stoi w kodzie): [kod|lint] [klasa] — [reguła], w [plik:linia]
 [Odmowa zapisu: błędy z wiedza.mjs sprawdz]
 ```
 
@@ -361,7 +364,7 @@ Zastosuj **Krok 4.5** także w trybie full — jeśli w sesji pojawił się term
 ### Po zapisie: pola wiedzy
 
 Ta sama sekcja **Pola wiedzy** co w trybie Compact: pola we frontmatterze, `wiedza.mjs sprawdz`, indeks po każdym
-zapisanym solution, propozycja bramki dla `kod` i `lint`.
+zapisanym solution, propozycja bramki albo bramka wdrożona (`plik:linia`) dla `kod` i `lint`.
 
 ---
 
@@ -431,7 +434,7 @@ Wyniki zadań:
 
 Plik: docs/solutions/auth-issues/2026-03-24-supabase-rls-policy-bypass.md
 
-Wiedza: [szczebel — indeks zapisany / bramka indeksu; Propozycja bramki: kod|lint / Odmowa zapisu]
+Wiedza: [szczebel — indeks zapisany / bramka indeksu; Propozycja bramki: kod|lint / Bramka wdrożona w plik:linia / Odmowa zapisu]
 
 Ta dokumentacja będzie wyszukiwalna jako referencja gdy podobne
 problemy pojawią się w przyszłości.

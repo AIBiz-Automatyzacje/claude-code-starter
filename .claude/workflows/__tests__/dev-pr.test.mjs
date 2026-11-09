@@ -694,6 +694,26 @@ test('start --czesc 2: krok „otwarte watki czesci 1” (isResolved:false na PR
   assert.doesNotMatch(cz1.prompty[3], /OTWARTE WATKI POPRZEDNICH CZESCI/)
 })
 
+// Punkt 43 (piszemy_wirale PR #9, 09.11): raport /dev-pr podal jako propozycje do decyzji mechanizmy, ktore poprawki tur juz
+// wprowadzily. Etap compound dzieli wpisy kod/lint po polu mechanizm: plik:linia = bramkiWdrozone, reszta = propozycjeBramek.
+test('compound: wpis kod/lint z mechanizmem plik:linia wraca w bramkiWdrozone, bez mechanizmu w propozycjeBramek; prompt kaze sprawdzic grepem', async () => {
+  const wpis = (/** @type {string} */ plik, /** @type {string} */ szczebel, /** @type {string | null} */ mechanizm) => ({ plik, klasa: 'stan-flagami', regula: `Regula ${plik}`, szczebel, szczebelPowod: 'typ wyklucza zly stan', mechanizm })
+  const agentCompound = {
+    wpisy: [wpis('docs/solutions/a/unia.md', 'kod', 'supabase/functions/_shared/apply-purchase.ts:50'), wpis('docs/solutions/a/lint.md', 'lint', null),
+      wpis('docs/solutions/a/opis.md', 'kod', 'wprowadzone w 63bc1f2'), wpis('docs/solutions/a/regula.md', 'regula', null)],
+    odmowy: [], indeks: 'zapisany', propozycjeDoReviewerow: [], plikPropozycji: null, commit: 'abc1234', ciGlownej: 'success', push: true, pushDetal: 'OK',
+  }
+  const { wynik, prompty } = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [] }, [agentCompound])
+  assert.equal(wynik.status, 'OK')
+  assert.deepEqual(wynik.bramkiWdrozone, [{ szczebel: 'kod', klasa: 'stan-flagami', regula: 'Regula docs/solutions/a/unia.md', mechanizm: 'supabase/functions/_shared/apply-purchase.ts:50', solution: 'docs/solutions/a/unia.md' }])
+  assert.deepEqual(wynik.propozycjeBramek.map((/** @type {{ solution: string }} */ p) => p.solution), ['docs/solutions/a/lint.md', 'docs/solutions/a/opis.md'], 'zly ksztalt mechanizmu = propozycja do operatora')
+  assert.equal(wynik.wpisy.length, 4, 'wpisy zostaja w wyniku bez zmian — indeks i wycinek jak dotad')
+  assert.match(prompty[0], /^2a\. MECHANIZM JUZ W KODZIE \(pole mechanizm wpisu; tylko szczebel kod albo lint, przy szczeblu regula null\):/m)
+  assert.match(prompty[0], /`git grep -n "<nazwa typu, funkcji albo reguly>"`, potem przeczytaj trafiona linie/)
+  assert.match(prompty[0], /bez sprawdzenia grepem zostaw null\./)
+  assert.match(prompty[0], /Pola bramka nie ustawiasz\./, 'zakaz pola bramka zostaje')
+})
+
 test('compound: odlozone watki (sufit, „do czesci N+1”) → known-issues.md zadania z linkiem watku; skill przekazuje odlozone i pyta z lista przy --czesc N+1', async () => {
   const odl = [{ plik: 'src/a.ts:10', streszczenie: 'Major: brak limitu', url: 'https://github.com/o/r/pull/9#discussion_r2' }]
   const { prompty } = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [], odlozone: odl }, [{ wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: null, push: false, pushDetal: 'brak commita' }])

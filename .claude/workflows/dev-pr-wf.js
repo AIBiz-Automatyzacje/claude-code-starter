@@ -360,8 +360,9 @@ const WPIS_WIEDZY = {
     regula: { type: 'string', description: 'pole regula z frontmattera' },
     szczebel: { type: 'string', enum: ['regula', 'kod', 'lint'] },
     szczebelPowod: { type: 'string', description: 'pole szczebel_powod z frontmattera' },
+    mechanizm: { type: ['string', 'null'], description: 'plik:linia na biezacym drzewie, gdy mechanizm z pola regula juz stoi w kodzie (sprawdzone grepem); inaczej null. Nie jest polem frontmattera' },
   },
-  required: ['plik', 'klasa', 'regula', 'szczebel', 'szczebelPowod'],
+  required: ['plik', 'klasa', 'regula', 'szczebel', 'szczebelPowod', 'mechanizm'],
 }
 
 const COMPOUND_PR = {
@@ -430,10 +431,31 @@ function logCiGlownej(nazwaEtapu, ci) {
 
 // Szczebel kod/lint = lekcje, ktore pewniej wymusi mechanizm niz tekst (INSPIRACJE A2): operator decyduje o bramce, a do jej
 // wdrozenia (pole `bramka`) lekcja idzie do indeksu i wycinka jak regula. Kopia z dev-compound-wf.js (workflowy sa self-contained; rownosc pilnuje compound-wiedza.test.mjs).
+// Punkt 43 (piszemy_wirale PR #9, 09.11): raport pokazal jako „do decyzji operatora” unie typow i funkcje, ktore poprawki tur
+// juz wprowadzily — compound pisze regule z poprawki, wiec przy szczeblu kod mechanizm zwykle stoi w kodzie. Agent podaje jego
+// miejsce (plik:linia, nie commit: po squashu commitow tur nie ma w historii glownej), a JS dzieli wpisy na propozycje i wdrozone.
+// Pola `bramka` w solution to nie ustawia: lekcja zostaje w indeksie i wycinku jak regula. Kopia z dev-compound-wf.js (rownosc: compound-wiedza.test.mjs).
+const MECHANIZM_W_KODZIE = `MECHANIZM JUZ W KODZIE (pole mechanizm wpisu; tylko szczebel kod albo lint, przy szczeblu regula null):
+   poprawka czesto sama wprowadza mechanizm z pola regula (typ, unia, jedno miejsce w architekturze, regula lint). Znajdz go
+   na biezacym drzewie: \`git grep -n "<nazwa typu, funkcji albo reguly>"\`, potem przeczytaj trafiona linie. Mechanizm tam stoi =>
+   mechanizm = "<sciezka od korzenia repo>:<numer linii>", sama sciezka i numer, bez opisu. Grep bez trafien, trafienie tylko
+   w komentarzu, tescie albo docs/, albo mechanizm dopiero do napisania => mechanizm null. Nie podawaj commita: po squashu
+   z --delete-branch commitow galezi nie ma w historii glownej. Wpis z mechanizmem raport pokazuje jako wdrozony, bez pytania
+   do operatora — bez sprawdzenia grepem zostaw null.`
+// Wartosc o innym ksztalcie niz plik:linia (opis, sam hash, sciezka bezwzgledna) = brak mechanizmu: wpis idzie do operatora.
+function miejsceMechanizmu(w) {
+  const m = typeof w.mechanizm === 'string' ? w.mechanizm.trim() : ''
+  return /^[^\s:/][^\s:]*:[1-9]\d*$/.test(m) ? m : null
+}
 function propozycjeBramek(wpisy) {
   return wpisy
-    .filter((w) => w.szczebel === 'kod' || w.szczebel === 'lint')
+    .filter((w) => (w.szczebel === 'kod' || w.szczebel === 'lint') && !miejsceMechanizmu(w))
     .map((w) => ({ szczebel: w.szczebel, klasa: w.klasa, propozycja: w.regula, powod: w.szczebelPowod, solution: w.plik }))
+}
+function bramkiWdrozone(wpisy) {
+  return wpisy
+    .filter((w) => (w.szczebel === 'kod' || w.szczebel === 'lint') && miejsceMechanizmu(w))
+    .map((w) => ({ szczebel: w.szczebel, klasa: w.klasa, regula: w.regula, mechanizm: miejsceMechanizmu(w), solution: w.plik }))
 }
 
 // Pelny indeks wiedzy (P10, 6a pkt 60 g3a): bramka indeksu idzie do operatora zdaniem w raporcie. Kopia z dev-autopilot-wf.js
@@ -1394,6 +1416,7 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
    \`bledy\` i sprawdz drugi raz; dalej kod 1 — usun plik i dopisz "<tytul>: <bledy>" do odmowy.
    Po zapisie wpisow: \`node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz\` (wpisy regula oraz kod/lint bez pola bramka;
    generuje docs/learned-patterns.md; \`zapisany: false\` = bramka indeksu, plik bez zmian, indeks=bramka). Pola bramka nie ustawiasz.
+2a. ${MECHANIZM_W_KODZIE}
 3. PETLA ZWROTNA DO REVIEWEROW. Sprawdz, czy ktoras klasa uwagi wystepuje w tym pull requescie
    NIE PIERWSZY RAZ — porownaj z wpisami w docs/solutions/ i z indeksem docs/learned-patterns.md. Dla klasy, ktora
    pojawia sie po raz DRUGI albo kolejny, zaproponuj regule do KONKRETNEGO agenta-reviewera
@@ -1424,14 +1447,15 @@ Zwroc obiekt zgodny ze schematem.`,
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Compound zwrocil null — baza wiedzy nie zostala zasilona.' }
   const bramki = propozycjeBramek(wynik.wpisy)
-  log(`/dev-pr compound: ${wynik.wpisy.length} wpisow w docs/solutions/, indeks: ${wynik.indeks}, odmow: ${wynik.odmowy.length}, propozycji bramek: ${bramki.length}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)
+  const wdrozone = bramkiWdrozone(wynik.wpisy)
+  log(`/dev-pr compound: ${wynik.wpisy.length} wpisow w docs/solutions/, indeks: ${wynik.indeks}, odmow: ${wynik.odmowy.length}, propozycji bramek: ${bramki.length}, bramek juz w kodzie: ${wdrozone.length}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)
   // Propozycje mialy zero artefaktow w repo mimo 19 compoundow (ETAP1B §4) — brak pliku przy niepustej liscie widac w logu.
   if (wynik.propozycjeDoReviewerow.length && !wynik.plikPropozycji) log('/dev-pr compound: UWAGA — propozycje bez zapisu do docs/reviews/propozycje-do-reviewerow.md')
   if (wynik.indeks === 'bramka') log(`/dev-pr compound: ${INDEKS_PELNY}`)
   if (odlozone.length) log(`/dev-pr compound: watki odlozone ${odlozone.length}, w known-issues.md: ${wynik.odlozoneZapisane || 0}`)
   if (wynik.commit && !wynik.push) log(`/dev-pr compound: UWAGA — commit ${wynik.commit} bez pusha (${wynik.pushDetal}); wypchnij go przed kolejnym PR i krokiem CLAUDE.md`)
   logCiGlownej('compound', wynik.ciGlownej)
-  return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
+  return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, bramkiWdrozone: wdrozone, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
 }
 
 return { status: 'BLAD', powod: `Nieznany etap "${etap}". Dozwolone: start, stan, decyzja, zbierz, napraw, merge, claude-md, compound.` }

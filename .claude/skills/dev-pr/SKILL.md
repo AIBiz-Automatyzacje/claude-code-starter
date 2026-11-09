@@ -285,7 +285,8 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js",
 
 Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review, z polami wiedzy
 (klasa, reguła, wzorce plików, szczebel). Wpisy trafiają do indeksu `docs/learned-patterns.md`; wpisy `kod` i `lint`
-wracają też jako `propozycjeBramek[]`; obok nich `propozycjeDoReviewerow[]`. Commit compoundu workflow pushuje na bieżącą
+wracają też jako `propozycjeBramek[]` (mechanizmu nie ma w kodzie) albo `bramkiWdrozone[]` (poprawka już go wprowadziła,
+pole `mechanizm` = `plik:linia`); obok nich `propozycjeDoReviewerow[]`. Commit compoundu workflow pushuje na bieżącą
 gałąź (po merge'u to gałąź główna); `push: false` przy niepustym `commit` → wypchnij go przed kolejnym PR i krokiem CLAUDE.md.
 Bez merge'u bieżąca gałąź to gałąź PR: commit compoundu trafia do PR i bot robi recenzję przyrostową samych plików wiedzy.
 Chroniona gałąź główna odrzuca push — wtedy `pushDetal` ma błąd, a commit wypychasz przez PR albo ręcznie.
@@ -301,6 +302,10 @@ po zakończeniu przebiegu; `brak-ci` = repo nie ma CI na push. Nie pisz „deplo
 **Propozycji bramek nie wdrażasz.** Typ albo reguła lint to zmiana kodu projektu — decyzja operatora; zapis zostaje
 w samym solution (`szczebel`, `szczebel_powod`). Do wdrożenia bramki lekcja działa jak reguła (indeks, wycinek); po wdrożeniu
 solution dostaje pole `bramka` (gdzie wdrożona) i wypada z indeksu.
+
+**Bramki już w kodzie to nie propozycje.** `bramkiWdrozone[]` niesie wpisy `kod` i `lint`, których mechanizm compound znalazł
+grepem na bieżącym drzewie. W raporcie podajesz je jako „wdrożone w `<plik:linia>`” i o nic nie pytasz. Pola `bramka`
+w solution compound przy tym nie ustawia, więc lekcja zostaje w indeksie i wycinku jak reguła.
 
 **Propozycji do reviewerów nie wdrażasz.** Zmiana promptu agenta-reviewera dotyka każdej przyszłej fazy
 każdego zadania — to decyzja operatora. Workflow dopisuje je do `docs/reviews/propozycje-do-reviewerow.md` (commit
@@ -350,6 +355,8 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
 
 🧱 Propozycje bramek (do Twojej decyzji, NIE wdrożone; zapis: solution ze szczeblem kod/lint):
    - [<szczebel>] <klasa>: <propozycja> — <powod> (<solution>)
+   Już w kodzie (z `bramkiWdrozone`, bez decyzji):
+   - [<szczebel>] <klasa>: <regula> — wdrożone w <mechanizm> (<solution>)
 
 🔁 Propozycje do reviewerów (do Twojej decyzji, NIE wdrożone; zapis: docs/reviews/propozycje-do-reviewerow.md):
    - <agent> ← <klasa uwagi> (wystąpiła w: <PR-y>)
