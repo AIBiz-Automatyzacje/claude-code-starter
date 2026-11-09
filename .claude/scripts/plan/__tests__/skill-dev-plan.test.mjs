@@ -137,6 +137,19 @@ test('opis autopilota i handoff: start to osobna wiadomość z samym poleceniem;
   assert.match(ramka, /Start to osobna wiadomość z samym poleceniem, np\. „Uruchom autopilota dla docs\/active\/<zadanie>” — bez warunków i próśb/)
 })
 
+// Znaleziska 2026-11-02 pkt 31 (dashboard E2): sesja planowania zmieniła .claude/agents/feature-tester-e2e.md, a handoff mówił
+// „autopilot w tej sesji” — tester działałby według wersji zbuforowanej przed zmianą. Skrypt nie widzi zmian sesji, więc to reguła 6.7.
+test('handoff: sesja, która zmieniła .claude/, wskazuje nową sesję i nie uruchamia autopilota u siebie', () => {
+  const krok = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.7 Handoff'), SKILL_MD.indexOf('## Format wyjściowy'))
+  assert.match(krok, /uruchom autopilota narzędziem `Workflow` w tej sesji — chyba że ta sesja zmieniła `\.claude\/`\./)
+  assert.match(krok, /Gdy w tej sesji zmieniono cokolwiek w `\.claude\/` \(edycja skilla, agenta, workflowu, `\/sync-template`\), handoff wskazuje nową sesję i autopilota u siebie nie uruchamiasz/)
+  assert.match(krok, /Instrukcje i skille są buforowane w sesji/)
+  const ramka = SKILL_MD.slice(SKILL_MD.indexOf('➡️ Następny krok'), SKILL_MD.indexOf('## Referencje'))
+  assert.match(ramka, /^➡️ Następny krok: autopilot w tej sesji <albo: w nowej sesji — ta sesja zmieniła \.claude\/>:$/m)
+  // Ta sama reguła po stronie workflowu: opis autopilota każe ruszać w nowej sesji po zmianach w .claude/.
+  assert.match(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'), /Po zmianach w \.claude\/ \([^)]*\) uruchamiaj w nowej sesji/)
+})
+
 test('SKILL.md: wskazane pliki references/ istnieją', () => {
   const pliki = [...new Set([...SKILL_MD.matchAll(/`(references\/[\w.-]+)`/g)].map((m) => m[1]))]
   assert.deepEqual(pliki.sort(), ['references/kontekst-designerski.md', 'references/przygotowanie-operatora.md', 'references/stack.md', 'references/szablon-planu.md'])

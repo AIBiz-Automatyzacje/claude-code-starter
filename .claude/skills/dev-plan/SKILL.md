@@ -324,7 +324,9 @@ Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignor
 
 #### 6.7 Handoff
 
-Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera start, uruchom autopilota narzędziem `Workflow` w tej sesji.
+Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera start, uruchom autopilota narzędziem `Workflow` w tej sesji — chyba że ta sesja zmieniła `.claude/`.
+
+Po zmianach w `.claude/` autopilot rusza w nowej sesji. Gdy w tej sesji zmieniono cokolwiek w `.claude/` (edycja skilla, agenta, workflowu, `/sync-template`), handoff wskazuje nową sesję i autopilota u siebie nie uruchamiasz, także gdy użytkownik wybiera start. Instrukcje i skille są buforowane w sesji, więc agenci runu działaliby według starej wersji (dashboard E2: sesja planowania zmieniła `.claude/agents/feature-tester-e2e.md`, a handoff mówił „autopilot w tej sesji”). Skrypt tego nie wykrywa — oceniasz to po przebiegu sesji.
 
 Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruchamia workflow, dostaje dosłownie każdy agent runu jako głos użytkownika (dashboard, run `wf_a495d97e-47b`: warunek „jeśli próbny zrzut padnie, zatrzymaj się” z wiadomości startowej dostało 166 agentów, a testerzy faz 7–11 przerwali E2E po pierwszej nieudanej próbie).
 
@@ -352,7 +354,7 @@ Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruch
    - Testy: <OK / nie dotyczy / szczegół + poprawka configu>
    - Higiena: <OK / uwagi z komendą — nie blokują>
 
-➡️ Następny krok: autopilot w tej sesji:
+➡️ Następny krok: autopilot w tej sesji <albo: w nowej sesji — ta sesja zmieniła .claude/>:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<zadanie>" })
    Start to osobna wiadomość z samym poleceniem, np. „Uruchom autopilota dla docs/active/<zadanie>” — bez warunków i próśb, bo dostaje ją każdy agent runu.
    Do agentów workflow: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z polecenia workflowu.
