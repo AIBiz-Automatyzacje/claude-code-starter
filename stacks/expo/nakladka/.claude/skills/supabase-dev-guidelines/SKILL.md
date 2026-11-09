@@ -26,6 +26,7 @@ Przewodnik pracy z Supabase w aplikacjach Expo: autentykacja, baza danych, polit
 
 - [ ] Tabela w nowej migracji SQL (`supabase migration new <opis>`)
 - [ ] RLS i polityki w tej samej migracji — według skilla security (operacje, `with check`, kolumny chronione) i reguł kodu (subquery `auth.uid()`, `TO <rola>`)
+- [ ] `GRANT` w tej samej migracji dla ról Data API, które czytają albo piszą tabelę (zwykle `authenticated`, `anon` tylko świadomie): od 2026-05-30 nowe projekty Supabase, a od 2026-10-30 nowe tabele także w istniejących projektach nie są wystawiane automatycznie — bez `GRANT` klient dostaje 403 mimo poprawnego RLS (Supabase changelog #45329)
 - [ ] Indeksy dla kolumn filtrów zapytań i polityk
 - [ ] Typy po migracji: `supabase gen types --lang typescript --local > src/types/database.types.ts` (albo plik typów, którego projekt już używa)
 - [ ] Funkcje API w `lib/supabase.ts` (albo w module zapytań, którego używa projekt)

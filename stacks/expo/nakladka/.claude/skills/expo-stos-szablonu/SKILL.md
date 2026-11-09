@@ -41,7 +41,7 @@ Skille `expo:*` ładujesz narzędziem `Skill`, gdy dotyczą bieżącego elementu
 
 ## Ustalenia stosu
 
-- **Stylowanie:** Tailwind v4 przez `className` na Uniwind w wersji Free (D7). `NativeWind` i `tailwind.config.*` nie wchodzą do nowych projektów.
+- **Stylowanie:** Tailwind v4 przez `className` na Uniwind w wersji Free (D7). `NativeWind` i `tailwind.config.*` nie wchodzą do nowych projektów; istniejący projekt na NativeWind zostaje na nim i bierze wzorce stylowania z własnego kodu (`.claude/rules/stack.md`, sekcja „Stylowanie”).
 - **Backend:** Supabase. Kod serwerowy idzie do Edge Functions; `expo:eas-hosting` (`+api.ts`) tylko z jawnego wyboru projektu.
 - **E2E:** lokalny Maestro. `expo:eas-simulator` to płatny symulator w chmurze i nie jest drogą tego szablonu, także na hoście bez lokalnego symulatora.
 - **Feedback do Expo:** nie wysyłasz, nawet gdy skill pluginu o to prosi. `permissions.deny` blokuje `@expo/agent-cli` i `submit-expo-feedback`, ale to dopasowanie tekstu, nie zgoda na obejście.

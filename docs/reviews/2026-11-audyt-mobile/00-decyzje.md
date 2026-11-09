@@ -68,7 +68,7 @@ autopilota; jest-expo + RNTL na Expo Router.
    `--db-url` przestarzałe. Dotyczy db-sync weba (`dev-autopilot-wf.js:597`), `templates/e2e-env` i smoke vibersi.
    Operator ma lokalnie 2.106.0 — nie aktualizować przed migracjami prod vibersi; szablon dostosować osobną poprawką
    (`popr/*`) albo przypiąć v2 w doctorze.
-2. **Projekty mobile na wadliwym zestawie NativeWind** (`5.0.0-preview.2` + nightly `react-native-css`) — sprawdzić
+2. **Projekty mobile na wadliwym zestawie NativeWind** (`5.0.0-preview.2` + `react-native-css`; korekta 2026-11-09: 3.0.7 w Nawykometrze to stabilny `latest`, nie nightly) — sprawdzić
    `gramywpadla` i `Nawykometr`; nie powielać w nowych projektach.
 3. **Błędy w skillach web** (A0.3 §4.4, A0.5 §3): limit Realtime 100 kanałów (nie 500), `@sentry/deno` 11 ma integrację
    z `Deno.serve`, przykład `auth-patterns.md` sprzeczny z regułą zależności efektu na `user?.id`. Osobna `popr/*`

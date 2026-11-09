@@ -35,6 +35,15 @@ export const REBUILD = {
 }
 // Operator wkleja komendę ze STOP-u, więc ostrzeżenie idzie w treści naprawy, nie tylko w slocie po-fazie.md, który ma to samo zdanie.
 export const OSTRZEZENIE_CLEAN = '`--clean` usuwa `ios/` i `android/`. Projekt, który trzyma te katalogi w repo, pomija `prebuild` i woła samo `expo run:*`.'
+// Sign in with Apple albo associated domains: Expo CLI żąda podpisu także dla symulatora i bez certyfikatu Apple kończy
+// `No code signing certificates are available to use` (pilot Nawykometr). Podpis ad-hoc (`CODE_SIGN_IDENTITY=-`) zostawia entitlements,
+// więc SecureStore utrzyma sesję; `CODE_SIGNING_ALLOWED=NO` je gubi.
+export const REBUILD_IOS_ADHOC = 'LANG=en_US.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US.UTF-8 xcodebuild -workspace ios/<Aplikacja>.xcworkspace '
+  + '-scheme <Aplikacja> -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build CODE_SIGN_IDENTITY=- build && '
+  + 'xcrun simctl install <UDID> ios/build/Build/Products/Debug-iphonesimulator/<Aplikacja>.app'
+export const UWAGA_PODPISU_IOS = 'Gdy `expo run:ios` kończy się `No code signing certificates are available to use` (Sign in with Apple albo associated '
+  + `domains bez certyfikatu Apple), zbuduj z podpisem ad-hoc: \`${REBUILD_IOS_ADHOC}\` (<Aplikacja> = nazwa \`ios/*.xcworkspace\`; `
+  + 'bez `CODE_SIGNING_ALLOWED=NO`, bo binarka straci entitlements).'
 const ODPAD_ANDROIDA = {
   'bez-emulatora': 'Android: brak działającego emulatora',
   'bez-dev-clienta': 'Android: działający emulator bez dev-clienta',
@@ -138,7 +147,7 @@ function ocenaSwiezosci(projekt, mtime, platforma, nazwa) {
   const zmiany = stary === NATYWNE[platforma] ? null : zmianyNatywne(projekt, mtime)
   if (zmiany && !zmiany.wymagaRebuildu) return { stop: null, uwaga: `dev-client na ${nazwa} starszy niż ${stary}, ale przebudowa niepotrzebna: ${zmiany.detal}` }
   const powod = zmiany ? zmiany.detal : 'warstwa natywna zmieniona po buildzie'
-  return { stop: { ok: false, detal: `dev-client na ${nazwa} starszy niż ${stary}: ${powod}`, naprawa: `Przebuduj: ${REBUILD[platforma]}. ${OSTRZEZENIE_CLEAN}`, przebudowa: true }, uwaga: null }
+  return { stop: { ok: false, detal: `dev-client na ${nazwa} starszy niż ${stary}: ${powod}`, naprawa: `Przebuduj: ${REBUILD[platforma]}. ${OSTRZEZENIE_CLEAN}${platforma === 'ios' ? ` ${UWAGA_PODPISU_IOS}` : ''}`, przebudowa: true }, uwaga: null }
 }
 
 /** @param {Symulator} s @param {Wykonaj} wykonajKomende @returns {{ ok: boolean, detal: string }} */
@@ -221,7 +230,7 @@ function sprawdzAndroid(projekt, aplikacja, wskazane, wykonajKomende) {
  */
 function naprawaBrakuUrzadzenia(platforma, bezDevClienta) {
   const ios = bezDevClienta
-    ? `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e).`
+    ? `iOS: zainstaluj dev-client na symulatorze bez konta Apple (${REBUILD.ios}, wybór urządzenia: E2E_URZADZENIE w .env.e2e). ${UWAGA_PODPISU_IOS}`
     : 'iOS: włącz symulator bez konta Apple (xcrun simctl boot <nazwa>, wybór urządzenia: E2E_URZADZENIE w .env.e2e).'
   const android = bezDevClienta
     ? `Android: uruchom emulator (emulator -avd <nazwa>) i ${REBUILD.android}.`

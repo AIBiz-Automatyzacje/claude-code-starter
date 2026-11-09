@@ -424,6 +424,11 @@ test('brak dev-clienta = przebudowa tylko na wybranej platformie, także na dzia
   const obie = urzadzenie.przygotujUrzadzenie(projekt, APLIKACJA, {}, atrapa([symulator(baza, 'iPhone 17e', { aplikacja: false })]).wykonaj)
   assert.deepEqual([obie.ok, obie.przebudowa], [false, true])
   assert.ok(obie.naprawa.includes(urzadzenie.REBUILD.ios) && obie.naprawa.includes(urzadzenie.REBUILD.android), obie.naprawa)
+  // Pilot Nawykometr: Sign in with Apple bez certyfikatu — `expo run:ios` pada także na symulatorze, naprawa iOS podaje podpis ad-hoc.
+  assert.ok(symulatorBezKlienta.naprawa.includes(urzadzenie.UWAGA_PODPISU_IOS), symulatorBezKlienta.naprawa)
+  assert.ok(!emulatorBezKlienta.naprawa.includes(urzadzenie.REBUILD_IOS_ADHOC), emulatorBezKlienta.naprawa)
+  assert.match(urzadzenie.REBUILD_IOS_ADHOC, /xcodebuild .*-sdk iphonesimulator .*CODE_SIGN_IDENTITY=- build && xcrun simctl install /)
+  assert.doesNotMatch(urzadzenie.REBUILD_IOS_ADHOC, /CODE_SIGNING_ALLOWED=NO/)
 })
 
 test('wyłączony emulator: restart bez STOP-u przebudowy, a świeżość bez prebuild w naprawie', async () => {

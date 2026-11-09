@@ -11,6 +11,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { DOMYSLNY_PORT, komendaStartu, naprawaZrzutu, NARZEDZIE_JAZDY, opisProbyZrzutu, SCIEZKA_ZDROWIA, SYGNATURY_BLOKERA } from '../adapter.mjs'
+import { markerBazy, zmiennePolaczenia } from '../marker.mjs'
 import { odpowiada, stanSerwera, zatrzymajSerwer } from '../serwer.mjs'
 import { bledySrodowiska, konfiguracja, parsujEnv } from '../srodowisko.mjs'
 import { restartFazy, startE2e } from '../start.mjs'
@@ -147,6 +148,45 @@ test('sprawdzenie: zmieniona wypchnieta migracja (migrations.sum) blokuje baze e
   assert.equal(bledy.length, 1)
   assert.match(bledy[0], /^migrations\.sum: supabase\/migrations\/001_a\.sql — migracja zmieniona po zapisie sumy/)
   rmSync(p, { recursive: true })
+})
+
+// Pilot Nawykometr, run 1: seedy z guardem markera na bazie bez markera — start „gotowe”, a w runie 0 PASS i oba [E2E] na [Manual].
+test('sprawdzenie: seedy z guardem markera wymagaja tabeli markera na bazie e2e (STOP na starcie, nie [Manual] w runie)', async () => {
+  const SEED = `do $$ begin if to_regclass('public.e2e_env_marker') is null then raise exception 'nie baza e2e'; end if; end $$;\n`
+  const p = projekt({ pliki: { 'supabase/config.toml': '', '.env.e2e': BAZA, [`${PROFIL.e2e.katalogSeedow}/a-seed.sql`]: SEED, [`${PROFIL.e2e.katalogSeedow}/b-seed.sql`]: 'select 1;\n' } })
+  /** @type {string[]} */
+  const adresy = []
+  const brak = { ...SPRAWNE, markerBazy: (/** @type {string} */ a) => { adresy.push(a); return { ok: false, detal: 'brak tabeli public.e2e_env_marker' } } }
+  const bledy = bledySrodowiska(p, parsujEnv(BAZA), { jazda: false, narzedzia: brak })
+  assert.deepEqual(adresy, ['postgres://x'])
+  assert.equal(bledy.length, 1)
+  assert.match(bledy[0], new RegExp(`^baza e2e: brak tabeli public\\.e2e_env_marker — 1 seedow \\(np\\. ${doWzorca(PROFIL.e2e.katalogSeedow)}/a-seed\\.sql\\) ma guard`))
+  assert.match(bledy[0], /WYLACZNIE na bazie e2e, nigdy na dev ani prod/)
+  const jest = { ...SPRAWNE, markerBazy: () => ({ ok: true, detal: 'public.e2e_env_marker jest' }) }
+  assert.deepEqual(bledySrodowiska(p, parsujEnv(BAZA), { jazda: false, narzedzia: jest }), [])
+  const start = await startE2e(p, null, { uruchom: false, narzedzia: brak })
+  assert.equal(start.status, 'niepowodzenie')
+  assert.match(start.naprawa, /brak tabeli public\.e2e_env_marker/)
+  rmSync(p, { recursive: true })
+})
+
+test('sprawdzenie: bez seedow z guardem markera baza nie jest odpytywana', () => {
+  const p = projekt({ pliki: { 'supabase/config.toml': '', [`${PROFIL.e2e.katalogSeedow}/a-seed.sql`]: 'delete from goals;\n' } })
+  let wywolania = 0
+  const licz = { ...SPRAWNE, markerBazy: () => { wywolania++; return { ok: false, detal: 'x' } } }
+  assert.deepEqual(bledySrodowiska(p, parsujEnv(BAZA), { jazda: false, narzedzia: licz }), [])
+  assert.equal(wywolania, 0)
+  rmSync(p, { recursive: true })
+})
+
+test('marker: adres bazy rozbity na zmienne libpq (haslo poza argumentami psql)', () => {
+  assert.deepEqual(zmiennePolaczenia('postgresql://postgres.ref:p%40ss@aws-0.pooler.supabase.com:5432/postgres?sslmode=require'), {
+    PGHOST: 'aws-0.pooler.supabase.com', PGPORT: '5432', PGUSER: 'postgres.ref', PGPASSWORD: 'p@ss', PGDATABASE: 'postgres', PGSSLMODE: 'require',
+  })
+  assert.deepEqual(zmiennePolaczenia('postgres://u:h@127.0.0.1/'), { PGHOST: '127.0.0.1', PGPORT: '5432', PGUSER: 'u', PGPASSWORD: 'h', PGDATABASE: 'postgres' })
+  assert.equal(zmiennePolaczenia('https://e2e.supabase.co'), null)
+  assert.equal(zmiennePolaczenia('nie-url'), null)
+  assert.match(markerBazy('nie-url').detal, /nie jest adresem postgresql/)
 })
 
 test('decyzja startowa: zadanie bez scenariuszy = pominieto; scenariusze bez .env.e2e = brak-srodowiska z naprawa', async () => {

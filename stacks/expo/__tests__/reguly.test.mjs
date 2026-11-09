@@ -32,7 +32,11 @@ test('sekcje rdzenia mają treść Expo', () => {
 })
 
 test('korekty po spike\'u: Uniwind zamiast NativeWind, helper limitu czasu wypadł, nowe reguły doszły', () => {
-  assert.doesNotMatch(STACK, /NativeWind/)
+  // NativeWind tylko jako wyjątek istniejącego projektu (pilot Nawykometr, W14), bez zaleceń dla nowych projektów.
+  const nativewind = STACK.split('\n').filter((l) => /NativeWind/.test(l))
+  assert.equal(nativewind.length, 1, nativewind.join('\n'))
+  assert.match(nativewind[0], /^- Projekt na NativeWind \(`nativewind` w `package\.json`, bez `uniwind`\) zostaje na nim: .*skill `uniwind` go nie dotyczą/)
+  assert.match(sekcja('Stylowanie'), /^- Projekt na NativeWind/m)
   assert.doesNotMatch(STACK, /helper z `AbortController`/)
   assert.doesNotMatch(STACK, /\[D7\]/)
   assert.match(sekcja('Stylowanie'), /klasę `accent-\*` przez `\{prop\}ClassName`/)
