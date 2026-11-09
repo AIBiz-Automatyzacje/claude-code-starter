@@ -512,7 +512,7 @@ dalej `0615a5a`. **Etap 3 zamknięty.** Defekty z runów: D4 naprawiany przed pi
 
 - Przed syncem każdego projektu: konwersja jego `.claude/rules/learned-patterns.md` (gramywpadla 49 reguł, Nawykometr 7)
   do `docs/solutions/` / reguł projektu i commit — inaczej sync usunie edytowany plik (D21). Sprawdzić, czy projekt stoi
-  na wadliwym NativeWind v5 preview + nightly `react-native-css`.
+  na NativeWind v5 preview ze znanymi błędami `react-native-css` (sprawdzone 2026-11-09: `react-native-css` 3.0.7 to stabilny `latest`, nie nightly; szczegóły niżej).
 - `Nawykometr` (dziś na mobile `6fbd49d`): `/sync-template --dry-run`, potem sync; doctor; jedno małe zadanie przez
   `/dev-plan` → autopilot → smoke → `/dev-pr`. Sprawdzić: env-up na emulatorze, tester Maestro, księgowanie [E2E], bramka natywna.
 - Wnioski → poprawki w `stacks/expo/` (publikacja ręczna do końca pilotu, D4). Potem `gramywpadla` (dziś `23e0d92`, starszy —
@@ -539,7 +539,18 @@ Stan Nawykometru (odczyt 2026-11-08, bez zmian w projekcie): `main` `5ad1445` (2
 ~9.25.0, `package-lock.json`; są `.env`, `.env.e2e`, `supabase/migrations`, `.maestro/` (36 plików), `ios/`. Wariant zakłada
 SDK 58, Uniwind i Jest 30, więc pilot sprawdzi też szablon na projekcie ze starszym stackiem i NativeWind; rozjazdy notować jako
 wnioski, bez aktualizacji stacku projektu w ramach pilota. Do sprawdzenia w żywych źródłach: czy `react-native-css` 3.0.7 z
-`nativewind` 5.0.0-preview.2 to wadliwe połączenie z punktu wyżej.
+`nativewind` 5.0.0-preview.2 to wadliwe połączenie z punktu wyżej. Wynik (2026-11-09, npm i GitHub): 3.0.7 to stabilny `latest` (2026-04-09), nie nightly; para ma znane błędy (react-native-css#293, #317/#403, nativewind#1837), ale Nawykometr ma override `lightningcss` 1.30.1, nie używa `bg-*/NN` ani `tint-*`, a Metro w kopii zbudowało paczkę bez #293 (`docs/reviews/2026-11-pilot-nawykometr-wnioski.md`, W4).
+
+**Pilot, krok 1 — kopia Nawykometru (2026-11-09).** Kopia w `../_pilot-mobile/Nawykometr-kopia` (lokalny klon, `pushurl` `BRAK`,
+bez kluczy do zdalnych baz, lokalny Supabase w Dockerze, symulator „Nawykometr-kopia”). Konwersja reguł narzędziem
+`wiedza.mjs konwersja` (5 z 7, 2 odziedziczone ze starego szablonu), sync `6fbd49d` → `fb79426` (dwa przebiegi), doctor OK,
+plugin `expo@claude-code-starter` 1.14.3. Run 1 (`zgoda-analityka`, 3 fazy, 8 IU): P1 0, 13 P2 naprawionych, walidacja
+1182/1182, archiwum; oba `[E2E]` po cichu na `[Manual]` (brak markera bazy e2e). Po naprawie środowiska `run-all.sh` 16/16 PASS.
+Wnioski W1–W20: `docs/reviews/2026-11-pilot-nawykometr-wnioski.md`.
+
+| Poprawka | Gałąź / commit | Co | Bramki |
+|---|---|---|---|
+| pilot wnioski 1 | `popr/pilot-nawykometr-wnioski` | W16 (rdzeń: `e2e/marker.mjs`, `bledySrodowiska` → STOP przy seedach z guardem markera i bazie bez markera; README e2e-env rdzeń i nakładka), W9 (nakładka: `REBUILD_IOS_ADHOC` i `UWAGA_PODPISU_IOS` w naprawach przebudowy iOS, `po-fazie.md`, README e2e-env), W10 (rdzeń: `coding-rules.md` Bezpieczeństwo, skille `supabase-dev-guidelines` rdzeń i nakładka — `GRANT` w migracji, Supabase changelog #45329), W14 (nakładka: `rules/stack.md` Stylowanie i hub — projekt na NativeWind bez mechanizmów Uniwind; zmiana testu `stacks/expo/__tests__/reguly.test.mjs`), W5/W2/W3/W7/W6 (README repo mobile, przejście ze starego szablonu), W4 (plan i `00-decyzje.md`: „nightly” sprostowane) | `pnpm -s test` 1754/1754 (+3); typecheck 0; lint 0; wariant 1283/1285, 2 pominięte, 0 padnięć, typecheck 0 |
 
 ### Etap 5 — Świeżość skilli technicznych Expo
 

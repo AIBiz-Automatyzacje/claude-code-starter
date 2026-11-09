@@ -8,7 +8,7 @@ scenariusza wchodzi w pętlę fix jako finding P2 typ E2E. Cały przepis uruchom
 **Dwa przypadki (PANEL-WEJSCIE §2 pkt 6):**
 - **Środowisko niesprawne NA STARCIE** → **STOP w bootstrapie, przed fazą 1**, z komendą naprawy.
   Dotyczy zadania z niezaznaczonymi `[E2E]`, gdy repo nie ma `.env.e2e` albo sprawdzenie pada (plik poza
-  `.gitignore`, brak kluczy bazy e2e, ta sama baza co dev, zmieniona wypchnięta migracja, niedziałający
+  `.gitignore`, brak kluczy bazy e2e, brak tabeli markera przy seedach z jej guardem, ta sama baza co dev, zmieniona wypchnięta migracja, niedziałający
   agent-browser, serwer nie wstaje). Bez cichej degradacji: brak środowiska nie udaje świadomej rezygnacji.
   Świadomy opt-out: zmień marker `[E2E]` → `[Manual]` w pliku zadań (scenariusz wykonasz w smoke'u operatora).
 - **Test niewykonalny W TRAKCIE runu** (serwer padł, limit usługi zewnętrznej, popup OAuth, tester nie dał

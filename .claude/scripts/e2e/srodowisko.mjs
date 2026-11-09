@@ -19,6 +19,7 @@ import { basename, join } from 'node:path'
 
 import { bramkaMigrationsSum } from '../bramki/migrations-sum.mjs'
 import { adresHttp, HOSTY_LOKALNE } from './adres.mjs'
+import { markerBazy, seedyZMarkerem, TABELA_MARKERA } from './marker.mjs'
 import { PROFIL } from '../stack/profil.mjs'
 import { DOMYSLNY_PORT, komendaStartu, NARZEDZIE_JAZDY, probnyZrzut, SCIEZKA_ZDROWIA, sprawdzNarzedzie } from './adapter.mjs'
 
@@ -39,7 +40,8 @@ const MAKS_STARTU_SEK = 500
  * @typedef {{ url: string, zdrowie: string, zdrowieTresc: string | null, port: number, lokalny: boolean, start: string, limitSek: number, log: string, pid: string,
  *   bazaE2e: boolean, odcisk: string, blad: string | null }} Konfiguracja
  * @typedef {{ ok: boolean, detal: string }} WynikNarzedzia
- * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, narzedzieJazdy: () => WynikNarzedzia, zrzut?: () => WynikNarzedzia }} Narzedzia
+ * @typedef {{ czyIgnorowany: (projekt: string, plik: string) => boolean, narzedzieJazdy: () => WynikNarzedzia, zrzut?: () => WynikNarzedzia,
+ *   markerBazy?: (adres: string) => WynikNarzedzia }} Narzedzia
  */
 
 /** @param {string} tresc @returns {Record<string, string>} */
@@ -122,6 +124,7 @@ export const NARZEDZIA = {
   czyIgnorowany: (projekt, plik) => spawnSync('git', ['check-ignore', '-q', plik], { cwd: projekt }).status === 0,
   narzedzieJazdy: sprawdzNarzedzie,
   zrzut: probnyZrzut,
+  markerBazy,
 }
 
 /**
@@ -153,6 +156,8 @@ export function bledySrodowiska(projekt, env, { jazda, narzedzia = NARZEDZIA }) 
   if (konf.bazaE2e) {
     const braki = KLUCZE_BAZY.filter((grupa) => !grupa.some((k) => env[k])).map(([k, ...legacy]) => (legacy.length ? `${k} (albo legacy ${legacy.join(', ')})` : k))
     if (braki.length) bledy.push(`brak kluczy bazy e2e w ${PLIK_ENV}: ${braki.join(', ')} — szablon: .claude/templates/e2e-env/README.md`)
+    const marker = braki.length ? null : bladMarkera(projekt, env, narzedzia)
+    if (marker) bledy.push(marker)
     const suma = bramkaMigrationsSum(projekt)
     if (suma.status === 'porazka') bledy.push(`migrations.sum: ${suma.trafienia.map((t) => `${t.plik} — ${t.opis}`).join('; ')} — wypchnieta migracja nie moze trafic do bazy e2e`)
   }
@@ -162,6 +167,22 @@ export function bledySrodowiska(projekt, env, { jazda, narzedzia = NARZEDZIA }) 
     if (!wynik.ok) bledy.push(`${nazwa} nie dziala: ${wynik.detal} — instalacja: ${instalacja}; diagnoza: ${diagnoza}`)
   }
   return bledy
+}
+
+/**
+ * Seedy z guardem markera (README e2e-env, „Pozytywna identyfikacja bazy”) wymagaja tabeli markera na bazie e2e. Bez niej kazdy
+ * seed odmawia pracy, a scenariusze schodzily w runie na [Manual] zamiast STOP-u na starcie (pilot Nawykometr, run 1).
+ * @param {string} projekt @param {Record<string, string>} env @param {Narzedzia} narzedzia
+ * @returns {string | null} blad do STOP-u albo null
+ */
+function bladMarkera(projekt, env, narzedzia) {
+  const seedy = seedyZMarkerem(projekt)
+  const sprawdz = narzedzia.markerBazy ?? NARZEDZIA.markerBazy
+  if (!seedy.length || !sprawdz) return null
+  const wynik = sprawdz(env.SUPABASE_E2E_DB_URL)
+  if (wynik.ok) return null
+  return `baza e2e: ${wynik.detal} — ${seedy.length} seedow (np. ${PROFIL.e2e.katalogSeedow}/${seedy[0]}) ma guard ${TABELA_MARKERA} i odmowi pracy; `
+    + `zaloz tabele markera WYLACZNIE na bazie e2e, nigdy na dev ani prod (.claude/templates/e2e-env/README.md, „Pozytywna identyfikacja bazy”)`
 }
 
 /** @param {string} projekt @returns {Record<string, string> | null} zawartosc .env.e2e albo null */

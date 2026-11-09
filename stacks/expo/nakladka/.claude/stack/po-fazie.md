@@ -22,6 +22,10 @@ Przebudowa:
 
 - iOS: `LANG=en_US.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US.UTF-8 npx expo run:ios --no-bundler`. Bez `LANG` CocoaPods pada na
   `Unicode Normalization not appropriate for ASCII-8BIT` w powłoce bez locale.
+- iOS z Sign in with Apple albo associated domains na Macu bez certyfikatu Apple: `expo run:ios` żąda podpisu także dla symulatora i kończy się
+  `No code signing certificates are available to use`. Wtedy podpis ad-hoc, który zostawia entitlements:
+  `LANG=en_US.UTF-8 npx expo prebuild --clean --platform ios && LANG=en_US.UTF-8 xcodebuild -workspace ios/<Aplikacja>.xcworkspace -scheme <Aplikacja> -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build CODE_SIGN_IDENTITY=- build && xcrun simctl install <UDID> ios/build/Build/Products/Debug-iphonesimulator/<Aplikacja>.app`
+  (`<Aplikacja>` = nazwa `ios/*.xcworkspace`). Nie `CODE_SIGNING_ALLOWED=NO`: binarka straci entitlements, a SecureStore sesję.
 - Android: `npx expo prebuild --clean --platform android && npx expo run:android --no-bundler`. Gradle sam dociąga brakującą platformę Androida.
 - `--clean` usuwa `ios/` i `android/`. Projekt, który trzyma te katalogi w repo, pomija `prebuild` i woła samo `expo run:*`.
 - `eas build` nie jest potrzebny do E2E.

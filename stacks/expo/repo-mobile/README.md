@@ -62,9 +62,17 @@ Projekt zsynchronizowany z tym repo przed listopadem 2026 ma starszy zestaw (inn
 `learned-patterns.md` w `.claude/rules/`). Pierwszy sync usunie pliki, których nowy wariant już nie ma. Przed nim:
 
 1. Przenieś reguły z `.claude/rules/learned-patterns.md` do `docs/solutions/` albo do reguł projektu i zacommituj je.
-   Sync nadpisuje pliki szablonu, więc edytowana kopia zniknie (zostanie tylko w backupie).
+   Nowy wariant tego pliku nie czyta, a sync może go usunąć (zostanie tylko w `.claude/.backups/`). Reguły bez wpisu w
+   `docs/solutions/`, które przyszły ze starym szablonem (np. o granicach Maestro), są już w skillach wariantu: możesz je
+   pominąć. Odwołania do starego pliku w komentarzach kodu mogą zostać jako historia.
 2. Uruchom `/sync-template --dry-run` i przejrzyj listę zmian.
-3. Zacommituj stan projektu, potem uruchom sync bez `--dry-run`.
+3. Zacommituj stan projektu, potem uruchom sync bez `--dry-run`. Pierwszy sync wykonuje jeszcze stary skrypt projektu, który
+   podmienia sam siebie w trakcie i może skończyć się błędem `syntax error` w połowie. Uruchom sync drugi raz: nowy skrypt
+   dokończy usunięcia, marker wersji i manifest.
+4. Usuń własne skille syncu sprzed wariantu (np. `.claude/skills/sync-claude-template/`), żeby nie konkurowały z `/sync-template`.
+
+Projekt z własną konfiguracją ESLint nie dostaje bramki ESLint szablonu (doctor: „nie dotyczy”), dopóki nie zainstaluje wzoru z
+`.claude/templates/bramki/`, który wymaga ESLint 10 i TypeScript 6.
 
 ## Bonus: Output Style „adhd"
 

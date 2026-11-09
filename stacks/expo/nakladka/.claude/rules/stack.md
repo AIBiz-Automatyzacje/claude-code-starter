@@ -71,6 +71,7 @@ Mechanizmy stacku do reguł z `.claude/rules/coding-rules.md`; sekcje o tej same
 
 ## Stylowanie
 
+- Projekt na NativeWind (`nativewind` w `package.json`, bez `uniwind`) zostaje na nim: mechanizmy Uniwind z tej sekcji (`Uniwind.setTheme`, `withUniwind`, `accent-*` i `{prop}ClassName`) oraz skill `uniwind` go nie dotyczą, a motyw, owijanie komponentów i kolory propsów bierzesz z istniejącego kodu projektu. Reguły tokenów i klas pełnych nazw obowiązują tak samo; migracja na Uniwind to decyzja operatora.
 - Kolor, odstęp i typografia pochodzą z tokenów `@theme` w `global.css`; klasę z planu przed użyciem sprawdzasz grepem w `@theme`, bo klasa bez tokenu to cichy no-op przy zielonym typechecku, linterze i testach. Nie ma `tailwind.config.*`.
 - Bez dowolnych kolorów w klasach (`bg-[#hex]`) i bez klas sklejanych z fragmentów (`bg-${x}`): kompilator ich nie widzi. Wariant wybierasz z mapy pełnych nazw klas albo przez `cn()`.
 - Ciemny motyw przez warianty `dark:` i `Uniwind.setTheme`, nigdy przez `:root.dark`.

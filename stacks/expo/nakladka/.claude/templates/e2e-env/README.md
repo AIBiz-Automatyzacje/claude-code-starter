@@ -7,7 +7,7 @@ tester, fix i smoke operatora wołają ten sam skrypt.
 
 **Przypadki:**
 - **Środowisko niesprawne NA STARCIE** → **STOP w bootstrapie, przed fazą 1**, z komendą naprawy. Dotyczy zadania z niezaznaczonymi
-  `[E2E]`, gdy repo nie ma `.env.e2e` albo sprawdzenie pada: plik poza `.gitignore`, brak kluczy bazy e2e, ta sama baza co dev, zmieniona
+  `[E2E]`, gdy repo nie ma `.env.e2e` albo sprawdzenie pada: plik poza `.gitignore`, brak kluczy bazy e2e, brak tabeli markera przy seedach z jej guardem, ta sama baza co dev, zmieniona
   wypchnięta migracja, brak Maestro albo Java 17+, brak urządzenia, przestarzały albo niepodpisany dev-client, Metro nie wstaje, canary
   pada. Świadomy opt-out: zmień marker `[E2E]` → `[Manual]` w pliku zadań (scenariusz wykonasz w smoke'u operatora).
 - **Test niewykonalny W TRAKCIE runu** (Metro padło, limit usługi zewnętrznej, tester nie dał przebiegu) → linia `[E2E]` przechodzi na
@@ -144,7 +144,7 @@ traktuj jako test bojowy tej fazy.
 2. **Skopiuj config**: `cp .claude/templates/e2e-env/.env.e2e.example .env.e2e` i uzupełnij (klucze, connection string session pooler, konto testowe).
 3. **Gitignore**: dopisz `.env.e2e` do `.gitignore` (start odmówi bez tego); `.env*.local` jest już w `.gitignore` szablonu Expo.
 4. **Maestro**: `curl -fsSL "https://get.maestro.mobile.dev" | bash`, Java 17+ z `JAVA_HOME`. Sprawdzenie startu woła `maestro --version` i `java -version`.
-5. **Dev-client**: `LANG=en_US.UTF-8 npx expo run:ios --no-bundler` na symulatorze bez konta Apple albo `npx expo run:android --no-bundler` na działającym emulatorze.
+5. **Dev-client**: `LANG=en_US.UTF-8 npx expo run:ios --no-bundler` na symulatorze bez konta Apple albo `npx expo run:android --no-bundler` na działającym emulatorze. Aplikacja z Sign in with Apple albo associated domains bez certyfikatu Apple: podpis ad-hoc wg `.claude/stack/po-fazie.md`, sekcja „Przebudowa”.
 6. **Canary**: skopiuj `.claude/templates/e2e-env/_canary.yaml` do `.maestro/_canary.yaml` i dopasuj.
 7. Gotowe: `e2e.mjs sprawdz` zielone, następny run autopilota przejdzie w tryb zarządzany.
 
