@@ -883,13 +883,26 @@ const e2ePrzebiegi = (e2eWynik && Array.isArray(e2eWynik.przebiegi)) ? e2eWynik.
 // fazy, a gdyby sie mylil, scribe zostawi [E2E] jako [ ] i completion-gate to zlapie (nie ma tu cichej zieleni).
 const e2eWykonany = !!e2eWynik && !(e2eMozeMiecCheckboxy && e2ePrzebiegi.length === 0 && e2eCheckboxy > 0)
 const e2eTesterFail = e2eAktywny && e2eMozeMiecCheckboxy && !e2eWykonany
-const e2eStatus = !e2eAktywny
-  ? 'pominiety przez routing'
-  : e2eTesterFail
-    ? (e2eWynik ? 'padl (2x wynik bez zadnego przebiegu) — zadnego dowodu' : 'padl (agent null 2x) — zadnego przebiegu')
-    : e2eWynik
-      ? (e2ePrzebiegi.length === 0 ? `wykonany — brak checkboxow [E2E] w fazie${e2eRetry ? ' (po retry; liczba z dossier nieznana)' : ''}` : `wykonany (tryb ${e2eTryb})${e2eRetry ? ' (po retry)' : ''}`)
-      : 'bez checkboxow [E2E] (dossier: 0, tester nic nie zwrocil — OK)'
+// Punkt 35 (dashboard E2, run wf_a495d97e-47b, fazy 7–11): tester w trybie interaktywnym oddal same SKIP, a faza miala E2E
+// „wykonany”, gate CZYSTE i wynik runu OK. „Nie odegrano” = sa przebiegi, tryb interaktywny, zero PASS i zero FAIL. W trybie
+// bez-interakcji same SKIP sa stanem oczekiwanym (srodowisko E2E niedostepne w trakcie runu), wiec zostaje „wykonany”.
+function e2eNieOdegrano(przebiegi, tryb) {
+  return tryb === 'interaktywny' && przebiegi.length > 0 && !przebiegi.some((p) => p && (p.wynik === 'PASS' || p.wynik === 'FAIL'))
+}
+
+// Status nie zmienia gate'u. Autopilot rozpoznaje faze po poczatku „nie odegrano” (fazyNieOdegrane w dev-autopilot-wf.js)
+// i pokazuje ja w raporcie koncowym; zmiana brzmienia wymaga zmiany po obu stronach (e2e-nie-odegrano.test.mjs).
+function statusTesteraE2e({ aktywny, testerFail, jestWynik, przebiegi, tryb, retry }) {
+  if (!aktywny) return 'pominiety przez routing'
+  if (testerFail) return jestWynik ? 'padl (2x wynik bez zadnego przebiegu) — zadnego dowodu' : 'padl (agent null 2x) — zadnego przebiegu'
+  if (!jestWynik) return 'bez checkboxow [E2E] (dossier: 0, tester nic nie zwrocil — OK)'
+  if (przebiegi.length === 0) return `wykonany — brak checkboxow [E2E] w fazie${retry ? ' (po retry; liczba z dossier nieznana)' : ''}`
+  if (e2eNieOdegrano(przebiegi, tryb)) return `nie odegrano (tryb ${tryb}) — zaden z ${przebiegi.length} scenariuszy nie ma PASS ani FAIL${retry ? ' (po retry)' : ''}`
+  return `wykonany (tryb ${tryb})${retry ? ' (po retry)' : ''}`
+}
+
+const e2eStatus = statusTesteraE2e({ aktywny: e2eAktywny, testerFail: e2eTesterFail, jestWynik: !!e2eWynik, przebiegi: e2ePrzebiegi, tryb: e2eTryb, retry: e2eRetry })
+if (!e2eTesterFail && e2eNieOdegrano(e2ePrzebiegi, e2eTryb)) log(`Tester E2E fazy ${faza}: ${e2eStatus} — scenariusze do odegrania recznie albo ponownie, gate bez zmian`)
 if (e2eTesterFail) log(`Tester E2E fazy ${faza} ${e2eStatus} przy ${e2eLiczbaZnana ? e2eCheckboxy : 'nieznanej liczbie'} checkboxow [E2E] — scenariusze fazy na [Manual] (tester-padl), run idzie dalej`)
 
 // Dedup przebieg 1 — JS (po pliku + poczatku opisu): lapie identyczne sformulowania za darmo.

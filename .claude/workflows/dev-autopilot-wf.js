@@ -100,7 +100,7 @@ const METRYKI_FAZY = {
         p3Odrzucone: { type: ['integer', 'null'], description: 'P3 uciete globalnym limitem po dedupie (strojenie progu)' },
         // Pola E2E (port z mobile, 2026-08-23) tez poza required — stany sprzed tej daty ich nie maja.
         e2eCheckboxy: { type: ['integer', 'null'] },
-        e2eStatus: { type: ['string', 'null'], description: 'status testera E2E z review-wf (wykonany / padl / pominiety przez routing)' },
+        e2eStatus: { type: ['string', 'null'], description: 'status testera E2E z review-wf (wykonany / nie odegrano / padl / pominiety przez routing)' },
         e2ePass: { type: ['integer', 'null'] },
         e2eFail: { type: ['integer', 'null'] },
         e2eSkip: { type: ['integer', 'null'] },
@@ -1451,6 +1451,17 @@ function skrotPrzebiegu(p) {
   }
 }
 
+// Punkt 35 (dashboard E2, run wf_a495d97e-47b): fazy 7–11 mialy same SKIP testera w trybie interaktywnym, gate CZYSTE i wynik
+// runu OK, a raport koncowy tego nie pokazywal. Faze rozpoznajemy po poczatku statusu z review-wf (statusTesteraE2e), ktory
+// jest tez w stanie fazy (metryki.przebieg.e2eStatus). Liczba = scenariusze fazy: linia [E2E] bez wpisu testera tez nie
+// zostala odegrana, stad wieksza z liczb checkboxow i wpisow SKIP.
+const STATUS_E2E_NIE_ODEGRANO = 'nie odegrano'
+function fazyNieOdegrane(raporty) {
+  return raporty
+    .filter((r) => r && r.przebieg && typeof r.przebieg.e2eStatus === 'string' && r.przebieg.e2eStatus.startsWith(STATUS_E2E_NIE_ODEGRANO))
+    .map((r) => ({ faza: r.faza, scenariusze: Math.max(r.przebieg.e2eCheckboxy ?? 0, r.przebieg.e2eSkip ?? 0) }))
+}
+
 // Podsumowanie tury poprawkowej po kontroli diffu naprawczego (audyt 2026-09-06, N9).
 // Do tej pory do stanu i telemetrii szlo tylko {pozycje, naprawione, walidacja} — a agent poprawki
 // podaje w nienaprawione[] uzasadnienia pozycji, ktorych nie ruszyl, i orkiestrator je WYRZUCAL.
@@ -1462,6 +1473,8 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
   const kroki = []
   if (smoke) kroki.push(`Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z ${smoke}.`)
   const akcje = []
+  const nieOdegrane = fazyNieOdegrane(raporty)
+  if (nieOdegrane.length) akcje.push(`E2E nie odegrano — do odegrania recznie albo ponownie: ${nieOdegrane.map((f) => `faza ${f.faza} (scenariuszy: ${f.scenariusze})`).join(', ')}`)
   const operator = raporty.reduce((s, r) => s + (r?.liczniki?.operator || 0), 0)
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
   const decyzje = raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
@@ -2403,6 +2416,9 @@ if (stan.zakonczenie.complete === 'pending') {
 
 if (uwagaIndeksu(compound, refresh)) log(uwagaIndeksu(compound, refresh))
 log(`Autopilot koniec: ${kolejka.length} faz w tym runie, ${fazyUkonczone(stan.fazy)}/${stan.fazy.length} domknietych w zadaniu (koszt runu: raport telemetrii — .claude/scripts/telemetria/raport.mjs)`)
+// Log bierze fazy ze stanu, nie z `raporty`: faza z review w poprzednim runie (STOP, potem swiezy run) nie ma raportu w tym runie.
+const e2eNieOdegrane = fazyNieOdegrane(stan.fazy.map((f) => ({ faza: f.numer, przebieg: f.metryki && f.metryki.przebieg })))
+if (e2eNieOdegrane.length) log(`UWAGA: E2E nie odegrano w ${e2eNieOdegrane.length} fazach zadania (tester interaktywny bez PASS i FAIL): ${e2eNieOdegrane.map((f) => `faza ${f.faza} — scenariuszy: ${f.scenariusze}`).join('; ')}. Gate i status runu bez zmian; scenariusze do odegrania recznie albo ponownie.`)
 
 return {
   status: 'OK',

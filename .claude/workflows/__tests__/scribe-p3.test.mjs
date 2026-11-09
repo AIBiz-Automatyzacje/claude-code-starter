@@ -64,6 +64,15 @@ test('scribe: przy blokerze stop-rebuild linii [E2E] nie ksieguje; bez niego dos
   assert.match(stop, /wymaga przebudowy[^\n]*linii \[E2E\] nie ruszasz/)
 })
 
+// Punkt 35: status „nie odegrano” (same SKIP testera interaktywnego) trafia do raportu review przez polecenie scribe'a,
+// a ksiegowanie linii [E2E] zostaje — SKIP-y nadal ida na [Manual] skryptem.
+test('scribe: status E2E „nie odegrano” jest w poleceniu, ksiegowanie bez zmian', () => {
+  const nieOdegrano = { ...PRZEBIEG, e2eStatus: 'nie odegrano (tryb interaktywny) — zaden z 2 scenariuszy nie ma PASS ani FAIL', e2eTryb: 'interaktywny' }
+  const polecenie = scribePrompt('docs/active/x', 4, [], nieOdegrano, [])
+  assert.match(polecenie, /JEDYNY dowod PASS — tester: nie odegrano \(tryb interaktywny\) — zaden z 2 scenariuszy nie ma PASS ani FAIL\)/)
+  assert.match(polecenie, /e2e\.mjs ksieguj/)
+})
+
 test('scribe: prompt krotszy niz przed P8 (8297 znakow stalej czesci)', () => {
   assert.ok(prompt.length <= 7000, `stala czesc promptu scribe: ${prompt.length} znakow`)
 })
