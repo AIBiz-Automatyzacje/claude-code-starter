@@ -122,6 +122,21 @@ test('SKILL.md: handoff ma zdanie dla agentów workflow z opisu autopilota', () 
   assert.ok(bezOgonkow(handoff).includes(zdanie), zdanie)
 })
 
+// Znaleziska 2026-11-02 pkt 36 (dashboard, run wf_a495d97e-47b): wiadomość startowa z warunkiem „jeśli zrzut padnie, zatrzymaj się”
+// trafiła do 166 agentów, a testerzy faz 7–11 uznali warunek za swój. Zdanie dla agentów już było; brakowało zasady dla sesji i operatora.
+test('opis autopilota i handoff: start to osobna wiadomość z samym poleceniem; warunki w wiadomości startowej sesja obsługuje wcześniej', () => {
+  const opis = /^ {2}whenToUse: '([^']+)',$/m.exec(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'))?.[1] ?? ''
+  const dlaSesji = opis.indexOf('Start to osobna wiadomosc z samym poleceniem startu: wiadomosc, ktora uruchamia workflow, dostaje doslownie kazdy agent runu, wiec wymagania wobec sesji ida wczesniejsza wiadomoscia.')
+  assert.notEqual(dlaSesji, -1, 'opis autopilota bez zasady dla sesji')
+  assert.ok(dlaSesji < opis.indexOf('Do agentow workflow:'), 'zasada dla sesji stoi przed zdaniem dla agentów')
+  const krok = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.7 Handoff'), SKILL_MD.indexOf('## Format wyjściowy'))
+  assert.match(krok, /Start to osobna wiadomość z samym poleceniem startu\. Wiadomość, która uruchamia workflow, dostaje dosłownie każdy agent runu/)
+  assert.match(krok, /zawiera też warunki albo prośby → najpierw je obsługujesz, potem prosisz o osobną wiadomość z samym startem\. Workflowu z takiej wiadomości nie uruchamiasz\./)
+  assert.match(krok, /do wklejenia w innej sesji, dzielisz tak samo: wymagania wobec sesji w jednej wiadomości, samo polecenie startu w następnej/)
+  const ramka = SKILL_MD.slice(SKILL_MD.indexOf('➡️ Następny krok'), SKILL_MD.indexOf('## Referencje'))
+  assert.match(ramka, /Start to osobna wiadomość z samym poleceniem, np\. „Uruchom autopilota dla docs\/active\/<zadanie>” — bez warunków i próśb/)
+})
+
 test('SKILL.md: wskazane pliki references/ istnieją', () => {
   const pliki = [...new Set([...SKILL_MD.matchAll(/`(references\/[\w.-]+)`/g)].map((m) => m[1]))]
   assert.deepEqual(pliki.sort(), ['references/kontekst-designerski.md', 'references/przygotowanie-operatora.md', 'references/stack.md', 'references/szablon-planu.md'])

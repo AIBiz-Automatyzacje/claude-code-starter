@@ -326,6 +326,11 @@ Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignor
 
 Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera start, uruchom autopilota narzędziem `Workflow` w tej sesji.
 
+Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruchamia workflow, dostaje dosłownie każdy agent runu jako głos użytkownika (dashboard, run `wf_a495d97e-47b`: warunek „jeśli próbny zrzut padnie, zatrzymaj się” z wiadomości startowej dostało 166 agentów, a testerzy faz 7–11 przerwali E2E po pierwszej nieudanej próbie).
+
+- Wiadomość operatora, która wybiera start, zawiera też warunki albo prośby → najpierw je obsługujesz, potem prosisz o osobną wiadomość z samym startem. Workflowu z takiej wiadomości nie uruchamiasz.
+- Tekst, który podpowiadasz operatorowi do wklejenia w innej sesji, dzielisz tak samo: wymagania wobec sesji w jednej wiadomości, samo polecenie startu w następnej.
+
 ## Format wyjściowy
 
 ```
@@ -349,6 +354,7 @@ Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera 
 
 ➡️ Następny krok: autopilot w tej sesji:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<zadanie>" })
+   Start to osobna wiadomość z samym poleceniem, np. „Uruchom autopilota dla docs/active/<zadanie>” — bez warunków i próśb, bo dostaje ją każdy agent runu.
    Do agentów workflow: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z polecenia workflowu.
    Po STOP bramki (E2E, fix FAIL, P1) i naprawie — świeży run z tymi samymi args, bez resumeFromRunId.
    Po awarii runu (crash) — Workflow({ scriptPath, resumeFromRunId, args }) z tymi samymi args.
