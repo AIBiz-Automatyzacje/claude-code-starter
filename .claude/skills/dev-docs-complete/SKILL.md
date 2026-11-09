@@ -100,6 +100,7 @@ Datę do plików bierz z `date +%F`.
    Checklista: docs/operator/YYYY-MM-DD-<zadanie>-smoke.md — prowadź mnie punkt po punkcie,
    odhaczaj za mnie w pliku, a usterki naprawiaj od razu (z testem) zamiast odkładać.
    <zdanie do ramki z sekcji „Punkty wizualne”>   ← tylko w smoke'u z punktami wizualnymi
+   Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez `git add -A`): /dev-pr wymaga czystego drzewa.
    Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania
    bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj.
    ```

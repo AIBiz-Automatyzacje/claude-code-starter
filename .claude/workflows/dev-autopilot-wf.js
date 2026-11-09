@@ -2442,6 +2442,8 @@ return {
   indeks: compound && compound.indeks,
   // Szczebel kod/lint z compoundu (P10): propozycje bramek do decyzji operatora — do wdrozenia bramki ida do indeksu jak regula.
   propozycjeBramek: (compound && compound.propozycjeBramek) || [],
+  // Punkt 43: mechanizm, ktory poprawka juz wprowadzila (plik:linia) — raport podaje go jako wdrozony, bez pytania do operatora.
+  bramkiWdrozone: (compound && compound.bramkiWdrozone) || [],
   uwagaIndeksu: uwagaIndeksu(compound, refresh),
   refresh: refresh ? refresh.slownik : 'pominieto',
   // Pomiar ogrodnika (P15) — telemetria run.ogrod; null, gdy archiwizacja byla w poprzednim runie.
