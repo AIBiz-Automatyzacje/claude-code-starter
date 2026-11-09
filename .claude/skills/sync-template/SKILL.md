@@ -122,8 +122,26 @@ każdego pliku z chwili syncu) czyta telemetria: czy run wykonał dokładnie wer
   jego twarda synchronizacja z upstreamem to osobny proces opisany w
   `ZRODLA-SZABLONU.md` — nie mieszaj tych dwóch.
 
+## Domknięcie synca
+
+Zmiany z synca idą na gałąź główną własnym PR-em, bez czekania na recenzję bota. W aa-exam (PR #52) i dashboardzie (PR #127)
+PR z samą maszynerią przeszedł pełny proces: bot pominął filtrami 146 ze 147 plików albo nie zgłosił żadnej uwagi.
+
+1. Gałąź `chore/szablon-<data>` (np. `chore/szablon-2026-11-07`) od aktualnej gałęzi głównej.
+2. Commit zmian z synca.
+3. PR z tytułem zaczynającym się od `chore(szablon)`, np. `chore(szablon): sync do <sha>`.
+4. CI tam, gdzie się uruchamia: poczekaj na wynik, czerwony check napraw przed merge'em.
+5. Merge bez czekania na recenzję bota. Gdy merge oznacza deploy, powiedz to operatorowi w pytaniu o zgodę.
+6. Po merge'u, który oznacza deploy: sprawdź produkcję.
+
+Push, utworzenie PR i merge to publikacja: każda z tych czynności wymaga zgody operatora w tej sesji.
+
+Słowo `chore(szablon)` wyłącza recenzję tylko wtedy, gdy `.coderabbit.yaml` projektu ma je w
+`reviews.auto_review.ignore_title_keywords`. Sync tego pliku nie rusza: słowo dopisuje `/coderabbit-setup` albo jedna linia
+w configu, zanim powstanie PR. PR synca nie idzie przez `/dev-pr`: nie ma zadania, a `/dev-pr` czeka na bota.
+
 ## Pierwsze wprowadzenie do projektu
 
-Po pierwszej synchronizacji doprowadź do tego, żeby maszyneria była na zdalnej gałęzi głównej: push `main` (po decyzji operatora, bo może oznaczać deploy) albo osobny PR. Inaczej
+Po pierwszej synchronizacji doprowadź do tego, żeby maszyneria była na zdalnej gałęzi głównej: push `main` (po decyzji operatora, bo może oznaczać deploy) albo osobny PR z sekcji „Domknięcie synca”. Inaczej
 pierwszy `/dev-pr` policzy jej pliki jako część zadania. Linie `HIGIENA:` przejdź przed pierwszym `/dev-pr`, także CodeRabbit: istniejący `.coderabbit.yaml` musi spełniać kontrakt pipeline'u
 (`node .claude/scripts/pr/kontrakt-bota.mjs --galaz main`), a nie tylko istnieć.
