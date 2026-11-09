@@ -164,6 +164,32 @@ function wykryjRunner(pakiet) {
 }
 
 /**
+ * Runnery w pakietach pierwszego poziomu, tylko do komunikatu. Dashboard (vitest w frontend/package.json, backend w Pythonie)
+ * dostawal „projekt nie używa vitest ani jest”, choc runner byl w repo. Listy nie sprawdzamy: runner uruchamiany
+ * w podkatalogu nie siega do .claude/** w korzeniu.
+ * @param {string} projekt
+ * @returns {string[]} np. ['frontend/ (vitest)']
+ */
+function runneryPodpakietow(projekt) {
+  if (!existsSync(projekt)) return []
+  return readdirSync(projekt, { withFileTypes: true })
+    .filter((wpis) => wpis.isDirectory() && !wpis.name.startsWith('.') && wpis.name !== 'node_modules')
+    .map((wpis) => wpis.name)
+    .sort()
+    .flatMap((nazwa) => {
+      const plik = join(projekt, nazwa, 'package.json')
+      if (!existsSync(plik)) return []
+      try {
+        const runner = wykryjRunner(JSON.parse(readFileSync(plik, 'utf8')))
+        return runner ? [`${nazwa}/ (${runner})`] : []
+      } catch {
+        // package.json podpakietu, ktory sie nie parsuje, nie zmienia komunikatu o korzeniu.
+        return []
+      }
+    })
+}
+
+/**
  * @param {string} projekt katalog projektu
  * @returns {WynikRunnera}
  */
@@ -177,7 +203,13 @@ export function sprawdzRunnerTestow(projekt) {
     return { stan: 'UWAGA', runner: null, szczegol: `package.json nie parsuje się: ${e instanceof Error ? e.message : String(e)}`, poprawka: 'popraw JSON w package.json' }
   }
   const runner = wykryjRunner(pakiet)
-  if (!runner) return { stan: 'nie dotyczy', runner: null, szczegol: 'projekt nie używa vitest ani jest', poprawka: '—' }
+  if (!runner) {
+    const podpakiety = runneryPodpakietow(projekt)
+    const szczegol = podpakiety.length
+      ? `runner w podpakiecie ${podpakiety.join(', ')}: nie sprawdzano (uruchamiany w podkatalogu nie zbiera .claude/** z korzenia)`
+      : 'brak runnera vitest/jest w repo (package.json w korzeniu i w katalogach pierwszego poziomu)'
+    return { stan: 'nie dotyczy', runner: null, szczegol, poprawka: '—' }
+  }
   const skrypty = /** @type {Record<string, unknown>} */ (pakiet.scripts ?? {})
   const lista = listaRunnera(projekt, runner, argumentySkryptu(typeof skrypty.test === 'string' ? skrypty.test : '', runner))
   return 'pliki' in lista ? werdyktListy(projekt, runner, lista.pliki) : odczytStatyczny(projekt, runner, pakiet, lista.blad)

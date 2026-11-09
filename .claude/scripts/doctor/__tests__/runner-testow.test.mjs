@@ -135,7 +135,34 @@ test('wykrycie runnera: skrypt przed zaleznosciami; sama zaleznosc tez; brak obu
   assert.equal(runner({ scripts: { test: 'npm run unit' }, devDependencies: { jest: '30' } }), 'jest')
   assert.equal(runner({ devDependencies: { vitest: '5' } }), 'vitest')
   assert.equal(sprawdz({ 'package.json': JSON.stringify({ scripts: { test: "node --test '.claude/**/*.test.mjs'" } }) }).wynik.stan, 'nie dotyczy')
-  assert.equal(sprawdz({}).wynik.stan, 'nie dotyczy')
+  assert.deepEqual(sprawdz({}).wynik, { stan: 'nie dotyczy', runner: null, szczegol: 'brak runnera vitest/jest w repo (package.json w korzeniu i w katalogach pierwszego poziomu)', poprawka: '—' })
+})
+
+// Dashboard (Vite w frontend/, backend w Pythonie): doctor i bramka gotowosci pisaly „projekt nie używa vitest ani jest”,
+// choc vitest byl w frontend/package.json. Runner z podkatalogu nie zbiera .claude/**, wiec wynik zostaje nieblokujacy —
+// komunikat mowi tylko, ze niczego nie sprawdzano.
+test('runner w podpakiecie pierwszego poziomu → nie dotyczy z katalogiem i runnerem w komunikacie, bez uruchamiania listy', () => {
+  const podpakiet = JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '5' } })
+  const { wynik } = sprawdz({ 'frontend/package.json': podpakiet, 'backend/pyproject.toml': '', ...TEST_PROJEKTU })
+  assert.deepEqual(wynik, { stan: 'nie dotyczy', runner: null, szczegol: 'runner w podpakiecie frontend/ (vitest): nie sprawdzano (uruchamiany w podkatalogu nie zbiera .claude/** z korzenia)', poprawka: '—' })
+  const dwa = sprawdz({
+    'package.json': JSON.stringify({ scripts: { test: 'npm test --prefix web' } }),
+    'web/package.json': podpakiet,
+    'api/package.json': JSON.stringify({ devDependencies: { jest: '30' } }),
+    'narzedzia/package.json': JSON.stringify({ scripts: { test: 'node --test' } }),
+    'zepsuty/package.json': '{ "scripts": ',
+    'node_modules/vitest/package.json': podpakiet,
+    '.ukryty/package.json': podpakiet,
+    'apps/glebiej/package.json': podpakiet,
+  }).wynik
+  assert.equal(dwa.stan, 'nie dotyczy')
+  assert.match(dwa.szczegol, /^runner w podpakiecie api\/ \(jest\), web\/ \(vitest\): nie sprawdzano /)
+})
+
+test('runner w korzeniu wygrywa z podpakietem: werdykt z listy korzenia', () => {
+  const podpakiet = JSON.stringify({ devDependencies: { jest: '30' } })
+  const { wynik } = sprawdz({ 'package.json': PAKIET_VITEST, 'vitest.config.ts': 'x', 'api/package.json': podpakiet }, { lista: ['src/a.test.ts'] })
+  assert.deepEqual([wynik.stan, wynik.runner], ['OK', 'vitest'])
 })
 
 test('package.json, ktory sie nie parsuje → UWAGA z przyczyna, bez wyjatku', () => {

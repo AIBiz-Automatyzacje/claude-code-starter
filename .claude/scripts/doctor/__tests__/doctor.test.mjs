@@ -422,7 +422,7 @@ test('uwaga stacku z adaptera: wiersz tylko, gdy adapter go zwraca', () => zSrod
 // Sync nie wozi testow maszynerii do projektow, wiec BRAK wymaga pliku testu pod .claude/ (tu wlasny test projektu);
 // bez niego vitest bez configu to „nie dotyczy” i exit 0.
 test('runner testow: vitest bez configu i test pod .claude/ → BRAK z gotowym vitest.config.ts i exit 1; config z include tests/ → OK', () => zSrodowiskiem((s) => {
-  assert.equal(wiersz(doctor(s).stdout, 'runner testów')[1], 'nie dotyczy')
+  assert.deepEqual(wiersz(doctor(s).stdout, 'runner testów').slice(1, 3), ['nie dotyczy', 'brak runnera vitest/jest w repo (package.json w korzeniu i w katalogach pierwszego poziomu)'])
   writeFileSync(join(s.projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
   const bezTestow = doctor(s)
   assert.deepEqual(wiersz(bezTestow.stdout, 'runner testów').slice(1, 3), ['nie dotyczy', 'pod .claude/ nie ma plików testów, więc vitest nie ma tam czego zebrać; listy testów nie sprawdzono (brak node_modules/.bin/vitest)'])
