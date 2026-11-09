@@ -9,7 +9,7 @@ tone_instructions: "Pisz po polsku, konkretnie, 1-3 zdania. Łap realne bugi, ty
 early_access: false
 
 reviews:
-  profile: assertive            # bardziej dociekliwy review (drugi tryb to 'chill')
+  profile: assertive # bardziej dociekliwy review (drugi tryb to 'chill')
   request_changes_workflow: false
   high_level_summary: true
   poem: false
@@ -99,9 +99,9 @@ reviews:
     eslint:
       enabled: true
     biome:
-      enabled: false  # nie używamy biome — eslint wystarczy
+      enabled: false # nie używamy biome — eslint wystarczy
     oxc:
-      enabled: false  # nie używamy oxlint — eslint wystarczy
+      enabled: false # nie używamy oxlint — eslint wystarczy
     # GitHub Actions + YAML
     actionlint:
       enabled: true

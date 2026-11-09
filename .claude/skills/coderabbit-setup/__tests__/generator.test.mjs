@@ -80,6 +80,22 @@ test('baza i kazdy blok stacku daja config zgodny ze schematem CodeRabbit', () =
   }
 })
 
+// aa-exam PR #52: check `quality` padl na format:check, bo template mial komentarze w linii po kilku spacjach, a Prettier
+// zostawia jedna. Asercja regexem zamiast Prettiera: szablon nie ma go w zaleznosciach.
+test('komentarz w linii stoi po jednej spacji (Prettier): baza i bloki YAML stackow', () => {
+  const zle = (/** @type {string} */ yaml) => yaml.split('\n').filter((l) => /\S {2,}#/.test(l))
+  assert.deepEqual(zle(BAZA), [], 'templates/coderabbit-base.yaml')
+  const bloki = [...BLOKI.matchAll(/```yaml\n([\s\S]*?)```/g)].map((m) => m[1])
+  assert.ok(bloki.length >= 5, `oczekiwano 5 blokow yaml, jest ${bloki.length}`)
+  assert.deepEqual(bloki.flatMap(zle), [], 'reference/stack-blocks.md')
+})
+
+// Projekt z Prettierem ma wlasna konfiguracje (np. singleQuote), ktorej template nie zna — skill formatuje wynik jego Prettierem.
+test('skill formatuje wygenerowany config Prettierem projektu, gdy projekt go ma', () => {
+  assert.match(OPIS, /prettier --write \.coderabbit\.yaml/)
+  assert.match(OPIS, /format:check/)
+})
+
 // Schemat zabrania nieznanych kluczy tylko w korzeniu (literowka `reveiws` gubi cala sekcje review).
 test('schemat lapie za dlugie tone_instructions i nieznany klucz w korzeniu', () => {
   const config = zbuduj([])
