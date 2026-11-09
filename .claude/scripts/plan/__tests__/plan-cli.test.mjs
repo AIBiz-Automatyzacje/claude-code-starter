@@ -175,9 +175,16 @@ test('gotowosc: stara baza wiedzy i przerosniety kontekst startowy = uwagi higie
 }))
 
 // P22 A1: runner testow projektu zbierajacy .claude/** (live-10-demo: vitest run bez configu) wychodzi w bramce, nie w bootstrapie.
-test('gotowosc: vitest bez configu → testy.ok false z poprawka i STOP; config z include tests/ → ok', () => wRepo((k) => {
+// Sync nie wozi testow maszynerii do projektow: bez pliku testu pod .claude/ brak configu nie blokuje (testy.ok true).
+test('gotowosc: vitest bez configu i test pod .claude/ → testy.ok false z poprawka i STOP; config z include tests/ → ok', () => wRepo((k) => {
   writeFileSync(join(k, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
   zadanieNaGalezi(k)
+  const bezTestow = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
+  assert.deepEqual([bezTestow.testy.ok, bezTestow.testy.runner, bezTestow.testy.poprawka], [true, 'vitest', '—'])
+  mkdirSync(join(k, '.claude', 'skills', 'wlasny', '__tests__'), { recursive: true })
+  writeFileSync(join(k, '.claude', 'skills', 'wlasny', '__tests__', 'a.test.mjs'), '')
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'add', '-A'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'test: wlasny test skilla'])
   const zle = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
   assert.deepEqual([zle.ok, zle.testy.ok, zle.testy.runner, zle.git.ok], [false, false, 'vitest', true])
   assert.match(zle.testy.poprawka, /exclude: \[\.\.\.configDefaults\.exclude, '\.claude\/\*\*'\]/)

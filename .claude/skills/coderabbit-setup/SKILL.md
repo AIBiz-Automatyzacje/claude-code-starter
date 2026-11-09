@@ -67,8 +67,8 @@ znacznik `{{STACK_RULES}}`.
    parserem YAML). Błąd = napraw plik, nie pomijaj walidacji. Schemat CodeRabbit
    odrzuca `tone_instructions` dłuższe niż 250 znaków i nieznane klucze
    najwyższego poziomu — wtedy bot ignoruje cały plik bez komunikatu w PR.
-   Template skilla jest sprawdzany schematem w teście
-   `__tests__/generator.test.mjs`; dokładaj więc tylko klucze, które w nim są.
+   Template skilla jest sprawdzany schematem w teście repo szablonu
+   (`__tests__/generator.test.mjs`); dokładaj więc tylko klucze, które w nim są.
 
 6. **Zweryfikuj instalację aplikacji GitHub CodeRabbit** — zawsze, bo bez
    zainstalowanej aplikacji config jest martwym plikiem, a z repo tego nie widać.

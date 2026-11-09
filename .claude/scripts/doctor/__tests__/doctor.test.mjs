@@ -419,9 +419,16 @@ test('uwaga stacku z adaptera: wiersz tylko, gdy adapter go zwraca', () => zSrod
 
 // P22 A1: live-10-demo — `vitest run` bez configu zebral 113 testow maszynerii z .claude/** i autopilot stanal na starcie.
 // Doctor mowi o tym przed runem: BRAK z gotowym configiem (exit 1); config z include tests/ → OK; projekt bez vitest — nie dotyczy.
-test('runner testow: vitest bez configu → BRAK z gotowym vitest.config.ts i exit 1; config z include tests/ → OK', () => zSrodowiskiem((s) => {
+// Sync nie wozi testow maszynerii do projektow, wiec BRAK wymaga pliku testu pod .claude/ (tu wlasny test projektu);
+// bez niego vitest bez configu to „nie dotyczy” i exit 0.
+test('runner testow: vitest bez configu i test pod .claude/ → BRAK z gotowym vitest.config.ts i exit 1; config z include tests/ → OK', () => zSrodowiskiem((s) => {
   assert.equal(wiersz(doctor(s).stdout, 'runner testów')[1], 'nie dotyczy')
   writeFileSync(join(s.projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3.2.4' } }))
+  const bezTestow = doctor(s)
+  assert.deepEqual(wiersz(bezTestow.stdout, 'runner testów').slice(1, 3), ['nie dotyczy', 'pod .claude/ nie ma plików testów, więc vitest nie ma tam czego zebrać; listy testów nie sprawdzono (brak node_modules/.bin/vitest)'])
+  assert.equal(bezTestow.status, 0)
+  mkdirSync(join(s.projekt, '.claude', 'skills', 'wlasny', '__tests__'), { recursive: true })
+  writeFileSync(join(s.projekt, '.claude', 'skills', 'wlasny', '__tests__', 'a.test.mjs'), '')
   const brak = doctor(s)
   const w = wiersz(brak.stdout, 'runner testów')
   assert.equal(w[1], 'BRAK')

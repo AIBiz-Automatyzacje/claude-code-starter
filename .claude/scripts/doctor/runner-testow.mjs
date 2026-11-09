@@ -5,6 +5,8 @@
 // Zrodlo prawdy: lista plikow od samego runnera (`vitest list --filesOnly --json`, `jest --listTests --json`) z argumentami
 // skryptu `test` — config z mergeConfig, projects, dir i -c liczy runner, nie regex. Bez zainstalowanego runnera zostaje
 // odczyt statyczny: brak configu = BRAK (domyslny include vitest i testMatch jest >= 30 lapia *.test.mjs), reszta = UWAGA.
+// Odczyt statyczny zglasza problem tylko wtedy, gdy pod .claude/ leza pliki testow: sync nie wozi juz testow maszynerii
+// do projektow (aa-exam po syncu: 11 z 1390 padalo przez srodowisko), wiec sam brak configu niczego nie dowodzi.
 // Wiersz TSV jak advisors.mjs; problem = BRAK, bo run i tak by sie na nim zatrzymal.
 //
 // Uzycie: node runner-testow.mjs <katalog-projektu>
@@ -25,6 +27,14 @@ const ROZSZERZENIA = ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs']
 const WYKLUCZENIE_VITEST = "exclude: [...configDefaults.exclude, '.claude/**'] (configDefaults z 'vitest/config')"
 const POPRAWKA_JEST = "w konfiguracji jest: testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/']"
 const TRYBY = ['run', 'watch', 'dev', '--run', '--watch', '--watchAll']
+// Pliki, ktore runner zbiera bez configu: domyslny include vitest (*.test.*, *.spec.*) i testMatch jest (takze kod pod __tests__/).
+/** @type {Record<Runner, RegExp>} */
+const PLIK_TESTU = {
+  vitest: /\.(?:test|spec)\.[cm]?[jt]sx?$/,
+  jest: /\.(?:test|spec)\.[cm]?[jt]sx?$|\/__tests__\/.*\.[cm]?[jt]sx?$/,
+}
+// Runnery pomijaja je domyslnie, a kopia robocza w .claude/worktrees/ ma tam tysiace plikow.
+const KATALOGI_POMIJANE = ['node_modules', '.git']
 
 /** @param {string} projekt @param {string} baza @returns {string | null} pierwszy istniejacy plik configu w kolejnosci vitest */
 function plikConfigu(projekt, baza) {
@@ -107,11 +117,29 @@ function werdyktListy(projekt, runner, pliki) {
 }
 
 /**
+ * Czy pod .claude/ lezy plik, ktory runner bez wykluczenia by zebral: wlasny test projektu, test maszynerii sprzed
+ * wykluczenia __tests__/ z synca, kopia w .backups/ albo w worktrees/.
+ * @param {string} projekt @param {Runner} runner @param {string} [wzgledna] katalog wzgledem projektu
+ * @returns {boolean}
+ */
+function maPlikiTestow(projekt, runner, wzgledna = KATALOG_MASZYNERII) {
+  if (!existsSync(join(projekt, wzgledna))) return false
+  return readdirSync(join(projekt, wzgledna), { withFileTypes: true }).some((wpis) => {
+    const sciezka = `${wzgledna}/${wpis.name}`
+    if (wpis.isDirectory()) return !KATALOGI_POMIJANE.includes(wpis.name) && maPlikiTestow(projekt, runner, sciezka)
+    return PLIK_TESTU[runner].test(sciezka)
+  })
+}
+
+/**
  * Odczyt statyczny, gdy runnera nie da sie uruchomic (brak node_modules, stara wersja bez listy): pewny jest tylko brak configu.
  * @param {string} projekt @param {Runner} runner @param {Record<string, unknown>} pakiet @param {string} powod
  * @returns {WynikRunnera}
  */
 function odczytStatyczny(projekt, runner, pakiet, powod) {
+  if (!maPlikiTestow(projekt, runner)) {
+    return { stan: 'nie dotyczy', runner, szczegol: `pod .claude/ nie ma plików testów, więc ${runner} nie ma tam czego zebrać; listy testów nie sprawdzono (${powod})`, poprawka: '—' }
+  }
   if (runner === 'vitest') {
     const config = configVitest(projekt)
     const maTest = config !== null && (config.startsWith('vitest.') || /\btest\s*:/.test(readFileSync(join(projekt, config), 'utf8')))

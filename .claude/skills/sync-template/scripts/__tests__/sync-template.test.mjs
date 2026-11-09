@@ -109,6 +109,72 @@ test('skill usuniety w szablonie znika z projektu, lokalny skill projektu zostaj
   }
 })
 
+// aa-exam po syncu: 11 z 1390 testow maszynerii padalo przez srodowisko (ajv w innej wersji, brak stacks/) i wygladalo jak
+// uszkodzony sync. Testy maszynerii sa testami repo szablonu: sync ich nie przenosi, nie wpisuje do manifestu ani odciskow.
+/** @param {string} zrodlo */
+function skillZTestami(zrodlo) {
+  mkdirSync(join(zrodlo, '.claude', 'skills', 'x', '__tests__', 'fixtures'), { recursive: true })
+  writeFileSync(join(zrodlo, '.claude', 'skills', 'x', 'SKILL.md'), '---\nname: x\n---\n')
+  writeFileSync(join(zrodlo, '.claude', 'skills', 'x', '__tests__', 'x.test.mjs'), "import 'ajv'\n")
+  writeFileSync(join(zrodlo, '.claude', 'skills', 'x', '__tests__', 'fixtures', 'f.json'), '{}\n')
+  git(zrodlo, ['add', '.'])
+  git(zrodlo, ['commit', '-q', '-m', 'skill x z testami'])
+}
+
+test('testy maszynerii (__tests__/) nie trafiaja do projektu, manifestu ani odciskow', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    skillZTestami(zrodlo)
+    const wyjscie = sync(zrodlo, projekt)
+    assert.doesNotMatch(wyjscie, /__tests__/)
+    assert.match(wyjscie, /COUNTS: nowe=3 /)
+    assert.equal(readFileSync(join(projekt, '.claude', 'skills', 'x', 'SKILL.md'), 'utf8'), '---\nname: x\n---\n')
+    assert.throws(() => statSync(join(projekt, '.claude', 'skills', 'x', '__tests__')), { code: 'ENOENT' })
+    assert.equal(readFileSync(join(projekt, '.claude', '.template-manifest'), 'utf8'), '.claude/settings.json\n.claude/skills/x/SKILL.md\n.claude/workflows/dev-x-wf.js\n')
+    assert.doesNotMatch(readFileSync(join(projekt, '.claude', '.template-hashes'), 'utf8'), /__tests__/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
+// Projekt zsynchronizowany starsza wersja skryptu ma testy na dysku i w manifescie. Nastepny sync zdejmuje je ta sama droga
+// co pliki wycofane z szablonu (USUNIETE, kopia w .backups/, pusty katalog znika); wlasny test projektu zostaje.
+test('testy maszynerii z wczesniejszego syncu znikaja z projektu z kopia w backupie, wlasny test projektu zostaje', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    skillZTestami(zrodlo)
+    sync(zrodlo, projekt)
+    const stare = ['.claude/skills/x/__tests__/fixtures/f.json', '.claude/skills/x/__tests__/x.test.mjs']
+    for (const rel of stare) {
+      mkdirSync(dirname(join(projekt, rel)), { recursive: true })
+      writeFileSync(join(projekt, rel), readFileSync(join(zrodlo, rel)))
+    }
+    const manifest = join(projekt, '.claude', '.template-manifest')
+    writeFileSync(manifest, `${readFileSync(manifest, 'utf8')}${stare.join('\n')}\n`)
+    const wlasny = join(projekt, '.claude', 'skills', 'wlasny', '__tests__', 'w.test.mjs')
+    mkdirSync(dirname(wlasny), { recursive: true })
+    writeFileSync(wlasny, '// test projektu\n')
+
+    writeFileSync(join(zrodlo, '.claude', 'settings.json'), '{"a":1}\n')
+    git(zrodlo, ['commit', '-qam', 'zmiana'])
+    const wyjscie = sync(zrodlo, projekt)
+
+    assert.match(wyjscie, /COUNTS: nowe=0 zmienione=1 usuniete=2 /)
+    assert.match(wyjscie, /USUNIETE:\n {2}\.claude\/skills\/x\/__tests__\/fixtures\/f\.json\n {2}\.claude\/skills\/x\/__tests__\/x\.test\.mjs/)
+    assert.throws(() => statSync(join(projekt, '.claude', 'skills', 'x', '__tests__')), { code: 'ENOENT' })
+    const backup = /BACKUP: (.+)/.exec(wyjscie)?.[1] ?? ''
+    assert.equal(readFileSync(join(backup, '.claude', 'skills', 'x', '__tests__', 'x.test.mjs'), 'utf8'), "import 'ajv'\n")
+    assert.equal(readFileSync(wlasny, 'utf8'), '// test projektu\n')
+    assert.doesNotMatch(readFileSync(manifest, 'utf8'), /__tests__/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+})
+
 // P2 (PLAN-POPRAWY): N2 — instrukcje i skille sa buforowane w sesji, wiec po zmianie .claude/ autopilot w starej sesji
 // dzialalby na starej maszynerii. Komunikat ma wyjsc po kazdym syncu, ktory cos zmienil, i tylko wtedy.
 test('sync, ktory zmienil .claude/, konczy sie komunikatem o nowej sesji; UP_TO_DATE — bez komunikatu', () => {
@@ -194,8 +260,9 @@ test('sync: stara baza wiedzy w projekcie → linia HIGIENA z naprawa przy kazdy
 })
 
 // P22 A1: kazdy sync (nie tylko pierwszy) podpowiada wykluczenie .claude/** w configu runnera testow, gdy go brak —
-// linia z gotowa poprawka; projekt z configiem z include tests/ — bez linii.
-test('sync: vitest bez configu → linia RUNNER TESTÓW z poprawka; z configiem — bez linii', () => {
+// linia z gotowa poprawka; projekt z configiem z include tests/ — bez linii. Sync nie wozi testow maszynerii, wiec linia
+// wychodzi dopiero przy pliku testu pod .claude/ (tu wlasny test projektu).
+test('sync: vitest bez configu i test pod .claude/ → linia RUNNER TESTÓW z poprawka; bez testu albo z configiem — bez linii', () => {
   const zrodlo = zrodloSzablonu()
   const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
   try {
@@ -204,7 +271,10 @@ test('sync: vitest bez configu → linia RUNNER TESTÓW z poprawka; z configiem 
     git(zrodlo, ['add', '.'])
     git(zrodlo, ['commit', '-q', '-m', 'runner'])
     writeFileSync(join(projekt, 'package.json'), JSON.stringify({ scripts: { test: 'vitest run' }, devDependencies: { vitest: '3' } }))
-    assert.match(sync(zrodlo, projekt), /RUNNER TESTÓW: vitest bez configu .* — poprawka: vitest\.config\.ts: .*'\.claude\/\*\*'/)
+    assert.doesNotMatch(sync(zrodlo, projekt), /RUNNER TESTÓW/)
+    mkdirSync(join(projekt, '.claude', 'skills', 'wlasny', '__tests__'), { recursive: true })
+    writeFileSync(join(projekt, '.claude', 'skills', 'wlasny', '__tests__', 'a.test.mjs'), '')
+    assert.match(sync(zrodlo, projekt, ['--force']), /RUNNER TESTÓW: vitest bez configu .* — poprawka: vitest\.config\.ts: .*'\.claude\/\*\*'/)
     // Szablon bez zmian (UP_TO_DATE) — linia nadal wychodzi, dopoki config jej nie usunie.
     assert.match(sync(zrodlo, projekt), /STATUS: UP_TO_DATE[\s\S]*RUNNER TESTÓW: vitest bez configu/)
     writeFileSync(join(projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
