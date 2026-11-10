@@ -109,6 +109,19 @@ test('nastepneKroki: fazy z E2E „nie odegrano” ida do akcji operatora z nume
   assert.deepEqual(bez, ["Po smoke'u: `/clear`, potem `/dev-pr 3 --bez-merge` (zadanie x)."], 'bez takich faz raport bez dodatkowej pozycji')
 })
 
+// Pilot Nawykometr, run 3: tura poprawkowa zostawila pozycje kontroli fixa z uzasadnieniem „do decyzji operatora”, ale bez
+// prefiksu OPERATOR — doDecyzjiOperatora bylo puste, gate CZYSTE, a pozycja zostala tylko w kontrolaFixa.pominiete wyniku runu.
+test('nastepneKroki: pozycje kontroli fixa bez naprawy (pominiete bez prefiksu OPERATOR i bez sladu) ida do akcji operatora', () => {
+  const raport = (/** @type {number} */ faza, /** @type {object | null} */ kontrolaFixa) => ({ faza, liczniki: { operator: 0 }, kontrolaFixa, doDecyzjiOperatora: [], przebieg: { e2eStatus: 'wykonany (tryb interaktywny)' } })
+  const kroki = nastepneKroki({ smoke: '', propozycjeBramek: [], czesci: false, zadanie: 'x', raporty: [
+    raport(1, { pozycje: 1, naprawione: 0, pominiete: ['smoke.sql:1 — nie da sie zamknac doslownie, do decyzji operatora'], bezSladu: 0 }),
+    raport(2, { pozycje: 3, naprawione: 1, pominiete: ['OPERATOR: zmiana spoza planu'], bezSladu: 1 }),
+    raport(3, { pozycje: 2, naprawione: 2, pominiete: [], bezSladu: 0 }),
+    raport(4, null),
+  ] })
+  assert.equal(kroki[0], 'Akcje operatora: pozycje kontroli fixa bez naprawy: faza 1 (1), faza 2 (1) — uzasadnienia w kontrolaFixa.pominiete wyniku runu.')
+})
+
 test('autopilot: log koncowy bierze fazy ze stanu (takze z poprzedniego runu); schemat stanu opisuje nowy status', () => {
   assert.match(autopilot, /const e2eNieOdegrane = fazyNieOdegrane\(stan\.fazy\.map\(\(f\) => \(\{ faza: f\.numer, przebieg: f\.metryki && f\.metryki\.przebieg \}\)\)\)\nif \(e2eNieOdegrane\.length\) log\(`UWAGA: E2E nie odegrano/)
   assert.match(autopilot, /e2eStatus: \{ type: \['string', 'null'\], description: 'status testera E2E z review-wf \(wykonany \/ nie odegrano \/ padl \/ pominiety przez routing\)' \}/)

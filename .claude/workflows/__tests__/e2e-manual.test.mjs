@@ -325,6 +325,16 @@ test('smoke operatora: pozycje przeniesione w trakcie runu na [Manual] z powodem
   assert.match(complete, /## E2E do odegrania recznie \(srodowisko w trakcie runu\)/)
 })
 
+// Pilot Nawykometr W19 (runy 1–3): projekt bez .env i .env.local — agent smoke'u przepisywal marker zdalnego projektu
+// z poprzedniego smoke'u zamiast z biezacych plikow, wiec checklist wskazywal baze, ktorej srodowisko nie mialo.
+test('smoke operatora: marker projektu tylko z grepa po biezacych .env*, z wczesniejszego smoke\'u sam uklad sekcji', () => {
+  assert.match(complete, /Marker pochodzi WYLACZNIE z wyniku tego polecenia\. Plik bez trafienia albo brak pliku: wpisz "brak <plik> — ustal projekt przed startem", bez markera\./)
+  assert.match(complete, /trzymaj sie jego ukladu sekcji\. Bierzesz z niego tylko uklad:\nmarkerow projektow, adresow, kont ani krokow srodowiska nie przepisujesz/)
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.match(skill, /Marker pochodzi wyłącznie z wyniku tego polecenia; plik bez trafienia albo brak pliku zapisujesz jako „brak <plik> — ustal projekt przed startem”/)
+  assert.match(skill, /Bierzesz z niego tylko układ: markerów projektów, adresów, kont ani kroków środowiska nie przepisujesz/)
+})
+
 test('D4: pelny dowod [Manual] w raporcie review, smoke odsyla do sciezki po archiwizacji (docs/completed/)', () => {
   // Linia [Manual] ma powod skrocony do 160 znakow; pelny dowod testera zapisuje scribe w Bookkeeping raportu fazy.
   assert.match(review, /przeniesione w trakcie runu na \[Manual\]: M \(lista: flow — przyczyna: PELNY dowod testera z "Przebiegi E2E"/)

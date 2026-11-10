@@ -1,9 +1,10 @@
 // Bramka gotowosci zadania przed autopilotem (PLAN-POPRAWY P13, krok 6.6 skilla dev-plan): plan techniczny bez bledow,
 // srodowisko dla scenariuszy [E2E] (sprawdzenie jak w bootstrapie), checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo,
-// runner testow projektu bez testow maszynerii z .claude/** (P22 A1: inaczej `npm test` w runie pada na starcie).
+// runner testow projektu bez testow maszynerii z .claude/** (P22 A1: inaczej `npm test` w runie pada na starcie),
+// pliki decyzji na galezi glownej bez `claude_md: do-uzgodnienia` (bootstrap zatrzymuje na nich run).
 // Autopilot nie przelacza galezi i zatrzymuje run na brudnym drzewie, wiec te warunki sprawdzamy przed jego startem.
 
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
@@ -28,8 +29,33 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   przygotowanie: { ok: boolean, sciezka: string | null, blokujace: Bloker[], odroczone: Bloker[] },
  *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] },
  *   testy: { ok: boolean, runner: string | null, szczegol: string, poprawka: string },
+ *   claudeMd: { ok: boolean, glowna: string | null, zadania: string[], naprawa: string },
  *   higiena: { ok: true, uwagi: string[] } }} Gotowosc
  */
+
+/**
+ * CLAUDE.md nieuzgodniony po merge'u (pilot Nawykometr W21): bootstrap autopilota zatrzymuje run, gdy plik decyzji na galezi
+ * glownej ma `claude_md: do-uzgodnienia` (`decyzjaClaudeMd` w dev-autopilot-wf.js). Ta sama kontrola tutaj, bo bramka byla
+ * zielona, a run stawal na starcie; galaz zadania zalozona przed uzgodnieniem nie ma tez nowego CLAUDE.md.
+ * @param {string} projekt @returns {Gotowosc['claudeMd']}
+ */
+function decyzjeClaudeMd(projekt) {
+  const glowna = ['main', 'master'].find((g) => spawnSync('git', ['-C', projekt, 'rev-parse', '--verify', '--quiet', `refs/heads/${g}`]).status === 0) ?? null
+  // git grep konczy kodem 1 przy braku trafien i 128 przy braku katalogu — oba to „nic do uzgodnienia”.
+  const linie = glowna ? spawnSync('git', ['-C', projekt, 'grep', '-e', '^claude_md:', glowna, '--', 'docs/decisions/*.md'], { encoding: 'utf8' }).stdout ?? '' : ''
+  const zadania = linie.split('\n').flatMap((l) => {
+    const m = /^[^:]+:docs\/decisions\/([^:]+)\.md:claude_md:\s*(\S+)/.exec(l)
+    return m && m[2] === 'do-uzgodnienia' ? [(m[1] ?? '').replace(/^\d{4}-\d{2}-\d{2}-/, '')] : []
+  })
+  return {
+    ok: !zadania.length,
+    glowna,
+    zadania,
+    naprawa: zadania.length
+      ? `git switch ${glowna}, potem ${zadania.map((z) => `/dev-pr --claude-md ${z}`).join(', ')}; po powrocie na gałąź zadania: git merge ${glowna} (gałąź założona przed uzgodnieniem nie ma nowego CLAUDE.md)`
+      : '',
+  }
+}
 
 /**
  * Higiena przed autopilotem (02.11): niezrobiona konwersja wiedzy i przerosniety kontekst startowy agenta nie blokuja runu, ale
@@ -135,10 +161,11 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     przygotowanie: { ok: !prep?.blokujace.length, sciezka: prep?.sciezka ?? null, blokujace: prep?.blokujace ?? [], odroczone: prep?.odroczone ?? [] },
     git: { ok: galaz === wymagana && !brudne.length, galaz, wymagana, brudne },
     testy: testyProjektu(projekt),
+    claudeMd: decyzjeClaudeMd(projekt),
     higiena: higienaZadania(projekt),
   }
   return {
-    ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok,
+    ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok && wynik.claudeMd.ok,
     zadanie,
     planTechniczny: wskaznik,
     ...wynik,

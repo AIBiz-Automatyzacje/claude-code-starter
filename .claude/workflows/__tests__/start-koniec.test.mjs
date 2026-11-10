@@ -155,6 +155,8 @@ test('claude_md: plik decyzji na main z do-uzgodnienia = STOP z komenda uzgodnie
   assert.match(d.stop.powod, /docs\/decisions\/2026-10-02-smoke-autopilot\.md/)
   assert.match(d.stop.naprawa, /git switch main/)
   assert.match(d.stop.naprawa, /\/dev-pr --claude-md smoke-autopilot/)
+  // Pilot Nawykometr W21: galaz zadania zalozona przed uzgodnieniem nie ma nowego CLAUDE.md.
+  assert.match(d.stop.naprawa, /wroc na galaz zadania, wciagnij uzgodniony CLAUDE\.md \(`git merge main`\) i swiezy run/)
   assert.match(d.stop.naprawa, /\/dev-autopilot-wf docs\/active\/zadanie-x/)
 })
 

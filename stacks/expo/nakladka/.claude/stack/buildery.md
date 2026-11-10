@@ -15,6 +15,10 @@ Układ szablonu SDK 58 trzyma kod w `src/` (`src/app`, `src/components`, `src/ho
 | tylko dane: `src/lib/` albo `lib/`, hooki danych, `src/services/`, `supabase/migrations/`, `supabase/functions/` | `feature-builder-data` | supabase-dev-guidelines, security, sentry-integration |
 | UI i dane w jednej atomowej IU | `feature-builder-fullstack` | rn-expo-guidelines, ux-ui-guidelines-mobile, uniwind, supabase-dev-guidelines, security, sentry-integration |
 
+IU z samymi plikami E2E (flow `.maestro/<flow>.yaml`, seed `.maestro/<flow>-seed.sql`, wpis w runnerze) idzie do `feature-builder-ui`: flow tapie po `testID` z ekranu, a rolę z regułami pliku flow ma builder UI.
+
+Adapter SDK urządzenia w `lib/` (haptyka, powiadomienia, czujniki), który nie czyta ani nie zapisuje danych, idzie do `feature-builder-ui`; `feature-builder-data` dostaje `lib/` z dostępem do danych, autoryzacją albo Sentry.
+
 Skille `expo:*` z pluginu builder ładuje narzędziem `Skill`, gdy są potrzebne, więc nie ma ich w `Skills in play`.
 
 Skill `supabase-dev-guidelines` ładuje się z frontmattera roli w każdym projekcie. Gdy projekt nie używa Supabase, builder pomija komendy i wzorce Supabase z tego skilla, a migracje i dostęp do danych robi narzędziami projektu (z planu i `CLAUDE.md`).

@@ -42,6 +42,14 @@ test('buildery: routing po src/app, trzy role, każdy skill z tabeli istnieje w 
   }
 })
 
+// Pilot Nawykometr (runy 1–3): IU z samym flow i seedem nie miała wiersza w tabeli (plan zgadywał buildera), a adapter haptyki
+// w `lib/` trafił do buildera danych ze skillami Supabase, security i Sentry (W28).
+test('buildery: IU z samymi plikami E2E i adapter SDK urządzenia w lib/ mają wskazanego buildera', () => {
+  const b = czytaj('.claude/stack/buildery.md')
+  assert.match(b, /IU z samymi plikami E2E \(flow `\.maestro\/<flow>\.yaml`, seed `\.maestro\/<flow>-seed\.sql`, wpis w runnerze\) idzie do `feature-builder-ui`/)
+  assert.match(b, /Adapter SDK urządzenia w `lib\/` \(haptyka, powiadomienia, czujniki\), który nie czyta ani nie zapisuje danych, idzie do `feature-builder-ui`/)
+})
+
 test('walidacja: konfiguracja Jest z tabeli spike\'a, krok build bez eas, typy na czystym checkoucie', () => {
   const w = czytaj('.claude/stack/walidacja.md')
   const blok = /```json\n([\s\S]*?)\n```/.exec(w)

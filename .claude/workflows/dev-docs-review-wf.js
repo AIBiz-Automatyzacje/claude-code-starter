@@ -580,6 +580,7 @@ Findingi OBALONE przez adversarial verify (JSON; NIE sa do naprawy — same do r
 ${JSON.stringify(obalone || [], null, 2)}
 
 1. Zapisz ${sciezka}/review-faza-${faza}.md — pelny raport (findings posortowane P1->P2->P3, statystyki).
+   Werdykt w naglowku: "Gate review (przed fixem): <severityGate>" — gate fazy po cyklu fix podaje wynik autopilota.
    Naglowki w stalym formacie (raporty agreguje parser):
      ## Findingi P1
      ### P1 · KOD · \`sciezka/plik.ts:123\`

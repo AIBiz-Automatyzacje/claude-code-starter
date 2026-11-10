@@ -161,6 +161,28 @@ test('gotowosc: STOP na E2E bez .env.e2e, blokerze startu, cudzej galezi i brudn
   })
 })
 
+// Pilot Nawykometr W21 (run 2): bramka byla zielona, a autopilot stanal na starcie na `claude_md: do-uzgodnienia` w pliku
+// decyzji poprzedniego zadania na main. Bramka czyta galaz glowna, nie galaz zadania — tak jak bootstrap.
+test('gotowosc: plik decyzji na main z claude_md do-uzgodnienia = STOP z naprawa; uzgodniono albo brak katalogu = ok', () => wRepo((k) => {
+  /** @param {string} tresc commit pliku decyzji poprzedniego zadania na main */
+  const decyzjaNaMain = (tresc) => {
+    git(k, ['checkout', '-q', 'main'])
+    mkdirSync(join(k, 'docs/decisions'), { recursive: true })
+    writeFileSync(join(k, 'docs/decisions/2026-11-09-haptyka-check-in.md'), `---\nzadanie: haptyka-check-in\nclaude_md: ${tresc}\n---\n`)
+    git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'add', '-A'])
+    git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', `decyzja: ${tresc}`])
+    git(k, ['checkout', '-q', 'feature/publikacja-ofert'])
+  }
+  zadanieNaGalezi(k)
+  assert.deepEqual(gotowosc(k, ZADANIE).claudeMd, { ok: true, glowna: 'main', zadania: [], naprawa: '' }, 'brak docs/decisions/ na main')
+  decyzjaNaMain('do-uzgodnienia')
+  const w = gotowosc(k, ZADANIE)
+  assert.deepEqual([w.ok, w.claudeMd.ok, w.claudeMd.zadania, w.git.ok], [false, false, ['haptyka-check-in'], true])
+  assert.match(w.claudeMd.naprawa, /^git switch main, potem \/dev-pr --claude-md haptyka-check-in; po powrocie na gałąź zadania: git merge main/)
+  decyzjaNaMain('uzgodniono')
+  assert.deepEqual([gotowosc(k, ZADANIE).ok, gotowosc(k, ZADANIE).claudeMd.ok], [true, true])
+}))
+
 // 02.11: dashboard ruszal autopilotem ze stara baza wiedzy w .claude/rules/ i ~110k zn kontekstu na agenta — nikt tego nie widzial.
 test('gotowosc: stara baza wiedzy i przerosniety kontekst startowy = uwagi higieny z komenda, bez blokady startu', () => wRepo((k) => {
   zadanieNaGalezi(k)
