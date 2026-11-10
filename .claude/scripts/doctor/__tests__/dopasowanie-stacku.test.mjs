@@ -1,5 +1,5 @@
 // Dopasowanie warstwy stacku do projektu (znaleziska 2026-11-02 pkt 26): wiersze doctora per element. Profil jest tu podlozony,
-// wiec oba kierunki sygnalu wariantu (paczka obecna, paczka nieobecna) sa sprawdzane na kazdym wariancie szablonu.
+// wiec oba profile (zakladajacy paczke drugiego wariantu i nie) sa sprawdzane na kazdym wariancie szablonu.
 //
 // Uruchomienie: node --test .claude/scripts/doctor/__tests__/dopasowanie-stacku.test.mjs
 
@@ -51,11 +51,9 @@ test('profil bez paczki, a projekt ja ma: UWAGA z manifestem i repo drugiego war
     'zależność ramka w mobile/package.json, a profil stacku w .claude/ jej nie zakłada', `dla tej aplikacji jest wariant B szablonu: ${REPO_B}`]])
 }))
 
-test('profil z paczka, a zaden manifest jej nie ma: UWAGA z repo drugiego wariantu; projekt bez manifestu i projekt z paczka — bez wiersza', () => {
-  zProjektem({ 'package.json': KLIENT }, (projekt) => {
-    assert.deepEqual(wierszeDopasowania(projekt, Z_PACZKA), [['stack: wariant szablonu', 'UWAGA',
-      'brak zależności ramka (package.json korzenia i katalogów pierwszego poziomu), a profil stacku w .claude/ ją zakłada', `dla aplikacji bez ramka jest wariant A szablonu: ${REPO_A}`]])
-  })
+// Manifesty czytamy do pierwszego poziomu, wiec aplikacja w apps/mobile/ wygladalaby jak projekt bez paczki: brak trafienia nie jest dowodem.
+test('profil z paczka: bez wiersza, takze gdy zaden manifest jej nie ma', () => {
+  zProjektem({ 'package.json': KLIENT }, (projekt) => assert.deepEqual(wierszeDopasowania(projekt, Z_PACZKA), []))
   zProjektem({ 'supabase/config.toml': '' }, (projekt) => assert.deepEqual(wierszeDopasowania(projekt, Z_PACZKA), []))
   zProjektem({ 'package.json': KLIENT, 'mobile/package.json': RAMKA }, (projekt) => assert.deepEqual(wierszeDopasowania(projekt, Z_PACZKA), []))
 })

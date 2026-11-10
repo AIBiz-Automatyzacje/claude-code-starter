@@ -11,7 +11,7 @@ import { realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { PROFIL } from '../stack/profil.mjs'
-import { manifesty, manifestyZZaleznoscia, uzywaSupabase } from '../stack/projekt.mjs'
+import { manifestyZZaleznoscia, uzywaSupabase } from '../stack/projekt.mjs'
 
 /** @typedef {[element: string, stan: 'UWAGA' | 'nie dotyczy', szczegol: string, naprawa: string]} Wiersz */
 
@@ -28,22 +28,18 @@ function wierszSupabase(projekt, profil) {
 }
 
 /**
- * Sygnal drugiego wariantu szablonu z profilu: paczka obecna w manifestach (profil jej nie zaklada) albo nieobecna w zadnym
- * (profil ja zaklada). Projekt bez manifestu nie daje sygnalu.
+ * Sygnal drugiego wariantu szablonu z profilu: paczka obecna w manifestach, a profil jej nie zaklada. Kierunek odwrotny
+ * (profil zaklada paczke, a manifesty jej nie maja) nie daje wiersza: manifesty czytamy do pierwszego poziomu, wiec aplikacja
+ * glebiej (apps/mobile/) dalaby falszywa uwage — brak trafienia nie jest dowodem.
  * @param {string} projekt @param {import('../stack/profil.mjs').Profil} profil @returns {Wiersz | null}
  */
 function wierszWariantu(projekt, profil) {
   const { nazwa, zaleznosc, obecna, repo } = profil.szablon.innyWariant
+  if (!obecna) return null
   const zPaczka = manifestyZZaleznoscia(projekt, zaleznosc)
-  if (obecna && zPaczka.length) {
-    return ['stack: wariant szablonu', 'UWAGA', `zależność ${zaleznosc} w ${zPaczka.join(', ')}, a profil stacku w .claude/ jej nie zakłada`,
-      `dla tej aplikacji jest wariant ${nazwa} szablonu: ${repo}`]
-  }
-  if (!obecna && manifesty(projekt).length && !zPaczka.length) {
-    return ['stack: wariant szablonu', 'UWAGA', `brak zależności ${zaleznosc} (${MANIFESTY}), a profil stacku w .claude/ ją zakłada`,
-      `dla aplikacji bez ${zaleznosc} jest wariant ${nazwa} szablonu: ${repo}`]
-  }
-  return null
+  if (!zPaczka.length) return null
+  return ['stack: wariant szablonu', 'UWAGA', `zależność ${zaleznosc} w ${zPaczka.join(', ')}, a profil stacku w .claude/ jej nie zakłada`,
+    `dla tej aplikacji jest wariant ${nazwa} szablonu: ${repo}`]
 }
 
 /**

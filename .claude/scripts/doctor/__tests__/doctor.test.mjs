@@ -463,14 +463,19 @@ test('stack: wariant szablonu — sygnal drugiego wariantu w manifestach → UWA
   json(s.projekt, 'package.json', obecna ? { dependencies: { 'left-pad': '1.3.0' } } : zPaczka)
   assert.doesNotMatch(doctor(s).stdout, /\| stack: wariant szablonu \|/, 'projekt zgodny z profilem')
 
+  // Profil zakladajacy paczke nie daje wiersza takze bez niej w manifestach: aplikacja moze lezec glebiej niz pierwszy poziom.
+  if (!obecna) {
+    json(s.projekt, 'package.json', { dependencies: { 'left-pad': '1.3.0' } })
+    assert.doesNotMatch(doctor(s).stdout, /\| stack: wariant szablonu \|/, 'brak paczki w manifestach nie jest dowodem')
+    return
+  }
   // Paczka w pakiecie pierwszego poziomu liczy sie jak w korzeniu (uklad frontend/ + backend/).
-  if (obecna) json(s.projekt, 'aplikacja/package.json', zPaczka)
-  else json(s.projekt, 'package.json', { dependencies: { 'left-pad': '1.3.0' } })
+  json(s.projekt, 'aplikacja/package.json', zPaczka)
   const w = doctor(s)
   const uwaga = wiersz(w.stdout, 'stack: wariant szablonu')
   assert.equal(uwaga[1], 'UWAGA')
-  assert.ok(uwaga[2].includes(obecna ? `zależność ${zaleznosc} w aplikacja/package.json` : `brak zależności ${zaleznosc}`), uwaga[2])
-  assert.equal(uwaga[3], obecna ? `dla tej aplikacji jest wariant ${nazwa} szablonu: ${repo}` : `dla aplikacji bez ${zaleznosc} jest wariant ${nazwa} szablonu: ${repo}`)
+  assert.ok(uwaga[2].includes(`zależność ${zaleznosc} w aplikacja/package.json`), uwaga[2])
+  assert.equal(uwaga[3], `dla tej aplikacji jest wariant ${nazwa} szablonu: ${repo}`)
   assert.equal(w.status, 0, 'uwaga o wariancie nie blokuje runu')
 }))
 
