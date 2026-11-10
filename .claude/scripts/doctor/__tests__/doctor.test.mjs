@@ -11,6 +11,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { DOMYSLNY_PORT, NARZEDZIE_JAZDY, OPIS_PORTU_DEV, PORT_DEV, uwagaDoctora } from '../../e2e/adapter.mjs'
+import { PROFIL } from '../../stack/profil.mjs'
 
 const SKRYPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'doctor.sh')
 const REPO_DOCTORA = dirname(SKRYPT)
@@ -415,6 +416,44 @@ test('uwaga stacku z adaptera: wiersz tylko, gdy adapter go zwraca', () => zSrod
   assert.equal(w.status, 0, w.stderr)
   assert.equal(w.stdout, uwagaDoctora(s.projekt) ? `${uwagaDoctora(s.projekt)?.join('\t')}\n` : '')
   assert.equal(spawnSync(process.execPath, [join(REPO_DOCTORA, 'uwaga-stacku.mjs')], { encoding: 'utf8' }).status, 2)
+}))
+
+// Znaleziska 2026-11-02 pkt 26: dashboard (klient w frontend/, backend w Pythonie) i aa-exam (Drizzle) dostaja warstwe stacku
+// z Supabase. Doctor mowi per element, czego wtedy nie stosowac; sygnal z pakietu pierwszego poziomu liczy sie jak z korzenia.
+test('stack: Supabase — bez katalogu supabase/ i zaleznosci → nie dotyczy z lista, czego nie stosowac; sygnal w frontend/ albo supabase/ → bez wiersza', () => zSrodowiskiem((s) => {
+  const bez = doctor(s)
+  const w = wiersz(bez.stdout, 'stack: Supabase')
+  assert.equal(w[1], 'nie dotyczy')
+  assert.match(w[2], /brak katalogu supabase\/ i zależności @supabase\/supabase-js/)
+  for (const element of ['skilla supabase-dev-guidelines', 'komend supabase z roli buildera danych', 'reguł RLS', 'narzędziami projektu (plan, CLAUDE.md)']) {
+    assert.ok(w[3].includes(element), `${element} w: ${w[3]}`)
+  }
+  assert.equal(bez.status, 0, 'informacja nie blokuje runu')
+  json(s.projekt, 'frontend/package.json', { dependencies: { '@supabase/supabase-js': '2.50.0' } })
+  assert.doesNotMatch(doctor(s).stdout, /\| stack: Supabase \|/)
+  rmSync(join(s.projekt, 'frontend'), { recursive: true })
+  mkdirSync(join(s.projekt, 'supabase'))
+  atrapa(s.bin, 'supabase', 'echo 2.106.0')
+  assert.doesNotMatch(doctor(s).stdout, /\| stack: Supabase \|/)
+}))
+
+// Sygnal drugiego wariantu bierze sie z profilu (szablon.innyWariant), wiec test przechodzi na kazdym wariancie profilu.
+test('stack: wariant szablonu — sygnal drugiego wariantu w manifestach → UWAGA z jego repo z profilu, exit 0; bez sygnalu → bez wiersza', () => zSrodowiskiem((s) => {
+  const { nazwa, zaleznosc, obecna, repo } = PROFIL.szablon.innyWariant
+  const zPaczka = { dependencies: { [zaleznosc]: '1.0.0' } }
+  assert.doesNotMatch(doctor(s).stdout, /\| stack: wariant szablonu \|/, 'projekt bez package.json nie daje sygnalu')
+  json(s.projekt, 'package.json', obecna ? { dependencies: { 'left-pad': '1.3.0' } } : zPaczka)
+  assert.doesNotMatch(doctor(s).stdout, /\| stack: wariant szablonu \|/, 'projekt zgodny z profilem')
+
+  // Paczka w pakiecie pierwszego poziomu liczy sie jak w korzeniu (uklad frontend/ + backend/).
+  if (obecna) json(s.projekt, 'aplikacja/package.json', zPaczka)
+  else json(s.projekt, 'package.json', { dependencies: { 'left-pad': '1.3.0' } })
+  const w = doctor(s)
+  const uwaga = wiersz(w.stdout, 'stack: wariant szablonu')
+  assert.equal(uwaga[1], 'UWAGA')
+  assert.ok(uwaga[2].includes(obecna ? `zależność ${zaleznosc} w aplikacja/package.json` : `brak zależności ${zaleznosc}`), uwaga[2])
+  assert.equal(uwaga[3], obecna ? `dla tej aplikacji jest wariant ${nazwa} szablonu: ${repo}` : `dla aplikacji bez ${zaleznosc} jest wariant ${nazwa} szablonu: ${repo}`)
+  assert.equal(w.status, 0, 'uwaga o wariancie nie blokuje runu')
 }))
 
 // P22 A1: live-10-demo — `vitest run` bez configu zebral 113 testow maszynerii z .claude/** i autopilot stanal na starcie.

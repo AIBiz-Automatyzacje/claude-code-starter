@@ -2,7 +2,7 @@
 // naprawia w runie (faza bez kodu uznana za wykonana, E2E bez flow albo policzone dwa razy, seed bez autora, Weryfikacja,
 // ktorej scribe nie uruchomi), budzet pliku z tabeli plikow i problemy zapisu, ktorych parser nie przeczytal jednoznacznie.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { akcja, sprawdzBudzet } from './budzet-pliku.mjs'
@@ -13,6 +13,7 @@ import { sprawdzMakiety } from './makiety.mjs'
 import { sciezkaWzgledna } from './przygotowanie.mjs'
 import { uwagiRejestru } from './rejestr-stalych.mjs'
 import { doWzorca, PROFIL } from '../stack/profil.mjs'
+import { uzywaSupabase as projektUzywaSupabase } from '../stack/projekt.mjs'
 
 export { PROG_ESLINT, PROG_PYTANIA } from './budzet-pliku.mjs'
 
@@ -109,20 +110,14 @@ function numeryMigracji(jednostki, projekt) {
   return new Set(nazwy.map((n) => /^\d{14}/.exec(n)?.[0]).filter((n) => n !== undefined))
 }
 
-const ZALEZNOSC_SUPABASE = /"@supabase\/supabase-js"\s*:/
-
 /**
- * Projekt uzywa Supabase: katalog supabase/, migracja w supabase/migrations/ w planie (pierwsza migracja projektu) albo zaleznosc
- * @supabase/supabase-js w package.json korzenia lub pakietu pierwszego poziomu. Bez zadnego z sygnalow uwaga o migracji jest
+ * Projekt uzywa Supabase: sygnal projektu (katalog supabase/ albo zaleznosc @supabase/supabase-js, stack/projekt.mjs) albo migracja
+ * w supabase/migrations/ w planie (pierwsza migracja projektu). Bez zadnego z sygnalow uwaga o migracji jest
  * falszywa (znaleziska 2026-11-02 pkt 31: dashboard z klientem w frontend/ i migracjami Pythona w backend/).
  * @param {Jednostka[]} jednostki @param {string} projekt @returns {boolean}
  */
 function uzywaSupabase(jednostki, projekt) {
-  if (existsSync(join(projekt, 'supabase'))) return true
-  if (jednostki.some((iu) => iu.pliki.some((p) => p.sciezka.startsWith('supabase/migrations/')))) return true
-  const pakiety = readdirSync(projekt, { withFileTypes: true })
-    .filter((k) => k.isDirectory() && !k.name.startsWith('.') && k.name !== 'node_modules').map((k) => join(projekt, k.name))
-  return [projekt, ...pakiety].map((k) => join(k, 'package.json')).some((m) => existsSync(m) && ZALEZNOSC_SUPABASE.test(readFileSync(m, 'utf8')))
+  return projektUzywaSupabase(projekt) || jednostki.some((iu) => iu.pliki.some((p) => p.sciezka.startsWith('supabase/migrations/')))
 }
 
 /**

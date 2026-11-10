@@ -30,6 +30,8 @@ Błąd infrastruktury workera w pełnym suicie: `[vitest-worker]: Timeout callin
 
 Vitest w projekcie z szablonem uruchamiasz z `--dir src` (albo katalogiem kodu): bez tego zbiera też pliki testów spod `.claude/**` (własne testy projektu, kopie w `.claude/.backups/` i `.claude/worktrees/`).
 
+Katalog z `--dir` i miejsce uruchomienia komendy liczysz od katalogu pakietu z runnerem: w projekcie z `frontend/` komendę uruchamiasz w `frontend/`, nie w korzeniu, bo z korzenia `--dir src` daje „No test files found”. Komendy testów backendu w innym języku bierzesz z planu i `CLAUDE.md`.
+
 ## Rozgrzewka cache
 
 Cel: zbudować cache transformacji vitest (`node_modules/.vite` / optimizeDeps) PRZED fazami implementacji.

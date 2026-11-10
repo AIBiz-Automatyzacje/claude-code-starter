@@ -17,6 +17,8 @@ Układ szablonu SDK 58 trzyma kod w `src/` (`src/app`, `src/components`, `src/ho
 
 Skille `expo:*` z pluginu builder ładuje narzędziem `Skill`, gdy są potrzebne, więc nie ma ich w `Skills in play`.
 
+Skill `supabase-dev-guidelines` ładuje się z frontmattera roli w każdym projekcie. Gdy projekt nie używa Supabase, builder pomija komendy i wzorce Supabase z tego skilla, a migracje i dostęp do danych robi narzędziami projektu (z planu i `CLAUDE.md`).
+
 ## Ścieżki warstw
 
 - UI: ekrany, komponenty, layouty, nawigacja, animacje i stany widoczne dla użytkownika — pliki w `src/app/` albo `app/`,

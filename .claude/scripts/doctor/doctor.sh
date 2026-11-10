@@ -260,6 +260,20 @@ sprawdz_uwage_stacku() {
   wiersz "$element" "$stan" "$szczegol" "$instalacja"
 }
 
+# Dopasowanie warstwy stacku do projektu (znaleziska 2026-11-02 pkt 26): projekt bez Supabase albo z sygnałem drugiego
+# wariantu szablonu dostaje wiersz na element z tym, czego nie stosować. Wiersze TSV z dopasowanie-stacku.mjs, żaden nie blokuje.
+sprawdz_dopasowanie_stacku() {
+  local wynik element stan szczegol instalacja
+  command -v node >/dev/null 2>&1 || return 0
+  if ! wynik="$(node "$KATALOG_DOCTORA/dopasowanie-stacku.mjs" "$PROJEKT" 2>&1)"; then
+    wiersz "stack: dopasowanie" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź .claude/stack/profil.json i package.json"
+    return
+  fi
+  while IFS=$'\t' read -r element stan szczegol instalacja; do
+    [[ -n "$element" ]] && wiersz "$element" "$stan" "$szczegol" "$instalacja"
+  done <<< "$wynik"
+}
+
 # Warstwa stała plików ról (P11) — liczba poleceń i zasady pisania, przez node (wiersz TSV z warstwa-rol.mjs).
 # Naruszenie to UWAGA: rola działa, tylko jej plik odjechał od szablonu.
 sprawdz_warstwe() {
@@ -323,6 +337,7 @@ sprawdz_zapis_hookow
 sprawdz_advisors
 sprawdz_port_e2e
 sprawdz_uwage_stacku
+sprawdz_dopasowanie_stacku
 sprawdz_warstwe
 sprawdz_higiene
 sprawdz_telemetrie
