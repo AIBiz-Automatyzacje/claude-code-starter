@@ -10,7 +10,7 @@
 // Ciecia: sekcja „## Części PR” planu technicznego (linia „Plan techniczny:” w <zadanie>-plan.md); bez sekcji albo gdy czesc
 // z planu ma >= 150 plikow — ciecie z pomiaru na koncach faz (najmniej czesci, kazda < 150, najmniejsza najwieksza).
 // Wynik: JSON w jednej linii { ok, zrodlo, baza, czubek, fazy: [{faza, koniec}], czesci: [{czesc, fazy, od, do, doRecenzji, wszystkie}],
-//   ciecia, plan, uwaga }. ok = jeden PR <= 150 albo kazda czesc < 150. Kod wyjscia: 0 = ok, 1 = czesc za duza, 2 = zle argumenty, 3 = wyjatek.
+//   ciecia, plan, uwaga, bezBota }. ok = jeden PR <= 150 albo kazda czesc < 150; projekt bez bota recenzji (.claude/projekt.json): zawsze ok, czesci tylko z planu. Kod wyjscia: 0 = ok, 1 = czesc za duza, 2 = zle argumenty, 3 = wyjatek.
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, realpathSync } from 'node:fs'
@@ -20,6 +20,7 @@ import { parseArgs } from 'node:util'
 
 import { podzialFaz, sekcjaCzesci } from '../plan/czesci-pr.mjs'
 import { PROG_PLIKOW_PR, rozmiarPr } from './rozmiar.mjs'
+import { projektBezBota } from './tryb-recenzji.mjs'
 
 const KOD_ZA_DUZA = 1
 const KOD_ZLYCH_ARGUMENTOW = 2
@@ -181,7 +182,11 @@ export function czesciZadania(projekt, katalog, bazaArg) {
   /** @type {string | null} */
   let uwaga = uwagi.length ? uwagi.join('; ') : null
   const dopisz = (/** @type {string} */ u) => { uwaga = uwaga ? `${uwaga}; ${u}` : u }
-  if (plan && plan.length && wszystkie[0].doRecenzji <= PROG_PLIKOW_PR) {
+  // Projekt bez bota recenzji (punkt 39): prog to limit bota, wiec rozmiar nie wymusza ciecia. Czesci zostaja tylko z planu.
+  const bezBota = projektBezBota(projekt)
+  if (bezBota) {
+    if (plan && plan.length) wybor = { zrodlo: 'plan', ciecia: plan }
+  } else if (plan && plan.length && wszystkie[0].doRecenzji <= PROG_PLIKOW_PR) {
     // Plan przewidzial czesci, a caly diff miesci sie w jednym PR — dzielenie tylko dokladaloby tur bota.
     dopisz(`plan przewidywał części, a całość ma ${wszystkie[0].doRecenzji} plików do recenzji — jeden PR`)
   } else if (plan && plan.length) {
@@ -196,14 +201,14 @@ export function czesciZadania(projekt, katalog, bazaArg) {
     wybor = { zrodlo: 'pomiar', ciecia: cieciaPomiaru(projekt, baza, czubek, konce) }
   }
   const czesci = wybor.ciecia.length ? zmierz({ projekt, baza, czubek, konce, ciecia: wybor.ciecia }) : wszystkie
-  const zaDuze = czesci.filter((c) => !czescMiesci(c, czesci.length))
+  const zaDuze = bezBota ? [] : czesci.filter((c) => !czescMiesci(c, czesci.length))
   const ok = !zaDuze.length
   if (!ok) {
     const za = zaDuze.map((c) => `część ${c.czesc} (fazy ${c.fazy}) ${c.doRecenzji}`)
     dopisz(`bez cięcia na granicy faz poniżej ${PROG_PLIKOW_PR}: ${za.join(', ')} — faza powyżej limitu bota, dziel zadanie w planowaniu`)
   }
   return {
-    ok, zrodlo: wybor.zrodlo, baza, czubek, fazy: konce, czesci, ciecia: czesci.slice(0, -1).map((c) => c.do), plan, uwaga,
+    ok, zrodlo: wybor.zrodlo, baza, czubek, fazy: konce, czesci, ciecia: czesci.slice(0, -1).map((c) => c.do), plan, uwaga, bezBota,
   }
 }
 

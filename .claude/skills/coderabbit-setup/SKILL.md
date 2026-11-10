@@ -28,6 +28,8 @@ znacznik `{{STACK_RULES}}`.
 
 ## Wykonanie
 
+Najpierw `node .claude/scripts/pr/tryb-recenzji.mjs`. `recenzjaPr: "bez-bota"` znaczy, że operator zapisał wcześniej wybór „projekt bez bota recenzji”: zapytaj, czy projekt przechodzi na bota. Tak → po wygenerowaniu configu `node .claude/scripts/pr/tryb-recenzji.mjs --ustaw bot` i commit `.claude/projekt.json` razem z `.coderabbit.yaml`; nie → koniec bez zmian.
+
 1. **Sprawdź istniejący config.** Jeśli `.coderabbit.yaml` już istnieje w korzeniu
    repo — pokaż userowi diff względem tego, co byś wygenerował, i zapytaj, czy
    nadpisać. Nie nadpisuj bez potwierdzenia.

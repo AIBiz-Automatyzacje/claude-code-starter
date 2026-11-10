@@ -84,7 +84,7 @@ autopilota, **UWAGA** nie blokuje.
 | agent-browser (globalnie) | plan ma scenariusze `[E2E]` | `npm install -g agent-browser && agent-browser install` |
 | jq | hook projektu go woła | `brew install jq` |
 | Dynamic Workflows | zawsze | `/config` → Dynamic workflows: `true` |
-| CodeRabbit (aplikacja GitHub) | opcjonalnie: bot recenzji PR dla `/dev-pr` | `/coderabbit-setup`; bez bota `/dev-pr --bez-bota` |
+| CodeRabbit (aplikacja GitHub) | opcjonalnie: bot recenzji PR dla `/dev-pr` | `/coderabbit-setup`; bez bota `/dev-pr --bez-bota` (wybór zapisuje się w `.claude/projekt.json`) |
 
 ## Bramki domknięcia
 
