@@ -304,6 +304,24 @@ test('telemetria bez zapisu z ostatniej doby → doctor uruchamia zbierz.mjs --s
   assert.equal(existsSync(join(s.dom, '.claude/telemetry/zbierz-znacznik.txt')), true, 'skan nie ruszyl')
 }))
 
+// Znaleziska 2026-11-02 pkt 32 (dashboard, run E2, faza 4): wynik testu wypisal klucz z .env do transkryptu agenta. Skan robi
+// telemetria z niemego hooka Stop, wiec operator widzi trafienie dopiero tu: UWAGA z komenda potwierdzenia, bez blokady runu.
+test('klucz w transkryptach: trafienie skanu telemetrii → UWAGA z runem, wzorcem i komenda potwierdzenia; po potwierdzeniu wiersz znika', () => zSrodowiskiem((s) => {
+  assert.doesNotMatch(doctor(s).stdout, /\| klucz w transkryptach \|/, 'bez pliku trafien nie ma wiersza')
+  const rekord = (/** @type {string} */ run, /** @type {string} */ repo) => JSON.stringify({ klucz: `${run}|stripe-rk-live`, typ: 'klucz', ts: '2026-11-07T18:00:00.000Z', run, projekt: 'p', repo,
+    katalog: `/x/${run}`, wzorzec: 'stripe-rk-live', pliki: ['agent-afab.jsonl'], trafien: 1, potwierdzone: null })
+  plik(s.dom, '.claude/telemetry/klucze-transkryptow.jsonl', `${rekord('wf_2e0ed17c-f7b', s.projekt)}\n${rekord('wf_obcy', join(s.katalog, 'inny'))}\n`)
+  const w = doctor(s)
+  assert.deepEqual(wiersz(w.stdout, 'klucz w transkryptach').slice(1), ['UWAGA', 'w transkryptach runu wf_2e0ed17c-f7b jest wzorzec klucza stripe-rk-live (1 plik) — zrotuj klucz',
+    'po rotacji: node .claude/scripts/telemetria/klucze.mjs --potwierdz wf_2e0ed17c-f7b'])
+  assert.doesNotMatch(w.stdout, /wf_obcy/, 'run innego projektu')
+  assert.equal(w.status, 0, 'uwaga o kluczu nie blokuje runu')
+
+  const potwierdzenie = spawnSync(process.execPath, [resolve(REPO_DOCTORA, '..', 'telemetria', 'klucze.mjs'), '--potwierdz', 'wf_2e0ed17c-f7b'], { encoding: 'utf8', env: { HOME: s.dom } })
+  assert.equal(potwierdzenie.status, 0, potwierdzenie.stderr)
+  assert.doesNotMatch(doctor(s).stdout, /\| klucz w transkryptach \|/, 'po potwierdzeniu uwaga znika')
+}))
+
 // ── Bramki domkniecia (P6): devDependencies z .claude/templates/bramki/package.json w projekcie z konfiguracja z szablonu ──
 
 /** @type {Record<string, string>} */

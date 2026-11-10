@@ -305,6 +305,21 @@ sprawdz_telemetrie() {
   fi
 }
 
+# Klucze w transkryptach (znaleziska 2026-11-02 pkt 32): wynik testu wypisał klucz z .env do transkryptu agenta. Skan robi
+# telemetria z hooka Stop, a hook jest niemy, więc trafienie pokazuje dopiero ten wiersz: UWAGA z komendą potwierdzenia
+# po rotacji klucza. Wiersze TSV z telemetria/klucze.mjs (bez wartości klucza), żaden nie blokuje.
+sprawdz_klucze() {
+  local wynik element stan szczegol instalacja
+  command -v node >/dev/null 2>&1 || return 0
+  if ! wynik="$(node "$KATALOG_DOCTORA/../telemetria/klucze.mjs" --doctor "$PROJEKT" 2>&1)"; then
+    wiersz "klucz w transkryptach" UWAGA "nie odczytano: $(printf '%s\n' "$wynik" | grep -m1 -i error)" "sprawdź ~/.claude/telemetry/klucze-transkryptow.jsonl"
+    return
+  fi
+  while IFS=$'\t' read -r element stan szczegol instalacja; do
+    [[ -n "$element" ]] && wiersz "$element" "$stan" "$szczegol" "$instalacja"
+  done <<< "$wynik"
+}
+
 echo "DOCTOR: $PROJEKT"
 echo
 echo "| Element | Stan | Wersja / szczegół | Instalacja |"
@@ -341,6 +356,7 @@ sprawdz_dopasowanie_stacku
 sprawdz_warstwe
 sprawdz_higiene
 sprawdz_telemetrie
+sprawdz_klucze
 echo
 
 if [[ -n "$BRAKI" ]]; then

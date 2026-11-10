@@ -4,6 +4,7 @@
 import { closeSync, existsSync, openSync, readSync, readdirSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
+import { plikKluczy, skanujTranskrypty, zapiszTrafienia } from './klucze.mjs'
 import { rekordyRunu } from './skan.mjs'
 import { epizodySesji, rekordSkilla, scalEpizody } from './skill.mjs'
 import { analizujTranskrypt } from './transkrypt.mjs'
@@ -31,6 +32,7 @@ const SCRATCHPAD = /\/tmp\/claude-[^/]+\/.*\/scratchpad(?:\/|$)/
  * @property {number} [znacznikMs] czas poprzedniego skanu (tryb szybki)
  * @property {Set<string>} sesjeWToku sesje z dzialajacym workflowem (run bez harnessu = w toku)
  * @property {Set<string>} pominSesje sesje, ktorych epizodow skilli nie zapisujemy (zywa sesja hooka)
+ * @property {string} [klucze] plik trafien skanu kluczy (domyslnie obok pliku danych)
  */
 
 /** @param {string} sciezka */
@@ -99,6 +101,19 @@ function rekordyZRunu(run, op) {
     ...r.fazy.map((f) => ({ ...wspolne, ...f, klucz: `${run.run}|faza|${f.faza}` })),
     ...r.agenci.map((a) => ({ ...wspolne, ...a, klucz: `${run.run}|agent|${a.id}` })),
   ]
+}
+
+/**
+ * @param {import('./zrodla.mjs').Run} run
+ * @param {Record<string, unknown> | undefined} rekordRunu rekord z polami wspolnymi runu (projekt, repo)
+ * @param {OpcjeZbierania} op
+ */
+function zapiszKluczeRunu(run, rekordRunu, op) {
+  zapiszTrafienia(op.klucze ?? plikKluczy(op.plik), skanujTranskrypty(run.katalogRunu), {
+    run: run.run, katalog: run.katalogRunu, terazMs: op.terazMs,
+    projekt: typeof rekordRunu?.projekt === 'string' ? rekordRunu.projekt : null,
+    repo: typeof rekordRunu?.repo === 'string' ? rekordRunu.repo : null,
+  })
 }
 
 /** @param {string} projekty @returns {Array<{ slug: string, sesja: string, plik: string }>} */
@@ -188,11 +203,22 @@ export function zbierzWszystko(op) {
     const rekordy = []
     const runy = znajdzRuny(op.projekty).filter((r) => czyCzytacRun(r, op, ostatnie))
     for (const run of runy) {
+      /** @type {Array<Record<string, unknown> & { klucz: string, typ: string }>} */
+      let zRunu = []
       try {
-        rekordy.push(...rekordyZRunu(run, op))
+        zRunu = rekordyZRunu(run, op)
+        rekordy.push(...zRunu)
       } catch (e) {
         bledow++
         zapiszBlad(op.bledy, `run ${run.run}`, e)
+      }
+      // Skan kluczy w transkryptach zakonczonego runu (klucze.mjs) to osobna proba: jego awaria idzie do logu i licznika
+      // bledow, a rekordy runu i hook Stop zostaja nietkniete.
+      try {
+        if (zRunu.length) zapiszKluczeRunu(run, zRunu[0], op)
+      } catch (e) {
+        bledow++
+        zapiszBlad(op.bledy, `klucze ${run.run}`, e)
       }
     }
     let sesji = 0
