@@ -180,7 +180,9 @@ test('gotowosc: plik decyzji na main z claude_md do-uzgodnienia = STOP z naprawa
   assert.deepEqual([w.ok, w.claudeMd.ok, w.claudeMd.zadania, w.git.ok], [false, false, ['haptyka-check-in'], true])
   assert.match(w.claudeMd.naprawa, /^git switch main, potem \/dev-pr --claude-md haptyka-check-in; po powrocie na gałąź zadania: git merge main/)
   decyzjaNaMain('uzgodniono')
-  assert.deepEqual([gotowosc(k, ZADANIE).ok, gotowosc(k, ZADANIE).claudeMd.ok], [true, true])
+  // Atrapa narzedzi: ogolne `ok` zalezy tez od narzedzia jazdy stacku, ktorego na CI nie ma (bez atrapy test padal na wariancie expo).
+  const poUzgodnieniu = gotowosc(k, ZADANIE, { narzedzia: { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) } })
+  assert.deepEqual([poUzgodnieniu.ok, poUzgodnieniu.claudeMd.ok], [true, true])
 }))
 
 // 02.11: dashboard ruszal autopilotem ze stara baza wiedzy w .claude/rules/ i ~110k zn kontekstu na agenta — nikt tego nie widzial.
