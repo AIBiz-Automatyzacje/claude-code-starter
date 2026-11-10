@@ -786,6 +786,58 @@ test('compound: odlozone watki (sufit, „do czesci N+1”) → known-issues.md 
   assert.match(krok1, /`--czesc N` > 1: przed pytaniem o zgodę .*isResolved:false/s)
 })
 
+// Punkt 44 (piszemy_wirale, docs/reviews/propozycje-do-reviewerow.md: 4 propozycje dla correctness-reviewer z 03.11 i 09.11, wszystkie
+// bez decyzji): raport kazal zdecydowac o wdrozeniu w plikach agentow, a .claude/agents/ nalezy do szablonu i sync je nadpisuje.
+// Reviewerowi proponujemy tylko regule ogolna, jako propozycje do repo szablonu; klasa projektowa zostaje we wpisie z paths.
+test('punkt 44: compound proponuje reviewerowi tylko regule ogolna (do repo szablonu); klasa projektowa = wpis z paths i ocena szczebla', async () => {
+  const pusty = { wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: null, ciGlownej: 'nie-dotyczy', push: false, pushDetal: 'brak commita' }
+  const { prompty } = await uruchom({ etap: 'compound', zadanie: 'etap-5', watki: [] }, [pusty])
+  const p = prompty[0].replace(/\n\s+/g, ' ')
+  const petla = p.slice(p.indexOf('3. PETLA ZWROTNA DO REVIEWEROW'), p.indexOf('5. Zacommituj artefakty'))
+  // Kryterium: regula dotyczy kazdego projektu. „Nie da sie przypiac do sciezek” nie dziala, bo paths "**" przypina wszystko.
+  assert.match(petla, /rozstrzygnij, czy jej regula dotyczy KAZDEGO projektu, czy tylko tego\./)
+  assert.match(petla, /Kryterium to "dotyczy kazdego projektu", nie "nie da sie przypiac do sciezek": paths "\*\*" przypina kazda regule\./)
+  assert.doesNotMatch(petla, /pojawia sie po raz DRUGI albo kolejny, zaproponuj regule/, 'sam powrot klasy nie daje propozycji do reviewera')
+  // Klasa projektowa: bez propozycji, regula we wpisie z paths, ocena wyzszego szczebla = propozycja bramki.
+  const projektowa = petla.slice(petla.indexOf('a) Regula PROJEKTOWA'), petla.indexOf('b) Regula OGOLNA'))
+  assert.match(projektowa, /\(wynika z plikow, domeny albo bibliotek tego projektu\): BEZ propozycji do reviewera\./)
+  assert.match(projektowa, /Regula zostaje we wpisie z pkt 1 z polem paths i dociera do builderow i reviewerow przez wycinek wiedzy\./)
+  assert.match(projektowa, /ocen szczebel tego wpisu od nowa, od kod, potem lint: wpis kod albo lint wraca jako propozycja bramki \(pkt 2a\)\./)
+  // Eskalacja doBramki (indeks.mjs: suma ucieczek >= 3) zostaje jedna — prompt jej nie powtarza jako drugiej propozycji.
+  assert.match(projektowa, /Prog doBramki indeksu \(suma ucieczek co najmniej 3, skill dev-compound\) dziala osobno: drugiej propozycji bramki dla tej klasy nie dopisujesz\./)
+  const indeks = readFileSync(resolve(KATALOG, '../../scripts/wiedza/indeks.mjs'), 'utf8')
+  assert.match(indeks, /const MIN_UCIECZEK_DO_BRAMKI = 3\n/, 'prog z promptu = prog indeksu')
+  // Regula ogolna: propozycja do konkretnego agenta, bez szczegolow projektu.
+  const ogolna = petla.slice(petla.indexOf('b) Regula OGOLNA'), petla.indexOf('**NIE EDYTUJ plikow agentow.**'))
+  assert.match(ogolna, /\(dotyczy kazdego projektu, bez wzgledu na jego pliki, domene i biblioteki\): zaproponuj ja KONKRETNEMU agentowi-reviewerowi \(\.claude\/agents\/<nazwa>\.md\)/)
+  assert.match(ogolna, /Tresc reguly pisz bez nazw plikow, tabel i pojec tego projektu\./)
+  // Droga wdrozenia: repo szablonu, recznie przez operatora. Nic nie wychodzi poza projekt (prywatny kod).
+  assert.match(petla, /\*\*NIE EDYTUJ plikow agentow\.\*\* Pliki \.claude\/agents\/ naleza do szablonu i sync-template je nadpisuje, wiec propozycja ogolna to propozycja do repo szablonu, nie zmiana w tym projekcie\./)
+  assert.match(petla, /Niczego nie wysylaj poza ten projekt \(zadnego issue, pull requesta ani commita w innym repo\): propozycje przenosi operator, recznie\./)
+  assert.doesNotMatch(petla, /wdrozenie jest decyzja operatora|wdrozenie w plikach agentow/)
+  // Zapis jak dotad w projekcie, z dopiskiem przy kazdej sekcji (istniejace pliki maja stary naglowek).
+  assert.match(petla, /dopisz na koncu docs\/reviews\/propozycje-do-reviewerow\.md sekcje .* pod naglowkiem linie "Do repo szablonu: reguly ogolne, do przeniesienia recznie przez operatora\."/)
+  assert.match(petla, /"Propozycje regul ogolnych z compoundu \/dev-pr, do przeniesienia do repo szablonu\. Plikow \.claude\/agents\/ w projekcie nie edytujemy: sync szablonu je nadpisuje\."/)
+  const schemat = wytnij('    propozycjeDoReviewerow: {', "    plikPropozycji: {")
+  assert.match(schemat, /description: 'TYLKO reguly ogolne \(dotycza kazdego projektu\) jako propozycje do repo szablonu; klasa projektowa zostaje we wpisie z paths\. Ten workflow NIE edytuje plikow agentow: sync szablonu je nadpisuje'/)
+  assert.match(zrodlo, /propozycji do reviewerow \(reguly ogolne, do repo szablonu\): \$\{wynik\.propozycjeDoReviewerow\.length\}/)
+})
+
+test('punkt 44: skill /dev-pr i raport mowia, ze plikow agentow w projekcie sie nie edytuje, a propozycje ogolne czekaja na przeniesienie do szablonu; sync przeglada plik', () => {
+  const akapit = skillPr.slice(skillPr.indexOf('**Plików agentów w projekcie nie edytujesz.**'), skillPr.indexOf('**Uzgodnienie CLAUDE.md**')).replace(/\n/g, ' ')
+  assert.match(akapit, /`\.claude\/agents\/` należy do szablonu i `\/sync-template` je nadpisuje, więc zmiana w projekcie zniknie przy najbliższym syncu\./)
+  assert.match(akapit, /`propozycjeDoReviewerow\[\]` niesie tylko reguły ogólne, czyli takie, które dotyczą każdego projektu\./)
+  assert.match(akapit, /gdzie czekają na przeniesienie do repo szablonu\. Przenosi je operator, ręcznie: niczego nie wysyłasz poza projekt, bo propozycja może nieść szczegóły prywatnego kodu\./)
+  assert.match(akapit, /Klasa projektowa, która wróciła, nie daje propozycji do reviewera: jej reguła zostaje w solution z `paths` i działa przez wycinek wiedzy, a compound ocenia dla niej wyższy szczebel \(`kod` albo `lint`\), czyli propozycję bramki\./)
+  assert.doesNotMatch(skillPr, /Propozycji do reviewerów nie wdrażasz/)
+  const raport = skillPr.slice(skillPr.indexOf('## Raport końcowy'), skillPr.indexOf('## Zasady twarde'))
+  assert.match(raport, /^🔁 Propozycje do reviewerów \(reguły ogólne, czekają na przeniesienie do repo szablonu; zapis: docs\/reviews\/propozycje-do-reviewerow\.md\):\n {3}Plików agentów w projekcie nie edytujemy: sync szablonu je nadpisze\. Przeniesienie robisz ręcznie\.\n {3}- <agent> ← <klasa uwagi>/m)
+  assert.doesNotMatch(raport, /Propozycje do reviewerów \(do Twojej decyzji/)
+  assert.match(raport, /^🧱 Propozycje bramek \(do Twojej decyzji, NIE wdrożone;/m, 'bramki to nadal decyzja operatora w projekcie')
+  const sync = readFileSync(resolve(KATALOG, '../../skills/sync-template/SKILL.md'), 'utf8').replace(/\n/g, ' ')
+  assert.match(sync, /Przy syncu przejrzyj `docs\/reviews\/propozycje-do-reviewerow\.md` projektu, gdy istnieje: propozycje, które szablon już przyjął, można wtedy z pliku usunąć\./)
+})
+
 // E5-9 (vibersi etap 5): 3 P3 z krotkiego review commitow po archiwum trafily tylko do opisu PR — etap 6 ich nie widzi.
 test('skill /dev-pr: P3 krotkiego review → known-issues.md zadania i commit artefaktu przed etapem start', () => {
   const krotkie = krok1.slice(krok1.indexOf('**Krótkie review**'), krok1.indexOf('Workflow({scriptPath'))

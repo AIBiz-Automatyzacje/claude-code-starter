@@ -112,6 +112,9 @@ Katalog backupów `.claude/.backups/` i pliki `.claude/.template-version` /
 `.claude/.backups/` do `.gitignore` projektu, jeśli jeszcze go tam nie ma. `.template-hashes` (hash gita
 każdego pliku z chwili syncu) czyta telemetria: czy run wykonał dokładnie wersję z szablonu (`run.szablon.zgodny`).
 
+Przy syncu przejrzyj `docs/reviews/propozycje-do-reviewerow.md` projektu, gdy istnieje: propozycje, które szablon już
+przyjął, można wtedy z pliku usunąć.
+
 ## Uwagi techniczne
 
 - Skrypt jest zgodny z **bash 3.2** (domyślny na macOS) — bez associative arrays.

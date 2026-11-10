@@ -314,9 +314,13 @@ solution dostaje pole `bramka` (gdzie wdrożona) i wypada z indeksu.
 grepem na bieżącym drzewie. W raporcie podajesz je jako „wdrożone w `<plik:linia>`” i o nic nie pytasz. Pola `bramka`
 w solution compound przy tym nie ustawia, więc lekcja zostaje w indeksie i wycinku jak reguła.
 
-**Propozycji do reviewerów nie wdrażasz.** Zmiana promptu agenta-reviewera dotyka każdej przyszłej fazy
-każdego zadania — to decyzja operatora. Workflow dopisuje je do `docs/reviews/propozycje-do-reviewerow.md` (commit
-compoundu); w raporcie podaj agenta, klasę uwagi, regułę i pull requesty, w których klasa wystąpiła.
+**Plików agentów w projekcie nie edytujesz.** `.claude/agents/` należy do szablonu i `/sync-template` je nadpisuje, więc
+zmiana w projekcie zniknie przy najbliższym syncu. `propozycjeDoReviewerow[]` niesie tylko reguły ogólne, czyli takie,
+które dotyczą każdego projektu. Workflow dopisuje je do `docs/reviews/propozycje-do-reviewerow.md` (commit compoundu),
+gdzie czekają na przeniesienie do repo szablonu. Przenosi je operator, ręcznie: niczego nie wysyłasz poza projekt, bo
+propozycja może nieść szczegóły prywatnego kodu. W raporcie podaj agenta, klasę uwagi, regułę i pull requesty, w których
+klasa wystąpiła. Klasa projektowa, która wróciła, nie daje propozycji do reviewera: jej reguła zostaje w solution
+z `paths` i działa przez wycinek wiedzy, a compound ocenia dla niej wyższy szczebel (`kod` albo `lint`), czyli propozycję bramki.
 
 **Uzgodnienie CLAUDE.md** — tylko po `ZMERGOWANY` (albo w trybie `--claude-md`, gdy operator zmergował sam), po compoundzie:
 
@@ -365,7 +369,8 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
    Już w kodzie (z `bramkiWdrozone`, bez decyzji):
    - [<szczebel>] <klasa>: <regula> — wdrożone w <mechanizm> (<solution>)
 
-🔁 Propozycje do reviewerów (do Twojej decyzji, NIE wdrożone; zapis: docs/reviews/propozycje-do-reviewerow.md):
+🔁 Propozycje do reviewerów (reguły ogólne, czekają na przeniesienie do repo szablonu; zapis: docs/reviews/propozycje-do-reviewerow.md):
+   Plików agentów w projekcie nie edytujemy: sync szablonu je nadpisze. Przeniesienie robisz ręcznie.
    - <agent> ← <klasa uwagi> (wystąpiła w: <PR-y>)
      Proponowana reguła: <treść>
 
