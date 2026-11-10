@@ -41,6 +41,8 @@ Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + 
 4. **`dev-autopilot-wf`** - wykonuje fazy jedna po drugiej: implementacja, review, naprawa. Na koniec zapisuje wnioski,
    archiwizuje zadanie i zostawia Ci listę rzeczy do ręcznego sprawdzenia (`docs/operator/<data>-<zadanie>-smoke.md`).
 5. **`/dev-pr`** - tworzy PR, czeka na recenzję bota, prowadzi tury poprawek i zapisuje, czego nasze review nie złapało.
+   Bot recenzji (CodeRabbit, konfiguruje go `/coderabbit-setup`) jest opcjonalny: `/dev-pr --bez-bota` prowadzi PR do merge'a bez niego
+   (PR, CI, krótkie review zmian po archiwizacji, merge).
 
 Szczegóły każdego kroku są w plikach skilli (`.claude/skills/<nazwa>/SKILL.md`) i workflowów (`.claude/workflows/`).
 
@@ -82,6 +84,7 @@ autopilota, **UWAGA** nie blokuje.
 | agent-browser (globalnie) | plan ma scenariusze `[E2E]` | `npm install -g agent-browser && agent-browser install` |
 | jq | hook projektu go woła | `brew install jq` |
 | Dynamic Workflows | zawsze | `/config` → Dynamic workflows: `true` |
+| CodeRabbit (aplikacja GitHub) | opcjonalnie: bot recenzji PR dla `/dev-pr` | `/coderabbit-setup`; bez bota `/dev-pr --bez-bota` |
 
 ## Bramki domknięcia
 

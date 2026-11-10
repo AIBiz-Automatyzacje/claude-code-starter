@@ -165,7 +165,7 @@ export function bajtySterujace(projekt) {
 export function konfiguracjaCodeRabbit(projekt) {
   const element = 'CodeRabbit'
   const plik = join(projekt, '.coderabbit.yaml')
-  if (!existsSync(plik)) return { element, stan: 'UWAGA', szczegol: 'brak .coderabbit.yaml — /dev-pr czeka na recenzje bota', instalacja: '/coderabbit-setup' }
+  if (!existsSync(plik)) return { element, stan: 'UWAGA', szczegol: 'brak .coderabbit.yaml — bot recenzji PR jest opcjonalny: z botem /coderabbit-setup, bez bota /dev-pr --bez-bota', instalacja: '/coderabbit-setup' }
   if (readFileSync(plik, 'utf8').includes(STARA_WIEDZA) && !existsSync(join(projekt, STARA_WIEDZA))) {
     return { element, stan: 'UWAGA', szczegol: `.coderabbit.yaml wskazuje usuniety ${STARA_WIEDZA}`, instalacja: 'zamien na docs/learned-patterns.md' }
   }
