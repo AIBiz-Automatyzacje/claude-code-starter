@@ -81,7 +81,7 @@ test('fix-e2e: ponowne odegranie przez Maestro i pisanie brakującego flow; popr
 
 // Kopia szablonu planu: wersja Expo = wersja web po tych zmianach. Zmiana web bez przeniesienia zatrzymuje test.
 const ZMIANY_SZABLONU = [
-  ['akcje `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e seed)` |', 'akcje `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e flow)`, `Modyfikuj (e2e flow)`, `Stwórz (e2e seed)` |'],
+  ['akcje `Stwórz`, `Modyfikuj`, `Usuń`, `Test (unit)`, `Stwórz (e2e seed)` |', 'akcje `Stwórz`, `Modyfikuj`, `Usuń`, `Test (unit)`, `Stwórz (e2e flow)`, `Modyfikuj (e2e flow)`, `Stwórz (e2e seed)` |'],
   ['`- [E2E] \\`e2e/<runner>.sh\\` — <stan>` dla runnera', '`- [E2E] \\`.maestro/<runner>.sh\\` — <stan>` dla runnera'],
   ['- `pnpm vitest run src/services/notatki-service.test.ts` przechodzi', '- `npx jest src/services/notatki-service.test.ts --watchAll=false` przechodzi'],
   ['- `pnpm typecheck` przechodzi bez błędów', '- `npx tsc --noEmit` przechodzi bez błędów'],

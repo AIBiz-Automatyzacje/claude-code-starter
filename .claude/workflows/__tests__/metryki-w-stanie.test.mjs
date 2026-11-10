@@ -120,6 +120,16 @@ test('skrotPrzebiegu mapuje dawne nazwy trybu testera E2E na nowe, nowe i null p
   assert.equal(tryb(null), null)
 })
 
+// Punkt 35: status „nie odegrano” idzie do stanu istniejacym polem e2eStatus (tekst bez enum) razem z licznikami, z ktorych
+// autopilot sklada pozycje raportu koncowego. Nowe pole w stanie nie jest potrzebne.
+test('skrotPrzebiegu przenosi status E2E „nie odegrano” i liczniki scenariuszy; schemat nie zaweza e2eStatus do listy', () => {
+  const status = 'nie odegrano (tryb interaktywny) — zaden z 3 scenariuszy nie ma PASS ani FAIL'
+  const s = skrotPrzebiegu({ ...PRZEBIEG_Z_REVIEW, e2eTryb: 'interaktywny', e2eCheckboxy: 3, e2eStatus: status, e2eSkip: 3, e2eManual: 3 })
+  assert.deepEqual([s.e2eStatus, s.e2eTryb, s.e2eCheckboxy, s.e2ePass, s.e2eFail, s.e2eSkip, s.e2eManual], [status, 'interaktywny', 3, 0, 0, 3, 3])
+  assert.deepEqual(METRYKI_FAZY.properties.przebieg.properties.e2eStatus,
+    { type: ['string', 'null'], description: 'status testera E2E z review-wf (wykonany / nie odegrano / padl / pominiety przez routing)' })
+})
+
 test('METRYKI_FAZY dopuszcza KAZDY klucz, ktory produkuje skrotPrzebiegu', () => {
   const wyprodukowane = Object.keys(skrotPrzebiegu(PRZEBIEG_Z_REVIEW))
   const dopuszczone = Object.keys(METRYKI_FAZY.properties.przebieg.properties)

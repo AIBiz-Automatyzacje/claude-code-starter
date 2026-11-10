@@ -19,6 +19,9 @@ szablonie coś się zmieniło, i automatycznie to aplikuje.
 - **Zakres:** tylko maszyneria `.claude/` — `skills/`, `agents/`, `rules/`,
   `hooks/`, `workflows/`, `templates/`, `scripts/`, `docs/` oraz `settings.json`. **Nie** rusza
   `settings.local.json` (lokalny), rootowego `README.md`/`CLAUDE.md` ani `docs/` projektu.
+- **Bez testów maszynerii:** katalogi `__tests__/` są testami repo szablonu (zależą od jego `node_modules` i katalogu
+  `stacks/`), więc do projektów nie jadą i nie są kontrolą projektu. Testy z wcześniejszych synców następny sync zdejmuje
+  jako `USUNIETE`, z kopią w backupie.
 - **Szablon zawsze wygrywa:** pliki wspólne są nadpisywane wersją z szablonu, także
   gdy były lokalnie modyfikowane. Nadpisywane i usuwane pliki najpierw trafiają do
   backupu (ścieżka odwrotu) — user nie musi tego zatwierdzać.
@@ -64,7 +67,8 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
   są buforowane w sesji, więc `/dev-autopilot-wf` uruchomiony w tej sesji działałby na starej
   maszynerii.
 - `RUNNER TESTÓW: <szczegół> — poprawka: <config>` (także po `STATUS: UP_TO_DATE`) → vitest albo jest
-  projektu zbiera testy maszynerii z `.claude/**` i autopilot zatrzyma się na `npm test` na starcie.
+  projektu zbiera pliki testów spod `.claude/**` (własne testy projektu, kopie w `.claude/.backups/`) i autopilot
+  zatrzyma się na `npm test` na starcie.
   Przekaż userowi linię z poprawką (wpis `exclude` w pliku configu, który podaje) i zaproponuj, że ją
   wpiszesz i zacommitujesz. Sync i tak się udał.
 - `HIGIENA: <element> — <szczegół> — naprawa: <komenda>` (każdy sync, także `UP_TO_DATE`) → rzecz, której sync nie
@@ -95,8 +99,8 @@ Skrypt wypisuje ustrukturyzowany raport, który streszczasz userowi po polsku:
   `.claude/workflows/*.js`, którego runtime by nie zarejestrował. Skrypt nie
   zaaplikował **niczego**, projekt jest nietknięty. To defekt po stronie szablonu, nie
   projektu: przekaż userowi listę plików ze stdout i powiedz, że naprawa idzie do repo
-  szablonu (`node --test '.claude/workflows/__tests__/skladnia-workflowow.test.mjs'`
-  odtwarza to lokalnie). **Nie obchodź tego** kopiowaniem plików ręcznie — zepsuty
+  szablonu (tam `node --test '.claude/workflows/__tests__/skladnia-workflowow.test.mjs'`
+  odtwarza błąd). **Nie obchodź tego** kopiowaniem plików ręcznie — zepsuty
   workflow milczy aż do pierwszego wywołania, a wtedy autopilot pada w środku fazy.
 
 Nie modyfikuj skryptu „w locie", żeby obejść błąd konfiguracji — zdiagnozuj przyczynę.
@@ -118,8 +122,26 @@ każdego pliku z chwili syncu) czyta telemetria: czy run wykonał dokładnie wer
   jego twarda synchronizacja z upstreamem to osobny proces opisany w
   `ZRODLA-SZABLONU.md` — nie mieszaj tych dwóch.
 
+## Domknięcie synca
+
+Zmiany z synca idą na gałąź główną własnym PR-em, bez czekania na recenzję bota. W aa-exam (PR #52) i dashboardzie (PR #127)
+PR z samą maszynerią przeszedł pełny proces: bot pominął filtrami 146 ze 147 plików albo nie zgłosił żadnej uwagi.
+
+1. Gałąź `chore/szablon-<data>` (np. `chore/szablon-2026-11-07`) od aktualnej gałęzi głównej.
+2. Commit zmian z synca.
+3. PR z tytułem zaczynającym się od `chore(szablon)`, np. `chore(szablon): sync do <sha>`.
+4. CI tam, gdzie się uruchamia: poczekaj na wynik, czerwony check napraw przed merge'em.
+5. Merge bez czekania na recenzję bota. Gdy merge oznacza deploy, powiedz to operatorowi w pytaniu o zgodę.
+6. Po merge'u, który oznacza deploy: sprawdź produkcję.
+
+Push, utworzenie PR i merge to publikacja: każda z tych czynności wymaga zgody operatora w tej sesji.
+
+Słowo `chore(szablon)` wyłącza recenzję tylko wtedy, gdy `.coderabbit.yaml` projektu ma je w
+`reviews.auto_review.ignore_title_keywords`. Sync tego pliku nie rusza: słowo dopisuje `/coderabbit-setup` albo jedna linia
+w configu, zanim powstanie PR. PR synca nie idzie przez `/dev-pr`: nie ma zadania, a `/dev-pr` czeka na bota.
+
 ## Pierwsze wprowadzenie do projektu
 
-Po pierwszej synchronizacji doprowadź do tego, żeby maszyneria była na zdalnej gałęzi głównej: push `main` (po decyzji operatora, bo może oznaczać deploy) albo osobny PR. Inaczej
+Po pierwszej synchronizacji doprowadź do tego, żeby maszyneria była na zdalnej gałęzi głównej: push `main` (po decyzji operatora, bo może oznaczać deploy) albo osobny PR z sekcji „Domknięcie synca”. Inaczej
 pierwszy `/dev-pr` policzy jej pliki jako część zadania. Linie `HIGIENA:` przejdź przed pierwszym `/dev-pr`, także CodeRabbit: istniejący `.coderabbit.yaml` musi spełniać kontrakt pipeline'u
 (`node .claude/scripts/pr/kontrakt-bota.mjs --galaz main`), a nie tylko istnieć.

@@ -140,10 +140,17 @@ test('punkt 5: wynik autopilota ma kroki w kolejnosci smoke, akcje operatora, do
   const start = zrodloWf.indexOf('function nastepneKroki(')
   const funkcja = zrodloWf.slice(start, zrodloWf.indexOf('\n}\n', start) + 3)
   // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
-  const nastepneKroki = new Function(`${funkcja}; return nastepneKroki`)()
+  const nastepneKroki = new Function(`${wytnij(zrodloWf, 'const STATUS_E2E_NIE_ODEGRANO = ', '\n')}
+    ${wytnij(zrodloWf, 'function fazyNieOdegrane(', '\n}\n')}
+    ${funkcja}; return nastepneKroki`)()
   const kroki = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [{ liczniki: { operator: 2 }, fix: { nierozwiazaneP2: 1 } }], propozycjeBramek: [], czesci: true, zadanie: 'x' })
   assert.equal(kroki.length, 3)
   assert.match(kroki[0], /^Smoke w nowej sesji:.*x-smoke\.md/)
-  assert.match(kroki[1], /2 findingow OPERATOR.*1 nierozwiazanych P2/)
+  assert.match(kroki[1], /^Akcje operatora: 2 findingow OPERATOR.*1 nierozwiazanych P2/, 'faza z odegranym E2E nie dodaje pozycji')
   assert.match(kroki[2], /^Po smoke'u: `\/clear`, potem `\/dev-pr --czesc 1`/)
+  // Punkt 35 (dashboard E2, fazy 7–11): faza z samymi SKIP testera interaktywnego miala gate CZYSTE i nie bylo jej w krokach.
+  const zNieOdegrana = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [
+    { faza: 7, gate: 'CZYSTE', liczniki: { operator: 0 }, przebieg: { e2eStatus: 'nie odegrano (tryb interaktywny) — zaden z 2 scenariuszy nie ma PASS ani FAIL', e2eCheckboxy: 2, e2eSkip: 2 } },
+  ], propozycjeBramek: [], czesci: true, zadanie: 'x' })
+  assert.equal(zNieOdegrana[1], 'Akcje operatora: E2E nie odegrano — do odegrania recznie albo ponownie: faza 7 (scenariuszy: 2).')
 })

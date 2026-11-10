@@ -5,8 +5,9 @@
 //
 // Uruchomienie:  node --test .claude/skills/coderabbit-setup/__tests__/generator.test.mjs
 
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -72,10 +73,27 @@ test('baza i kazdy blok stacku daja config zgodny ze schematem CodeRabbit', () =
   const stacki = blokiStackow()
   assert.ok(stacki.size >= 5, `oczekiwano 5 stackow, jest ${stacki.size}`)
   assert.deepEqual(bledySchematu(zbuduj([])), [], 'sama baza')
+  assert.deepEqual(zbuduj([]).reviews.auto_review.ignore_title_keywords, ['WIP', 'DO NOT MERGE', 'chore(szablon)'])
   for (const [nazwa, blok] of stacki) {
     assert.ok(blok.instrukcje.length > 0, `stack "${nazwa}" bez path_instructions`)
     assert.deepEqual(bledySchematu(zbuduj([blok])), [], `baza + ${nazwa}`)
   }
+})
+
+// aa-exam PR #52: check `quality` padl na format:check, bo template mial komentarze w linii po kilku spacjach, a Prettier
+// zostawia jedna. Asercja regexem zamiast Prettiera: szablon nie ma go w zaleznosciach.
+test('komentarz w linii stoi po jednej spacji (Prettier): baza i bloki YAML stackow', () => {
+  const zle = (/** @type {string} */ yaml) => yaml.split('\n').filter((l) => /\S {2,}#/.test(l))
+  assert.deepEqual(zle(BAZA), [], 'templates/coderabbit-base.yaml')
+  const bloki = [...BLOKI.matchAll(/```yaml\n([\s\S]*?)```/g)].map((m) => m[1])
+  assert.ok(bloki.length >= 5, `oczekiwano 5 blokow yaml, jest ${bloki.length}`)
+  assert.deepEqual(bloki.flatMap(zle), [], 'reference/stack-blocks.md')
+})
+
+// Projekt z Prettierem ma wlasna konfiguracje (np. singleQuote), ktorej template nie zna — skill formatuje wynik jego Prettierem.
+test('skill formatuje wygenerowany config Prettierem projektu, gdy projekt go ma', () => {
+  assert.match(OPIS, /prettier --write \.coderabbit\.yaml/)
+  assert.match(OPIS, /format:check/)
 })
 
 // Schemat zabrania nieznanych kluczy tylko w korzeniu (literowka `reveiws` gubi cala sekcje review).
@@ -163,6 +181,30 @@ test('template spelnia kontrakt pipeline\'u /dev-pr (CLAUDE.md poza recenzja, do
   const { odstepstwaKontraktu } = await import('../../../scripts/pr/kontrakt-bota.mjs')
   assert.deepEqual(odstepstwaKontraktu(BAZA, { galaz: 'main' }), [])
   assert.deepEqual(parse(BAZA.replaceAll('{{CODING_RULES}}', 'a').replaceAll('{{STACK_RULES}}', 'b')).reviews.pre_merge_checks.docstrings, { mode: 'off' })
+})
+
+// aa-exam PR #52 i dashboard PR #127: PR synca szablonu (sama maszyneria) czekal na recenzje bota. Slowo w tytule PR-a
+// wylacza recenzje tylko wtedy, gdy config i instrukcja synca uzywaja tego samego slowa. Brak slowa w configu projektu to
+// ostrzezenie, nie odstepstwo: odstepstwo zatrzymaloby start /dev-pr w kazdym projekcie ze starym configiem.
+test('slowo synca szablonu: w ignore_title_keywords bazy, w tytule PR-a z /sync-template i w ostrzezeniu kontraktu', async (t) => {
+  const { SLOWO_SYNCA, kontraktBota, odstepstwaKontraktu, ostrzezeniaSynca } = await import('../../../scripts/pr/kontrakt-bota.mjs')
+  assert.equal(SLOWO_SYNCA, 'chore(szablon)')
+  assert.ok(zbuduj([]).reviews.auto_review.ignore_title_keywords.includes(SLOWO_SYNCA))
+  assert.match(czytaj('../sync-template/SKILL.md'), /PR z tytułem zaczynającym się od `chore\(szablon\)`/)
+  assert.deepEqual(ostrzezeniaSynca(BAZA), [])
+
+  const stary = BAZA.split('\n').filter((l) => !l.includes(SLOWO_SYNCA)).join('\n')
+  assert.deepEqual(odstepstwaKontraktu(stary, { galaz: 'main' }), [], 'brak slowa nie zatrzymuje startu /dev-pr')
+  assert.deepEqual(ostrzezeniaSynca(stary), ['ignore_title_keywords bez "chore(szablon)": PR synca szablonu poczeka na recenzje bota (dopisz slowo albo /coderabbit-setup)'])
+  assert.equal(ostrzezeniaSynca(BAZA.replace(/^ {4}ignore_title_keywords:\n(?: {6}.*\n)+/m, '')).length, 1, 'config bez klucza')
+
+  const projekt = mkdtempSync(join(tmpdir(), 'kontrakt-bota-'))
+  t.after(() => rmSync(projekt, { recursive: true, force: true }))
+  assert.deepEqual(kontraktBota(projekt).ostrzezenia, [], 'brak pliku to odstepstwo, bez ostrzezenia o slowie')
+  writeFileSync(join(projekt, '.coderabbit.yaml'), stary)
+  assert.equal(kontraktBota(projekt, { galaz: 'main' }).ostrzezenia.length, 1)
+  writeFileSync(join(projekt, '.coderabbit.yaml'), BAZA)
+  assert.deepEqual(kontraktBota(projekt, { galaz: 'main' }).ostrzezenia, [])
 })
 
 test('bloki stackow: Node dziala obok frontendu, Drizzle wyklucza pliki generowane', () => {

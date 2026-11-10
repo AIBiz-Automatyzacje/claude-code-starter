@@ -28,7 +28,7 @@ const ZASTAPIONE = [
   '- Przy zerze scenariuszy', '- Jedna linia `[E2E]` to', '- Gdy skill weryfikacji projektu istnieje', '- W trybie `bez-interakcji` nie uruchamiasz', '- W trybie `interaktywny` zacznij',
   '- Własnego serwera nie stawiasz', '- Ustaw viewport', '- Prowadź scenariusz pętlą', '- Oczekiwany stan sprawdź', '- Zrzut zapisujesz', '- Każdy zrzut robisz', '  1. Zamknij sesję', '  2. Próbny zrzut przerwany',
   '  3. Próbny zrzut zapisany', '  4. Próbny zrzut zapisany', '  5. Porównanie z makietą', '  Zrzutu nie obchodzisz', '- PASS: oczekiwany stan', '- SKIP z przyczyną `srodowisko`', '- Plik zadań i kod zostają',
-  '- (niepuste pole `figma_screens`', '- (próbny zrzut przerwany', '- Po `wait --load networkidle`', '- Każda para dostaje', '- W trybie `bez-interakcji` zrzutu',
+  '- Dla każdego ekranu fazy odczytaj', '- (próbny zrzut przerwany', '- Po `wait --load networkidle`', '- Każda para dostaje', '- W trybie `bez-interakcji` zrzutu',
 ]
 
 test('rola: każda linia web jest w Expo dosłownie albo na liście linii narzędzia jazdy', () => {
@@ -36,6 +36,21 @@ test('rola: każda linia web jest w Expo dosłownie albo na liście linii narzę
   const naKatalogach = (/** @type {string} */ l) => l.replaceAll('e2e/seeds/*.sql', '.maestro/*-seed.sql').replaceAll('e2e/seeds/', '.maestro/').replaceAll('`e2e/<etap>', '`.maestro/<etap>')
   const brak = web.split('\n').map(naKatalogach).filter((l) => l.trim() && !zExpo.has(l) && !ZASTAPIONE.some((p) => l.startsWith(p)))
   assert.deepEqual(brak, [])
+})
+
+// Punkt 30: wybór ekranów fazy (pola Makiety jednostek, reguła zapasowa) nie zależy od narzędzia jazdy. Kopia roli w dashboardzie
+// i aa-exam rozjechała się z szablonem, więc linia reguły ma być w obu stackach ta sama co do znaku.
+test('rola (punkt 30): reguła wyboru ekranów fazy do porównania z makietą jest w web i Expo dosłownie ta sama', () => {
+  const regula = (/** @type {string} */ rola) => rola.split('\n').filter((l) => l.includes('Porównujesz tylko ekrany fazy'))
+  assert.equal(regula(web).length, 1)
+  assert.deepEqual(regula(tester), regula(web))
+  assert.ok(!ZASTAPIONE.some((p) => regula(web)[0].startsWith(p)), 'linia reguły nie jest na liście linii narzędzia jazdy')
+  for (const rola of [web, tester]) {
+    assert.match(rola, /a każdy ekran fazy nadal idzie do człowieka/)
+    assert.match(rola, /makiety fazy i linię runnera/)
+    assert.match(rola, /^- Przy zerze scenariuszy i zerze ekranów fazy \(sekcja o makietach\) zwróć od razu/m)
+    assert.doesNotMatch(rola.slice(rola.indexOf('### Makiety')), /każdy ekran z `figma_screens`|Dla każdego ekranu odczytaj/)
+  }
 })
 
 test('rola: lista zastąpionych linii bez wpisów nieaktualnych', () => {

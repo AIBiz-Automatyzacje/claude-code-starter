@@ -384,6 +384,17 @@ test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
   assert.ok(skill.includes(linia))
   assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+  // Punkt 37 (piszemy_wirale 08.11): ramka kazala „odhaczaj za mnie w pliku” bez commita, a etap start /dev-pr staje na brudnym
+  // drzewie. Sesja smoke'u commituje plik checklisty jawna sciezka; zdanie stoi w ramce przed linia „Następny krok”.
+  const commit = 'Po przejściu smoke\'u zacommituj plik checklisty jawną ścieżką (bez `git add -A`): /dev-pr wymaga czystego drzewa.'
+  const p = smokePrompt('zadanie-x')
+  const ramka = skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'))
+  for (const [nazwa, tekst] of /** @type {[string, string][]} */ ([['workflow', p], ['skill', ramka]])) {
+    const i = tekst.indexOf(commit)
+    assert.ok(i !== -1, `${nazwa}: zdanie o commicie pliku smoke'u w ramce`)
+    assert.ok(i < tekst.indexOf(linia), `${nazwa}: commit przed linia „Następny krok”`)
+  }
+  assert.ok(ramka.indexOf('odhaczaj za mnie w pliku') < ramka.indexOf(commit))
 })
 
 // P24 IU-8: punkty wizualne smoke'u mają format czytany przez przegląd stacku; narzędzie i zdania do smoke'u leżą w slocie

@@ -63,6 +63,14 @@ wysyłać mimo to. To miękka bramka: decyduje operator.
 
 ### 1. Start — bramka wejścia i pull request
 
+**Czyste drzewo.** Krok 1 zaczynasz od `git status --porcelain`, w każdym trybie i także wtedy, gdy pytanie o wysłanie
+pomijasz: etap `start` przełącza gałęzie i przy brudnym drzewie kończy STOP-em, przy części dopiero po pomiarze rozmiaru.
+Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit wskazanych plików” (pierwsza opcja, z listą
+ścieżek) albo „Jeszcze nie” (koniec bez etapu `start`). Commit robisz jawnymi ścieżkami i tylko plików z pytania. Plik
+smoke'u i dokumenty zadania commitujesz na `feature/<zadanie>`, nie na `feature/<zadanie>-czN`: plik smoke'u leży na gałęzi
+zadania, a jej commity po cięciu jadą z ostatnią częścią. Stasha nie używasz: `start` przełącza gałęzie i nikt go potem
+nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza część kroku 1, do pytania o wysłanie.
+
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
 żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → pytanie
@@ -121,8 +129,9 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 deploy) albo „Jadą w tym PR” (znów krok 1 z `zGlowna: true`). `status: "STOP"` z polem `konfigBota` → pokaż `odstepstwa` i pytaj: „/coderabbit-setup”
 (uruchamiasz skill, commit na tej gałęzi, znów krok 1) albo „Bez poprawnego configu” (krok 1 z `bezKonfigu: true`).
 
-`status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: nie commituj cudzych zmian, nie
-przełączaj gałęzi, nie twórz PR z gałęzi głównej.
+`status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: po STOP-ie nie commituj zmian na własną rękę, nie
+przełączaj gałęzi, nie twórz PR z gałęzi głównej. Brudne drzewo ma drogę przed startem (akapit „Czyste drzewo”): commit
+plików pokazanych operatorowi, za jego zgodą. Po STOP-ie z tego powodu operator wraca `/dev-pr` i przechodzi ją od początku.
 
 `status: "STOP"` z polem `rozmiar` (część albo jeden PR ≥ 150 plików do recenzji po przeliczeniu czubka — commity po
 archiwizacji dołożyły pliki do liczby z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`)
@@ -276,7 +285,8 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js",
 
 Workflow zapisuje do `docs/solutions/` **klasy błędów**, które bot znalazł po naszym własnym review, z polami wiedzy
 (klasa, reguła, wzorce plików, szczebel). Wpisy trafiają do indeksu `docs/learned-patterns.md`; wpisy `kod` i `lint`
-wracają też jako `propozycjeBramek[]`; obok nich `propozycjeDoReviewerow[]`. Commit compoundu workflow pushuje na bieżącą
+wracają też jako `propozycjeBramek[]` (mechanizmu nie ma w kodzie) albo `bramkiWdrozone[]` (poprawka już go wprowadziła,
+pole `mechanizm` = `plik:linia`); obok nich `propozycjeDoReviewerow[]`. Commit compoundu workflow pushuje na bieżącą
 gałąź (po merge'u to gałąź główna); `push: false` przy niepustym `commit` → wypchnij go przed kolejnym PR i krokiem CLAUDE.md.
 Bez merge'u bieżąca gałąź to gałąź PR: commit compoundu trafia do PR i bot robi recenzję przyrostową samych plików wiedzy.
 Chroniona gałąź główna odrzuca push — wtedy `pushDetal` ma błąd, a commit wypychasz przez PR albo ręcznie.
@@ -292,6 +302,10 @@ po zakończeniu przebiegu; `brak-ci` = repo nie ma CI na push. Nie pisz „deplo
 **Propozycji bramek nie wdrażasz.** Typ albo reguła lint to zmiana kodu projektu — decyzja operatora; zapis zostaje
 w samym solution (`szczebel`, `szczebel_powod`). Do wdrożenia bramki lekcja działa jak reguła (indeks, wycinek); po wdrożeniu
 solution dostaje pole `bramka` (gdzie wdrożona) i wypada z indeksu.
+
+**Bramki już w kodzie to nie propozycje.** `bramkiWdrozone[]` niesie wpisy `kod` i `lint`, których mechanizm compound znalazł
+grepem na bieżącym drzewie. W raporcie podajesz je jako „wdrożone w `<plik:linia>`” i o nic nie pytasz. Pola `bramka`
+w solution compound przy tym nie ustawia, więc lekcja zostaje w indeksie i wycinku jak reguła.
 
 **Propozycji do reviewerów nie wdrażasz.** Zmiana promptu agenta-reviewera dotyka każdej przyszłej fazy
 każdego zadania — to decyzja operatora. Workflow dopisuje je do `docs/reviews/propozycje-do-reviewerow.md` (commit
@@ -341,6 +355,8 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
 
 🧱 Propozycje bramek (do Twojej decyzji, NIE wdrożone; zapis: solution ze szczeblem kod/lint):
    - [<szczebel>] <klasa>: <propozycja> — <powod> (<solution>)
+   Już w kodzie (z `bramkiWdrozone`, bez decyzji):
+   - [<szczebel>] <klasa>: <regula> — wdrożone w <mechanizm> (<solution>)
 
 🔁 Propozycje do reviewerów (do Twojej decyzji, NIE wdrożone; zapis: docs/reviews/propozycje-do-reviewerow.md):
    - <agent> ← <klasa uwagi> (wystąpiła w: <PR-y>)

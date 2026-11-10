@@ -44,7 +44,7 @@ Plik `jest-css-stub.js` w korzeniu to `module.exports = {};`. Skrypt testów: `"
 
 | Objaw | Przyczyna | Naprawa |
 |---|---|---|
-| Doctor: `jest zbiera <n> plików testów maszynerii z .claude/**` | Jest zbiera testy szablonu, których nie umie uruchomić, więc run staje na starcie | `testPathIgnorePatterns` wyżej |
+| Doctor: `jest zbiera <n> plików testów maszynerii z .claude/**` | Jest zbiera pliki testów spod `.claude/` (własne testy projektu, kopie w `.claude/.backups/` i `.claude/worktrees/`), których nie umie uruchomić, więc run staje na starcie | `testPathIgnorePatterns` wyżej |
 | `Must use import to load ES Module: standard-navigation` | wzorzec z docs nie ma `standard-navigation`, a Expo Router 58 go wymaga | wzorzec wyżej |
 | to samo dla `uniwind/src/index.ts` | kod testowany importuje z `uniwind` | wzorzec wyżej |
 | `SyntaxError` na `@import 'tailwindcss'` | import `@/global.css` | `moduleNameMapper` na `\.css$` |

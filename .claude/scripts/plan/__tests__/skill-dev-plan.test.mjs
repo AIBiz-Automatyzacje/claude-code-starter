@@ -122,6 +122,34 @@ test('SKILL.md: handoff ma zdanie dla agentów workflow z opisu autopilota', () 
   assert.ok(bezOgonkow(handoff).includes(zdanie), zdanie)
 })
 
+// Znaleziska 2026-11-02 pkt 36 (dashboard, run wf_a495d97e-47b): wiadomość startowa z warunkiem „jeśli zrzut padnie, zatrzymaj się”
+// trafiła do 166 agentów, a testerzy faz 7–11 uznali warunek za swój. Zdanie dla agentów już było; brakowało zasady dla sesji i operatora.
+test('opis autopilota i handoff: start to osobna wiadomość z samym poleceniem; warunki w wiadomości startowej sesja obsługuje wcześniej', () => {
+  const opis = /^ {2}whenToUse: '([^']+)',$/m.exec(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'))?.[1] ?? ''
+  const dlaSesji = opis.indexOf('Start to osobna wiadomosc z samym poleceniem startu: wiadomosc, ktora uruchamia workflow, dostaje doslownie kazdy agent runu, wiec wymagania wobec sesji ida wczesniejsza wiadomoscia.')
+  assert.notEqual(dlaSesji, -1, 'opis autopilota bez zasady dla sesji')
+  assert.ok(dlaSesji < opis.indexOf('Do agentow workflow:'), 'zasada dla sesji stoi przed zdaniem dla agentów')
+  const krok = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.7 Handoff'), SKILL_MD.indexOf('## Format wyjściowy'))
+  assert.match(krok, /Start to osobna wiadomość z samym poleceniem startu\. Wiadomość, która uruchamia workflow, dostaje dosłownie każdy agent runu/)
+  assert.match(krok, /zawiera też warunki albo prośby → najpierw je obsługujesz, potem prosisz o osobną wiadomość z samym startem\. Workflowu z takiej wiadomości nie uruchamiasz\./)
+  assert.match(krok, /do wklejenia w innej sesji, dzielisz tak samo: wymagania wobec sesji w jednej wiadomości, samo polecenie startu w następnej/)
+  const ramka = SKILL_MD.slice(SKILL_MD.indexOf('➡️ Następny krok'), SKILL_MD.indexOf('## Referencje'))
+  assert.match(ramka, /Start to osobna wiadomość z samym poleceniem, np\. „Uruchom autopilota dla docs\/active\/<zadanie>” — bez warunków i próśb/)
+})
+
+// Znaleziska 2026-11-02 pkt 31 (dashboard E2): sesja planowania zmieniła .claude/agents/feature-tester-e2e.md, a handoff mówił
+// „autopilot w tej sesji” — tester działałby według wersji zbuforowanej przed zmianą. Skrypt nie widzi zmian sesji, więc to reguła 6.7.
+test('handoff: sesja, która zmieniła .claude/, wskazuje nową sesję i nie uruchamia autopilota u siebie', () => {
+  const krok = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.7 Handoff'), SKILL_MD.indexOf('## Format wyjściowy'))
+  assert.match(krok, /uruchom autopilota narzędziem `Workflow` w tej sesji — chyba że ta sesja zmieniła `\.claude\/`\./)
+  assert.match(krok, /Gdy w tej sesji zmieniono cokolwiek w `\.claude\/` \(edycja skilla, agenta, workflowu, `\/sync-template`\), handoff wskazuje nową sesję i autopilota u siebie nie uruchamiasz/)
+  assert.match(krok, /Instrukcje i skille są buforowane w sesji/)
+  const ramka = SKILL_MD.slice(SKILL_MD.indexOf('➡️ Następny krok'), SKILL_MD.indexOf('## Referencje'))
+  assert.match(ramka, /^➡️ Następny krok: autopilot w tej sesji <albo: w nowej sesji — ta sesja zmieniła \.claude\/>:$/m)
+  // Ta sama reguła po stronie workflowu: opis autopilota każe ruszać w nowej sesji po zmianach w .claude/.
+  assert.match(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'), /Po zmianach w \.claude\/ \([^)]*\) uruchamiaj w nowej sesji/)
+})
+
 test('SKILL.md: wskazane pliki references/ istnieją', () => {
   const pliki = [...new Set([...SKILL_MD.matchAll(/`(references\/[\w.-]+)`/g)].map((m) => m[1]))]
   assert.deepEqual(pliki.sort(), ['references/kontekst-designerski.md', 'references/przygotowanie-operatora.md', 'references/stack.md', 'references/szablon-planu.md'])
@@ -141,6 +169,19 @@ test('kolumna linii: szacunek z tyldą albo bez strzałki to błąd zapisu, a pl
   const slowa = sprawdz(mutacja('| 0 → 70 |', '| 120 do 140 |')).bledy.join('\n')
   assert.match(slowa, /kolumna linii „120 do 140”/)
   assert.match(sprawdz(mutacja('| 0 → 70 |', '| 0 → — |')).bledy.join('\n'), /notatki-service\.ts` — brak liczby linii po zmianie/)
+})
+
+// Znaleziska 2026-11-02 pkt 33: akcję „Usuń” znał tylko skrypt (budzet-pliku.mjs, czesci-pr.mjs), kontrakt planu jej nie wymieniał —
+// dashboard E2 usuwał plik z żywym importerem (IU-19 przed IU-32), a skill nie mówił, w której IU plik wolno usunąć.
+test('SKILL.md i szablon: akcja Usuń na liście akcji, z regułą importerów; wiersz Usuń bez liczby „po” przechodzi sprawdz', () => {
+  const tabela = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.6 Tabela plików'), SKILL_MD.indexOf('#### 3.6b'))
+  assert.match(tabela, /Akcje: `Stwórz`, `Modyfikuj`, `Usuń`, `Test \(unit\)`/)
+  assert.match(tabela, /każdy plik, który go importuje, ma wiersz `Usuń` albo `Modyfikuj` w tej samej albo wcześniejszej IU/)
+  assert.match(tabela, /`plan\.mjs sprawdz` szuka importerów w repo i daje uwagę/)
+  assert.match(SZABLON, /akcje `Stwórz`, `Modyfikuj`, `Usuń`, `Test \(unit\)`/)
+  assert.match(SZABLON, /wiersz `Usuń` ma `—` po strzałce \(`45 → —`\)/)
+  const wiersz = '| Stwórz | `src/services/notatki-limity.ts` | 0 → 3 | — | nowy |'
+  assert.deepEqual(sprawdz(mutacja(wiersz, `${wiersz}\n| Usuń | \`src/services/klienci-service.ts\` | 1 → — | — | — |`)).bledy, [])
 })
 
 // Katalog runnerów i komenda testów ze stacku (IU-2.5): ostatnia pozycja Weryfikacji przykładu podmieniona na runner bez znacznika.

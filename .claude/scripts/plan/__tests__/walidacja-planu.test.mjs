@@ -3,6 +3,7 @@
 //
 // Uruchomienie:  node --test .claude/scripts/plan/__tests__/walidacja-planu.test.mjs
 
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -202,18 +203,33 @@ test('plan z [E2E] bez .env.e2e i bez checklisty przygotowania jest odrzucony', 
   }
 })
 
-test('IU opisujace migracje bez pliku migracji w tabeli dostaje uwage (nie blad)', () => {
-  const md = zmien('- Strona czyta ofertę przez hook, szkic zwraca 404.', '- Strona czyta ofertę przez hook; nowa kolumna wymaga migracji.')
-  assert.deepEqual(sprawdz(md), { bledy: [], uwagi: ['IU-3: opis wspomina migrację, a pole Pliki nie ma pliku w supabase/migrations/'] })
+const UWAGA_MIGRACJI = 'IU-3: opis wspomina migrację, a pole Pliki nie ma pliku w supabase/migrations/'
+const Z_MIGRACJA_W_OPISIE = zmien('- Strona czyta ofertę przez hook, szkic zwraca 404.', '- Strona czyta ofertę przez hook; nowa kolumna wymaga migracji.')
+
+// Projekt fixture'u nie ma katalogu supabase/ na dysku: pierwsza migracje tworzy plan (IU-1) i to ona jest sygnalem Supabase.
+test('IU opisujace migracje bez pliku migracji w tabeli dostaje uwage (nie blad), takze gdy pierwsza migracje projektu tworzy plan', () => {
+  assert.deepEqual(sprawdz(Z_MIGRACJA_W_OPISIE), { bledy: [], uwagi: [UWAGA_MIGRACJI] })
+})
+
+// Znaleziska 2026-11-02 pkt 31 (dashboard: Vite w frontend/, migracje Pythona w backend/): uwaga „nie ma pliku w supabase/migrations/”
+// byla falszywa. Sygnal Supabase: katalog supabase/, migracja Supabase w planie albo @supabase/supabase-js w package.json.
+test('uwaga o migracji tylko w projekcie z Supabase: bez sygnalu jej nie ma; katalog supabase/ albo zaleznosc w package.json ja przywraca', () => {
+  const md = zmien('`supabase/migrations/20261007120000_status_oferty.sql`', '`backend/migrations/0007_status_oferty.sql`', Z_MIGRACJA_W_OPISIE)
+  const zaleznosc = JSON.stringify({ dependencies: { '@supabase/supabase-js': '2.50.0' } })
+  assert.deepEqual(sprawdz(md), { bledy: [], uwagi: [] }, 'bez sygnalu')
+  assert.deepEqual(sprawdz(md, { 'frontend/package.json': JSON.stringify({ dependencies: { '@supabase/ssr': '0.6.1' } }) }).uwagi, [], 'inna paczka to nie sygnal')
+  assert.deepEqual(sprawdz(md, { 'supabase/config.toml': 'project_id = "x"\n' }).uwagi, [UWAGA_MIGRACJI], 'katalog supabase/')
+  assert.deepEqual(sprawdz(md, { 'package.json': zaleznosc }).uwagi, [UWAGA_MIGRACJI], 'package.json w korzeniu')
+  assert.deepEqual(sprawdz(md, { 'frontend/package.json': zaleznosc }).uwagi, [UWAGA_MIGRACJI], 'pakiet pierwszego poziomu')
+  assert.deepEqual(sprawdz(md, { 'apps/web/package.json': zaleznosc }).uwagi, [], 'pakiet glebiej niz pierwszy poziom')
 })
 
 // vibersi etap 6a IU-3: „test pilnuje zgodności kodów z migracją” przy CHECK-ach w migracji IU-1 dawało uwagę — linia z numerem
 // migracji z innej IU planu albo z dysku to odwołanie, nie nowa migracja.
 test('IU odwolujaca sie do migracji z innej IU albo z repo po numerze — bez uwagi; nieznany numer — uwaga zostaje', () => {
   const odwolanie = (/** @type {string} */ numer) => zmien('- Strona czyta ofertę przez hook, szkic zwraca 404.', `- Strona czyta ofertę przez hook; test pilnuje zgodności statusów z migracją ${numer}.`)
-  const uwaga = 'IU-3: opis wspomina migrację, a pole Pliki nie ma pliku w supabase/migrations/'
   assert.deepEqual(sprawdz(odwolanie('20261007120000')).uwagi, [], 'migracja IU-1 tego planu')
-  assert.deepEqual(sprawdz(odwolanie('20250101090000')).uwagi, [uwaga], 'numer bez pliku w planie i w repo')
+  assert.deepEqual(sprawdz(odwolanie('20250101090000')).uwagi, [UWAGA_MIGRACJI], 'numer bez pliku w planie i w repo')
   assert.deepEqual(sprawdz(odwolanie('20250101090000'), { 'supabase/migrations/20250101090000_oferty.sql': 'select 1;\n' }).uwagi, [], 'migracja z repo')
 })
 
@@ -254,6 +270,27 @@ test('bez regul wzgledem repo (bramka po fazie 1): plik zmieniony przez faze nie
   try {
     assert.equal(sprawdzPlan(parsujPlan(FIXTURE), korzen).bledy.length, 1)
     assert.deepEqual(sprawdzPlan(parsujPlan(FIXTURE), korzen, { wzgledemRepo: false }).bledy, [])
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})
+
+// Znaleziska 2026-11-02 pkt 33 (dashboard E2, faza 6): IU usuwala plik importowany przez plik zmieniany dopiero w pozniejszej IU.
+// Skan importerow czyta repo, wiec bramka gotowosci (wzgledemRepo=false, takze po wykonanych fazach) go nie robi.
+test('wiersz Usuń pliku z importerem zmienianym w pozniejszej IU daje uwage (nie blad); bez regul wzgledem repo — bez uwagi', () => {
+  const md = zmien(WIERSZ_SERWISU, `${WIERSZ_SERWISU}\n| Usuń | \`src/services/stary-serwis.ts\` | 3 → — | — | — |`)
+  const korzen = projekt({
+    'src/services/stary-serwis.ts': linie(3),
+    'src/features/oferty/components/lista-ofert.tsx': `import { stary } from '../../../services/stary-serwis'\n${linie(7)}`,
+  })
+  try {
+    execFileSync('git', ['-C', korzen, 'init', '-q'])
+    execFileSync('git', ['-C', korzen, 'add', '.'])
+    const w = sprawdzPlan(parsujPlan(md), korzen)
+    assert.deepEqual(w.bledy, [])
+    assert.equal(w.uwagi.length, 1)
+    assert.match(w.uwagi[0], /^IU-1: Usuń `src\/services\/stary-serwis\.ts` — importerzy, których plan nie zmienia do tej IU: `src\/features\/oferty\/components\/lista-ofert\.tsx` \(plan zmienia go dopiero w IU-2\)/)
+    assert.deepEqual(sprawdzPlan(parsujPlan(md), korzen, { wzgledemRepo: false }), { bledy: [], uwagi: [] })
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }

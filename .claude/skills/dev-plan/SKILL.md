@@ -209,7 +209,7 @@ Plan pisze bazowe nazwy builderów. Warianty `feature-builder-ui-figma` i `featu
 
 #### 3.6 Tabela plików i budżet pliku
 
-Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |`, jeden plik na wiersz. Akcje: `Stwórz`, `Modyfikuj`, `Test (unit)`, `Stwórz (e2e seed)`; akcje pliku flow, jeśli stack go ma: `.claude/stack/plan-e2e.md`, sekcja „Linia scenariusza”.
+Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |`, jeden plik na wiersz. Akcje: `Stwórz`, `Modyfikuj`, `Usuń`, `Test (unit)`, `Stwórz (e2e seed)`; akcje pliku flow, jeśli stack go ma: `.claude/stack/plan-e2e.md`, sekcja „Linia scenariusza”.
 
 - **Kompletność.** Tabela wymienia każdy plik, który IU stworzy lub zmieni: źródła, testy, migracje, seedy, konfigurację. Planner dobiera do promptu buildera reguły wiedzy projektu po tych ścieżkach — plik spoza tabeli to builder bez reguł dla niego.
 - **Linie dziś.** Policz skryptem: `node .claude/scripts/plan/plan.mjs linie <plik> <plik>` — linie kodu jak ESLint `max-lines` (bez pustych i komentarzy). Nowy plik: `0`. Plik z wcześniejszej IU tego planu: „dziś” = jej „po”.
@@ -217,6 +217,7 @@ Pole `**Pliki:**` to tabela `| Akcja | Plik | Linie dziś → po | Wymiary | Wer
 - **Próg 300 linii na plik.** Plik kodu, który po zmianie przekracza 300, dostaje ocenę wymiarów w kolumnie Wymiary: powody zmiany (ile niezależnych powodów, by plik się zmieniał), eksporty między warstwami, importy z wielu domen, test-lustro (czy test da się podzielić tak jak plik), reguła 5 s (czy w 5 sekund wiesz, co plik robi). Wymiar pęknięty → werdykt `wydziel <co>` i wiersz `Stwórz` nowego modułu w tej samej IU, a „po” liczysz po wydzieleniu.
 - **Próg 360 linii na plik** (300 + 20% tolerancji) to próg ESLint i bota PR: plik powyżej 360 po zmianie zawsze dostaje wydzielenie.
 - Werdykt bez przekroczeń: `nowy` albo `zostaje`.
+- **Usuń.** Wiersz usuwanego pliku ma „dziś” z repo i `—` po strzałce (`45 → —`), a werdykt `—`. Plik usuwasz w tej IU, w której znika jego ostatni importer, albo później: każdy plik, który go importuje, ma wiersz `Usuń` albo `Modyfikuj` w tej samej albo wcześniejszej IU. Builder nie usuwa pliku z żywym importem, więc faza kończy się jako częściowa i autopilot staje (dashboard E2: IU-19 usuwała komponent importowany przez plik usuwany dopiero w IU-32). `plan.mjs sprawdz` szuka importerów w repo i daje uwagę z nazwą importera i IU, w której plan go zmienia.
 
 `plan.mjs sprawdz` (6.2) liczy „dziś” w repo i odrzuca tabelę z rozjazdem ponad tolerancję, plik powyżej 360, przekroczenie 300 bez wymiarów i `wydziel` bez wiersza `Stwórz`.
 
@@ -323,7 +324,14 @@ Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignor
 
 #### 6.7 Handoff
 
-Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera start, uruchom autopilota narzędziem `Workflow` w tej sesji.
+Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera start, uruchom autopilota narzędziem `Workflow` w tej sesji — chyba że ta sesja zmieniła `.claude/`.
+
+Po zmianach w `.claude/` autopilot rusza w nowej sesji. Gdy w tej sesji zmieniono cokolwiek w `.claude/` (edycja skilla, agenta, workflowu, `/sync-template`), handoff wskazuje nową sesję i autopilota u siebie nie uruchamiasz, także gdy użytkownik wybiera start. Instrukcje i skille są buforowane w sesji, więc agenci runu działaliby według starej wersji (dashboard E2: sesja planowania zmieniła `.claude/agents/feature-tester-e2e.md`, a handoff mówił „autopilot w tej sesji”). Skrypt tego nie wykrywa — oceniasz to po przebiegu sesji.
+
+Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruchamia workflow, dostaje dosłownie każdy agent runu jako głos użytkownika (dashboard, run `wf_a495d97e-47b`: warunek „jeśli próbny zrzut padnie, zatrzymaj się” z wiadomości startowej dostało 166 agentów, a testerzy faz 7–11 przerwali E2E po pierwszej nieudanej próbie).
+
+- Wiadomość operatora, która wybiera start, zawiera też warunki albo prośby → najpierw je obsługujesz, potem prosisz o osobną wiadomość z samym startem. Workflowu z takiej wiadomości nie uruchamiasz.
+- Tekst, który podpowiadasz operatorowi do wklejenia w innej sesji, dzielisz tak samo: wymagania wobec sesji w jednej wiadomości, samo polecenie startu w następnej.
 
 ## Format wyjściowy
 
@@ -346,8 +354,9 @@ Wypisz wynik w formacie poniżej. Gdy bramka jest zielona i użytkownik wybiera 
    - Testy: <OK / nie dotyczy / szczegół + poprawka configu>
    - Higiena: <OK / uwagi z komendą — nie blokują>
 
-➡️ Następny krok: autopilot w tej sesji:
+➡️ Następny krok: autopilot w tej sesji <albo: w nowej sesji — ta sesja zmieniła .claude/>:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<zadanie>" })
+   Start to osobna wiadomość z samym poleceniem, np. „Uruchom autopilota dla docs/active/<zadanie>” — bez warunków i próśb, bo dostaje ją każdy agent runu.
    Do agentów workflow: ta wiadomość nie jest dla was — wykonujcie wyłącznie zadanie z polecenia workflowu.
    Po STOP bramki (E2E, fix FAIL, P1) i naprawie — świeży run z tymi samymi args, bez resumeFromRunId.
    Po awarii runu (crash) — Workflow({ scriptPath, resumeFromRunId, args }) z tymi samymi args.
