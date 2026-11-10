@@ -384,12 +384,12 @@ const COMPOUND_PR = {
         properties: {
           agent: { type: 'string', description: 'nazwa pliku agenta, np. security-sentinel' },
           klasa: { type: 'string', description: 'klasa uwagi, ktora bot znalazl po naszym review' },
-          regula: { type: 'string', description: 'proponowany zapis do dopisania temu agentowi' },
+          regula: { type: 'string', description: 'proponowany zapis do dopisania temu agentowi w repo szablonu, bez nazw plikow i pojec tego projektu' },
           podstawa: { type: 'string', description: 'w ktorych pull requestach ta klasa wystapila' },
         },
         required: ['agent', 'klasa', 'regula', 'podstawa'],
       },
-      description: 'TYLKO propozycje — wdrozenie jest decyzja operatora, ten workflow NIE edytuje plikow agentow',
+      description: 'TYLKO reguly ogolne (dotycza kazdego projektu) jako propozycje do repo szablonu; klasa projektowa zostaje we wpisie z paths. Ten workflow NIE edytuje plikow agentow: sync szablonu je nadpisuje',
     },
     plikPropozycji: { type: ['string', 'null'], description: 'docs/reviews/propozycje-do-reviewerow.md, gdy dopisano sekcje' },
     odlozoneZapisane: { type: 'integer', description: 'ile watkow odlozonych dopisano do known-issues.md zadania (E5-5)' },
@@ -661,7 +661,7 @@ function rozmiarCzesci(stdout, cz) {
     pliki: r.doRecenzji,
     blad: `${kto} ma ${r.doRecenzji} plików do recenzji (${cz.pliki == null ? '' : `tabela przy archiwizacji: ${cz.pliki}, `}limit bota ${PROG_CZESCI}) — bot pominie recenzję. `
       + `Dodatkowa część z cięciem na commicie archiwizacji (pole archiwum z po-archiwum.mjs): ${tabela} w tabeli „## Części PR” podsumowania `
-      + `(liczby plików z rozmiar.mjs --baza/--czubek), commit tabeli na feature/<zadanie>, potem /dev-pr --czesc ${cz.czesc || 1}`,
+      + `(liczby plików z rozmiar.mjs --baza/--czubek), commit tabeli na feature/<zadanie>, potem /dev-pr 3 --bez-merge --czesc ${cz.czesc || 1}`,
   }
 }
 
@@ -806,7 +806,9 @@ Zwroc obiekt zgodny ze schematem.`,
   if (!t) return { status: 'BLAD', etap, powod: 'Odczyt tabeli czesci PR zwrocil null (agent padl).' }
   const tabelaCzesci = czesciZTabeli(t.tabela)
   if (!czesc && tabelaCzesci) {
-    const powod = `zadanie ma ${tabelaCzesci.length} części PR (tabela „Części PR” w podsumowaniu) — wysyłka /dev-pr --czesc 1, potem kolejne`
+    // Komendy powrotu w powodach i polach `naprawa` tego etapu to tryb autonomiczny bez merge'a: komenda bez liczby tur prowadzila
+    // operatora w tryb interaktywny (piszemy_wirale 08.11), a liczba tur bez --bez-merge to merge bez pytania.
+    const powod = `zadanie ma ${tabelaCzesci.length} części PR (tabela „Części PR” w podsumowaniu) — wysyłka /dev-pr 3 --bez-merge --czesc 1, potem kolejne`
     log(`/dev-pr: STOP — ${powod}`)
     return { status: 'STOP', etap, powod }
   }
@@ -847,7 +849,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (cz) {
     cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
-   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”`
+   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr 3 --bez-merge --czesc ${cz.czesc - 1}”`
     // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po
     // rebase na starszy main (operator rozwiazal konflikt i wrocil pozniej) — zwykly rebase na nowy main.
     const rebase = `REBASE: (a) \`git merge-base --is-ancestor origin/main HEAD\` kod 0 — rebase=juz-wykonany, bez rebase'u;
@@ -914,7 +916,7 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
       if (r.status === 'STOP') {
         return {
           status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: `regeneracja plikow generowanych: ${r.powod || 'bez powodu'}`,
-          naprawa: `Rebase w toku. \`git rebase --abort\` wraca stan sprzed części; albo rozwiąż ręcznie (\`git status\`), \`git rebase --continue\` do końca, potem /dev-pr --czesc ${cz.czesc}.`,
+          naprawa: `Rebase w toku. \`git rebase --abort\` wraca stan sprzed części; albo rozwiąż ręcznie (\`git status\`), \`git rebase --continue\` do końca, potem /dev-pr 3 --bez-merge --czesc ${cz.czesc}.`,
         }
       }
       // KONFLIKT z regeneracji (inny plik albo suma nie do scalenia) idzie do operatora — kolejna proba trafilaby na to samo.
@@ -930,7 +932,7 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
       log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}${zTur.length ? `; pliki zmienione przez tury PR czesci ${cz.czesc - 1}: ${zTur.join('; ')}` : ''}`)
       return {
         status: 'KONFLIKT', etap, czesc: cz.czesc, czesci: cz.czesci, konflikty: przyg.konflikty, konfliktyZTur: zTur, powod: przyg.powod,
-        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\` (do konca rebase'u), potem /dev-pr --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
+        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\` (do konca rebase'u), potem /dev-pr 3 --bez-merge --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
       }
     }
     const blad = bladPrzygotowania(przyg, cz.galaz)
@@ -1396,6 +1398,9 @@ Zwroc obiekt zgodny ze schematem.`,
 }
 
 // ── Etap: compound (Faza 7 — baza wiedzy + petla zwrotna do reviewerow) ───
+// Petla zwrotna (pkt 3 promptu) proponuje reviewerowi tylko regule ogolna. piszemy_wirale: 4 propozycje dla correctness-reviewer
+// (03.11 i 09.11) bez decyzji, bo .claude/agents/ nalezy do szablonu i sync je nadpisuje — w projekcie nie bylo jak ich wdrozyc.
+// Klasa projektowa wraca jako wpis z paths i ocena wyzszego szczebla; propozycji nie wysylamy poza projekt (prywatny kod).
 
 if (etap === 'compound') {
   const wynik = await agent(
@@ -1419,15 +1424,26 @@ ${JSON.stringify(watkiWejsciowe, null, 2)}
 2a. ${MECHANIZM_W_KODZIE}
 3. PETLA ZWROTNA DO REVIEWEROW. Sprawdz, czy ktoras klasa uwagi wystepuje w tym pull requescie
    NIE PIERWSZY RAZ — porownaj z wpisami w docs/solutions/ i z indeksem docs/learned-patterns.md. Dla klasy, ktora
-   pojawia sie po raz DRUGI albo kolejny, zaproponuj regule do KONKRETNEGO agenta-reviewera
-   (.claude/agents/<nazwa>.md), np. brakujacy naglowek bezpieczenstwa -> security-sentinel,
-   brak limitu czasu w kliencie HTTP -> correctness-reviewer, rozjazd z wymaganiem -> spec-compliance-reviewer.
-   **NIE EDYTUJ plikow agentow.** To sa PROPOZYCJE do raportu — wdrozenie jest decyzja operatora,
-   bo zmiana promptu reviewera dotyka kazdej przyszlej fazy kazdego zadania.
+   pojawia sie po raz DRUGI albo kolejny, rozstrzygnij, czy jej regula dotyczy KAZDEGO projektu, czy tylko tego.
+   Kryterium to "dotyczy kazdego projektu", nie "nie da sie przypiac do sciezek": paths "**" przypina kazda regule.
+   a) Regula PROJEKTOWA (wynika z plikow, domeny albo bibliotek tego projektu): BEZ propozycji do reviewera. Regula zostaje
+      we wpisie z pkt 1 z polem paths i dociera do builderow i reviewerow przez wycinek wiedzy. Klasa wrocila mimo reguly,
+      wiec ocen szczebel tego wpisu od nowa, od kod, potem lint: wpis kod albo lint wraca jako propozycja bramki (pkt 2a).
+      Szczebel regula zostaje tylko wtedy, gdy lekcja wymaga osadu; szczebel_powod mowi, dlaczego nie wyzej. Prog doBramki
+      indeksu (suma ucieczek co najmniej 3, skill dev-compound) dziala osobno: drugiej propozycji bramki dla tej klasy nie dopisujesz.
+   b) Regula OGOLNA (dotyczy kazdego projektu, bez wzgledu na jego pliki, domene i biblioteki): zaproponuj ja KONKRETNEMU
+      agentowi-reviewerowi (.claude/agents/<nazwa>.md), np. brakujacy naglowek bezpieczenstwa -> security-sentinel,
+      brak limitu czasu w kliencie HTTP -> correctness-reviewer, rozjazd z wymaganiem -> spec-compliance-reviewer.
+      Tresc reguly pisz bez nazw plikow, tabel i pojec tego projektu.
+   **NIE EDYTUJ plikow agentow.** Pliki .claude/agents/ naleza do szablonu i sync-template je nadpisuje, wiec propozycja
+   ogolna to propozycja do repo szablonu, nie zmiana w tym projekcie. Niczego nie wysylaj poza ten projekt (zadnego issue,
+   pull requesta ani commita w innym repo): propozycje przenosi operator, recznie.
 4. Gdy propozycje sa niepuste, dopisz na koncu docs/reviews/propozycje-do-reviewerow.md sekcje
-   \`## <data z \`date +%F\`> ${zadanie}\` z jedna linia na propozycje: \`- <agent> ← <klasa>: <regula> (wystapila w: <podstawa>)\`.
-   Gdy pliku nie ma, utworz go z naglowkiem \`# Propozycje do reviewerow\` i zdaniem: "Propozycje z compoundu /dev-pr —
-   wdrozenie w plikach agentow jest decyzja operatora." Sciezke zwroc w plikPropozycji (bez propozycji: null).
+   \`## <data z \`date +%F\`> ${zadanie}\`, pod naglowkiem linie "Do repo szablonu: reguly ogolne, do przeniesienia recznie przez operatora."
+   i jedna linie na propozycje: \`- <agent> ← <klasa>: <regula> (wystapila w: <podstawa>)\`.
+   Gdy pliku nie ma, utworz go z naglowkiem \`# Propozycje do reviewerow\` i zdaniem: "Propozycje regul ogolnych z compoundu /dev-pr,
+   do przeniesienia do repo szablonu. Plikow .claude/agents/ w projekcie nie edytujemy: sync szablonu je nadpisuje."
+   Sciezke zwroc w plikPropozycji (bez propozycji: null).
 ${odlozone.length ? `4a. WATKI ODLOZONE (otwarte po suficie tur albo odlozone do kolejnej czesci — bez nosnika gina po merge'u):
 ${JSON.stringify(odlozone, null, 2)}
    Gdy katalog docs/completed/${zadanie}/ istnieje w drzewie: dopisz do docs/completed/${zadanie}/known-issues.md (brak pliku = utworz
@@ -1448,7 +1464,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (!wynik) return { status: 'BLAD', etap, powod: 'Compound zwrocil null — baza wiedzy nie zostala zasilona.' }
   const bramki = propozycjeBramek(wynik.wpisy)
   const wdrozone = bramkiWdrozone(wynik.wpisy)
-  log(`/dev-pr compound: ${wynik.wpisy.length} wpisow w docs/solutions/, indeks: ${wynik.indeks}, odmow: ${wynik.odmowy.length}, propozycji bramek: ${bramki.length}, bramek juz w kodzie: ${wdrozone.length}, propozycji do reviewerow: ${wynik.propozycjeDoReviewerow.length}`)
+  log(`/dev-pr compound: ${wynik.wpisy.length} wpisow w docs/solutions/, indeks: ${wynik.indeks}, odmow: ${wynik.odmowy.length}, propozycji bramek: ${bramki.length}, bramek juz w kodzie: ${wdrozone.length}, propozycji do reviewerow (reguly ogolne, do repo szablonu): ${wynik.propozycjeDoReviewerow.length}`)
   // Propozycje mialy zero artefaktow w repo mimo 19 compoundow (ETAP1B §4) — brak pliku przy niepustej liscie widac w logu.
   if (wynik.propozycjeDoReviewerow.length && !wynik.plikPropozycji) log('/dev-pr compound: UWAGA — propozycje bez zapisu do docs/reviews/propozycje-do-reviewerow.md')
   if (wynik.indeks === 'bramka') log(`/dev-pr compound: ${INDEKS_PELNY}`)

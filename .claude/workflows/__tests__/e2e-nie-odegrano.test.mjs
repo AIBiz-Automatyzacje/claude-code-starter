@@ -106,7 +106,7 @@ test('nastepneKroki: fazy z E2E „nie odegrano” ida do akcji operatora z nume
   assert.equal(kroki.length, 3)
   assert.match(kroki[1], /^Akcje operatora: E2E nie odegrano — do odegrania recznie albo ponownie: faza 7 \(scenariuszy: 3\), faza 8 \(scenariuszy: 5\), 1 findingow OPERATOR/)
   const bez = nastepneKroki({ smoke: '', raporty: [{ faza: 6, liczniki: { operator: 0 }, przebieg: { e2eStatus: 'wykonany (tryb interaktywny)' } }], propozycjeBramek: [], czesci: false, zadanie: 'x' })
-  assert.deepEqual(bez, ["Po smoke'u: `/clear`, potem `/dev-pr` (zadanie x)."], 'bez takich faz raport bez dodatkowej pozycji')
+  assert.deepEqual(bez, ["Po smoke'u: `/clear`, potem `/dev-pr 3 --bez-merge` (zadanie x)."], 'bez takich faz raport bez dodatkowej pozycji')
 })
 
 test('autopilot: log koncowy bierze fazy ze stanu (takze z poprzedniego runu); schemat stanu opisuje nowy status', () => {
