@@ -53,7 +53,7 @@ Koszt: w etapie 3 vibersi `/dev-plan` ruszył po `/dev-prep` z 215k kontekstu, c
 #### 0.1 Wznowienie
 
 - Użytkownik wskazuje istniejący plan albo w `docs/plans/` jest świeży plan na ten temat → przeczytaj go i zapytaj, czy aktualizować w miejscu, czy pisać nowy. Przy aktualizacji zachowaj odhaczone checkboxy.
-- Istnieje `docs/active/<zadanie>/` → to wznowienie zadania. Pokaż stan (`.autopilot-state.json`, `review-faza-N.md`, odhaczone pozycje) i zapytaj, czy tylko poprawić plan techniczny, czy przerwać. Pliki zadania z postępem zostają — `plan.mjs generuj --zapisz --nadpisz` odmawia, gdy zadanie ma przebieg.
+- Istnieje `docs/active/<zadanie>/` → to wznowienie zadania. Pokaż stan (`.autopilot-state.json`, `review-faza-N.md`, odhaczone pozycje) i zapytaj, czy tylko poprawić plan techniczny, czy przerwać. Pliki zadania z postępem zostają — `plan.mjs generuj --zapisz --nadpisz` odmawia, gdy zadanie ma przebieg. Zmianę planu technicznego po starcie (decyzja operatora po zatrzymaniu, pozycja przeniesiona do innej jednostki, nowa jednostka w fazie, która jeszcze nie ruszyła) przenosisz do pliku zadań przez `node .claude/scripts/plan/plan.mjs odswiez docs/active/<zadanie>`: najpierw bez `--zapisz` (lista zmian), potem z `--zapisz`. Skrypt nakłada różnicę między planem z `HEAD` (albo `--od <commit sprzed zmiany>`, gdy zmiana planu jest już w commicie) a planem na dysku; odhaczenia i linie dopisane przez przebieg zostają, a pozycja przeniesiona między jednostkami zabiera odhaczenie. Odmowę (nowa pozycja w zbudowanej fazie albo jednostce, zmiana faz, konflikt z linią zmienioną przez przebieg) pokazujesz operatorowi. `.autopilot-state.json` nie edytujesz ani ty, ani skrypt.
 
 #### 0.2 Dokument źródłowy
 
@@ -304,7 +304,7 @@ Wynik JSON: `bledy` i `uwagi` z numerami linii i identyfikatorami IU. Każdy bł
 node .claude/scripts/plan/plan.mjs generuj <docs/plans/plik-planu.md> --zapisz [--nazwa <zadanie>]
 ```
 
-Skrypt zapisuje `docs/active/<zadanie>/<zadanie>-plan.md`, `-kontekst.md` i `-zadania.md` i zwraca liczniki (fazy, IU, checkboxy implementacyjne, `Test:`, `Weryfikacja:`, `[E2E]`, pozycje operatora). Plików zadania nie piszesz ani nie poprawiasz ręcznie — zmiana idzie przez plan i ponowne `generuj`. Odmowa „katalog zadania już istnieje” przy wznowieniu bez przebiegu autopilota → `--nadpisz`; odmowa z powodu przebiegu (stan autopilota, raport review, odhaczone pozycje, wpisy dziennika) → pokaż ją i zapytaj, jak dalej.
+Skrypt zapisuje `docs/active/<zadanie>/<zadanie>-plan.md`, `-kontekst.md` i `-zadania.md` i zwraca liczniki (fazy, IU, checkboxy implementacyjne, `Test:`, `Weryfikacja:`, `[E2E]`, pozycje operatora). Plików zadania nie piszesz ani nie poprawiasz ręcznie — zmiana idzie przez plan i ponowne `generuj`. Odmowa „katalog zadania już istnieje” przy wznowieniu bez przebiegu autopilota → `--nadpisz`; odmowa z powodu przebiegu (stan autopilota, raport review, odhaczone pozycje, wpisy dziennika) → zmiana planu idzie przez `plan.mjs odswiez` (0.1); pokaż odmowę i zapytaj, jak dalej, tylko gdy operator chce zadanie wygenerować od nowa.
 
 #### 6.5 Commit inicjalny
 

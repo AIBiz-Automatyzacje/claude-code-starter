@@ -218,6 +218,8 @@ const PLAN_STATE = {
           metryki: METRYKI_FAZY,
           // Baza fazy z execute-wf (P7) — poza `required`, bo stany sprzed P7 jej nie maja.
           baza: { type: ['string', 'null'], description: 'SHA HEAD przed builderami fazy; null = nieznana' },
+          // Jednostki zapisane domknieciem czesciowym przerwanego execute (punkt 34) — poza `required`, zwykle pola nie ma.
+          iuUkonczone: { type: 'array', items: { type: 'string' }, description: 'id jednostek fazy zapisanych commitem przed przerwaniem execute; pole tylko przy execute: pending' },
         },
         required: ['numer', 'nazwa', 'execute', 'review', 'fix', 'otwarteFindingi'],
       },
@@ -282,8 +284,21 @@ function zapisPotwierdzony(wynik) {
 }
 
 // Stan po udanym execute fazy — zapisuje go domkniecie execute-wf (z baza fazy wstawiona w JS), zanim autopilot dostanie wynik.
+// Lista jednostek ukonczonych (punkt 34) dotyczy tylko przerwanego execute: po „done” znika ze stanu.
 function stanPoExecute(stan, numer) {
-  return { ...stan, fazy: stan.fazy.map((f) => (f.numer === numer ? { ...f, execute: 'done' } : f)) }
+  return { ...stan, fazy: stan.fazy.map((f) => (f.numer === numer ? { ...f, execute: 'done', iuUkonczone: undefined } : f)) }
+}
+
+// Zdanie do powodu STOP-u po przerwanym execute (punkt 34): co zapisano commitem, co lezy w schowku gita, a czego nie zapisano.
+function opisCzesciowego(exec) {
+  const c = exec && exec.czesciowe
+  if (!c) return ''
+  if (!c.zacommitowano) return ` Jednostek ukonczonych nie zapisano (${c.powod || 'brak powodu'}): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.`
+  const lista = Array.isArray(exec.iuUkonczone) && exec.iuUkonczone.length ? exec.iuUkonczone.join(', ') : 'brak listy'
+  const schowek = c.schowek
+    ? ` Pliki jednostki nieukonczonej (${(c.plikiOdlozone || []).length}) sa w schowku gita "${c.schowek}" (git stash list); nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.`
+    : ''
+  return ` Jednostki ukonczone zapisane commitem ${c.commit || '(brak SHA)'}: ${lista} — swiezy run zacznie od przerwanej.${schowek}`
 }
 // ── Koniec stanu fazy
 
@@ -452,6 +467,8 @@ Folder zadania: ${sciezka}
       Pole "metryki" fazy (jesli obecne) PRZEPISZ 1:1 — nie licz go sam, nie uzupelniaj, nie zeruj;
       to zapis telemetrii z runu, w ktorym review sie odbylo. Gdy pola nie ma, pomin je (null).
       Pole "baza" fazy (jesli obecne) przepisz 1:1 — od niej review liczy diff fazy po wznowieniu. Gdy pola nie ma, pomin je.
+      Pole "iuUkonczone" fazy (jesli obecne) przepisz 1:1 — to jednostki zapisane commitem przed przerwaniem execute, od nich
+      zalezy, od ktorej jednostki faza ruszy. Gdy pola nie ma, pomin je.
       Pole "bazaZielona" (jesli obecne i nie null) przepisz 1:1 i ustaw wejscie.kodJakPrzyTescie:
       \`git diff --quiet <bazaZielona.sha> HEAD -- . ':(exclude)docs' && echo TAK || echo NIE\` -> TAK = true, NIE = false.
       zrodloStanu = "state-json". Dodatkowo porownaj informacyjnie z plikami (np. istnieje
@@ -1851,17 +1868,21 @@ for (const numerFazy of kolejka) {
   if (faza.execute === 'pending') {
     await zapiszZaleglyStan()
     // Baza ze stanu (execute przerwany po czesci pracy) idzie do execute-wf: wznowienie nie liczy bramek i dossier od HEAD-u po zmianach fazy.
-    const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy, baza: faza.baza || null, stanPoExecute: trescStanu(stanPoExecute(stan, numerFazy)) })
+    const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy, baza: faza.baza || null, iuUkonczone: faza.iuUkonczone || [], stanPoExecute: trescStanu(stanPoExecute(stan, numerFazy)) })
     if (!exec || exec.status !== 'completed') {
       // Baza fazy zostaje w stanie takze przy execute bez „completed”: domkniecie moglo juz zacommitowac faze (porazka bramki po
       // commicie), a swiezy run bez bazy dalby review diff od galezi glownej (pilot Nawykometr, run 2: 585 plikow zamiast 8).
       const bazaZExecute = Boolean(exec && exec.baza && !faza.baza)
       if (bazaZExecute) faza.baza = exec.baza
+      // Jednostki zapisane domknieciem czesciowym (punkt 34): swiezy run pomija je i zaczyna od przerwanej.
+      const ukonczoneZExecute = Boolean(exec && Array.isArray(exec.iuUkonczone) && exec.iuUkonczone.length > (faza.iuUkonczone || []).length)
+      if (ukonczoneZExecute) faza.iuUkonczone = exec.iuUkonczone
       // Domkniecie mialo zapisac stan tylko przy completed; gdy mimo to potwierdzilo zapis, STOP nadpisuje go stanem z pamieci.
-      if (bazaZExecute || (exec && exec.stanZapisany)) oznaczStan()
-      return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty })
+      if (bazaZExecute || ukonczoneZExecute || (exec && exec.stanZapisany)) oznaczStan()
+      return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}${opisCzesciowego(exec)}`, faza: numerFazy, exec, raporty })
     }
     faza.execute = 'done'
+    delete faza.iuUkonczone
     // Planner bez pracy (`poza`, faza zrobiona przed STOP-em) nie zna bazy: zostaje ta ze stanu.
     faza.baza = exec.baza || faza.baza || null
     dossierZExecute = exec.dossier || null
