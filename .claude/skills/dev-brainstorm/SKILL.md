@@ -157,7 +157,9 @@ Używaj narzędzia pytań platformy gdy dostępne (patrz Zasady interakcji). W p
 - Rozstrzygaj decyzje produktowe tutaj; zostaw wybory implementacji technicznych na planowanie
 - Przynoś pomysły, alternatywy i wyzwania zamiast tylko przeprowadzać wywiad
 
-**Integration check przed wyjściem z dialogu:** zanim uznasz pomysł za jasny, świadomie **połącz** odpowiedzi użytkownika i sonduj nieoczywiste konsekwencje ich kombinacji (np. „jeśli chcemy X i Y, a domyślnie zakładamy Z, to wynika z tego, że...?"). Wyłap konflikty między decyzjami, których użytkownik mógł nie zauważyć, podejmując je osobno. To często ujawnia ukryte wymaganie albo sprzeczność w scope.
+**Przebudowa istniejących ekranów albo maili:** gdy pomysł zmienia wygląd czegoś, co już działa (redesign, nowy układ strony, nowy szablon maila), zapytaj wprost: „Gdy nowy projekt nie pokaże czegoś, co obecna wersja ma (tekst, dana jak imię albo kwota, stan, zachowanie): znika czy zostaje?”. Opcje: `Znika — nowy projekt jest kompletny` / `Zostają treść i dane, zmienia się wygląd` / `Decyzja przy każdym elemencie podczas planowania`. Odpowiedź zapisz w dokumencie jako wymaganie ze stabilnym ID. Bez niej implementator ma obecny kod jako wzorzec, makietę bez tego elementu i zakaz treści spoza makiet, więc zatrzymuje wykonanie pytaniem (aa-exam E3: imię w mailu logowania).
+
+**Integration check przed wyjściem z dialogu:** zanim uznasz pomysł za jasny, świadomie **połącz** odpowiedzi użytkownika i sonduj nieoczywiste konsekwencje ich kombinacji (np. „jeśli chcemy X i Y, a domyślnie zakładamy Z, to wynika z tego, że...?"). Wyłap konflikty między decyzjami, których użytkownik mógł nie zauważyć, podejmując je osobno. To często ujawnia ukryte wymaganie albo sprzeczność w scope. Parę „przebudowa istniejącego ekranu albo maila” i „teksty tylko z makiet” sprawdzasz zawsze: razem nie mówią, co zrobić z treścią obecnej wersji, której makieta nie ma, dopóki wymagania nie mają zasady z pytania o przebudowę.
 
 **Warunek wyjścia:** Kontynuuj aż pomysł jest jasny LUB użytkownik explicite chce przejść dalej.
 
@@ -259,6 +261,7 @@ Przed finalizacją sprawdź:
 - Co planowanie musiałoby jeszcze wymyślić gdyby ten brainstorm się teraz skończył?
 - Czy jakieś wymagania zależą od czegoś uznanego za out of scope?
 - Czy jakieś nierozwiązane elementy to w rzeczywistości decyzje produktowe, nie pytania planistyczne?
+- Przy przebudowie istniejących ekranów albo maili: czy wymagania mówią, co z treścią obecnej wersji, której nowy projekt nie pokaże?
 - Czy szczegóły implementacji wkradły się gdy nie powinny?
 - Czy istnieje tania zmiana, która uczyniłaby to materialnie bardziej użytecznym?
 

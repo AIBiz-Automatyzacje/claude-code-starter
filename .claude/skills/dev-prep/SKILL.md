@@ -112,7 +112,7 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 
 | Co sprawdzasz | Po co |
 |---|---|
-| Istniejące route'y / strony (katalogi wg `references/stack.md`, sekcja „Skan repo”) | ekran, który już istnieje, to zamówienie na **modyfikację** z opisem różnicy — nie na nowy design |
+| Istniejące route'y / strony (katalogi wg `references/stack.md`, sekcja „Skan repo”) | ekran, który już istnieje, to zamówienie na **modyfikację** z inwentarzem obecnej wersji (2.4, pole „Dziś pokazuje”) — nie na nowy design |
 | `docs/DESIGN.md` | brak = pozycja w sekcji „Decyzje": design system nie istnieje, projektant nie ma tokenów |
 | `docs/plans/*-figma/SPEC.md` | pokrywający się feature = część makiet już sfetchowana; nie zamawiaj ich ponownie |
 | `.env.example`, `.env.local` (tylko **nazwy** zmiennych — `grep -o '^[A-Z_]*='`) | które klucze już są ustawione, a które trzeba zdobyć |
@@ -144,6 +144,10 @@ Na górze dokumentu, bo zwykle blokują resztę: nieodwracalne wybory (bundle id
 
 Każdą zapisz jako **pytanie zamknięte z wypisanymi opcjami**, nie jako temat do przemyślenia. Pytanie bez opcji wraca do Ciebie po tygodniu w tej samej postaci. Oznacz **[blokuje: planowanie]** te, bez których `/dev-plan` nie napisze IU (zasada 0.5 `dev-plan`: nierozwiązany bloker planowania).
 
+**Decyzja, która zmienia wymaganie.** Gdy któraś opcja jest sprzeczna z dokumentem źródłowym (wymaganie mówi co innego albo decyzja je zawęża), dopisz pod pytaniem linię `Zmienia wymaganie: <ID> przy wyborze <opcja>`. Dokumentu wymagań nie poprawiasz: operator wpisuje „Ustalono” po tym skillu, a `/dev-plan` czyta wypełnioną decyzję obok źródła (0.3) i po jego zgodzie poprawia wskazane wymaganie, zanim napisze plan. Bez tej linii decyzja nowsza niż wymaganie zostaje tylko w checkliście i plan powstaje z dwóch sprzecznych źródeł (aa-exam E3: D1 nowsze niż R48).
+
+**Treść obecnej wersji przy przebudowie.** Gdy sekcja makiet ma choć jedną pozycję `modyfikacja`, a dokument źródłowy nie mówi, co z treścią obecnej wersji, której makieta nie pokaże, dodaj decyzję **[blokuje: planowanie]**: „Gdy makieta nie pokaże czegoś, co ekran albo mail ma dziś: znika czy zostaje?” z opcjami A) znika — makieta jest kompletna, B) zostają treść i dane, zmienia się wygląd, C) decyzja przy każdym elemencie w planie. Wymagania z taką zasadą (pyta o nią `/dev-brainstorm`) — decyzji nie powtarzasz, a jej ID podajesz w polu „Dziś pokazuje” (2.4).
+
 #### 2.2 Konta, konsole, sekrety
 
 Konta i konsole zewnętrzne (dostawca auth, płatności, monitoring, mapy, store'y), tokeny, klucze, zmienne środowiskowe — te, które wynikają z opisu etapu i których nie widać jako już ustawionych.
@@ -173,6 +177,7 @@ Dla każdego ekranu/komponentu z etapu:
 - **Nazwa** w kebab-case (`panel-rozliczen`, `modal-potwierdzenia`) — klucz dopasowania do URL-a Figmy w `/dev-plan` 1.6 krok D.
 - **Status**: `nowy` / `modyfikacja <ścieżka istniejącego pliku>` / `już zaprojektowany (SPEC: <ścieżka>)`.
 - **Co pokazuje** — jedno–dwa zdania z wymagań etapu, nie z wyobraźni.
+- **Dziś pokazuje** (tylko status `modyfikacja`) — inwentarz obecnej wersji z kodu, nie z wymagań: teksty widoczne dla użytkownika dosłownie, dane (imię, kwota, data, licznik), stany, zachowania (linki, akcje, warunki widoczności), każdy element z `plik:linia`. Zlecasz go przez Agent tool, `subagent_type: "repo-research-analyst"`, z pierwszą linią promptu `Scope: patterns` i listą ścieżek: jedno zlecenie na najwyżej 5 pozycji `modyfikacja`, zlecenia równolegle, bo czytanie plików ekranów w tej sesji zapełnia kontekst. Pole kończysz zasadą dla treści, której makieta nie pokaże (`wg R<n>` albo `wg decyzji <nr> z sekcji 1`). Projektant dostaje listę z zamówieniem, więc element, którego makieta potem nie ma, jest decyzją, a nie przeoczeniem; `/dev-plan` bierze z niej pole „Znika z obecnej wersji” jednostki. Układu, kolorów i komponentów obecnej wersji nie opisujesz.
 - **Stany do zaprojektowania** — te, które etap implikuje: pusty, ładowanie, błąd, brak uprawnień, po sukcesie, walidacja formularza. Brakujący stan pustej listy to najczęstsza dziura, która wychodzi dopiero u buildera.
 - **Wymiary ekranu** (nazwa pola wg `references/stack.md`, sekcja „Makiety”) — zgodnie z etapem; gdy etap milczy, wpisz „do potwierdzenia" i dodaj pozycję do 2.1.
 - **Wymagania z etapu**, które ekran realizuje (`R1`, `#etap-17`) — traceability, którą `/dev-plan` przenosi dalej.
@@ -209,6 +214,7 @@ status: do-zrobienia | gotowe
 - [ ] **<Pytanie zamknięte?>** — **[blokuje: planowanie]**
   - Opcje: A) <…> B) <…>
   - Dlaczego blokuje: <który obszar etapu zależy od odpowiedzi>
+  - Zmienia wymaganie: <ID> przy wyborze <opcja> _(tylko gdy opcja jest sprzeczna ze źródłem)_
   - Ustalono: _(wpisz wybór i datę)_
 
 ## 2. Konta, konsole, sekrety
@@ -230,6 +236,7 @@ Po zaprojektowaniu wklej URL-e — `/dev-plan` weźmie je stąd zamiast pytać.
 
 - [ ] **`<nazwa-ekranu>`** — nowy / modyfikacja `<ścieżka ekranu>`
   - Co pokazuje: <1–2 zdania z etapu>
+  - Dziś pokazuje _(tylko modyfikacja)_: <tekst, dana, stan albo zachowanie> (`<plik:linia>`); … — czego makieta nie pokaże: wg <R<n> | decyzji <nr>>
   - Stany: pusty · ładowanie · błąd · <inne z etapu>
   - <pole wymiarów ekranu>: <wartość>
   - Wymagania: R3, R7

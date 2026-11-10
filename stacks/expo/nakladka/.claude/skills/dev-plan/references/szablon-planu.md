@@ -41,6 +41,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `**Podejście:**` | lista decyzji; odwołanie do decyzji z jej treścią w nawiasie | |
 | `**Notatka wykonawcza:**` | jedno zdanie (test-first, characterization-first) | opcjonalne |
 | `**Teksty (verbatim):**` | etykiety i komunikaty dosłownie | gdy IU renderuje zatwierdzone treści |
+| `**Znika z obecnej wersji:**` | `- <element obecnej wersji> (<plik:linia>) — znika \| zostaje (<ID wymagania albo decyzji>)`; `—` = nic nie znika | IU z makietami i wierszem `Modyfikuj`; builder nie przenosi tych elementów z obecnego pliku ani ze wzorca |
 | `**Wzorce do naśladowania:**` | ścieżki istniejącego kodu | |
 | `**Scenariusze testowe:**` | `- [Unit] …`, `- [E2E] \`<flow>\` … → …`, `- [Manual] …` | typ na początku każdej pozycji |
 | `**Weryfikacja:**` | `- <komenda w backtickach> <oczekiwany wynik>`; `- [E2E] \`.maestro/<runner>.sh\` — <stan>` dla runnera niebędącego scenariuszem | |

@@ -76,6 +76,7 @@ Zrób glob `docs/operator/*.md` (bez `*-smoke.md`) i sprawdź **frontmattery**: 
 - sekcja „Makiety” zasila 1.6, „Decyzje” — 0.5, „Konta, konsole, sekrety” i „Assety” — 3.7;
 - ogłoś: „Znalazłem checklistę operatora etapu: `<ścieżka>` (N pozycji, M nieodhaczonych) — uzupełnię ją po zbudowaniu IU.”;
 - nieodhaczone pozycje `[blokuje: planowanie]` wymień i zapytaj, czy planować mimo nich (plan powstanie z lukami), czy przerwać.
+- decyzję z wypełnionym „Ustalono”, która jest sprzeczna z dokumentem źródłowym (linia `Zmienia wymaganie:` przy decyzji albo rozjazd widoczny przy czytaniu obu dokumentów), pokaż przez `AskUserQuestion`: wymaganie, decyzja z datą i proponowane nowe brzmienie wymagania. Po zgodzie popraw wymaganie w dokumencie źródłowym z dopiskiem `(zmienione decyzją <nr> z <data>, <ścieżka checklisty>)` i planuj z poprawionego źródła. Odmowa to bloker z 0.5: z dwóch sprzecznych źródeł planu nie piszesz, bo builder dostaje oba (aa-exam E3: decyzja D1 w checkliście nowsza niż R48 w wymaganiach).
 
 Brak checklisty jest poprawny — 5.2b utworzy krótką listę, jeśli będzie co wpisać.
 
@@ -146,6 +147,8 @@ Klasyfikacja jest wstępna: IU delegowany do `feature-builder-ui` lub `feature-b
 
 Zbierz pytania z odroczonych pytań źródła, luk z researchu i decyzji technicznych potrzebnych do planu. Każde jest **rozwiązane w planowaniu** (odpowiedź poznawalna z repo, dokumentacji albo wyboru użytkownika) albo **odroczone do implementacji** (zależy od kodu, zachowania runtime'u, odkryć w wykonaniu). Użytkownika pytasz tylko o to, co zmienia architekturę, zakres, kolejność albo ryzyko i nie da się wywnioskować. Nie uruchamiasz testów, nie budujesz aplikacji i nie badasz runtime'u.
 
+Przy przebudowie istniejącego ekranu albo maila bez zasady „znika czy zostaje” w źródle i w checkliście pytasz o nią tutaj: „Gdy makieta nie pokaże czegoś, co obecna wersja ma: znika czy zostaje?”, z opcjami `Znika — makieta jest kompletna`, `Zostają treść i dane, zmienia się wygląd`, `Decyzja przy każdym elemencie` (wtedy pytasz o elementy z pól „Znika z obecnej wersji”). Odpowiedź zapisujesz w „Kluczowych decyzjach” planu.
+
 ### Faza 3: Struktura planu
 
 #### 3.1 Tytuł i plik
@@ -172,11 +175,12 @@ Numeracja IU jest ciągła przez cały plan (IU-1, IU-2, …).
 
 #### 3.4 Pola IU
 
-Format jednostki i całego planu jest w `references/szablon-planu.md` — przeczytaj go przed pisaniem (Faza 4). Pola: Cel, Wymagania, Zależności, Pliki (tabela, 3.6), Delegate to (3.5), Makiety (IU ui/fullstack w planie z `figma_screens`), Skills in play, Podejście, Notatka wykonawcza (opcjonalna), Teksty (verbatim) (obowiązkowe, gdy IU renderuje zatwierdzone treści), Wzorce do naśladowania, Scenariusze testowe, Weryfikacja, Operator checklist (opcjonalna).
+Format jednostki i całego planu jest w `references/szablon-planu.md` — przeczytaj go przed pisaniem (Faza 4). Pola: Cel, Wymagania, Zależności, Pliki (tabela, 3.6), Delegate to (3.5), Makiety (IU ui/fullstack w planie z `figma_screens`), Skills in play, Podejście, Notatka wykonawcza (opcjonalna), Teksty (verbatim) (obowiązkowe, gdy IU renderuje zatwierdzone treści), Znika z obecnej wersji (IU z makietami, która modyfikuje istniejący plik), Wzorce do naśladowania, Scenariusze testowe, Weryfikacja, Operator checklist (opcjonalna).
 
 - **Makiety** — w planie z `figma_screens` każda IU ui/fullstack wymienia ekrany, które buduje (`**Makiety:** \`logowanie-komputer\`, \`logowanie-telefon\``), albo `—`. Planner wkleja builderowi SPEC i PNG tylko tych ekranów (`plan.mjs designerski`); IU bez pola dostaje wszystkie ekrany i cały SPEC, a `sprawdz` daje uwagę, bo pełny SPEC czytany przez każdego buildera w każdej turze to ok. 0,6 M na etap z 8 builderami UI.
 - **Odwołanie do decyzji niesie jej treść.** IU trafia do buildera jako osobny prompt — builder nie widzi reszty planu. Przy każdym odwołaniu dopisz zdanie treści w nawiasie: `strażnik regresji R2 (przy zmianie CTA istniejący tracking zostaje — nowy event, nie modyfikacja)`.
 - **Teksty widoczne dla użytkownika** (etykiety, nagłówki, komunikaty błędów) wklejasz dosłownie w `**Teksty (verbatim):**`, nie przez odwołanie do punktu checklisty — inaczej builder wpisze własną wersję, a review zgłosi rozjazd z zamówieniem.
+- **Znika z obecnej wersji** — IU, która modyfikuje istniejący ekran albo mail według makiety, wypisuje elementy obecnej wersji, których makieta nie ma (tekst, dana jak imię albo kwota, stan, zachowanie), z decyzją przy każdym: `- powitanie z imieniem (email.service.ts:58) — znika (R25: czego makieta nie ma, znika)` albo `— zostaje (D3), pod nagłówkiem`. Elementy bierzesz z pola „Dziś pokazuje” checklisty (0.3), a bez niego z plików `Modyfikuj` tej IU; decyzję z zasady w wymaganiach albo w checkliście. Bez zasady pytasz w Fazie 2: decyzji nie wymyślasz i nie zostawiasz builderowi. Element, który zostaje, ma tekst w „Teksty (verbatim)” i scenariusz; element, który znika, nie wraca w Podejściu ani w scenariuszach, także gdy ma go plik z „Wzorców do naśladowania”. `—`, gdy nic nie znika. `sprawdz` daje uwagę przy IU z makietami i wierszem `Modyfikuj` bez tego pola, a planner fazy przekazuje pole builderowi z zakazem przenoszenia tych elementów z obecnego pliku i ze wzorca (aa-exam E3: podejście i test z obecnego maila z imieniem, makieta bez powitania, run zatrzymany pytaniem buildera).
 - **Scenariusze testowe** — każda pozycja zaczyna się typem: `[Unit]` (test kodu), `[E2E]` (flow w przeglądarce, 3.4b), `[Manual]` (krok człowieka, np. fizyczne urządzenie). Feature-bearing IU ma plik testu w tabeli plików.
 - **Weryfikacja** — tylko kryteria, które scribe review domknie sam: każda pozycja ma komendę w backtickach (`pnpm typecheck`, test jednego pliku wg `.claude/stack/walidacja.md`, sekcja „Runner testów i build”, `grep …`), opisaną oczekiwanym wynikiem. Runner z `e2e/` idzie wyłącznie jako `[E2E]` (3.4b) — bez znacznika scribe uruchomiłby go bez środowiska e2e. Krok człowieka idzie do `Operator checklist` albo `[Manual]`.
 - **Operator checklist** — kroki człowieka po implementacji (akceptacja designera, test na urządzeniu, `supabase db push --linked` na dev/prod po merge'u — w CLI 3 bez flagi celu idzie na lokalny stack). Trafiają do sekcji operatora fazy i do smoke'u operatora przy archiwizacji.
@@ -253,6 +257,7 @@ Plan nie zawiera kodu implementacji (chyba że kształt kodu jest artefaktem des
 - Każda IU: konkretna, w kolejności zależności, z `Delegate to:` wg 3.5 i `Skills in play:` zgodnym z builderem, z tabelą plików wg 3.6, z odwołaniami do decyzji niosącymi treść.
 - Frontmatter ma `design_md`, `figma_spec`, `figma_screens`, `operator_prep` — ścieżki albo jawne `null` / `{}`; `figma_spec` i ekrany `figma_screens` istnieją na dysku. Plan z IU ui/fullstack przeszedł kroki B–C z 1.6 (`figma_spec: null` tylko jako świadoma odpowiedź „projektujemy z głowy”).
 - Scenariusze są konkretne, ale nie są kodem testu; Weryfikacja wg 3.4; `[E2E]` wg 3.4b.
+- Każda IU z makietami i wierszem `Modyfikuj` ma pole „Znika z obecnej wersji”; element z decyzją „znika” nie występuje w Podejściu, Tekstach ani scenariuszach tej IU.
 - Twierdzenia o stanie repo w Ryzykach i Kluczowych decyzjach sprawdzone w kodzie, nie z pamięci: ryzyko budżetu paczki opierasz na routerze (które trasy ładują się przez `lazy(`) i wypisujesz, co faktycznie trafia do pliku startowego (vibersi etap 5: plan liczył widoki strony projektu do pliku startowego, a strona była już leniwa).
 - „Wymagania wstępne operatora” zgadzają się z `operator_prep`; plan z `[E2E]` bez `.env.e2e` ma pozycję setupu albo opt-out do `[Manual]`.
 

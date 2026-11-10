@@ -11,13 +11,13 @@ import { doWzorca, PROFIL } from '../stack/profil.mjs'
  * @typedef {{ tresc: string, e2e: boolean }} Weryfikacja
  * @typedef {{ id: string, numer: number, nazwa: string, faza: number | null, start: number, delegate: string,
  *   tabelaPlikow: boolean, pliki: Plik[], scenariusze: Scenariusz[], weryfikacja: Weryfikacja[], operator: string[],
- *   wymagania: string, opis: string, makiety: string[] | null, problemy: string[] }} Jednostka
+ *   wymagania: string, opis: string, makiety: string[] | null, znika: string | null, problemy: string[] }} Jednostka
  */
 
 const POLE_W_GWIAZDKACH = /^\*\*([^*]+?):\*\*\s*(.*)$/
 const POLE_ZA_GWIAZDKAMI = /^\*\*([^*]+?)\*\*\s*(?:\([^)]*\))?\s*:\s*(.*)$/
 const POLA_IU = new Set(['cel', 'wymagania', 'zaleznosci', 'pliki', 'delegate to', 'skills in play', 'podejscie', 'notatka wykonawcza',
-  'teksty', 'wzorce do nasladowania', 'scenariusze testowe', 'weryfikacja', 'operator checklist', 'makiety'])
+  'teksty', 'wzorce do nasladowania', 'scenariusze testowe', 'weryfikacja', 'operator checklist', 'makiety', 'znika z obecnej wersji'])
 const POLA_LISTY = ['scenariusze testowe', 'weryfikacja', 'operator checklist']
 const POLA_OPISU = ['cel', 'podejscie', 'notatka wykonawcza']
 const SEPARATOR_KOMOREK = /(?<!\\)\|/
@@ -172,6 +172,19 @@ function nazwyMakiet(p) {
 }
 
 /**
+ * Pole "Znika z obecnej wersji" (punkt 41, aa-exam E3: imie w mailu logowania): elementy obecnego ekranu albo maila, ktorych
+ * makieta nie ma, z decyzja przy kazdym. Bez pola builder widzi obecny kod jako wzorzec i makiete bez elementu — i staje.
+ * @param {{ wartosc: string, linie: Linia[] } | undefined} p
+ * @returns {string | null} null = brak pola, pole puste albo placeholder szablonu; „—” = nic nie znika
+ */
+function znikajace(p) {
+  if (!p) return null
+  const surowy = [p.wartosc, ...p.linie.map((l) => l.tekst)].join('\n').trim()
+  if (/^[—–-]$/.test(surowy)) return '—'
+  return bezPlaceholdera(surowy) ? surowy : null
+}
+
+/**
  * @param {{ id: string, numer: number, nazwa: string, faza: number | null, start: number }} naglowek
  * @param {Linia[]} linie blok jednostki bez naglowka
  * @returns {Jednostka}
@@ -194,6 +207,7 @@ export function jednostka(naglowek, linie) {
     wymagania: [pola.get('wymagania')?.wartosc ?? '', ...(pola.get('wymagania')?.linie ?? []).map((l) => l.tekst)].join('\n'),
     opis: POLA_OPISU.map((k) => [pola.get(k)?.wartosc ?? '', ...(pola.get(k)?.linie ?? []).map((l) => l.tekst)].join('\n')).join('\n'),
     makiety: nazwyMakiet(pola.get('makiety')),
+    znika: znikajace(pola.get('znika z obecnej wersji')),
     problemy,
   }
 }
