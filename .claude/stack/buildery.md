@@ -13,6 +13,8 @@ Nazwy ról (`feature-builder-ui`, `feature-builder-data`, `feature-builder-fulls
 | tylko dane: `src/lib/`, hooki danych, `src/services/`, `supabase/migrations/`, `supabase/functions/` | `feature-builder-data` | supabase-dev-guidelines, security, sentry-integration |
 | UI i dane w jednej atomowej IU | `feature-builder-fullstack` | tailwind-react-guidelines, ux-ui-guidelines, supabase-dev-guidelines, security, sentry-integration |
 
+Skill `supabase-dev-guidelines` ładuje się z frontmattera roli w każdym projekcie. Gdy projekt nie używa Supabase, builder pomija komendy i wzorce Supabase z tego skilla, a migracje i dostęp do danych robi narzędziami projektu (z planu i `CLAUDE.md`).
+
 ## Ścieżki warstw
 
 - UI: ekrany, komponenty, layouty, nawigacja, animacje i stany widoczne dla użytkownika — pliki w `src/components/`,

@@ -22,6 +22,12 @@
   },
   "komendyCli": ["vitest"],
   "szablon": {
-    "repo": "https://github.com/AIBiz-Automatyzacje/claude-code-starter.git"
+    "repo": "https://github.com/AIBiz-Automatyzacje/claude-code-starter.git",
+    "innyWariant": {
+      "nazwa": "Expo",
+      "zaleznosc": "expo",
+      "obecna": true,
+      "repo": "https://github.com/AIBiz-Automatyzacje/workspace-template-mobile.git"
+    }
   }
 }

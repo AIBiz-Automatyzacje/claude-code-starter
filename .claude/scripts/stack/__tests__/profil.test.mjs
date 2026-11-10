@@ -37,6 +37,12 @@ test('profil: pola i typy kontraktu', () => {
   assert.doesNotThrow(() => new RegExp(PROFIL.zrodla.frontend))
   assert.ok(PROFIL.testy.powiazane.trim().length > 0)
   assert.ok(PROFIL.komendyCli.every((k) => /^[\w-]+$/.test(k)))
+  // Sygnal drugiego wariantu szablonu dla doctora (znaleziska 2026-11-02 pkt 26): paczka, jej oczekiwana obecnosc i repo wariantu.
+  const { nazwa, zaleznosc, obecna, repo } = PROFIL.szablon.innyWariant
+  assert.ok(nazwa.trim().length > 0 && zaleznosc.trim().length > 0)
+  assert.equal(typeof obecna, 'boolean')
+  assert.match(repo, /^https:\/\/.+\.git$/)
+  assert.notEqual(repo, PROFIL.szablon.repo, 'drugi wariant ma inne repo niz ten profil')
 })
 
 test('doWzorca: znaki specjalne dosłownie', () => {

@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+// Czesc doctor.sh (znaleziska 2026-11-02 pkt 26): warstwa stacku zaklada Supabase i jeden wariant szablonu, a aa-exam
+// (Next.js, Fastify, Drizzle) i dashboard (klient w frontend/, backend w Pythonie) maja inna technologie. Decyzja operatora:
+// osobnych profili nie budujemy, elementy stacku po prostu nie sa wtedy uzywane. Doctor mowi, ktore: wiersz na element,
+// bo jedno zdanie „profil nie pasuje” liczone z korzenia sklamaloby w ukladzie frontend/ + backend/.
+// Wiersze TSV jak higiena.mjs, tylko gdy jest co zglosic; zaden nie blokuje runu.
+//
+// Uzycie: node dopasowanie-stacku.mjs <katalog-projektu>
+
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
+import { PROFIL } from '../stack/profil.mjs'
+import { manifesty, manifestyZZaleznoscia, uzywaSupabase } from '../stack/projekt.mjs'
+
+/** @typedef {[element: string, stan: 'UWAGA' | 'nie dotyczy', szczegol: string, naprawa: string]} Wiersz */
+
+const MANIFESTY = 'package.json korzenia i katalogów pierwszego poziomu'
+
+/**
+ * Profil zaklada Supabase (klucz adresu w env klienta), a projekt nie ma ani katalogu supabase/, ani klienta w zaleznosciach.
+ * @param {string} projekt @param {import('../stack/profil.mjs').Profil} profil @returns {Wiersz | null}
+ */
+function wierszSupabase(projekt, profil) {
+  if (!profil.env.adresSupabase || uzywaSupabase(projekt)) return null
+  return ['stack: Supabase', 'nie dotyczy', `brak katalogu supabase/ i zależności @supabase/supabase-js (${MANIFESTY})`,
+    'projekt bez Supabase: nie stosuj skilla supabase-dev-guidelines, komend supabase z roli buildera danych ani reguł RLS i GRANT; migracje i dostęp do danych narzędziami projektu (plan, CLAUDE.md)']
+}
+
+/**
+ * Sygnal drugiego wariantu szablonu z profilu: paczka obecna w manifestach (profil jej nie zaklada) albo nieobecna w zadnym
+ * (profil ja zaklada). Projekt bez manifestu nie daje sygnalu.
+ * @param {string} projekt @param {import('../stack/profil.mjs').Profil} profil @returns {Wiersz | null}
+ */
+function wierszWariantu(projekt, profil) {
+  const { nazwa, zaleznosc, obecna, repo } = profil.szablon.innyWariant
+  const zPaczka = manifestyZZaleznoscia(projekt, zaleznosc)
+  if (obecna && zPaczka.length) {
+    return ['stack: wariant szablonu', 'UWAGA', `zależność ${zaleznosc} w ${zPaczka.join(', ')}, a profil stacku w .claude/ jej nie zakłada`,
+      `dla tej aplikacji jest wariant ${nazwa} szablonu: ${repo}`]
+  }
+  if (!obecna && manifesty(projekt).length && !zPaczka.length) {
+    return ['stack: wariant szablonu', 'UWAGA', `brak zależności ${zaleznosc} (${MANIFESTY}), a profil stacku w .claude/ ją zakłada`,
+      `dla aplikacji bez ${zaleznosc} jest wariant ${nazwa} szablonu: ${repo}`]
+  }
+  return null
+}
+
+/**
+ * @param {string} projekt katalog projektu
+ * @param {import('../stack/profil.mjs').Profil} [profil]
+ * @returns {Wiersz[]}
+ */
+export function wierszeDopasowania(projekt, profil = PROFIL) {
+  return [wierszSupabase(projekt, profil), wierszWariantu(projekt, profil)].filter((w) => w !== null)
+}
+
+// realpath: katalog tymczasowy macOS (/var → /private/var) daje rozne zapisy tej samej sciezki.
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const projekt = process.argv[2]
+  if (!projekt) {
+    process.stderr.write('Użycie: node dopasowanie-stacku.mjs <katalog-projektu>\n')
+    process.exit(2)
+  }
+  for (const w of wierszeDopasowania(projekt)) process.stdout.write(`${w.join('\t')}\n`)
+}

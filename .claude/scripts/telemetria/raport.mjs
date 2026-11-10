@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { PROG_CTX_START_SKILLA, anomalie, czyPipeline, efortPerKlasa, findingiPerOs, jakoscBota, kontekstPerKlasa, kosztPerEtap, kwantyl, niezawodnosc, skillePerNazwa, skilleZOdziedziczonymKontekstem, ucieczkiBota } from './raport-sekcje.mjs'
+import { otwarteTrafienia, plikKluczy } from './klucze.mjs'
 import { zbierzWszystko } from './zbieranie.mjs'
 import { PLIK_BLEDOW, PLIK_DANYCH, odczytajRekordy } from './zapis.mjs'
 import { KATALOG_PROJEKTOW } from './zrodla.mjs'
@@ -96,6 +97,12 @@ for (const s of skilleZOdziedziczonymKontekstem(skille).slice(-10)) {
 
 out.push('', '7. Anomalie (agent > 2× mediany swojej roli), top 10')
 for (const a of anomalie(agenci).slice(0, 10)) out.push(`   ${String(a.rola).padEnd(24)} ${m(Number(a.koszt_jedn))}  ${a.run} ${a.id}`)
+
+// Hook Stop jest niemy, wiec trafienia skanu kluczy (klucze.mjs) widac tu i w doctorze. Bez okresu: klucz czeka na rotacje.
+const klucze = otwarteTrafienia(plikKluczy(op.plik)).filter((t) => !op.projekt || t.projekt === op.projekt)
+out.push('', '8. Wzorce kluczy w transkryptach runow, niepotwierdzone (po rotacji klucza: klucze.mjs --potwierdz <run>)')
+for (const t of klucze) out.push(`   ${t.run} ${t.projekt ?? '—'}: ${t.wzorzec}, plikow ${t.pliki.length}, trafien ${t.trafien}`)
+if (!klucze.length) out.push('   brak')
 
 const perRola = [...Map.groupBy(agenci, (a) => `${a.rola}|${a.klasa_roli}`)].map(([klucz, l]) => {
   const [rola, klasa] = klucz.split('|')

@@ -95,6 +95,7 @@ W projekcie z konfiguracją ESLint z szablonu te reguły sprawdza maszyna; bez n
 - Sekrety tylko w zmiennych środowiska poza repo.
 - Klucz testowy dostawcy (odpowiedź bez `action`, host testowy) kod przyjmuje tylko w konfiguracji lokalnej albo e2e (jak ją rozpoznać: `.claude/rules/stack.md`, sekcja „Bezpieczeństwo”), z testem odmowy w konfiguracji produkcyjnej — bez warunku klucz testowy w produkcji omija weryfikację.
 - Sekretów i danych osobowych nie logujesz — także do Sentry: redakcja przed wysłaniem.
+- Sekret w obiekcie konfiguracji ma typ, który nie wypisuje wartości w reprezentacji tekstowej, logu ani komunikacie błędu walidacji (`SecretStr` w Pydantic, opakowanie z maską w `toString` i `toJSON`), bo błąd walidacji wypisuje cały obiekt do wyjścia testu i transkryptu agenta.
 - SQL tylko z parametrami, bez sklejania z danymi użytkownika.
 - Bez dynamicznego wykonania kodu z danych użytkownika.
 - Dane z zewnątrz (ciało, query, parametry ścieżki, nagłówki, cookies, pliki, odpowiedzi usług zewnętrznych) parsujesz schematem Zod przed użyciem; kopertę — `z.strictObject`. W Hono walidator (`validator` albo `zValidator`, jeśli projekt go ma) dostaje hook zwracający kopertę błędu; bez pasującego Content-Type ciało przychodzi jako `{}`, więc test na brak nagłówka.
