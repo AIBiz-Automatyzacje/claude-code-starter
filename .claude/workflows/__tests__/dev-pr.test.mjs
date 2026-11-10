@@ -1004,3 +1004,73 @@ test('tryb bez pusha: claude-md i compound nie wypychaja na glowna (aa-exam: pus
   assert.match(zrodlo, /TRYB BEZ PUSHA/)
   assert.match(zrodlo, /git push origin "\$\(git branch --show-current\)"/, 'push bez upstreamu (aa-exam, compound czesci 1)')
 })
+
+// Punkt 39 znalezisk (decyzja operatora 2026-11-08: CodeRabbit opcjonalny; 2026-11-10: tryb lekki). Projekt bez bota przechodzil
+// autopilota i archiwizacje, a /dev-pr konczyl sie raportem „bot nie odpowiedzial”: bramka merge'a wymagala recenzji czubka,
+// a pipeline nie mial obejscia. Tryb wlacza operator (bezBota), nigdy wykrywanie: brak check-runu nie dowodzi braku bota.
+const BEZ_RECENZJI = { ok: false, powod: 'brak recenzji i check-runu bota dla czubka' }
+const STAN_BEZ_BOTA = JSON.stringify({ ...STAN_PR, tury: 0, watki: [], liczniki: { otwarty: 0, rozstrzygniety: 0, 'naprawiony-czeka-na-bota': 0 }, recenzjaCzubka: BEZ_RECENZJI })
+
+test('tryb bez bota: start nie staje na configu bota ani na progu jego recenzji; z botem oba STOP-y zostaja (punkt 10, E5-6)', async () => {
+  const zly = JSON.stringify({ plik: false, odstepstwa: ['brak .coderabbit.yaml'], ostrzezenia: ['CLAUDE.md kieruje PR-y do develop, a baza PR to main'] })
+  const bez = P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, { bezBota: true })
+  assert.deepEqual([bez.powod, bez.ostrzezenia.length], [null, 1], 'ostrzezenie o bazie PR zostaje')
+  const zBotem = P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, {})
+  assert.match(zBotem.powod, /brak \.coderabbit\.yaml/)
+  assert.match(zBotem.naprawa, /albo z bezBota: true \(projekt bez bota recenzji, \/dev-pr --bez-bota\)/)
+  assert.match(P.bramkaStartu({ niewypchnieteGlowna: 2, kontraktBota: zly }, { bezBota: true }).powod, /2 commitów bez origin/, 'niewypchnieta glowna zatrzymuje w kazdym trybie')
+  const tab = { tabela: tabela([['1–3', A, B, 93], ['4–6', B, E, 122]]), galazZadania: true }
+  const duza = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2, bezBota: true }, [tab, POMIAR(152), { ...PRZYG_OK, galaz: 'feature/etap-5' }, START_OK])
+  assert.deepEqual([duza.wynik.status, duza.prompty.length], ['OK', 4], 'bez bota 152 pliki nie zatrzymuja startu')
+  const duzaZBotem = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(152)])
+  assert.equal(duzaZBotem.wynik.status, 'STOP')
+})
+
+test('tryb bez bota: bramka merge bez recenzji czubka; PR bez zadnego checka CI wymaga zgody operatora; z botem warunek zostaje (punkt 8)', async () => {
+  const fakty = { ...MERGE_CZYSTY, watkiNapraw: 0, watkiDoOperatora: 0, recenzjaCzubka: BEZ_RECENZJI }
+  assert.match(P.rekomendacja(fakty, 0), /^NIE MERGUJ — recenzja bota dla czubka/)
+  assert.equal(P.rekomendacja({ ...fakty, bezBota: true, ciBrak: false }, 0), 'MERGUJ')
+  assert.equal(P.rekomendacja({ ...fakty, bezBota: true, ciBrak: true }, 0), 'NIE MERGUJ — CI istnieje albo zgoda operatora (tryb bez bota) (jest: brak CI i brak bota — merge wymaga decyzji operatora)')
+  assert.equal(P.rekomendacja({ ...fakty, bezBota: true, ciBrak: true, zgodaBezCi: true }, 0), 'MERGUJ')
+  assert.match(P.rekomendacja({ ...fakty, bezBota: true }, 0), /^NIE MERGUJ/, 'nieznany stan CI nie daje MERGUJ')
+  assert.match(P.rekomendacja({ ...fakty, bezBota: true, ciBrak: false, ciZielone: false, ciDetal: 'test: FAILURE' }, 0), /^NIE MERGUJ — CI zielone/)
+  assert.match(P.rekomendacja({ ...fakty, bezBota: true, ciBrak: false, watkiNapraw: 1 }, 0), /1 watkow do naprawy/, 'otwarty watek recenzji czlowieka blokuje')
+  const nazwy = (/** @type {object} */ s) => P.warunkiMerge(s).map((/** @type {{ nazwa: string }} */ w) => w.nazwa)
+  assert.ok(nazwy(fakty).includes('recenzja bota dla czubka') && !nazwy({ ...fakty, bezBota: true }).includes('recenzja bota dla czubka'))
+  assert.equal(nazwy(fakty).length, nazwy({ ...fakty, bezBota: true }).length, 'warunek zamieniony, nie usuniety')
+
+  const ok = await uruchom({ etap: 'merge', zadanie: 'z', auto: true, bezBota: true }, [{ ...MERGE_CZYSTY, ciBrak: false, stanPr: STAN_BEZ_BOTA }, { zmergowany: true, detal: 'ok' }])
+  assert.equal(ok.wynik.status, 'ZMERGOWANY')
+  assert.match(ok.prompty[0], /ciBrak = true, gdy `statusCheckRollup` jest pusty \(PR nie ma zadnego checka\), inaczej false\./)
+  assert.doesNotMatch(ok.prompty[1], /recenzja czubka/)
+  const bezCi = await uruchom({ etap: 'merge', zadanie: 'z', auto: true, bezBota: true }, [{ ...MERGE_CZYSTY, ciDetal: 'brak CI', ciBrak: true, stanPr: STAN_BEZ_BOTA }])
+  assert.deepEqual([bezCi.wynik.status, bezCi.prompty.length], ['GOTOWY-DO-DECYZJI', 1], 'auto nie merguje PR bez CI i bez bota')
+  assert.deepEqual(bezCi.wynik.niespelnione.map((/** @type {{ nazwa: string }} */ w) => w.nazwa), ['CI istnieje albo zgoda operatora (tryb bez bota)'])
+  const zgoda = await uruchom({ etap: 'merge', zadanie: 'z', auto: true, bezBota: true, zgodaBezCi: true }, [{ ...MERGE_CZYSTY, ciDetal: 'brak CI', ciBrak: true, stanPr: STAN_BEZ_BOTA }, { zmergowany: true, detal: 'ok' }])
+  assert.equal(zgoda.wynik.status, 'ZMERGOWANY')
+  const zBotem = await uruchom({ etap: 'merge', zadanie: 'z', auto: true }, [{ ...MERGE_CZYSTY, ciBrak: false, stanPr: STAN_BEZ_BOTA }])
+  assert.equal(zBotem.wynik.status, 'GOTOWY-DO-DECYZJI', 'bez flagi brak recenzji czubka nadal blokuje')
+  assert.match(zBotem.wynik.rekomendacja, /recenzja bota dla czubka/)
+  assert.match(wytnij('const MERGE_STAN = {', '\n}'), /required: \['mergeable', 'mergeStateStatus', 'ciZielone', 'ciDetal', 'ciBrak', 'stanPr'\]/)
+})
+
+test('tryb bez bota: compound pominiety bez agenta (nie ma uwag bota do opisania)', async () => {
+  const c = await uruchom({ etap: 'compound', zadanie: 'z', bezBota: true }, [])
+  assert.deepEqual([c.wynik.status, c.prompty.length, c.wynik.wpisy], ['POMINIETY', 0, []])
+})
+
+test('skill /dev-pr: tryb bez bota wlacza operator; kroki 2–5 odpadaja, merge bez CI to pytanie w kazdym trybie', () => {
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-pr/SKILL.md'), 'utf8')
+  const tryb = skill.slice(skill.indexOf('## Tryb bez bota'), skill.indexOf('## Przebieg'))
+  assert.match(skill, /^argument-hint: ".*\[--bez-bota\].*"$/m)
+  assert.match(skill, /\| `--bez-bota` \(z każdym trybem\) \| \*\*Projekt bez bota recenzji\*\* \(CodeRabbit jest opcjonalny\)/)
+  assert.match(tryb, /\*\*Włącza go operator, nigdy Ty\.\*\* Trzy źródła: zapis w pliku projektu/)
+  assert.match(tryb, /`--bez-bota` w komendzie `\/dev-pr` wpisanej przez\n\s+operatora \(jedno wywołanie, bez zapisu\) albo odpowiedź „Projekt bez bota recenzji” na pytanie o config/)
+  assert.match(tryb, /Brak\n\s+`\.coderabbit\.yaml` ani brak check-runu bota po pushu nie dowodzą, że bota nie ma/)
+  assert.match(tryb, /\*\*Każdy etap workflowu\*\* dostaje `bezBota: true`/)
+  assert.match(tryb, /\*\*Kroki 2–5 pomijasz\*\*: nie czekasz na bota i nie wołasz etapów `zbierz`, `napraw` ani `decyzja`/)
+  assert.match(tryb, /`AskUserQuestion` w każdym trybie, także autonomicznym/)
+  assert.match(tryb, /etap z `zgodaBezCi: true` i `auto: true`\) i „Jeszcze nie” \(raport\)\. Sam tej zgody nie przekazujesz\./)
+  assert.match(tryb, /\*\*Compound PR pomijasz\*\*/)
+  assert.match(skill, /albo „Projekt bez bota recenzji”\n\(zapis wyboru i krok 1 z `bezBota: true` wg sekcji „Tryb bez bota”/)
+})

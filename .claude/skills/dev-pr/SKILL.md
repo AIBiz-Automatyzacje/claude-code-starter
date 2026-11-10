@@ -1,7 +1,7 @@
 ---
 name: dev-pr
-description: "Obsługa pull requesta od wysłania do merge'a: tworzy PR, czeka na recenzję bota, klasyfikuje uwagi wg wpływu na projekt, prowadzi tury poprawek i domyka je compoundem do bazy wiedzy. Używaj po `/dev-docs-complete`, gdy zadanie jest gotowe do wysłania, oraz gdy bot zostawił komentarze do obsłużenia."
-argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] [--bez-push] [--review | --bez-review] [--czesc N] | --claude-md <zadanie>"
+description: "Obsługa pull requesta od wysłania do merge'a: tworzy PR, czeka na recenzję bota, klasyfikuje uwagi wg wpływu na projekt, prowadzi tury poprawek i domyka je compoundem do bazy wiedzy. Bot recenzji jest opcjonalny: z `--bez-bota` skill prowadzi PR do merge'a bez niego. Używaj po `/dev-docs-complete`, gdy zadanie jest gotowe do wysłania, oraz gdy bot zostawił komentarze do obsłużenia."
+argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] [--bez-push] [--review | --bez-review] [--czesc N] [--bez-bota] | --claude-md <zadanie>"
 ---
 
 # `/dev-pr` — od pull requesta do merge'a
@@ -40,12 +40,44 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | `--review` / `--bez-review` (z każdym trybem) | Odpowiedź z góry na pytanie o krótkie review zmian po archiwizacji (krok 1): `--review` = krótkie review, potem PR; `--bez-review` = PR bez review. |
 | `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `--bez-push` (z każdym trybem) | Etapy `compound` i `claude-md` commitują lokalnie i nie wypychają głównej: w projekcie, gdzie push na główną to deploy, push zostaje operatorowi. |
+| `--bez-bota` (z każdym trybem) | **Projekt bez bota recenzji** (CodeRabbit jest opcjonalny): PR, CI, krótkie review zmian po archiwizacji i merge, bez czekania na bota i bez tur. Przebieg w sekcji „Tryb bez bota”. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
 
 **Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Wyczerpany limit = domknięcie,
 nawet gdy zostały otwarte wątki. Nie proponuj „jeszcze jednej tury" — zaraportuj, co zostało, i oddaj decyzję operatorowi.
 Wątki otwarte po suficie i wątki odłożone „do części N+1” przekazujesz etapowi `compound` w `odlozone` — trafiają do
 `known-issues.md` zadania z linkiem wątku, a start kolejnej części zbiera nierozwiązane wątki PR poprzednich części.
+
+## Tryb bez bota
+
+CodeRabbit jest opcjonalny: zmienia tylko to, kto recenzuje PR jako pierwszy. Projekt bez niego domyka PR tym trybem.
+
+- **Włącza go operator, nigdy Ty.** Trzy źródła: zapis w pliku projektu (`node .claude/scripts/pr/tryb-recenzji.mjs` zwraca
+  `recenzjaPr: "bez-bota"` — sprawdzasz to przed krokiem 1 w każdym wywołaniu), `--bez-bota` w komendzie `/dev-pr` wpisanej przez
+  operatora (jedno wywołanie, bez zapisu) albo odpowiedź „Projekt bez bota recenzji” na pytanie o config (krok 1). Brak
+  `.coderabbit.yaml` ani brak check-runu bota po pushu nie dowodzą, że bota nie ma: bot bywa wstrzymany, pomija PR albo wyczerpał
+  limit planu, a w takim projekcie bramka recenzji czubka ma zostać. Pole `blad` w wyniku skryptu pokazujesz operatorowi i idziesz
+  trybem z botem.
+- **Zapis wyboru.** Po odpowiedzi „Projekt bez bota recenzji”: `node .claude/scripts/pr/tryb-recenzji.mjs --ustaw bez-bota`
+  (plik `.claude/projekt.json`; szablon go nie dostarcza, więc `/sync-template` go nie nadpisze), commit tego pliku jawną ścieżką
+  na `feature/<zadanie>` i znów krok 1. Z pliku czytają też `/dev-plan` i archiwizacja: próg 150 plików to limit recenzji bota
+  i w projekcie bez bota jest tylko uwagą.
+- **Każdy etap workflowu** dostaje `bezBota: true`. Start nie sprawdza wtedy configu bota ani progu 150 plików jego recenzji
+  (ostrzeżenie o bazie PR zostaje).
+- **Krok 1** idzie jak zwykle: czyste drzewo, zmiany po archiwizacji, P3 z realnym scenariuszem, zgoda na wysłanie, krótkie
+  review. Krótkie review jest tu jedynym review zmian po archiwizacji; każda faza przeszła własne review w autopilocie.
+- **Kroki 2–5 pomijasz**: nie czekasz na bota i nie wołasz etapów `zbierz`, `napraw` ani `decyzja`. Tur nie ma.
+- **Krok 6, merge**: etap `merge` z `bezBota: true`. Warunki: `mergeable = MERGEABLE`, `mergeStateStatus = CLEAN`, zero otwartych
+  wątków (recenzja człowieka na GitHubie też je tworzy), CI zielone i PR ma choć jeden check CI. `niespelnione` z warunkiem
+  „CI istnieje albo zgoda operatora (tryb bez bota)” → `AskUserQuestion` w każdym trybie, także autonomicznym: „PR nie ma CI ani
+  recenzji bota, więc przed merge'em nie sprawdziło go nic poza naszym pipeline'em. Mergować?” z opcjami „Merguj” (ten sam
+  etap z `zgodaBezCi: true` i `auto: true`) i „Jeszcze nie” (raport). Sam tej zgody nie przekazujesz. Otwarte wątki recenzji
+  człowieka → raport z ich listą; operator rozstrzyga je sam.
+- **Compound PR pomijasz**: opisuje klasy błędów, które bot znalazł po naszym review, a tych nie ma (workflow zwraca
+  `POMINIETY`). Krok „Uzgodnienie CLAUDE.md” idzie jak zwykle.
+- **Raport końcowy**: „Tury: nie dotyczy (bez bota)”, „Wątki: nie dotyczy”, „📚 Baza wiedzy: pominięta (tryb bez bota)”; sekcje
+  propozycji piszesz jednym słowem „brak”. Polecenie dla kolejnej części i dla nowej sesji niesie `--bez-bota` tylko wtedy,
+  gdy tryb przyszedł z flagi, a nie z pliku projektu.
 
 ## Przebieg
 
@@ -134,7 +166,8 @@ przekazujesz je **w każdym** kolejnym etapie (`zbierz`, `napraw`, `merge`, `com
 
 `status: "STOP"` z polem `niewypchnieteGlowna` → `AskUserQuestion`: „Wypchnę główną” (koniec; push to decyzja operatora, może oznaczać
 deploy) albo „Jadą w tym PR” (znów krok 1 z `zGlowna: true`). `status: "STOP"` z polem `konfigBota` → pokaż `odstepstwa` i pytaj: „/coderabbit-setup”
-(uruchamiasz skill, commit na tej gałęzi, znów krok 1) albo „Bez poprawnego configu” (krok 1 z `bezKonfigu: true`).
+(uruchamiasz skill, commit na tej gałęzi, znów krok 1), „Bez poprawnego configu” (krok 1 z `bezKonfigu: true`: bot działa mimo odstępstw) albo „Projekt bez bota recenzji”
+(zapis wyboru i krok 1 z `bezBota: true` wg sekcji „Tryb bez bota”; kolejne wywołania czytają wybór z `.claude/projekt.json`).
 
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: po STOP-ie nie commituj zmian na własną rękę, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej. Brudne drzewo ma drogę przed startem (akapit „Czyste drzewo”): commit

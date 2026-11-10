@@ -21,6 +21,7 @@ import { fileURLToPath } from 'node:url'
 import { pozycjaBajtuSterujacego } from '../wiedza/walidacja.mjs'
 
 import { kontraktBota } from '../pr/kontrakt-bota.mjs'
+import { PLIK_USTAWIEN, trybRecenzji } from '../pr/tryb-recenzji.mjs'
 
 /** @typedef {{ element: string, stan: 'OK' | 'UWAGA' | 'nie dotyczy', szczegol: string, instalacja: string }} Wiersz */
 
@@ -165,7 +166,15 @@ export function bajtySterujace(projekt) {
 export function konfiguracjaCodeRabbit(projekt) {
   const element = 'CodeRabbit'
   const plik = join(projekt, '.coderabbit.yaml')
-  if (!existsSync(plik)) return { element, stan: 'UWAGA', szczegol: 'brak .coderabbit.yaml — /dev-pr czeka na recenzje bota', instalacja: '/coderabbit-setup' }
+  // Punkt 39: bot recenzji jest opcjonalny, a wybor „bez bota” operator zapisuje w pliku ustawien projektu.
+  const tryb = trybRecenzji(projekt)
+  if (tryb.blad) return { element, stan: 'UWAGA', szczegol: tryb.blad, instalacja: `popraw ${PLIK_USTAWIEN} (recenzjaPr: "bot" albo "bez-bota")` }
+  if (tryb.recenzjaPr === 'bez-bota') {
+    return existsSync(plik)
+      ? { element, stan: 'UWAGA', szczegol: `${PLIK_USTAWIEN} mowi „bez bota”, a .coderabbit.yaml istnieje — /dev-pr pojdzie bez recenzji bota`, instalacja: 'node .claude/scripts/pr/tryb-recenzji.mjs --ustaw bot albo usun .coderabbit.yaml' }
+      : { element, stan: 'nie dotyczy', szczegol: `projekt bez bota recenzji (${PLIK_USTAWIEN})`, instalacja: '—' }
+  }
+  if (!existsSync(plik)) return { element, stan: 'UWAGA', szczegol: 'brak .coderabbit.yaml — bot recenzji PR jest opcjonalny: z botem /coderabbit-setup, bez bota /dev-pr --bez-bota', instalacja: '/coderabbit-setup' }
   if (readFileSync(plik, 'utf8').includes(STARA_WIEDZA) && !existsSync(join(projekt, STARA_WIEDZA))) {
     return { element, stan: 'UWAGA', szczegol: `.coderabbit.yaml wskazuje usuniety ${STARA_WIEDZA}`, instalacja: 'zamien na docs/learned-patterns.md' }
   }

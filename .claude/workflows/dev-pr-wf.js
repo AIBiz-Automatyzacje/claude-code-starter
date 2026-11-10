@@ -280,9 +280,10 @@ const MERGE_STAN = {
     mergeStateStatus: { type: ['string', 'null'] },
     ciZielone: { type: 'boolean', description: 'wszystkie wymagane checki CI zakonczone sukcesem' },
     ciDetal: { type: 'string', description: 'lista checkow z ich stanem (albo "brak CI")' },
+    ciBrak: { type: 'boolean', description: 'true, gdy statusCheckRollup jest pusty: PR nie ma zadnego checka' },
     stanPr: { type: 'string', description: 'stdout stan-pr.mjs 1:1 (JSON w jednej linii)' },
   },
-  required: ['mergeable', 'mergeStateStatus', 'ciZielone', 'ciDetal', 'stanPr'],
+  required: ['mergeable', 'mergeStateStatus', 'ciZielone', 'ciDetal', 'ciBrak', 'stanPr'],
 }
 
 const MERGE_WYNIK = {
@@ -505,7 +506,11 @@ function warunkiMerge(stan) {
     { nazwa: 'zero watkow do-operatora', ok: stan.watkiDoOperatora === 0, jest: `${stan.watkiDoOperatora}`, watki: true },
     { nazwa: 'CI zielone', ok: stan.ciZielone === true, jest: stan.ciDetal, watki: false },
     // Bez tego warunku poprawka ostatniej tury przechodzila bez recenzji (piszemy_wirale PR #7: NEUTRAL „Review rate limited” jako zielony).
-    { nazwa: 'recenzja bota dla czubka', ok: stan.recenzjaCzubka?.ok !== false, jest: stan.recenzjaCzubka?.powod ?? 'nie sprawdzono', watki: false },
+    // Projekt bez bota recenzji (punkt 39, decyzja operatora: CodeRabbit opcjonalny) nie ma recenzji czubka. Zostaje wtedy jeden
+    // sygnal spoza naszego pipeline'u, CI: PR bez zadnego checka nie dostaje MERGUJ, dopoki operator nie zdecyduje o merge'u sam.
+    stan.bezBota === true
+      ? { nazwa: 'CI istnieje albo zgoda operatora (tryb bez bota)', ok: stan.ciBrak === false || stan.zgodaBezCi === true, jest: stan.ciBrak === false ? 'PR ma checki CI' : stan.zgodaBezCi === true ? 'brak CI, zgoda operatora' : 'brak CI i brak bota — merge wymaga decyzji operatora', watki: false }
+      : { nazwa: 'recenzja bota dla czubka', ok: stan.recenzjaCzubka?.ok !== false, jest: stan.recenzjaCzubka?.powod ?? 'nie sprawdzono', watki: false },
     { nazwa: 'krotkie review duzej ostatniej tury', ok: stan.krotkieReview?.wymagane !== true, jest: stan.krotkieReview?.powod ?? 'nie dotyczy', watki: false },
   ]
 }
@@ -640,7 +645,7 @@ const PROG_CZESCI = 150
 // E5-6 (vibersi etap 5, cz. 3): liczba w tabeli czesci pochodzi z archiwizacji, a commity smoke'u po archiwum dochodza do
 // ostatniej czesci (122 -> 152) — bot pominal recenzje i poprawka bezpieczenstwa nie weszla na main. Start przelicza czubek
 // czesci skryptem (filtry .coderabbit.yaml); wynik >= progu zatrzymuje start przed pushem.
-function rozmiarCzesci(stdout, cz) {
+function rozmiarCzesci(stdout, cz, bezBota = false) {
   const kto = cz.czesc ? `część ${cz.czesc}` : 'PR'
   let r
   try {
@@ -653,6 +658,8 @@ function rozmiarCzesci(stdout, cz) {
     return { pliki: null, blad: `pomiar rozmiaru ${cz.czesc ? `części ${cz.czesc}` : 'PR'} nieczytelny (rozmiar.mjs: ${przyczyna}) — sprawdź gałąź feature/<zadanie>${cz.czesc ? ' i commit cięcia z tabeli „Części PR”' : ''}` }
   }
   if (r.doRecenzji < PROG_CZESCI) return { pliki: r.doRecenzji, blad: null }
+  // Prog to limit recenzji bota. Bez bota (punkt 39) nikt nie pominie recenzji z powodu rozmiaru, wiec start idzie dalej z uwaga.
+  if (bezBota) return { pliki: r.doRecenzji, blad: null, uwaga: `${kto} ma ${r.doRecenzji} plików (próg recenzji bota ${PROG_CZESCI} nie obowiązuje w trybie bez bota)` }
   // Jedyna droga wykonalna w pipeline: cięcie na commicie archiwizacji (commity po nim = smoke) — nowa ostatnia część.
   const tabela = cz.czesc
     ? `wiersz części ${cz.czesc} kończy się na nim, nowy wiersz ${cz.czesc + 1} od niego do czubka gałęzi`
@@ -685,11 +692,11 @@ function bramkaStartu(pomiar, opcje) {
       naprawa: "Wypchnij główną (push może oznaczać deploy, więc to decyzja operatora) albo potwierdź, że jadą w tym PR: etap start z zGlowna: true.",
     }
   }
-  if (kontrakt?.odstepstwa?.length && !opcje.bezKonfigu) {
+  if (kontrakt?.odstepstwa?.length && !opcje.bezKonfigu && !opcje.bezBota) {
     return {
       ostrzezenia, pola: { konfigBota: kontrakt },
       powod: `config bota niezgodny z kontraktem pipeline'u: ${kontrakt.odstepstwa.join('; ')}`,
-      naprawa: '/coderabbit-setup (nadpisanie po potwierdzeniu) i commit na tej gałęzi, albo decyzja operatora: etap start z bezKonfigu: true.',
+      naprawa: '/coderabbit-setup (nadpisanie po potwierdzeniu) i commit na tej gałęzi, albo decyzja operatora: etap start z bezKonfigu: true (bot działa mimo odstępstw) albo z bezBota: true (projekt bez bota recenzji, /dev-pr --bez-bota).',
     }
   }
   return { ostrzezenia, pola: {}, powod: null, naprawa: null }
@@ -775,6 +782,11 @@ TRYB BEZ PUSHA (decyzja operatora, bo push na glowna to deploy): NIE czekaj na C
 // Etap start: operator swiadomie wiezie niewypchniete commity glownej w tym PR albo idzie bez poprawnego configu bota.
 const zGlowna = !!(args && args.zGlowna)
 const bezKonfigu = !!(args && args.bezKonfigu)
+// Projekt bez bota recenzji (punkt 39): start nie sprawdza configu bota ani progu jego recenzji, bramka merge'a nie czeka na
+// recenzje czubka, compound nie ma uwag bota do opisania. Tryb wlacza operator (skill: --bez-bota), nigdy wykrywanie.
+const bezBota = !!(args && args.bezBota)
+// Etap merge w trybie bez bota: operator zgodzil sie na merge PR bez zadnego checka CI.
+const zgodaBezCi = !!(args && args.zgodaBezCi)
 const reviewOstatniejTury = !!(args && args.reviewOstatniejTury)
 const decyzje = (args && Array.isArray(args.decyzje)) ? args.decyzje : []
 
@@ -835,13 +847,14 @@ Zwroc obiekt zgodny ze schematem.`,
     { schema: ROZMIAR_CZESCI, agentType: 'klasa-mechaniczny-pomiar', label: `pr:rozmiar-czesci:${cz ? cz.czesc : 'pr'}:${zadanie}` }
   )
   if (!pomiar) return { status: 'BLAD', etap, czesc, powod: 'Pomiar rozmiaru PR zwrocil null (agent padl).' }
-  const stopStartu = bramkaStartu(pomiar, { zGlowna, bezKonfigu })
+  const stopStartu = bramkaStartu(pomiar, { zGlowna, bezKonfigu, bezBota })
   for (const u of stopStartu.ostrzezenia) log(`/dev-pr: UWAGA — ${u}`)
   if (stopStartu.powod) {
     log(`/dev-pr: STOP — ${stopStartu.powod}`)
     return { status: 'STOP', etap, ...(cz ? { czesc: cz.czesc, czesci: cz.czesci } : {}), ...stopStartu.pola, powod: stopStartu.powod, naprawa: stopStartu.naprawa }
   }
-  const rozmiar = rozmiarCzesci(pomiar.wynik, cz || { czesc: null, pliki: null })
+  const rozmiar = rozmiarCzesci(pomiar.wynik, cz || { czesc: null, pliki: null }, bezBota)
+  if (rozmiar.uwaga) log(`/dev-pr: UWAGA — ${rozmiar.uwaga}`)
   if (rozmiar.blad) {
     log(`/dev-pr${cz ? ` czesc ${cz.czesc}` : ''}: STOP — ${rozmiar.blad}`)
     return { status: 'STOP', etap, ...(cz ? { czesc: cz.czesc, czesci: cz.czesci } : {}), powod: rozmiar.blad, rozmiar: { pliki: rozmiar.pliki, tabela: cz ? cz.pliki : null, prog: PROG_CZESCI } }
@@ -1259,7 +1272,7 @@ if (etap === 'merge') {
     `Zbierz stan pull requesta zadania "${zadanie}" na potrzeby bramki merge'a. NICZEGO nie mergeuj,
 nie zmieniaj kodu i nie odpowiadaj w watkach — masz TYLKO odczytac fakty.
 
-1. Stan PR i CI wg bloku stanu nizej.
+1. Stan PR i CI wg bloku stanu nizej. ciBrak = true, gdy \`statusCheckRollup\` jest pusty (PR nie ma zadnego checka), inaczej false.
 2. stanPr = stdout 1:1 komendy \`${KOMENDA_STANU}\`. Watkow nie liczysz i nie oceniasz: robi to orkiestrator.
 
 Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
@@ -1276,6 +1289,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     watkiNapraw: stanPr ? stanPr.liczniki.otwarty : 1, watkiDoOperatora: 0,
     recenzjaCzubka: stanPr ? stanPr.recenzjaCzubka : { ok: false, powod: `stan-pr.mjs nieczytelny: ${String(stan.stanPr).slice(0, 200)}` },
     krotkieReview,
+    bezBota, ciBrak: stan.ciBrak, zgodaBezCi,
   }
   const informacje = stanPr ? {
     rozstrzygniete: stanPr.watki.filter((w) => w.stan === 'rozstrzygniety').map((w) => w.plik),
@@ -1297,7 +1311,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   }
   const merge = await agent(
     `Decyzje o merge'u pull requesta zadania "${zadanie}" podjal operator, a warunki bramki zweryfikowal kod orkiestratora
-(mergeable, mergeStateStatus, watki, CI, recenzja czubka). Nie oceniasz tej decyzji i nie sprawdzasz jej z dokumentami projektu.
+(mergeable, mergeStateStatus, watki, CI${bezBota ? '' : ', recenzja czubka'}). Nie oceniasz tej decyzji i nie sprawdzasz jej z dokumentami projektu.
 Wykonaj: \`gh pr merge --squash --delete-branch\`. Gdy komenda zwroci blad — NIE probuj innych strategii
 ani \`--admin\`: zwroc zmergowany=false z trescia bledu. Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
     // Klasa bez CLAUDE.md: agent z dokumentami projektu odmowil merge'a po decyzji operatora (aa-exam PR #48).
@@ -1403,6 +1417,11 @@ Zwroc obiekt zgodny ze schematem.`,
 // Klasa projektowa wraca jako wpis z paths i ocena wyzszego szczebla; propozycji nie wysylamy poza projekt (prywatny kod).
 
 if (etap === 'compound') {
+  // Compound PR dokumentuje klasy bledow, ktore bot znalazl PO naszym review (pole ucieczki). Bez bota nie ma tego materialu.
+  if (bezBota) {
+    log('/dev-pr: compound pominiety — tryb bez bota, brak uwag bota do zapisania w bazie wiedzy')
+    return { status: 'POMINIETY', etap, powod: 'tryb bez bota: compound PR opisuje uwagi bota, a tych nie ma', wpisy: [], propozycjeBramek: [], bramkiWdrozone: [], propozycjeDoReviewerow: [] }
+  }
   const wynik = await agent(
     `Jestes czescia pipeline'u /dev-pr. Ten etap zamienia uwagi bota z tego pull requesta we wpisy bazy wiedzy,
 bo bez nich te same klasy bledow wracaja w kolejnym PR.

@@ -6,7 +6,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { doRecenzji, filtrySciezek, PROG_PLIKOW_PR } from '../pr/rozmiar.mjs'
+import { doRecenzji, FILTRY_BEZ_BOTA, filtrySciezek, PROG_PLIKOW_PR } from '../pr/rozmiar.mjs'
+import { PLIK_USTAWIEN, projektBezBota } from '../pr/tryb-recenzji.mjs'
 import { bezOgonkow } from './pola-iu.mjs'
 
 /**
@@ -140,10 +141,11 @@ function propozycjaCzesci(fazy, filtry) {
   })
 }
 
-/** @param {string} projekt @returns {string[]} filtry `reviews.path_filters` z .coderabbit.yaml projektu */
+/** @param {string} projekt @returns {string[]} filtry `reviews.path_filters` z .coderabbit.yaml projektu; projekt bez bota: wykluczenia domyslne */
 function filtryProjektu(projekt) {
   const plik = join(projekt, '.coderabbit.yaml')
-  return existsSync(plik) ? filtrySciezek(readFileSync(plik, 'utf8')) : []
+  if (existsSync(plik)) return filtrySciezek(readFileSync(plik, 'utf8'))
+  return projektBezBota(projekt) ? FILTRY_BEZ_BOTA : []
 }
 
 /**
@@ -166,6 +168,16 @@ export function rozmiarPlanu(plan, projekt) {
 /** @param {RozmiarCzesci[]} czesci @returns {string} */
 const opisCzesci = (czesci) => czesci.map((c) => `część ${c.czesc}: fazy ${c.fazy} (${c.pliki})`).join(', ')
 
+/** @param {Plan} plan @returns {string[]} sekcja „Części PR” musi pokrywac fazy po kolei, bez luk (takze w projekcie bez bota) */
+function bledyUkladuCzesci(plan) {
+  const czesci = plan.czesci?.czesci ?? []
+  const ostatnia = plan.fazy.at(-1)?.numer ?? 0
+  const poKolei = czesci.every((c, i) => c.czesc === i + 1 && c.od <= c.do && c.od === (i ? czesci[i - 1].do + 1 : 1))
+  return czesci.length && (!poKolei || czesci.at(-1)?.do !== ostatnia)
+    ? [`Części PR: części numerowane od 1 pokrywają fazy 1–${ostatnia} po kolei, bez luk i nakładania — cięcie tylko na granicy faz`]
+    : []
+}
+
 /**
  * Bledy i uwagi sekcji `## Części PR`: plan powyzej progu bez sekcji, czesci nie pokrywajace faz po kolei, czesc >= prog.
  * @param {Plan} plan
@@ -177,6 +189,16 @@ export function sprawdzCzesci(plan, projekt) {
   /** @type {{ bledy: string[], uwagi: string[] }} */
   const w = { bledy: [], uwagi: [] }
   const zrodlo = 'tabele plików IU + test obok pliku kodu, po filtrach .coderabbit.yaml'
+  // Prog to limit recenzji bota (punkt 39). Projekt bez bota nie musi dzielic PR z powodu rozmiaru: zostaje uwaga o liczbie plikow,
+  // a sekcja „Części PR”, gdy plan ja ma (np. wdrozenie etapami), jest sprawdzana tylko co do ukladu faz.
+  if (projektBezBota(projekt)) {
+    if (r.szacunek > PROG_PLIKOW_PR) {
+      w.uwagi.push(`plan ma ~${r.szacunek} plików (tabele plików IU + test obok pliku kodu) — projekt bez bota recenzji (${PLIK_USTAWIEN}), próg ${PROG_PLIKOW_PR}`
+        + ' plików jego recenzji nie obowiązuje; sekcja „## Części PR” tylko wtedy, gdy zmiana ma iść w kilku PR-ach z innego powodu')
+    }
+    if (plan.czesci) w.bledy.push(...plan.czesci.problemy, ...bledyUkladuCzesci(plan))
+    return w
+  }
   // Faza > progu zawsze; faza = prog tylko, gdy plan i tak trzeba ciac (jeden PR do progu wlacznie).
   const fazaZaDuza = Object.entries(r.fazy).filter(([, n]) => n > PROG_PLIKOW_PR || (n === PROG_PLIKOW_PR && r.szacunek > PROG_PLIKOW_PR)).map(([f, n]) => `faza ${f} (~${n})`)
   if (fazaZaDuza.length) {
@@ -198,12 +220,7 @@ export function sprawdzCzesci(plan, projekt) {
   if (r.szacunek <= PROG_PLIKOW_PR) {
     w.uwagi.push(`sekcja „## Części PR” przy ~${r.szacunek} plikach do recenzji — archiwizacja wyśle jeden PR, gdy diff zmieści się w ${PROG_PLIKOW_PR}`)
   }
-  const { czesci } = plan.czesci
-  const ostatnia = plan.fazy.at(-1)?.numer ?? 0
-  const poKolei = czesci.every((c, i) => c.czesc === i + 1 && c.od <= c.do && c.od === (i ? czesci[i - 1].do + 1 : 1))
-  if (czesci.length && (!poKolei || czesci.at(-1)?.do !== ostatnia)) {
-    w.bledy.push(`Części PR: części numerowane od 1 pokrywają fazy 1–${ostatnia} po kolei, bez luk i nakładania — cięcie tylko na granicy faz`)
-  }
+  w.bledy.push(...bledyUkladuCzesci(plan))
   for (const c of r.czesci ?? []) {
     if (c.pliki >= PROG_PLIKOW_PR) {
       w.bledy.push(`Części PR: część ${c.czesc} (fazy ${c.fazy}) ma ~${c.pliki} plików do recenzji — każda część < ${PROG_PLIKOW_PR}`

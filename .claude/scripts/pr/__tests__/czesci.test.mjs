@@ -226,3 +226,32 @@ test('sekcja planu przy calosci do 150 = jeden PR z uwaga; sekcja z bledem zapis
     rmSync(granica.repo, { recursive: true, force: true })
   }
 })
+
+// Punkt 39 (CodeRabbit opcjonalny): prog 150 to limit recenzji bota. Projekt z wyborem „bez bota” w .claude/projekt.json nie tnie
+// PR z powodu rozmiaru; czesci zostaja tylko wtedy, gdy wyznaczyl je plan.
+test('projekt bez bota recenzji: ponad 150 = jeden PR bez uwagi; sekcja planu tnie takze przy czesci >= 150', () => {
+  const duze = [{ pliki: 60, kroki: PELNA }, { pliki: 40, kroki: ['feat'] }, { pliki: 50, kroki: ['feat'] }, { pliki: 60, kroki: ['feat'] }]
+  const bezBota = (/** @type {string} */ repo) => {
+    mkdirSync(join(repo, '.claude'), { recursive: true })
+    writeFileSync(join(repo, '.claude/projekt.json'), '{ "recenzjaPr": "bez-bota" }\n')
+  }
+  const jeden = repoZadania(duze)
+  try {
+    assert.equal(czesci(jeden.repo).w.zrodlo, 'pomiar', 'z botem: ciecie z pomiaru')
+    bezBota(jeden.repo)
+    const { kod, w } = czesci(jeden.repo)
+    assert.deepEqual([kod, w.ok, w.zrodlo, w.bezBota, w.uwaga], [0, true, 'jedna', true, null])
+    assert.deepEqual(w.czesci.map((/** @type {{ fazy: string, doRecenzji: number }} */ c) => [c.fazy, c.doRecenzji]), [['1–4', 210]])
+  } finally {
+    rmSync(jeden.repo, { recursive: true, force: true })
+  }
+  const zPlanu = repoZadania(duze, '| Część | Fazy |\n|---|---|\n| 1 | 1–3 |\n| 2 | 4 |')
+  try {
+    bezBota(zPlanu.repo)
+    const { kod, w } = czesci(zPlanu.repo)
+    assert.deepEqual([kod, w.ok, w.zrodlo, w.bezBota], [0, true, 'plan', true])
+    assert.deepEqual(w.czesci.map((/** @type {{ fazy: string, doRecenzji: number }} */ c) => [c.fazy, c.doRecenzji]), [['1–3', 150], ['4', 60]])
+  } finally {
+    rmSync(zPlanu.repo, { recursive: true, force: true })
+  }
+})

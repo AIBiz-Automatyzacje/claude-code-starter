@@ -147,7 +147,8 @@ function czesciPr(czesci, nazwaZadania) {
   const lista = czesci.czesci
   const opis = lista.map((c) => `część ${c.czesc}: fazy ${c.fazy} (${c.doRecenzji})`).join(', ')
   // Jeden PR do progu wlacznie (P19), czesc PR wieloczesciowego ponizej progu (czesci.mjs).
-  const zaDuza = lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
+  // Projekt bez bota recenzji (czesci.mjs: bezBota z .claude/projekt.json): prog to limit bota, rozmiar nie jest uwaga.
+  const zaDuza = czesci.bezBota !== true && lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
   const uwaga = zaDuza || czesci.uwaga
     ? `UWAGA: ${czesci.uwaga || (lista.length === 1 ? `PR powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota` : `część z ${PROG_PLIKOW_PR} lub więcej plikami do recenzji bota (część ma mieć mniej)`)} — ${opis}`
     : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge --czesc 1\`` : null
@@ -155,7 +156,9 @@ function czesciPr(czesci, nazwaZadania) {
   const skrot = (sha) => String(sha).slice(0, 12)
   const zrodlo = czesci.zrodlo === 'plan' ? 'sekcja „Części PR” planu' : 'pomiar na końcach faz'
   const sekcja = [
-    `PR w ${lista.length} częściach (cięcie: ${zrodlo}; pliki do recenzji bota po filtrach .coderabbit.yaml, próg ${PROG_PLIKOW_PR}).`,
+    czesci.bezBota === true
+      ? `PR w ${lista.length} częściach (cięcie: ${zrodlo}; projekt bez bota recenzji, liczba plików informacyjnie).`
+      : `PR w ${lista.length} częściach (cięcie: ${zrodlo}; pliki do recenzji bota po filtrach .coderabbit.yaml, próg ${PROG_PLIKOW_PR}).`,
     '',
     '| Część | Fazy | Od | Do | Plików do recenzji |',
     '|---|---|---|---|---|',

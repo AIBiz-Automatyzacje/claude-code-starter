@@ -17,7 +17,13 @@ import { realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
+import { projektBezBota } from './tryb-recenzji.mjs'
+
 const PLIK_KONFIGURACJI = '.coderabbit.yaml'
+// Projekt bez bota recenzji (punkt 39) nie ma .coderabbit.yaml, a rozmiar PR jest tam informacja dla czlowieka: liczymy go
+// tymi samymi wykluczeniami, ktore dostaje projekt z botem (path_filters z templates/coderabbit-base.yaml; rownosc pilnuje test),
+// zeby docs/, .claude/ i lockfile nie zawyzaly liczby. Projekt z botem bez pliku zostaje bez filtrow: bot tez ich wtedy nie ma.
+export const FILTRY_BEZ_BOTA = ['!node_modules/**', '!docs/**', '!.claude/**', '!**/CLAUDE.md', '!package-lock.json', '!*.lock']
 // Limit plikow PR w recenzji bota (CodeRabbit Pro: 150; ETAP1 §5 — odmowa przy 222). Czesc PR ma byc ponizej, plan powyzej
 // wymaga sekcji „Części PR” (plan/czesci-pr.mjs); kopia w dev-docs-complete-wf.js (workflowy sa self-contained).
 export const PROG_PLIKOW_PR = 150
@@ -136,12 +142,14 @@ function bazaDomyslna(projekt, czubek) {
 }
 
 /**
- * Filtry z .coderabbit.yaml w czubku (`git show`); brak pliku w czubku = brak filtrow.
+ * Filtry z .coderabbit.yaml w czubku (`git show`); brak pliku w czubku = brak filtrow, a w projekcie bez bota recenzji
+ * (.claude/projekt.json) wykluczenia domyslne.
  * @param {string} projekt @param {string} czubek @returns {string[]}
  */
 function filtryCzubka(projekt, czubek) {
   const w = git(projekt, ['show', `${czubek}:${PLIK_KONFIGURACJI}`])
-  return w.ok ? filtrySciezek(w.stdout) : []
+  if (w.ok) return filtrySciezek(w.stdout)
+  return projektBezBota(projekt) ? FILTRY_BEZ_BOTA : []
 }
 
 /**

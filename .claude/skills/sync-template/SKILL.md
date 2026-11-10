@@ -141,10 +141,10 @@ Push, utworzenie PR i merge to publikacja: każda z tych czynności wymaga zgody
 
 Słowo `chore(szablon)` wyłącza recenzję tylko wtedy, gdy `.coderabbit.yaml` projektu ma je w
 `reviews.auto_review.ignore_title_keywords`. Sync tego pliku nie rusza: słowo dopisuje `/coderabbit-setup` albo jedna linia
-w configu, zanim powstanie PR. PR synca nie idzie przez `/dev-pr`: nie ma zadania, a `/dev-pr` czeka na bota.
+w configu, zanim powstanie PR. PR synca nie idzie przez `/dev-pr`: nie ma zadania, a `/dev-pr` w projekcie z botem czeka na jego recenzję.
 
 ## Pierwsze wprowadzenie do projektu
 
 Po pierwszej synchronizacji doprowadź do tego, żeby maszyneria była na zdalnej gałęzi głównej: push `main` (po decyzji operatora, bo może oznaczać deploy) albo osobny PR z sekcji „Domknięcie synca”. Inaczej
-pierwszy `/dev-pr` policzy jej pliki jako część zadania. Linie `HIGIENA:` przejdź przed pierwszym `/dev-pr`, także CodeRabbit: istniejący `.coderabbit.yaml` musi spełniać kontrakt pipeline'u
+pierwszy `/dev-pr` policzy jej pliki jako część zadania. Linie `HIGIENA:` przejdź przed pierwszym `/dev-pr`, także CodeRabbit (bot jest opcjonalny; projekt bez niego zapisuje wybór w `.claude/projekt.json`, którego sync nie rusza): istniejący `.coderabbit.yaml` musi spełniać kontrakt pipeline'u
 (`node .claude/scripts/pr/kontrakt-bota.mjs --galaz main`), a nie tylko istnieć.
