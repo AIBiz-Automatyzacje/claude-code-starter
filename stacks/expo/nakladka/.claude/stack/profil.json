@@ -22,6 +22,12 @@
   },
   "komendyCli": ["jest", "expo"],
   "szablon": {
-    "repo": "https://github.com/AIBiz-Automatyzacje/workspace-template-mobile.git"
+    "repo": "https://github.com/AIBiz-Automatyzacje/workspace-template-mobile.git",
+    "innyWariant": {
+      "nazwa": "web",
+      "zaleznosc": "expo",
+      "obecna": false,
+      "repo": "https://github.com/AIBiz-Automatyzacje/claude-code-starter.git"
+    }
   }
 }

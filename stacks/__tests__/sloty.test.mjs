@@ -82,8 +82,22 @@ test('profil web: wartości stacku web', () => {
     zrodla: { frontend: '^src/' },
     testy: { powiazane: 'vitest related --run' },
     komendyCli: ['vitest'],
-    szablon: { repo: 'https://github.com/AIBiz-Automatyzacje/claude-code-starter.git' },
+    szablon: {
+      repo: 'https://github.com/AIBiz-Automatyzacje/claude-code-starter.git',
+      innyWariant: { nazwa: 'Expo', zaleznosc: 'expo', obecna: true, repo: 'https://github.com/AIBiz-Automatyzacje/workspace-template-mobile.git' },
+    },
   })
+})
+
+// Doctor wskazuje repo drugiego wariantu z profilu (znaleziska 2026-11-02 pkt 26). Projekt ma tylko jeden profil, wiec adres
+// drugiego wariantu jest w nim kopia: ten test pilnuje, ze kopie zgadzaja sie z szablon.repo profilu drugiego wariantu.
+test('profile web i Expo wskazuja na siebie: innyWariant.repo = szablon.repo drugiego profilu, sygnal tej samej paczki odwrotnie', () => {
+  const web = JSON.parse(czytaj(`${KATALOG_SLOTOW}/profil.json`)).szablon
+  const expo = JSON.parse(czytaj(`stacks/expo/nakladka/${KATALOG_SLOTOW}/profil.json`)).szablon
+  assert.equal(web.innyWariant.repo, expo.repo)
+  assert.equal(expo.innyWariant.repo, web.repo)
+  assert.equal(web.innyWariant.zaleznosc, expo.innyWariant.zaleznosc)
+  assert.deepEqual([web.innyWariant.obecna, expo.innyWariant.obecna], [true, false])
 })
 
 // Pluginy webu: test profilu w doctor.test.mjs rdzenia sprawdza każdy włączony plugin, ale biegnie też na wariancie, więc nie
@@ -112,6 +126,14 @@ test('sloty web niosą treść stacku web', () => {
     const tresc = czytaj(`${KATALOG_SLOTOW}/${nazwa}.md`)
     for (const fraza of frazy) assert.ok(tresc.includes(fraza), `${nazwa}.md: brak „${fraza}”`)
   }
+})
+
+// Znaleziska 2026-11-02 pkt 26 (dashboard, run E2, faza 6): `--dir src` uruchomione z korzenia projektu z frontend/ dało
+// „No test files found” i pierwsze walidacje fazy trzeba było powtórzyć.
+test('slot walidacji web: --dir i miejsce uruchomienia liczone od pakietu z runnerem, komendy backendu z planu i CLAUDE.md', () => {
+  const tresc = czytaj(`${KATALOG_SLOTOW}/walidacja.md`)
+  assert.match(tresc, /Katalog z `--dir` i miejsce uruchomienia komendy liczysz od katalogu pakietu z runnerem: w projekcie z `frontend\/` komendę uruchamiasz w `frontend\/`, nie w korzeniu/)
+  assert.match(tresc, /Komendy testów backendu w innym języku bierzesz z planu i `CLAUDE\.md`\./)
 })
 
 test('adapter E2E web: Vite na 5174 obok 5173, agent-browser, uwagi o proxy Vite', async () => {

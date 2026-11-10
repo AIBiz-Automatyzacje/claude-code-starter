@@ -95,3 +95,13 @@ test('klucz testowy dostawcy (E5-7 + P27(3)): atrapa ma wariant odpowiedzi klucz
   assert.match(bezpieczenstwo, /[Kk]lucz testowy dostawcy[^.]*tylko w konfiguracji lokalnej (albo|i) e2e/)
   assert.match(bezpieczenstwo, /testem odmowy w konfiguracji produkcyjnej/)
 })
+
+// Znaleziska 2026-11-02 pkt 32 (dashboard, run E2, faza 4): pole sekretu w `Settings` bylo zwyklym `str`, wiec blad walidacji
+// Pydantic wypisal klucz Stripe z .env do wyjscia testu i transkryptu agenta.
+test('sekret w obiekcie konfiguracji: typ, ktory nie wypisuje wartosci w reprezentacji tekstowej, logu ani bledzie walidacji', () => {
+  const regula = sekcja(REGULY, 'Bezpieczeństwo').split('\n').find((l) => l.startsWith('- Sekret w obiekcie konfiguracji')) ?? ''
+  assert.match(regula, /typ, który nie wypisuje wartości w reprezentacji tekstowej, logu ani komunikacie błędu walidacji/)
+  assert.match(regula, /`SecretStr` w Pydantic/)
+  assert.match(regula, /`toString` i `toJSON`/)
+  assert.match(regula, /bo błąd walidacji wypisuje cały obiekt do wyjścia testu i transkryptu agenta\.$/)
+})

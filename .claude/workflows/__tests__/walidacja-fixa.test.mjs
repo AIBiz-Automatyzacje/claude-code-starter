@@ -147,7 +147,7 @@ test('punkt 5: wynik autopilota ma kroki w kolejnosci smoke, akcje operatora, do
   assert.equal(kroki.length, 3)
   assert.match(kroki[0], /^Smoke w nowej sesji:.*x-smoke\.md/)
   assert.match(kroki[1], /^Akcje operatora: 2 findingow OPERATOR.*1 nierozwiazanych P2/, 'faza z odegranym E2E nie dodaje pozycji')
-  assert.match(kroki[2], /^Po smoke'u: `\/clear`, potem `\/dev-pr --czesc 1`/)
+  assert.match(kroki[2], /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1` \(zadanie x\)\.$/)
   // Punkt 35 (dashboard E2, fazy 7–11): faza z samymi SKIP testera interaktywnego miala gate CZYSTE i nie bylo jej w krokach.
   const zNieOdegrana = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [
     { faza: 7, gate: 'CZYSTE', liczniki: { operator: 0 }, przebieg: { e2eStatus: 'nie odegrano (tryb interaktywny) — zaden z 2 scenariuszy nie ma PASS ani FAIL', e2eCheckboxy: 2, e2eSkip: 2 } },

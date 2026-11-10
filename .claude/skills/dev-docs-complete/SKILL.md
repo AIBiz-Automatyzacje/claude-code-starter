@@ -101,8 +101,8 @@ Datę do plików bierz z `date +%F`.
    odhaczaj za mnie w pliku, a usterki naprawiaj od razu (z testem) zamiast odkładać.
    <zdanie do ramki z sekcji „Punkty wizualne”>   ← tylko w smoke'u z punktami wizualnymi
    Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez `git add -A`): /dev-pr wymaga czystego drzewa.
-   Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania
-   bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj.
+   Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania
+   bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”). /dev-pr w tej sesji nie uruchamiaj.
    ```
    ```
 
@@ -169,7 +169,7 @@ Datę do plików bierz z `date +%F`.
 
 📝 Decyzje: docs/decisions/YYYY-MM-DD-$ARGUMENTS.md (claude_md: do-uzgodnienia — CLAUDE.md uzgadnia się po merge'u PR)
 
-🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — po smoke'u: /clear, potem /dev-pr --czesc 1
+🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — po smoke'u: /clear, potem /dev-pr 3 --bez-merge --czesc 1
 
 💡 Rozwiązane problemy warte udokumentowania? → /dev-compound (w autopilocie compound już się odbył)
 ```

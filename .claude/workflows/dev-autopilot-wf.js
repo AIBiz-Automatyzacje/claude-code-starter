@@ -1483,7 +1483,9 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
   if (p2) akcje.push(`${p2} nierozwiazanych P2 w known-issues`)
   if (propozycjeBramek.length) akcje.push(`${propozycjeBramek.length} propozycji bramek z compoundu`)
   if (akcje.length) kroki.push(`Akcje operatora: ${akcje.join(', ')}.`)
-  kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
+  // Tryb autonomiczny bez merge'a: samo `/dev-pr` to pytanie po kazdej turze (piszemy_wirale 08.11: 5 pytan w jednej czesci),
+  // a liczba tur bez --bez-merge to merge, czesto deploy, bez pytania.
+  kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
   return kroki
 }
 

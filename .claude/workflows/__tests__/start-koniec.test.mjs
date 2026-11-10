@@ -308,7 +308,9 @@ test('czesci PR: dwie czesci = tabela z commitami ciecia do podsumowania i infor
   const dwie = C.czesciPr(C.czesciZWyniku(wynikCzesci([
     { czesc: 1, fazy: '1–3', od: SHA_A, do: SHA_B, doRecenzji: 93 }, { czesc: 2, fazy: '4–6', od: SHA_B, do: SHA_C, doRecenzji: 101 },
   ])), 'etap-3')
-  assert.equal(dwie.uwaga, "PR w 2 częściach: część 1: fazy 1–3 (93), część 2: fazy 4–6 (101) — commity cięcia w podsumowaniu, po smoke'u: `/clear`, potem `/dev-pr --czesc 1`")
+  assert.equal(dwie.uwaga, "PR w 2 częściach: część 1: fazy 1–3 (93), część 2: fazy 4–6 (101) — commity cięcia w podsumowaniu, po smoke'u: `/clear`, potem `/dev-pr 3 --bez-merge --czesc 1`")
+  // Punkt 38: tabela w podsumowaniu podaje tryb autonomiczny bez merge'a dla pierwszej i ostatniej czesci.
+  assert.ok(dwie.sekcja?.endsWith("Wysyłka po smoke'u: `/clear`, potem `/dev-pr 3 --bez-merge --czesc 1`; po merge'u każdej części `/clear` i następna, do `/dev-pr 3 --bez-merge --czesc 2` (rebase na główną gałąź)."), dwie.sekcja ?? '')
   assert.ok(dwie.sekcja?.includes('| Część | Fazy | Od | Do | Plików do recenzji |\n|---|---|---|---|---|\n| 1 | 1–3 | 6ada855e2f76 | 909f669f0efc | 93 |\n| 2 | 4–6 | 909f669f0efc | czubek gałęzi | 101 |'), dwie.sekcja ?? '')
   assert.match(dwie.sekcja ?? '', /^PR w 2 częściach \(cięcie: pomiar na końcach faz;/)
   assert.doesNotMatch(`${dwie.uwaga}${dwie.sekcja}`, /per obszar|per katalog/)
@@ -374,16 +376,17 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
 
 // P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji: sesja glowna 4,49 M wobec 1,42 M wszystkich runow PR. Ramka smoke'u
 // konczy sie linia z /clear i /dev-pr; sama sesja smoke'u PR nie wysyla. Ta sama tresc w workflowie i w skillu.
-test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /clear, potem /dev-pr --czesc 1” bez /dev-pr w sesji', () => {
+test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” bez /dev-pr w sesji', () => {
   /** @type {(nazwaZadania: string) => string} */
   // eslint-disable-next-line no-new-func -- jw.
   const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
-  const linia = 'Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania'
+  const linia = 'Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania'
   assert.ok(smokePrompt('zadanie-x').includes(linia))
-  assert.match(smokePrompt('zadanie-x'), /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+  assert.match(smokePrompt('zadanie-x'), /„Następny krok: \/clear, potem \/dev-pr 3 --bez-merge”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
   assert.ok(skill.includes(linia))
-  assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+  assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr 3 --bez-merge”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+  assert.match(skill, /— po smoke'u: \/clear, potem \/dev-pr 3 --bez-merge --czesc 1\n/, 'raport archiwizacji: ta sama komenda')
   // Punkt 37 (piszemy_wirale 08.11): ramka kazala „odhaczaj za mnie w pliku” bez commita, a etap start /dev-pr staje na brudnym
   // drzewie. Sesja smoke'u commituje plik checklisty jawna sciezka; zdanie stoi w ramce przed linia „Następny krok”.
   const commit = 'Po przejściu smoke\'u zacommituj plik checklisty jawną ścieżką (bez `git add -A`): /dev-pr wymaga czystego drzewa.'

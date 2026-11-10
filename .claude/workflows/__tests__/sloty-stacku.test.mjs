@@ -115,6 +115,13 @@ test('każdy slot, do którego odsyłają workflowy, istnieje w wariancie web', 
   for (const plik of odeslania) assert.ok(existsSync(resolve(KATALOG, '..', '..', '..', plik)), `brak ${plik}`)
 })
 
+// Znaleziska 2026-11-02 pkt 26: skill Supabase jest w tabeli builderów każdego wariantu, a dashboard ma backend w Pythonie.
+test('slot builderów: przy tabeli zdanie, co builder robi ze skillem Supabase w projekcie bez Supabase', () => {
+  const slot = czytaj('stack/buildery.md')
+  assert.match(slot, /\| supabase-dev-guidelines, security, sentry-integration \|/)
+  assert.match(slot, /^Skill `supabase-dev-guidelines` ładuje się z frontmattera roli w każdym projekcie\. Gdy projekt nie używa Supabase, builder pomija komendy i wzorce Supabase z tego skilla, a migracje i dostęp do danych robi narzędziami projektu \(z planu i `CLAUDE\.md`\)\.$/m)
+})
+
 // Odesłanie do sekcji, której nazwa w slocie się zmieniła, zostawia agenta bez instrukcji — także w nakładce stacku,
 // która musi zachować te same nagłówki.
 test('sekcje slotów, do których odsyłają workflowy, są nagłówkami ## w wariancie web', () => {
