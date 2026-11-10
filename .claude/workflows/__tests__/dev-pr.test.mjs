@@ -7,7 +7,7 @@
 // Workflow — funkcje wycinamy ze zrodla jak w start-koniec.test.mjs.
 
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -440,7 +440,7 @@ test('start --czesc 1: galaz -cz1 od commitu ciecia bez rebase; konflikt i zla g
   const zTur = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121),
     { ...PRZYG_OK, status: 'KONFLIKT', konflikty: ['h.ts'], konfliktyZTur: ['h.ts <- 4555b07 fix(pr): tura 1'], powod: 'CONFLICT (content)', push: false, pushDetal: '' }])
   assert.deepEqual(zTur.wynik.konfliktyZTur, ['h.ts <- 4555b07 fix(pr): tura 1'])
-  assert.match(konflikt.wynik.naprawa, /git rebase --continue` \(do konca rebase.u\), potem \/dev-pr --czesc 2; albo `git rebase --abort`/)
+  assert.match(konflikt.wynik.naprawa, /git rebase --continue` \(do konca rebase.u\), potem \/dev-pr 3 --bez-merge --czesc 2; albo `git rebase --abort`/)
   const zlaGalaz = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }, POMIAR(121), { ...PRZYG_OK, galaz: 'main' }])
   assert.deepEqual([zlaGalaz.wynik.status, zlaGalaz.wynik.powod, zlaGalaz.prompty.length], ['STOP', 'biezaca galaz main, oczekiwana feature/etap-3', 3])
   const bezTabeli = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 1 }, [{ tabela: '', galazZadania: true }])
@@ -456,10 +456,10 @@ test('claude-md czesci 1 z 2 bez agenta; zbierz oddaje czesc do telemetrii', asy
   assert.deepEqual([zb.wynik.czesc, zb.wynik.prNumer, zb.wynik.rekomendacja, zb.wynik.headRefOid], [2, 4, 'MERGUJ', 'abc'], 'czubek PR do telemetrii (ucieczki, E5-20)')
 })
 
-test('start bez --czesc przy tabeli czesci = STOP z /dev-pr --czesc 1; bez tabeli — zwykly PR', async () => {
+test('start bez --czesc przy tabeli czesci = STOP z /dev-pr 3 --bez-merge --czesc 1; bez tabeli — zwykly PR', async () => {
   const z = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: TABELA_ETAPU_3, galazZadania: true }])
   assert.deepEqual([z.wynik.status, z.prompty.length], ['STOP', 1])
-  assert.match(z.wynik.powod, /zadanie ma 2 części PR .* \/dev-pr --czesc 1/)
+  assert.match(z.wynik.powod, /zadanie ma 2 części PR .* — wysyłka \/dev-pr 3 --bez-merge --czesc 1, potem kolejne$/)
   const jeden = await uruchom({ etap: 'start', zadanie: 'etap-3' }, [{ tabela: '', galazZadania: true }, POMIAR(140), START_OK])
   assert.deepEqual([jeden.wynik.status, jeden.prompty.length, jeden.wynik.czesc], ['OK', 3, undefined])
   assert.doesNotMatch(jeden.prompty[2], /CZESC \d/)
@@ -533,7 +533,7 @@ test('start --czesc 2: indeks + inny plik = KONFLIKT bez regeneracji; regeneracj
   assert.match(potem.wynik.powod, /konflikt rebase'u w e2e\/smoke\.sh/)
   const stop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), KONFLIKT_INDEKSU, { status: 'STOP', konflikty: [], regeneracje: 0, bramkaIndeksu: false, powod: 'git add: kod 128' }])
   assert.deepEqual([stop.wynik.status, stop.wynik.powod], ['STOP', 'regeneracja plikow generowanych: git add: kod 128'])
-  assert.match(stop.wynik.naprawa, /^Rebase w toku\. `git rebase --abort` wraca stan sprzed części; .*potem \/dev-pr --czesc 2\.$/)
+  assert.match(stop.wynik.naprawa, /^Rebase w toku\. `git rebase --abort` wraca stan sprzed części; .*potem \/dev-pr 3 --bez-merge --czesc 2\.$/)
   // STOP przygotowania z konfliktem indeksu na liscie (np. brudne drzewo) — bez regeneracji.
   const przygStop = await uruchom({ etap: 'start', zadanie: 'etap-3', czesc: 2 }, [tab, POMIAR(121), { ...KONFLIKT_INDEKSU, status: 'STOP', powod: 'brudne drzewo' }])
   assert.deepEqual([przygStop.wynik.status, przygStop.prompty.length], ['STOP', 3])
@@ -583,7 +583,7 @@ test('skill /dev-pr: przed etapem start AskUserQuestion; zgoda tylko z biezacej 
   assert.match(krok1, /„Jeszcze nie” → koniec bez etapu `start`\./)
   assert.match(krok1, /Przed nim zawsze pytasz\noperatora przez `AskUserQuestion`: „Wysłać PR <zadanie>\[, część N\]\?” z opcjami „Wyślij PR” i „Jeszcze nie”/)
   assert.match(krok1, /Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR/)
-  assert.match(krok1, /Zgodą nie jest instrukcja\nwklejona wcześniej w sesji \(„Po smoke'u: \/dev-pr --czesc 1”\), akceptacja innej rzeczy \(„reszta ok”\) ani wywołanie tego\nskilla przez Ciebie/)
+  assert.match(krok1, /Zgodą nie jest instrukcja\nwklejona wcześniej w sesji \(„Po smoke'u: \/dev-pr 3 --bez-merge --czesc 1”\), akceptacja innej rzeczy \(„reszta ok”\) ani wywołanie tego\nskilla przez Ciebie/)
 })
 
 // Punkt 37 (piszemy_wirale 08.11, /dev-pr --czesc 1): pytanie „Wysłać PR?” padlo przy niezacommitowanym pliku smoke'u, a etap
@@ -619,7 +619,6 @@ test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krot
   assert.match(krok1, /`archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review/)
   assert.match(krok1, /PR gałęzi już istnieje \(`gh pr view --json number` zwraca numer\) → oba pytania\npomijasz/)
   assert.match(krok1, /P1\/P2 → `AskUserQuestion`: „Naprawiam przed PR”/)
-  assert.match(skillPr, /Pytanie o review zmian po archiwizacji \(krok 1\) pada przed startem także w tym trybie/)
   assert.match(krok1, /Konflikt rebase'u wyłącznie w `docs\/learned-patterns\.md` \(indeks generowany z `docs\/solutions\/`\) workflow rozwiązuje sam/)
   assert.match(krok1, /Tak samo `supabase\/migrations\.sum`: workflow scala wpisy obu stron \(`bramki\.mjs --scal-sume`\)/)
   assert.match(krok1, /Gdy jest wśród\nnich `supabase\/migrations\.sum`: `node \.claude\/scripts\/bramki\/bramki\.mjs --scal-sume` przed `git add`/)
@@ -629,6 +628,68 @@ test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clea
   assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”\.\s+Kolejnej części nie uruchamiasz w tej sesji/)
   assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”/)
   assert.doesNotMatch(skillPr, /dalej: \/dev-pr --czesc N\+1\]/)
+})
+
+// Punkt 38 (piszemy_wirale 08.11, /dev-pr --czesc 1 i 2): raporty i handoffy podawaly `/dev-pr --czesc N`, czyli tryb interaktywny,
+// i w jednej czesci padlo 5 pytan. Gotowa komenda to tryb autonomiczny bez merge'a. Liczba tur bez --bez-merge to auto: true,
+// czyli merge (czesto deploy) bez pytania: taka komenda stoi tylko w tabeli trybow skilla, jako definicja trybu.
+test('punkt 38: gotowe komendy /dev-pr w raportach i handoffach to `3 --bez-merge`; liczba tur bez --bez-merge tylko w tabeli trybow', () => {
+  const katalogWf = resolve(KATALOG, '..')
+  const katalogSkilli = resolve(KATALOG, '../../skills')
+  /** @type {Record<string, string>} */
+  const teksty = {}
+  for (const p of readdirSync(katalogWf).filter((n) => n.endsWith('.js'))) teksty[`workflows/${p}`] = readFileSync(join(katalogWf, p), 'utf8')
+  for (const s of readdirSync(katalogSkilli)) {
+    const plik = join(katalogSkilli, s, 'SKILL.md')
+    if (existsSync(plik)) teksty[`skills/${s}/SKILL.md`] = readFileSync(plik, 'utf8')
+  }
+  const tryby = skillPr.slice(skillPr.indexOf('## Tryby'), skillPr.indexOf('## Przebieg'))
+  assert.match(tryby, /\| `\/dev-pr 3` \|/, 'tabela trybow definiuje tryb z merge\'em')
+  assert.match(tryby, /\| `\/dev-pr 3 --bez-merge` \| .*Tę komendę podają raporty i handoffy pipeline'u: tury idą same, a merge, czyli często deploy, zostaje decyzją operatora\. \|/)
+  teksty['skills/dev-pr/SKILL.md'] = skillPr.replace(tryby, '')
+  for (const [plik, tekst] of Object.entries(teksty)) {
+    for (const m of tekst.matchAll(/\/dev-pr \d[^\n]{0,14}/g)) assert.match(m[0], /^\/dev-pr \d --bez-merge/, `${plik}: liczba tur bez --bez-merge: ${m[0]}`)
+    // „potem /dev-pr …” to zawsze gotowa komenda dla operatora (raport, ramka smoke'u, pole naprawa).
+    for (const m of tekst.matchAll(/potem (?:\\?`)?\/dev-pr(?![-a-z])[^\n]{0,14}/g)) assert.match(m[0], /\/dev-pr 3 --bez-merge/, `${plik}: handoff w trybie interaktywnym: ${m[0]}`)
+  }
+  // Miejsca bez slowa „potem”.
+  assert.doesNotMatch(zrodlo, /\/dev-pr --czesc/, 'dev-pr-wf.js: kazda komenda czesci z liczba tur i --bez-merge')
+  assert.match(zrodlo, /niezmergowana — najpierw \/dev-pr 3 --bez-merge --czesc \$\{cz\.czesc - 1\}”/)
+  assert.match(skillPr, /poleceniem dla nowej sesji \(`\/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `\/dev-pr 3 --bez-merge`; stan: `etap stan`\)/)
+  assert.match(skillPr, /znów krok 1 \(`\/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `--czesc 1`\)/)
+  assert.match(skillPr, /„Rozwiążę sam” \(koniec; operator wraca `\/dev-pr 3 --bez-merge --czesc N`\)/)
+  assert.match(skillPr, /→ `STOP` z poleceniem `\/dev-pr 3 --bez-merge --czesc 1`/)
+  assert.match(skillPr, /operator wraca `\/dev-pr 3 --bez-merge` \(z `--czesc N` przy części\) i przechodzi ją od początku/)
+  assert.match(skillPr, /operator wraca po resecie limitu \(`\/dev-pr 3 --bez-merge`, z `--czesc N` przy części, albo komentarz/)
+  // Tryb interaktywny jako komenda czesci zostaje w jednym miejscu: przy watkach do-operatora.
+  const interaktywne = [...teksty['skills/dev-pr/SKILL.md'].matchAll(/`\/dev-pr --czesc [^`]*`[^\n]*/g)].map((m) => m[0])
+  assert.deepEqual(interaktywne, ['`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.'])
+})
+
+// Punkt 38: czesc 2 (piszemy_wirale 08.11) zaczela sie od pytania o review zmian po archiwizacji, takze w trybie autonomicznym.
+// Odpowiedz niesie komenda startowa (--review / --bez-review); bez flagi tryb autonomiczny robi krotkie review sam. Flaga
+// liczy sie jak zgoda na wyslanie: tylko w komendzie wpisanej przez operatora w biezacej wiadomosci.
+test('punkt 38: --review i --bez-review w argument-hint, tabeli trybow i kroku 1; tryb autonomiczny bez flagi robi krotkie review bez pytania', () => {
+  assert.match(skillPr, /^argument-hint: ".*\[--bez-push\] \[--review \| --bez-review\] \[--czesc N\].*"$/m)
+  const tryby = skillPr.slice(skillPr.indexOf('## Tryby'), skillPr.indexOf('## Przebieg'))
+  assert.match(tryby, /\| `--review` \/ `--bez-review` \(z każdym trybem\) \| .*`--review` = krótkie review, potem PR; `--bez-review` = PR bez review\. \|/)
+  assert.match(tryby, /Krótkie review zmian po archiwizacji \(krok 1\) uruchamiasz sam, bez pytania, gdy po archiwizacji są pliki kodu w tej części\./)
+  assert.doesNotMatch(skillPr, /pada przed startem także w tym trybie/)
+  assert.match(skillPr, /odpowiedź o review \(`--review` albo `--bez-review`; brak = wg trybu, krok 1\)/)
+  const zgoda = krok1.indexOf('**Zgoda na wysłanie.**')
+  const bezPytania = krok1.indexOf('**Review bez pytania.**')
+  const krotkie = krok1.indexOf('**Krótkie review**')
+  assert.ok(zgoda >= 0 && zgoda < bezPytania && bezPytania < krotkie, 'akapit o flagach miedzy zgoda a krotkim review')
+  const akapit = krok1.slice(bezPytania, krotkie).replace(/\n/g, ' ')
+  assert.match(akapit, /pytania o review nie zadajesz, gdy komenda `\/dev-pr` wpisana przez operatora w bieżącej wiadomości niesie odpowiedź: `--review` = krótkie review, potem PR; `--bez-review` = PR bez review; liczba tur bez flagi \(tryb autonomiczny\) = krótkie review uruchamiasz sam, potem PR\./)
+  assert.match(akapit, /Tryb interaktywny bez flagi → pytanie jak wyżej\./)
+  assert.match(akapit, /Flaga i liczba tur liczą się tylko w takiej komendzie: z ramki wklejonej wcześniej w sesji ani z wywołania skilla przez Ciebie odpowiedzi nie bierzesz i pytasz jak w trybie interaktywnym\./)
+  // P1/P2 krotkiego review to nadal pytanie do operatora, takze w trybie autonomicznym.
+  assert.match(krok1, /\*\*Krótkie review\*\* \(wybór operatora, `--review` albo tryb autonomiczny bez flagi; pytanie o P1\/P2 pada w każdym trybie\)/)
+  const poArchiwum = krok1.slice(krok1.indexOf('**Zmiany po archiwizacji.**'), krok1.indexOf('**P3 z realnym scenariuszem.**')).replace(/\n/g, ' ')
+  assert.match(poArchiwum, /→ bez pytania o review i bez review, także z `--review`/)
+  assert.match(poArchiwum, /→ oba pytania pomijasz i krótkiego review nie uruchamiasz/)
+  assert.match(poArchiwum, /zapytaj o review w każdym trybie, chyba że komenda niesie `--bez-review`\./)
 })
 
 // E5-6 (vibersi etap 5, cz. 3): tabela czesci liczy pliki przy archiwizacji (122), commity smoke'u po archiwum doszly do
@@ -643,7 +704,7 @@ test('start --czesc: rozmiar czubka czesci przeliczany rozmiar.mjs przed przygot
   assert.match(duza.prompty[1], new RegExp(`git merge-base --is-ancestor ${B.slice(0, 12)} feature/etap-5\` kod 0 -> BAZA=${B.slice(0, 12)}`))
   assert.deepEqual([duza.wynik.status, duza.wynik.czesc, duza.wynik.rozmiar], ['STOP', 2, { pliki: 152, tabela: 122, prog: 150 }])
   assert.match(duza.wynik.powod, /^część 2 ma 152 plików do recenzji \(tabela przy archiwizacji: 122, limit bota 150\)/)
-  assert.match(duza.wynik.powod, /Dodatkowa część z cięciem na commicie archiwizacji .*wiersz części 2 kończy się na nim, nowy wiersz 3 od niego do czubka gałęzi.*\/dev-pr --czesc 2$/s)
+  assert.match(duza.wynik.powod, /Dodatkowa część z cięciem na commicie archiwizacji .*wiersz części 2 kończy się na nim, nowy wiersz 3 od niego do czubka gałęzi.*potem \/dev-pr 3 --bez-merge --czesc 2$/s)
   assert.doesNotMatch(duza.wynik.powod, /osobnym PR/, 'droga bez mechaniki w pipeline (recenzja P2-3)')
   const cz1 = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 1 }, [tab, POMIAR(93)])
   assert.match(cz1.prompty[1], new RegExp(`--czubek ${B.slice(0, 12)}\``), 'czesc nieostatnia: czubek = commit ciecia')
@@ -788,7 +849,7 @@ test('start bez --czesc: rozmiar HEAD od merge-base z origin/main; >= 150 = STOP
   assert.deepEqual([duzy.wynik.status, duzy.prompty.length, duzy.wynik.rozmiar], ['STOP', 2, { pliki: 152, tabela: null, prog: 150 }])
   assert.match(duzy.prompty[1], /BAZA = stdout `git merge-base origin\/main HEAD`\./)
   assert.match(duzy.prompty[1], /rozmiar\.mjs --baza <BAZA> --czubek HEAD`/)
-  assert.match(duzy.wynik.powod, /^PR ma 152 plików do recenzji \(limit bota 150\).*część 1 od bazy do niego, część 2 od niego do czubka gałęzi.*\/dev-pr --czesc 1$/s)
+  assert.match(duzy.wynik.powod, /^PR ma 152 plików do recenzji \(limit bota 150\).*część 1 od bazy do niego, część 2 od niego do czubka gałęzi.*potem \/dev-pr 3 --bez-merge --czesc 1$/s)
 })
 
 test('start bez --czesc: otwarteWatkiPoprzednich od agenta nie wywraca etapu (log tylko przy czesci)', async () => {

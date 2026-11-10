@@ -139,6 +139,8 @@ function uwagaZmiennych(smoke) {
 // PR wieloczesciowy (P20 S2, vibersi etap 3: 172 pliki do recenzji, podzial reczny po fazie 3 = 93 / 121). Czesci mierzy
 // czesci.mjs na commitach konca faz; tabela trafia do podsumowania, z niej `/dev-pr --czesc N` bierze commity ciecia.
 // Wynik: { uwaga } (UWAGA dla operatora albo informacja o czesciach) i { sekcja } (tabela do podsumowania; null = jeden PR).
+// Komenda wysylki to tryb autonomiczny bez merge'a (`/dev-pr 3 --bez-merge --czesc N`): `/dev-pr --czesc N` pytal po kazdej turze
+// (piszemy_wirale 08.11), a liczba tur bez --bez-merge merguje bez pytania.
 function czesciPr(czesci, nazwaZadania) {
   const komenda = `node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/${nazwaZadania}`
   if (!czesci) return { uwaga: `UWAGA: części PR niezmierzone (wynik czesci.mjs nieczytelny) — sprawdz: \`${komenda}\``, sekcja: null }
@@ -148,7 +150,7 @@ function czesciPr(czesci, nazwaZadania) {
   const zaDuza = lista.some((c) => (lista.length === 1 ? c.doRecenzji > PROG_PLIKOW_PR : c.doRecenzji >= PROG_PLIKOW_PR))
   const uwaga = zaDuza || czesci.uwaga
     ? `UWAGA: ${czesci.uwaga || (lista.length === 1 ? `PR powyżej progu ${PROG_PLIKOW_PR} plików do recenzji bota` : `część z ${PROG_PLIKOW_PR} lub więcej plikami do recenzji bota (część ma mieć mniej)`)} — ${opis}`
-    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, po smoke'u: \`/clear\`, potem \`/dev-pr --czesc 1\`` : null
+    : lista.length > 1 ? `PR w ${lista.length} częściach: ${opis} — commity cięcia w podsumowaniu, po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge --czesc 1\`` : null
   if (lista.length === 1) return { uwaga, sekcja: null }
   const skrot = (sha) => String(sha).slice(0, 12)
   const zrodlo = czesci.zrodlo === 'plan' ? 'sekcja „Części PR” planu' : 'pomiar na końcach faz'
@@ -159,7 +161,7 @@ function czesciPr(czesci, nazwaZadania) {
     '|---|---|---|---|---|',
     ...lista.map((c, i) => `| ${c.czesc} | ${c.fazy} | ${skrot(c.od)} | ${i === lista.length - 1 ? 'czubek gałęzi' : skrot(c.do)} | ${c.doRecenzji} |`),
     '',
-    `Wysyłka po smoke'u: \`/clear\`, potem \`/dev-pr --czesc 1\`; po merge'u każdej części \`/clear\` i następna, do \`/dev-pr 3 --bez-merge --czesc ${lista.length}\` (rebase na główną gałąź).`,
+    `Wysyłka po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge --czesc 1\`; po merge'u każdej części \`/clear\` i następna, do \`/dev-pr 3 --bez-merge --czesc ${lista.length}\` (rebase na główną gałąź).`,
   ].join('\n')
   return { uwaga, sekcja }
 }
@@ -247,8 +249,8 @@ Przed pierwszym punktem wizualnym smoke'u stoi zdanie z .claude/skills/dev-docs-
 Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi
 ramka ma zdanie do ramki z tej samej sekcji przed zdaniami koncowymi. Ramka konczy sie zdaniami:
 "Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez \`git add -A\`): /dev-pr wymaga czystego drzewa.
-Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
-„Następny krok: /clear, potem /dev-pr”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej,
+Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
+„Następny krok: /clear, potem /dev-pr 3 --bez-merge”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej,
 a odhaczony plik bez commita zatrzymuje etap start /dev-pr na brudnym drzewie (piszemy_wirale 08.11).
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji.
 

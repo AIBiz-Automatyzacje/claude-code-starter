@@ -661,7 +661,7 @@ function rozmiarCzesci(stdout, cz) {
     pliki: r.doRecenzji,
     blad: `${kto} ma ${r.doRecenzji} plików do recenzji (${cz.pliki == null ? '' : `tabela przy archiwizacji: ${cz.pliki}, `}limit bota ${PROG_CZESCI}) — bot pominie recenzję. `
       + `Dodatkowa część z cięciem na commicie archiwizacji (pole archiwum z po-archiwum.mjs): ${tabela} w tabeli „## Części PR” podsumowania `
-      + `(liczby plików z rozmiar.mjs --baza/--czubek), commit tabeli na feature/<zadanie>, potem /dev-pr --czesc ${cz.czesc || 1}`,
+      + `(liczby plików z rozmiar.mjs --baza/--czubek), commit tabeli na feature/<zadanie>, potem /dev-pr 3 --bez-merge --czesc ${cz.czesc || 1}`,
   }
 }
 
@@ -806,7 +806,9 @@ Zwroc obiekt zgodny ze schematem.`,
   if (!t) return { status: 'BLAD', etap, powod: 'Odczyt tabeli czesci PR zwrocil null (agent padl).' }
   const tabelaCzesci = czesciZTabeli(t.tabela)
   if (!czesc && tabelaCzesci) {
-    const powod = `zadanie ma ${tabelaCzesci.length} części PR (tabela „Części PR” w podsumowaniu) — wysyłka /dev-pr --czesc 1, potem kolejne`
+    // Komendy powrotu w powodach i polach `naprawa` tego etapu to tryb autonomiczny bez merge'a: komenda bez liczby tur prowadzila
+    // operatora w tryb interaktywny (piszemy_wirale 08.11), a liczba tur bez --bez-merge to merge bez pytania.
+    const powod = `zadanie ma ${tabelaCzesci.length} części PR (tabela „Części PR” w podsumowaniu) — wysyłka /dev-pr 3 --bez-merge --czesc 1, potem kolejne`
     log(`/dev-pr: STOP — ${powod}`)
     return { status: 'STOP', etap, powod }
   }
@@ -847,7 +849,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (cz) {
     cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
-   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr --czesc ${cz.czesc - 1}”`
+   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr 3 --bez-merge --czesc ${cz.czesc - 1}”`
     // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po
     // rebase na starszy main (operator rozwiazal konflikt i wrocil pozniej) — zwykly rebase na nowy main.
     const rebase = `REBASE: (a) \`git merge-base --is-ancestor origin/main HEAD\` kod 0 — rebase=juz-wykonany, bez rebase'u;
@@ -914,7 +916,7 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
       if (r.status === 'STOP') {
         return {
           status: 'STOP', etap, czesc: cz.czesc, czesci: cz.czesci, powod: `regeneracja plikow generowanych: ${r.powod || 'bez powodu'}`,
-          naprawa: `Rebase w toku. \`git rebase --abort\` wraca stan sprzed części; albo rozwiąż ręcznie (\`git status\`), \`git rebase --continue\` do końca, potem /dev-pr --czesc ${cz.czesc}.`,
+          naprawa: `Rebase w toku. \`git rebase --abort\` wraca stan sprzed części; albo rozwiąż ręcznie (\`git status\`), \`git rebase --continue\` do końca, potem /dev-pr 3 --bez-merge --czesc ${cz.czesc}.`,
         }
       }
       // KONFLIKT z regeneracji (inny plik albo suma nie do scalenia) idzie do operatora — kolejna proba trafilaby na to samo.
@@ -930,7 +932,7 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
       log(`/dev-pr czesc ${cz.czesc}: KONFLIKT rebase'u — ${przyg.konflikty.join(', ')}${zTur.length ? `; pliki zmienione przez tury PR czesci ${cz.czesc - 1}: ${zTur.join('; ')}` : ''}`)
       return {
         status: 'KONFLIKT', etap, czesc: cz.czesc, czesci: cz.czesci, konflikty: przyg.konflikty, konfliktyZTur: zTur, powod: przyg.powod,
-        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\` (do konca rebase'u), potem /dev-pr --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
+        naprawa: `Rebase zatrzymany na konflikcie (drzewo w trakcie rebase'u). Rozwiaz pliki, \`git add\` i \`git rebase --continue\` (do konca rebase'u), potem /dev-pr 3 --bez-merge --czesc ${cz.czesc}; albo \`git rebase --abort\`.`,
       }
     }
     const blad = bladPrzygotowania(przyg, cz.galaz)

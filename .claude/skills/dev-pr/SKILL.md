@@ -1,7 +1,7 @@
 ---
 name: dev-pr
 description: "Obsługa pull requesta od wysłania do merge'a: tworzy PR, czeka na recenzję bota, klasyfikuje uwagi wg wpływu na projekt, prowadzi tury poprawek i domyka je compoundem do bazy wiedzy. Używaj po `/dev-docs-complete`, gdy zadanie jest gotowe do wysłania, oraz gdy bot zostawił komentarze do obsłużenia."
-argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] [--bez-push] [--czesc N] | --claude-md <zadanie>"
+argument-hint: "[liczba tur 1–3 — bez niej tryb interaktywny] [--bez-merge] [--bez-push] [--review | --bez-review] [--czesc N] | --claude-md <zadanie>"
 ---
 
 # `/dev-pr` — od pull requesta do merge'a
@@ -35,8 +35,9 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | Wywołanie | Zachowanie |
 |---|---|
 | `/dev-pr` | **Interaktywny.** Po każdej klasyfikacji operator wybiera przez `AskUserQuestion` (multiSelect), co naprawiamy w tej turze. Merge zawsze zostaje jego decyzją. |
-| `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. Pytanie o review zmian po archiwizacji (krok 1) pada przed startem także w tym trybie. |
-| `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. |
+| `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. Krótkie review zmian po archiwizacji (krok 1) uruchamiasz sam, bez pytania, gdy po archiwizacji są pliki kodu w tej części. |
+| `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. Tę komendę podają raporty i handoffy pipeline'u: tury idą same, a merge, czyli często deploy, zostaje decyzją operatora. |
+| `--review` / `--bez-review` (z każdym trybem) | Odpowiedź z góry na pytanie o krótkie review zmian po archiwizacji (krok 1): `--review` = krótkie review, potem PR; `--bez-review` = PR bez review. |
 | `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `--bez-push` (z każdym trybem) | Etapy `compound` i `claude-md` commitują lokalnie i nie wypychają głównej: w projekcie, gdzie push na główną to deploy, push zostaje operatorowi. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
@@ -50,13 +51,13 @@ Wątki otwarte po suficie i wątki odłożone „do części N+1” przekazujesz
 
 Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argumentu, z nazwy gałęzi
 `feature/<nazwa>` albo `feature/<nazwa>-czN`, albo zapytaj), `tury` (liczba z argumentu, najwyżej 3, brak = tryb interaktywny),
-`bezMerge` i `czesc` (liczba z `--czesc`; brak = zadanie jednym PR).
+`bezMerge`, `czesc` (liczba z `--czesc`; brak = zadanie jednym PR) i odpowiedź o review (`--review` albo `--bez-review`; brak = wg trybu, krok 1).
 `--claude-md <zadanie>` → od razu krok „Uzgodnienie CLAUDE.md” z punktu 6, bez kroków 1–5.
 
 **Wznowienie.** Gdy PR gałęzi już istnieje (`gh pr view --json number`), przed krokiem 1 wołasz etap `stan` i pokazujesz jego wynik: tury,
 wątki otwarte, rozstrzygnięte i czekające na bota, recenzję czubka. `tura` = `tury` + 1. `sufit: true` → od razu krok 6, bez nowej tury
 napraw. Przy tabeli części bierzesz `--czesc`, którego PR jest otwarty. Gdy kontekst sesji się kończy, kończysz raportem z gotowym
-poleceniem dla nowej sesji (`/dev-pr --czesc N`, stan: `etap stan`), zamiast prowadzić merge ręcznie.
+poleceniem dla nowej sesji (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `/dev-pr 3 --bez-merge`; stan: `etap stan`), zamiast prowadzić merge ręcznie.
 
 **Smoke przed PR.** Gdy `docs/operator/*-<zadanie>-smoke.md` ma nieodhaczone pozycje bez dopisku „po deployu”, przed pytaniem o zgodę podajesz ich liczbę i pytasz, czy
 wysyłać mimo to. To miękka bramka: decyduje operator.
@@ -73,11 +74,11 @@ nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza częś
 
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
-żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → pytanie
-o review w kroku zgody niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
-(commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
-pomijasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd i pytaj
-jak przy plikach kodu.
+żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → krótkie
+review wg akapitów „Zgoda na wysłanie” i „Review bez pytania” niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
+i bez review, także z `--review` (commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
+pomijasz i krótkiego review nie uruchamiasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd
+i zapytaj o review w każdym trybie, chyba że komenda niesie `--bez-review`.
 
 **P3 z realnym scenariuszem.** P3 osi correctness i security wracały od bota jako P2 (vibersi: co najmniej jeden na etap).
 Przed pytaniem o zgodę: `git show feature/<zadanie>:docs/completed/<zadanie>/known-issues.md | grep -E '^- 🟡 \[P3/(correctness|security)\]'`
@@ -97,11 +98,17 @@ operatora przez `AskUserQuestion`: „Wysłać PR <zadanie>[, część N]?” z 
 kodu po archiwum opcje to „Krótkie review, potem PR”, „PR bez review” i „Jeszcze nie”, a w pytaniu podajesz liczbę
 commitów i plików kodu. Bez pytania wysyłasz tylko wtedy, gdy bieżąca wiadomość operatora wprost każe wysłać PR: wpisana
 przez niego komenda `/dev-pr` albo polecenie „wyślij PR”, i gdy nie ma pytania o review. Zgodą nie jest instrukcja
-wklejona wcześniej w sesji („Po smoke'u: /dev-pr --czesc 1”), akceptacja innej rzeczy („reszta ok”) ani wywołanie tego
+wklejona wcześniej w sesji („Po smoke'u: /dev-pr 3 --bez-merge --czesc 1”), akceptacja innej rzeczy („reszta ok”) ani wywołanie tego
 skilla przez Ciebie, ani ogólne „działaj dalej” bez pytania o PR. Zgoda z tego wywołania skilla obejmuje powrót do kroku 1
 po konflikcie rebase'u. „Jeszcze nie” → koniec bez etapu `start`.
 
-**Krótkie review** (wybór operatora): dwa wywołania naraz narzędziem `Agent` z typami
+**Review bez pytania.** Przy plikach kodu po archiwum pytania o review nie zadajesz, gdy komenda `/dev-pr` wpisana przez
+operatora w bieżącej wiadomości niesie odpowiedź: `--review` = krótkie review, potem PR; `--bez-review` = PR bez review;
+liczba tur bez flagi (tryb autonomiczny) = krótkie review uruchamiasz sam, potem PR. Tryb interaktywny bez flagi → pytanie
+jak wyżej. Flaga i liczba tur liczą się tylko w takiej komendzie: z ramki wklejonej wcześniej w sesji ani z wywołania
+skilla przez Ciebie odpowiedzi nie bierzesz i pytasz jak w trybie interaktywnym.
+
+**Krótkie review** (wybór operatora, `--review` albo tryb autonomiczny bez flagi; pytanie o P1/P2 pada w każdym trybie): dwa wywołania naraz narzędziem `Agent` z typami
 `correctness-reviewer` i `security-sentinel`, każde z poleceniem: „Review commitów po archiwizacji zadania <zadanie>: `git show <sha> -- <plikiKodu>`
 dla każdego commitu z `commity` (sha i tematy). Zwróć findingi P1/P2/P3 z plik:linia, scenariuszem
 błędu i poprawką; bez zmian w plikach.” Pokaż findingi. P1/P2 → `AskUserQuestion`: „Naprawiam przed PR” (poprawka z testem,
@@ -131,7 +138,7 @@ deploy) albo „Jadą w tym PR” (znów krok 1 z `zGlowna: true`). `status: "ST
 
 `status: "STOP"` → wypisz `powod` i **zakończ**. Nie obchodź bramki: po STOP-ie nie commituj zmian na własną rękę, nie
 przełączaj gałęzi, nie twórz PR z gałęzi głównej. Brudne drzewo ma drogę przed startem (akapit „Czyste drzewo”): commit
-plików pokazanych operatorowi, za jego zgodą. Po STOP-ie z tego powodu operator wraca `/dev-pr` i przechodzi ją od początku.
+plików pokazanych operatorowi, za jego zgodą. Po STOP-ie z tego powodu operator wraca `/dev-pr 3 --bez-merge` (z `--czesc N` przy części) i przechodzi ją od początku.
 
 `status: "STOP"` z polem `rozmiar` (część albo jeden PR ≥ 150 plików do recenzji po przeliczeniu czubka — commity po
 archiwizacji dołożyły pliki do liczby z archiwizacji) → `AskUserQuestion` z liczbą (`rozmiar.pliki`, `rozmiar.tabela`)
@@ -140,7 +147,7 @@ z `po-archiwum.mjs`): przy `--czesc N` wiersz części N kończy się na nim, a 
 gałęzi” (fazy = ostatnia faza części N); przy jednym PR tabela „## Części PR” z dwoma wierszami (część 1 od
 `git merge-base origin/main feature/<zadanie>` do niego, część 2 od niego do czubka). Liczby plików każdego wiersza
 z `rozmiar.mjs --baza <od> --czubek <do>` (pole `doRecenzji`). Tabelę wpisujesz w podsumowanie zadania na
-`feature/<zadanie>`, commit jawną ścieżką i znów krok 1 (`/dev-pr --czesc N`, przy jednym PR `--czesc 1`). Bez decyzji
+`feature/<zadanie>`, commit jawną ścieżką i znów krok 1 (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `--czesc 1`). Bez decyzji
 operatora nie wysyłasz PR ponad limitem bota.
 
 Konflikt rebase'u wyłącznie w `docs/learned-patterns.md` (indeks generowany z `docs/solutions/`) workflow rozwiązuje sam:
@@ -153,13 +160,13 @@ pytaniem: commit tury PR poprzedniej części zmienił ten plik (np. poprawka po
 rozwiązanie to zwykle wersja tej części z naniesioną poprawką tury, gdy fragment przeżył. Zapytaj operatora przez
 `AskUserQuestion`: „Rozwiąż w tej sesji” (czytasz oba warianty każdego pliku, proponujesz rozwiązanie, po akceptacji
 `git add <pliki>` i `git rebase --continue`; kolejny konflikt — to samo, aż rebase się skończy; potem znów krok 1 z tym samym
-`czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
+`czesc`), „Rozwiążę sam” (koniec; operator wraca `/dev-pr 3 --bez-merge --czesc N`) albo „Przerwij” (`git rebase --abort`, koniec). Konfliktu
 nie rozwiązujesz bez tej decyzji. Gdy wśród konfliktów jest też `docs/learned-patterns.md` (plik generowany): zostaw jedną
 z jego wersji, a po rebase'ie `node .claude/scripts/wiedza/wiedza.mjs indeks --zapisz` i commit indeksu. Gdy jest wśród
 nich `supabase/migrations.sum`: `node .claude/scripts/bramki/bramki.mjs --scal-sume` przed `git add` (przy `scalony: false`
 pokaż operatorowi `powod`).
 
-Zadanie z tabelą „Części PR” wywołane bez `--czesc` → `STOP` z poleceniem `/dev-pr --czesc 1`: jeden PR byłby ponad limitem bota.
+Zadanie z tabelą „Części PR” wywołane bez `--czesc` → `STOP` z poleceniem `/dev-pr 3 --bez-merge --czesc 1`: jeden PR byłby ponad limitem bota.
 
 `status: "OK"` → powiedz jednym zdaniem, czy PR został utworzony, czy już istniał, i podaj URL.
 
@@ -189,7 +196,7 @@ Skrypt wypisuje jedną linię JSON `{stan, powod, sha, minuty, pr, recenzja}` (`
 - `gotowa` → krok 3. `recenzja: brak` znaczy, że 2 min po statusie recenzji czubka nie było (bot bez uwag do czubka jej
   nie publikuje) — `powod` niesie adnotację, a `recenzjaAktualna: false` z kroku 3 nie odsyła wtedy do kroku 2.
 - `limit-recenzji` → bot wyczerpał limit planu i **nie zrecenzował czubka**, choć check-run bywa zielony. Raport z `powod` i `czekajMin`,
-  **koniec bez zmian w kodzie**: operator wraca po resecie limitu (`/dev-pr` albo komentarz `@coderabbitai review`).
+  **koniec bez zmian w kodzie**: operator wraca po resecie limitu (`/dev-pr 3 --bez-merge`, z `--czesc N` przy części, albo komentarz `@coderabbitai review`).
 - `limit` → raport „bot nie odpowiedział w ciągu N minut” z `powod` i stanem PR, **koniec bez zmian w kodzie**.
   Nie zgaduj, co bot by powiedział.
 - `pauza`, `pominieta`, `blad`, `pr-zamkniety`, `blad-gh`, `blad-argumentow` → raport „bot nie zrecenzował czubka: <stan> — <powod>”,
