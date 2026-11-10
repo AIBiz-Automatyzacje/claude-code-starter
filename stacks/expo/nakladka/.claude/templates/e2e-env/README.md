@@ -10,6 +10,9 @@ tester, fix i smoke operatora wołają ten sam skrypt.
   `[E2E]`, gdy repo nie ma `.env.e2e` albo sprawdzenie pada: plik poza `.gitignore`, brak kluczy bazy e2e, brak tabeli markera przy seedach z jej guardem, ta sama baza co dev, zmieniona
   wypchnięta migracja, brak Maestro albo Java 17+, brak urządzenia, przestarzały albo niepodpisany dev-client, Metro nie wstaje, canary
   pada. Świadomy opt-out: zmień marker `[E2E]` → `[Manual]` w pliku zadań (scenariusz wykonasz w smoke'u operatora).
+- **Seed nie wchodzi na bazę e2e w trakcie runu** (`psql` kończy go błędem z powodu połączenia, uprawnień, guardu bazy albo brakującej
+  migracji) → STOP z naprawą, nie `[Manual]`: scenariusz bez danych nie jest testem do odegrania ręcznie. Review fazy zostaje otwarte,
+  a świeży run po naprawie powtarza je z testerem. Błąd SQL w seedzie napisanym w tej fazie to defekt do fixa.
 - **Test niewykonalny W TRAKCIE runu** (Metro padło, limit usługi zewnętrznej, tester nie dał przebiegu) → linia `[E2E]` przechodzi na
   `[Manual]` z powodem `(MANUAL — <przyczyna>: <powód>)`, **run idzie dalej**, pozycja trafia do smoke'u operatora
   (`docs/operator/…-smoke.md`). Każda faza ze scenariuszami albo makietami zaczyna review od restartu Metro (`e2e.mjs restart`).

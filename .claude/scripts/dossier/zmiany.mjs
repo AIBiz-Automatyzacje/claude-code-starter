@@ -107,9 +107,17 @@ export function zapiszDiff(diff, plik, limit = LIMIT_DIFFU_B) {
  * @returns {string}
  */
 export function bazaZastepcza(projekt) {
+  // Najblizszy merge-base sposrod galezi glownych, nie pierwszy z listy: lokalna glowna bywa przed zdalna (zadania zmergowane bez
+  // pushu), a merge-base ze zdalna objalby wtedy poprzednie zadania (pilot Nawykometr, run 2: 585 plikow zamiast 8).
+  /** @type {{ sha: string, odleglosc: number } | null} */
+  let najblizsza = null
   for (const galaz of GALEZIE_GLOWNE) {
     const p = spawnSync('git', ['-C', projekt, 'merge-base', 'HEAD', galaz], { encoding: 'utf8' })
-    if (p.status === 0) return p.stdout.trim()
+    if (p.status !== 0) continue
+    const sha = p.stdout.trim()
+    const ile = spawnSync('git', ['-C', projekt, 'rev-list', '--count', `${sha}..HEAD`], { encoding: 'utf8' })
+    const odleglosc = ile.status === 0 ? Number(ile.stdout.trim()) : Number.POSITIVE_INFINITY
+    if (!najblizsza || odleglosc < najblizsza.odleglosc) najblizsza = { sha, odleglosc }
   }
-  return 'HEAD'
+  return najblizsza ? najblizsza.sha : 'HEAD'
 }
