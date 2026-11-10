@@ -77,7 +77,7 @@ const METRYKI_FAZY = {
     liczniki: {
       type: 'object',
       additionalProperties: false,
-      properties: { p1: { type: 'integer' }, p2: { type: 'integer' }, p3: { type: 'integer' }, operator: { type: 'integer' } },
+      properties: { p1: { type: 'integer' }, p2: { type: 'integer' }, p3: { type: 'integer' }, operator: { type: 'integer' }, decyzje: { type: 'integer' } },
       required: ['p1', 'p2', 'p3'],
     },
     przebieg: {
@@ -421,6 +421,7 @@ const VALIDATION_RESULT = {
     e2eFail: { type: 'array', items: { type: 'string' }, description: 'tresci checkboxow [E2E] z suffixem "(FAIL:" — flow przebiegl i padl na znanym defekcie (known-issues); wymusza wynik=FAIL, ale z inna instrukcja dla operatora (napraw kod, NIE zmieniaj na [Manual])' },
     e2eFazy: { type: 'array', items: { type: 'integer' }, description: 'numery faz (z naglowka "## Faza N"), w ktorych lezy co najmniej jeden niezaznaczony [E2E] z e2eNieuruchomione/e2eFail — orkiestrator cofa im review do pending' },
     knownIssuesZamkniete: { type: ['integer', 'null'], description: 'ile wpisow known-issues.md przeniesiono do sekcji "Zamkniete" (higiena, NIE wplywa na wynik)' },
+    decyzjeOtwarte: { type: 'array', items: { type: 'string' }, description: 'wiersze sekcji "## Decyzje operatora" z known-issues.md przepisane 1:1 (bez "- " na poczatku); pusta lista = brak sekcji albo brak wierszy' },
     wynik: { type: 'string', enum: ['PASS', 'FAIL'] },
     bledy: { type: 'array', items: { type: 'string' } },
     stanZapisany: POLE_STANU,
@@ -748,7 +749,8 @@ Dozwolone, z uzasadnieniem w commicie: atrape odtwarzajaca sekwencje wywolan prz
 
 GRANICE PLANU: finding, ktorego naprawa przekracza sekcje „Granice zakresu” planu, dodaje zaleznosc albo runner (npm install) albo zmienia
 zachowanie dla uzytkownika w sposob, ktorego nie ma w planie, NIE jest do automatycznej naprawy: zostaw kod, wpisz do nienaprawione[]
-z prefiksem "OPERATOR: <plik:linia> — <co trzeba rozstrzygnac>" i dopisz P2 do known-issues. Zmiany bez findingu kontrola diffu cofa,
+z prefiksem "OPERATOR: <plik:linia> — <co trzeba rozstrzygnac>". Do known-issues jej nie dopisujesz i nie liczysz jej w nierozwiazaneP2:
+orkiestrator zapisuje ja w sekcji "## Decyzje operatora" pliku known-issues, skad czyta ja operator. Zmiany bez findingu kontrola diffu cofa,
 wiec ich nie dokladaj (aa-exam: oslabiony limit magic-linkow, usuniete zdarzenie Sentry).
 Komendy walidacji, ktorych nie da sie uruchomic przez srodowisko agenta (sandbox blokuje Dockera albo port, brak uslugi), to nie FAIL:
 zwroc walidacja "NIE-URUCHOMIONO" z walidacjaPrzyczyna (co zablokowalo, ktore komendy zostaly), zacommituj zmiany jak zwykle. FAIL oznacza, ze kod albo test padl.
@@ -1076,6 +1078,9 @@ co pisal fix w swojej fazie): przeczytaj wskazany plik/flow i rozstrzygnij, czy 
 - Zamkniety (naprawiony pozniejsza faza, fixem innego findingu albo recznie przez operatora) -> PRZENIES go
   na koniec pliku, do sekcji "## Zamkniete", z jednolinijkowa adnotacja CZYM zostal zamkniety
   (commit / faza / "operator recznie"). NIE kasuj wpisow — historia problemu bywa cenniejsza niz sam wpis.
+Sekcja "## Decyzje operatora" jest poza tym przegladem: jej wierszy nie oceniasz, nie zmieniasz i nie przenosisz do "## Zamkniete"
+(decyzje zamyka operator, nie stan kodu). Przepisz je 1:1 do pola decyzjeOtwarte, kazdy wiersz jako osobny element bez "- " na poczatku;
+brak sekcji albo pusta sekcja = pusta lista. Raport runu bierze decyzje z tego pola, wiec obejmuje tez fazy sprzed tego runu.
 Liczbe przeniesionych wpisow zwroc w polu knownIssuesZamkniete (NIE w bledy[] — to pole jest dla realnych
 FAIL-i z krokow 4/5 i mieszanie tam informacji higienicznej grozi tym, ze ustawisz wynik=FAIL bez powodu).
 COMMIT (obowiazkowy, gdy cokolwiek zmieniles w known-issues.md): \`git add <sciezka known-issues.md> &&
@@ -1096,12 +1101,14 @@ Zwroc obiekt zgodny ze schematem ValidationResult.`
 // Efort kazdego agent() jest jawny w opcjach (tabela D6, pilnuje __tests__/klasy-rol.test.mjs); haiku bez efortu.
 
 function policzFindingi(findings) {
-  const istotne = (findings || []).filter((f) => f.typ !== 'OPERATOR')
+  const wszystkie = findings || []
+  const istotne = wszystkie.filter((f) => f.typ !== 'OPERATOR' && f.typ !== 'DECYZJA')
   return {
     p1: istotne.filter((f) => f.severity === 'P1').length,
     p2: istotne.filter((f) => f.severity === 'P2').length,
     p3: istotne.filter((f) => f.severity === 'P3').length,
-    operator: (findings || []).length - istotne.length,
+    operator: wszystkie.filter((f) => f.typ === 'OPERATOR').length,
+    decyzje: wszystkie.filter((f) => f.typ === 'DECYZJA').length,
   }
 }
 
@@ -1109,9 +1116,10 @@ function policzFindingi(findings) {
 // a kazda zmiana w kodzie to nowa powierzchnia dla defektow urodzonych w fixie — po fixie nie ma re-review. P3 zapisuje
 // scribe do known-issues (sekcja "## P3 faza N"), skad ida do opisu PR i bota.
 // OPERATOR zostaje poza fixem — to warunki srodowiskowe, ida do "## Operator checklist faza N" i smoke'u operatora.
+// DECYZJA (punkt 40) tez: naprawa wykracza poza plan, scribe review zapisuje ja w sekcji decyzji known-issues.
 function otwartePoReview(findings) {
   return (findings || [])
-    .filter((f) => f.typ !== 'OPERATOR' && (f.severity === 'P1' || f.severity === 'P2'))
+    .filter((f) => f.typ !== 'OPERATOR' && f.typ !== 'DECYZJA' && (f.severity === 'P1' || f.severity === 'P2'))
     .map((f) => ({ severity: f.severity, typ: f.typ, plik: f.plik, opis: f.opis }))
 }
 
@@ -1163,7 +1171,8 @@ Zwroc zapisano=true, gdy wszystkie wiersze sa w pliku (dopisane teraz albo juz b
 // odpadaja (tester wystawi nowe), reszta wraca na liste oznaczona jako przeniesiona.
 function polaczFindingiPoPowtorce(nowe, poprzednie) {
   const swieze = nowe || []
-  const doPrzeniesienia = (poprzednie || []).filter((f) => f.typ !== 'E2E')
+  // DECYZJA z przerwanego podejscia jest juz w sekcji decyzji known-issues; przeniesiona z dopiskiem dalaby tam drugi wiersz.
+  const doPrzeniesienia = (poprzednie || []).filter((f) => f.typ !== 'E2E' && f.typ !== 'DECYZJA')
   if (!doPrzeniesienia.length) return swieze
 
   // Dedup po pliku ORAZ tresci: w jednym pliku bywa wiele osobnych defektow, wiec sam plik to za
@@ -1512,7 +1521,7 @@ function fazyNieOdegrane(raporty) {
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
-function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku }) {
   const kroki = []
   if (smoke) kroki.push(`Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z ${smoke}.`)
   const akcje = []
@@ -1520,8 +1529,10 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
   if (nieOdegrane.length) akcje.push(`E2E nie odegrano — do odegrania recznie albo ponownie: ${nieOdegrane.map((f) => `faza ${f.faza} (scenariuszy: ${f.scenariusze})`).join(', ')}`)
   const operator = raporty.reduce((s, r) => s + (r?.liczniki?.operator || 0), 0)
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
-  const decyzje = raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
-  if (decyzje.length) akcje.push(`zmiany spoza planu do decyzji: ${decyzje.join('; ')}`)
+  // Punkt 40: zrodlem jest sekcja decyzji w known-issues (odczyt walidacji koncowej), bo `raporty` nie maja faz sprzed tego runu.
+  // Bez odczytu (walidacja w poprzednim runie) zostaje lista z pamieci runu.
+  const decyzje = Array.isArray(decyzjeZPliku) ? decyzjeZPliku : raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
+  if (decyzje.length) akcje.push(`zmiany spoza planu do decyzji (${decyzje.length}, sekcja „Decyzje operatora” w known-issues): ${decyzje.join('; ')}`)
   // Pozycja kontroli fixa zostawiona bez prefiksu OPERATOR: nie trafia do doDecyzjiOperatora i bez tej linii ginela w JSON-ie (pilot Nawykometr, run 3).
   const kontrola = raporty.map((r) => ({ faza: r?.faza, ile: (r?.kontrolaFixa?.pominiete || []).filter((x) => !/^OPERATOR:/i.test(String(x).trim())).length + (r?.kontrolaFixa?.bezSladu || 0) })).filter((k) => k.ile > 0)
   if (kontrola.length) akcje.push(`pozycje kontroli fixa bez naprawy: ${kontrola.map((k) => `faza ${k.faza} (${k.ile})`).join(', ')} — uzasadnienia w kontrolaFixa.pominiete wyniku runu`)
@@ -1538,6 +1549,34 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
 // Pozycje zostawione operatorowi: fix i tura poprawkowa oznaczaja je prefiksem, a orkiestrator pilnuje, ze kontrola ich nie zawraca.
 function pozycjeOperatora(nienaprawione) {
   return (Array.isArray(nienaprawione) ? nienaprawione : []).filter((x) => typeof x === 'string' && /^OPERATOR:/i.test(x.trim()))
+}
+
+// Punkt 40: jeden nosnik decyzji operatora. Lista z fixa i tury poprawkowej zyla tylko w pamieci runu: pozycje fixa szly do
+// known-issues jako zwykle P2 bez znacznika, pozycje tury poprawkowej nie trafialy na dysk, a swiezy run po STOP-ie gubil
+// decyzje wczesniejszych faz. Wiersz ma ten sam format co u scribe'a review (typ DECYZJA) — pilnuje decyzje-operatora.test.mjs.
+function wierszDecyzji(faza, zrodlo, pozycja) {
+  const tresc = String(pozycja).trim().replace(/^OPERATOR:\s*/i, '').replace(/\s*\n\s*/g, ' ')
+  return `- [DECYZJA · faza ${faza} · ${zrodlo}] ${tresc}`
+}
+
+function decyzjeKnownIssuesPrompt(sciezka, faza, wiersze) {
+  return `Zapisz decyzje dla operatora do ${sciezka}/known-issues.md. To pozycje fazy ${faza}, ktorych naprawa wykracza poza plan:
+kod zostal bez zmian, a rozstrzyga operator.
+
+Wiersze (tresc gotowa, przenies bez zmian):
+--- POCZATEK WIERSZY ---
+${wiersze.join('\n')}
+--- KONIEC WIERSZY ---
+
+1. Plik nie istnieje: utworz go z naglowkiem "${SEKCJA_DECYZJI}" i wierszami (bez linii POCZATEK/KONIEC WIERSZY).
+2. Plik istnieje, a sekcji "${SEKCJA_DECYZJI}" nie ma: wstaw ja na poczatku pliku, pod naglowkiem pierwszego poziomu (gdy jest),
+   przed pierwsza sekcja "## ". Sekcja jest: dopisz pod nia wiersze, ktorych tam nie ma (ta sama tresc po znaczniku w nawiasie
+   kwadratowym = ten sam wiersz), bez duplikatow i bez usuwania istniejacych. Naglowek ma wystapic w pliku dokladnie raz.
+3. Ta sama pozycja zapisana wczesniej jako P2 w sekcji "## Faza ${faza}" (ten sam plik:linia i ta sama sprawa): usun ja stamtad —
+   pozycja ma byc w pliku raz, w sekcji decyzji. Pozostale sekcje zostaja bez zmian.
+4. \`git add ${sciezka}/known-issues.md\` i ${instrukcjaCommita(`docs(known-issues): decyzje operatora fazy ${faza}`)}
+   Gdy plik juz mial wszystkie wiersze, nie commituj.
+Zwroc zapisano=true, gdy wszystkie wiersze sa w pliku (dopisane teraz albo juz byly), i hash commita albo null.`
 }
 
 // Agent bez dostepu do walidacji to nie zepsuty kod (piszemy_wirale T1, faza 6: sesja uruchomila te same testy, 1010/1010).
@@ -1561,6 +1600,8 @@ function podsumujKontroleFixa(pozycje, poprawka) {
 }
 
 // Wynik sprzatania artefaktow przy STOP-ie (plan B2).
+const SEKCJA_DECYZJI = '## Decyzje operatora'
+
 const P3_KNOWN_ISSUES = {
   type: 'object',
   additionalProperties: false,
@@ -1767,6 +1808,16 @@ async function zapiszStan(tresc) {
 // (zeStanem + potwierdzStan). Przed pod-workflowem zalegly stan idzie do agenta stan:zapis; po complete-wf zapisu nie ma.
 function oznaczStan() {
   stanDoZapisu = trescStanu(stan)
+}
+
+// Punkt 40: decyzje operatora ida na dysk w chwili powstania. Nieudany zapis nie zatrzymuje runu (pozycja zostaje w raporcie
+// runu), ale wychodzi w logu, bo smoke i swiezy run czytaja decyzje z pliku.
+async function zapiszDecyzje(numerFazy, zrodlo, pozycje) {
+  if (!pozycje.length) return
+  const wiersze = pozycje.map((p) => wierszDecyzji(numerFazy, zrodlo, p))
+  const zapis = await agent(decyzjeKnownIssuesPrompt(sciezka, numerFazy, wiersze), { schema: P3_KNOWN_ISSUES, agentType: 'klasa-mechaniczny', label: `decyzje:zapis:faza-${numerFazy}` })
+  if (!zapis || !zapis.zapisano) log(`Faza ${numerFazy}: UWAGA — ${pozycje.length} decyzji operatora (${zrodlo}) nie zapisano w ${sciezka}/known-issues.md; zostaja tylko w raporcie tego runu`)
+  else log(`Faza ${numerFazy}: ${pozycje.length} decyzji operatora (${zrodlo}) w sekcji „Decyzje operatora” known-issues${zapis.commit ? ` (${zapis.commit})` : ''}`)
 }
 
 function zeStanem(polecenie) {
@@ -1989,7 +2040,7 @@ for (const numerFazy of kolejka) {
     if (scribeL.p1 !== liczniki.p1 || scribeL.p2 !== liczniki.p2) {
       log(`Faza ${numerFazy}: NIESPOJNOSC licznikow scribe (p1=${scribeL.p1},p2=${scribeL.p2}) vs JS (p1=${liczniki.p1},p2=${liczniki.p2}) — uzywam JS`)
     }
-    log(`Review fazy ${numerFazy}: P1=${liczniki.p1} P2=${liczniki.p2} P3=${liczniki.p3} OPERATOR=${liczniki.operator}`)
+    log(`Review fazy ${numerFazy}: P1=${liczniki.p1} P2=${liczniki.p2} P3=${liczniki.p3} OPERATOR=${liczniki.operator} DECYZJA=${liczniki.decyzje}`)
     licznikiFazy = liczniki
     przebiegFazy = review.przebieg || null
     if (przebiegFazy) {
@@ -2062,6 +2113,8 @@ for (const numerFazy of kolejka) {
     // Agent padl = faza idzie dalej bez kontroli (best-effort, jak dotad).
     const zastrzezoneFixa = pozycjeOperatora(fix.nienaprawione)
     doDecyzjiOperatora = zastrzezoneFixa
+    // Zapis od razu po fixie: STOP tury poprawkowej (walidacja FAIL albo nieuruchomiona) nie moze zgubic decyzji z fixa.
+    await zapiszDecyzje(numerFazy, 'fix', zastrzezoneFixa)
     const kontrola = await agent(kontrolaFixaPrompt(sciezka, numerFazy, fix.commity, faza.otwarteFindingi, zastrzezoneFixa), { schema: KONTROLA_FIXA, agentType: 'klasa-sceptyk', effort: 'medium', label: `fix:kontrola:faza-${numerFazy}` })
     if (!kontrola) log(`Faza ${numerFazy}: kontrola diffu fixa zwrocila null — faza idzie dalej bez kontroli (best-effort)`)
     const doPoprawki = pozycjeKontroliFixa(kontrola)
@@ -2074,7 +2127,9 @@ for (const numerFazy of kolejka) {
         log(`Faza ${numerFazy}: tura poprawkowa zwrocila null — pozycje zostaja otwarte, faza idzie dalej (P3-klasa, nie bramka)`)
       } else {
         kontrolaFixa = podsumujKontroleFixa(doPoprawki.length, poprawka)
-        doDecyzjiOperatora = [...doDecyzjiOperatora, ...pozycjeOperatora(poprawka.nienaprawione)]
+        const zastrzezonePoprawki = pozycjeOperatora(poprawka.nienaprawione)
+        doDecyzjiOperatora = [...doDecyzjiOperatora, ...zastrzezonePoprawki]
+        await zapiszDecyzje(numerFazy, 'tura poprawkowa', zastrzezonePoprawki)
         log(`Faza ${numerFazy}: tura poprawkowa — naprawiono ${poprawka.naprawione}/${doPoprawki.length}, walidacja ${poprawka.walidacja}${kontrolaFixa.pominiete.length ? `, pominiete z uzasadnieniem: ${kontrolaFixa.pominiete.length}` : ''}`)
         if (kontrolaFixa.bezSladu > 0) {
           log(`Faza ${numerFazy}: UWAGA — ${kontrolaFixa.bezSladu} pozycji kontroli diffu ani nie naprawiono, ani nie uzasadniono w nienaprawione[]. Walidacja ${poprawka.walidacja} nie mowi nic o tych pozycjach; sprawdz commit "kontrola diffu naprawczego fazy ${numerFazy}".`)
@@ -2099,7 +2154,8 @@ for (const numerFazy of kolejka) {
       log(`Faza ${numerFazy}: kontrola diffu naprawczego czysta — zero pozycji z list K-1…K-7 i bramek na plikach fixa`)
     }
 
-    gateFazy = fix.nierozwiazaneP2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
+    // Decyzja operatora to otwarta sprawa fazy tak samo jak P2 w known-issues (przed punktem 40 fix liczyl ja w nierozwiazaneP2).
+    gateFazy = fix.nierozwiazaneP2 > 0 || doDecyzjiOperatora.length > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
     if (fix.nierozwiazaneP2 > 0) {
       log(`Faza ${numerFazy}: GRACEFUL — ${fix.nierozwiazaneP2}x P2 do known-issues, kontynuuje`)
     }
@@ -2492,7 +2548,7 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
-  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania }),
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null }),
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
