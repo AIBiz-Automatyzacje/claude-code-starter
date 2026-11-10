@@ -114,7 +114,7 @@ test('domkniecie: punkt zapisu stanu po dossier, tylko przy status=completed; be
 })
 
 test('wiring execute-wf: punkt zapisu doklejony do promptu domkniecia, wynik niesie baze fazy z JS', () => {
-  assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\)\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
+  assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
   assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\) \}/)
   assert.match(zrodloExecute, /stanZapisany: \{ type: \['boolean', 'null'\]/)
 })
@@ -202,15 +202,18 @@ test('PLAN_STATE: baza fazy przechodzi przez bootstrap (string albo null), stan 
 test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem bez pracy', () => {
   const petla = zrodlo.slice(zrodlo.indexOf("if (faza.execute === 'pending') {"), zrodlo.indexOf('// 2) REVIEW'))
   // Autopilot: baza ze stanu idzie do execute-wf, zostaje w stanie przy STOP-ie i nie ginie, gdy execute jej nie zwraca.
-  assert.match(petla, /workflow\('dev-docs-execute-wf', \{ sciezka, faza: numerFazy, baza: faza\.baza \|\| null, stanPoExecute:/)
+  assert.match(petla, /workflow\('dev-docs-execute-wf', \{ sciezka, faza: numerFazy, baza: faza\.baza \|\| null, iuUkonczone: faza\.iuUkonczone \|\| \[\], stanPoExecute:/)
   const stop = petla.slice(petla.indexOf("exec.status !== 'completed'"), petla.indexOf('return await stopRun('))
   assert.match(stop, /const bazaZExecute = Boolean\(exec && exec\.baza && !faza\.baza\)\n\s+if \(bazaZExecute\) faza\.baza = exec\.baza\n/)
-  assert.match(stop, /if \(bazaZExecute \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
+  assert.match(stop, /if \(bazaZExecute \|\| ukonczoneZExecute \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
   assert.match(petla, /faza\.baza = exec\.baza \|\| faza\.baza \|\| null/)
-  // Execute-wf: baza z args wygrywa z HEAD-em plannera (takze dla bramek i dossier domkniecia) i wraca przy plannerze bez pracy.
+  // Execute-wf: baza z args wygrywa z HEAD-em plannera (takze dla bramek i dossier domkniecia). Punkt 34 zmienil wyjscie plannera
+  // bez pracy: z baza w stanie biegnie domkniecie (bramka, ktora zatrzymala faze, przechodzi przed review) i ono zwraca baze;
+  // wyjscie „nic do zrobienia” zostaje tylko dla fazy bez bazy w stanie.
   assert.match(zrodloExecute, /const bazaZeStanu = \/\^\[0-9a-f\]\{7,40\}\$\/\.test\(\(args && args\.baza\) \|\| ''\) \? args\.baza : null\nif \(bazaZeStanu\) plan\.baza = bazaZeStanu\n/)
-  assert.ok(zrodloExecute.indexOf('if (bazaZeStanu) plan.baza = bazaZeStanu') < zrodloExecute.indexOf('if (plan.poza || plan.iu.length === 0) {'), 'baza ze stanu przed wyjsciem plannera bez pracy')
-  assert.match(zrodloExecute, /status: 'completed', iu: \[\], commity: \[\], testy: 'brak', odchylenia: \[\], problem: null, baza: bazaZeStanu \}/)
+  assert.ok(zrodloExecute.indexOf('if (bazaZeStanu) plan.baza = bazaZeStanu') < zrodloExecute.indexOf('if (plan.iu.length === 0 && !bazaZeStanu) {'), 'baza ze stanu przed wyjsciem plannera bez pracy')
+  assert.match(zrodloExecute, /if \(plan\.iu\.length === 0 && !bazaZeStanu\) \{\n {2}return \{ fazaNumer: faza, status: 'completed', iu: \[\], commity: \[\], testy: 'brak', odchylenia: \[\], problem: null, baza: null \}/)
+  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\) \}/)
   // To samo przypisanie co w zrodle: po nim bazaFazy(plan) daje baze ze stanu, nie HEAD plannera.
   const plan = { baza: 'fedcba9' }
   plan.baza = 'abc1234'

@@ -216,11 +216,131 @@ const BLOK_PYTANIE_BLOKERA = `
 PYTANIE BLOKERA (gdy zwracasz status blocked): pole pytanie czyta operator w raporcie zatrzymania, bez dostepu do twojego
 kontekstu. Piszesz je po polsku, prostym jezykiem, w tej kolejnosci: (1) co blokuje prace i gdzie (jednostka, plik, pole planu
 albo makieta), (2) opcje do wyboru, kazda z jednym zdaniem skutku, (3) ktora opcje rekomendujesz i dlaczego. Bez skrotow
-z twojej pracy i bez nazw, ktorych operator nie zna z planu.`
+z twojej pracy i bez nazw, ktorych operator nie zna z planu.
+Pole pliki wypelniasz takze przy blocked i partial: kazdy plik, ktory zdazyles utworzyc albo zmienic (pusta lista, gdy zadnego).
+Orkiestrator odklada te pliki do schowka gita, a jednostki ukonczone przed toba zapisuje commitem.`
+
+// ── Wznowienie po przerwanym execute (znaleziska szablonu, punkt 34) ─────────
+// aa-exam E3 (wf_1c69a604-076, faza 3): IU-10 i IU-11 ukonczone, IU-12 `blocked` — execute wrocil bez commita, 26 pozycji
+// zostalo w drzewie, swiezy run stanal na bramce czystosci, a faze zbudowano od nowa. Jednostki ukonczone zapisuje teraz
+// domkniecie czesciowe, ich lista wraca do stanu zadania (pole fazy `iuUkonczone`), a nastepny run zaczyna od przerwanej.
+const CZESCIOWE_RESULT = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    zacommitowano: { type: 'boolean', description: 'true tylko po zielonej walidacji i udanym commicie jednostek ukonczonych' },
+    commit: { type: ['string', 'null'], description: 'SHA commita jednostek ukonczonych; null, gdy go nie ma' },
+    schowek: { type: ['string', 'null'], description: 'nazwa wpisu `git stash` z plikami jednostki nieukonczonej; null, gdy nic nie odlozono albo pliki wrocily do drzewa' },
+    plikiOdlozone: { type: 'array', items: { type: 'string' } },
+    walidacja: { type: 'string', description: 'PASS/FAIL z liczbami' },
+    powod: { type: ['string', 'null'], description: 'null przy zacommitowano=true; inaczej po polsku, prostym jezykiem: dlaczego jednostek nie zapisano' },
+  },
+  required: ['zacommitowano', 'commit', 'schowek', 'plikiOdlozone', 'walidacja', 'powod'],
+}
+
+// Klucz jednostki niezalezny od zapisu id (planner: "IU-12", builder: "12").
+function kluczIu(id) {
+  return String(id == null ? '' : id).toLowerCase().replace(/^iu[\s-]*/, '').trim()
+}
+
+// Jednostki ukonczone w poprzednim podejsciu (args.iuUkonczone ze stanu zadania) odpadaja z listy plannera w JS: checkboxy md
+// odhacza dopiero domkniecie, wiec planner bez tej listy zbudowalby je drugi raz.
+function bezUkonczonych(jednostki, ukonczone) {
+  const zrobione = new Set((Array.isArray(ukonczone) ? ukonczone : []).map(kluczIu))
+  return jednostki.filter((iu) => !zrobione.has(kluczIu(iu.id)))
+}
+
+// Co da sie zapisac przy przerwanym execute. Odmowa zostawia drzewo jak dotad (STOP na bramce czystosci nastepnego runu):
+// - builder bez wyniku albo bez listy plikow przy strategii serial mogl zmienic pliki wczesniejszych jednostek,
+// - plik wspolny jednostki ukonczonej i nieukonczonej nie da sie rozdzielic na commit i schowek.
+function planCzesciowegoDomkniecia(plan, buildResults) {
+  const ukonczone = buildResults.filter((b) => b.status === 'completed')
+  const przerwane = buildResults.filter((b) => b.status !== 'completed')
+  const zwrocone = new Set(buildResults.map((b) => kluczIu(b.id)))
+  const bezWyniku = plan.iu.filter((iu) => !zwrocone.has(kluczIu(iu.id))).map((iu) => iu.id)
+  const odmowa = (powod) => ({ mozna: false, powod, ukonczone: [], nieukonczone: [] })
+  if (!ukonczone.length) return odmowa('zadna jednostka fazy nie jest ukonczona')
+  const bezPlikow = ukonczone.filter((b) => !Array.isArray(b.pliki) || !b.pliki.length).map((b) => b.id)
+  if (bezPlikow.length) return odmowa(`jednostka ukonczona bez listy plikow: ${bezPlikow.join(', ')}`)
+  const nieznanePliki = przerwane.filter((b) => !Array.isArray(b.pliki)).map((b) => b.id)
+  // Serial konczy petle na pierwszym `blocked` albo na builderze bez wyniku: po `blocked` brakujace jednostki nie wystartowaly,
+  // bez `blocked` pierwsza brakujaca to builder zabity w trakcie pracy. Parallel: jednostki niezalezne, pliki rozlaczne.
+  const serial = plan.strategia !== 'parallel'
+  const zabite = serial ? (przerwane.some((b) => b.status === 'blocked') ? [] : bezWyniku.slice(0, 1)) : bezWyniku
+  const niewiadome = [...nieznanePliki, ...(serial ? zabite : [])]
+  if (serial && niewiadome.length) {
+    return odmowa(`nie wiadomo, ktore pliki zmienila jednostka ${niewiadome.join(', ')} (brak wyniku albo listy plikow), a przy kolejnosci serial mogla zmienic pliki wczesniejszych`)
+  }
+  const plikiUkonczonych = new Set(ukonczone.flatMap((b) => b.pliki))
+  const wspolne = [...new Set(przerwane.flatMap((b) => b.pliki || []).filter((f) => plikiUkonczonych.has(f)))]
+  if (wspolne.length) return odmowa(`plik zmieniony przez jednostke ukonczona i nieukonczona: ${wspolne.join(', ')}`)
+  return {
+    mozna: true,
+    powod: null,
+    ukonczone: ukonczone.map((b) => ({ id: b.id, pliki: b.pliki })),
+    nieukonczone: [...przerwane.map((b) => `${b.id} (${b.status})`), ...bezWyniku.map((id) => `${id} (${zabite.includes(id) ? 'bez wyniku' : 'nie zaczeta'})`)],
+  }
+}
+
+function nazwaSchowka(sciezka, faza) {
+  return `autopilot/${String(sciezka).replace(/\/+$/, '').split('/').pop()}/faza-${faza}`
+}
+
+function domkniecieCzesciowePrompt(sciezka, faza, czesc, baza) {
+  const schowek = nazwaSchowka(sciezka, faza)
+  return `Jestes domknieciem czesciowym fazy implementacji. Execute przerwal sie na jednostce, ktora czeka na decyzje operatora
+albo nie zwrocila wyniku. Zapisujesz jednostki ukonczone, zeby nastepny run zaczal od przerwanej zamiast budowac faze od nowa.
+
+Folder zadania: ${sciezka}
+Faza: ${faza}
+
+Jednostki ukonczone i ich pliki:
+${czesc.ukonczone.map((u) => `- ${u.id}: ${u.pliki.join(', ')}`).join('\n')}
+Jednostki nieukonczone: ${czesc.nieukonczone.join(', ')}
+
+1. \`git status --porcelain --untracked-files=all\`. Zmienione pliki dzielisz na trzy grupy: (a) pliki jednostek ukonczonych
+   z listy wyzej, (b) pliki w ${sciezka}/, (c) reszta — praca jednostki nieukonczonej. Plik z listy, ktorego nie ma w wyniku
+   git status, pomijasz.
+2. Pliki (c) odkladasz do schowka jedna komenda, z nazwami plikow po \`--\`:
+   \`git stash push --include-untracked -m "${schowek}" -- <pliki (c)>\`. Bez plikow (c) krok pomijasz (schowek = null).
+3. Walidacja na drzewie bez plikow (c): typecheck i testy projektu (komendy z package.json, szczegoly stacku w
+   .claude/stack/walidacja.md). Niczego nie naprawiasz i nie zmieniasz kodu: czerwona walidacja znaczy, ze jednostki ukonczone
+   nie stoja bez przerwanej. Wtedy przywroc pliki (c) (\`git stash pop\`, gdy schowek powstal), sprawdz w git status, ze
+   wrocily, i zakoncz: zacommitowano=false, schowek=null, w powod nazwa walidacji i pierwszy blad.
+${BLOK_DLUGIE_KOMENDY}
+4. Zielona walidacja: w ${sciezka}/*-zadania.md oznacz [x] checkboxy implementacyjne jednostek ukonczonych (nie ruszaj
+   "Weryfikacja:", "Operator:" ani checkboxow z markerem [E2E]/[Manual]). W ${sciezka}/*-kontekst.md dopisz do \`## Dziennik\`
+   jedna linie: faza ${faza} przerwana, jednostki ukonczone i zapisane, jednostki nieukonczone, nazwa schowka (gdy powstal).
+5. Commit: \`git add\` wylacznie pliki (a) i dwa pliki z punktu 4 (nie git add .), potem
+   \`git commit -m "feat(<nazwa zadania>): faza ${faza}, jednostki <lista ukonczonych> (execute przerwany)"\`.
+6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
+
+Zwroc obiekt zgodny ze schematem: zacommitowano, commit (SHA), schowek ("${schowek}" albo null), plikiOdlozone (pliki (c)),
+walidacja, powod (null przy zacommitowano=true).`
+}
+
+// Wynik execute przerwanego przed domknieciem: baza fazy zawsze (bez niej commit resztek z drzewa gubi poczatek fazy),
+// a po udanym domknieciu czesciowym lista jednostek ukonczonych — wczesniejszych i z tego podejscia.
+function wynikPrzerwanego(pola, plan, wczesniej, czesc, czesciowe) {
+  const zapisane = Boolean(czesciowe && czesciowe.zacommitowano)
+  const baza = bazaFazy(plan)
+  return {
+    ...pola,
+    commity: zapisane && czesciowe.commit ? [czesciowe.commit] : [],
+    testy: 'n/a',
+    odchylenia: [],
+    baza: baza === 'HEAD' ? null : baza,
+    iuUkonczone: zapisane ? [...wczesniej, ...czesc.ukonczone.map((u) => u.id)] : wczesniej,
+    czesciowe: czesc.mozna
+      ? czesciowe || { zacommitowano: false, commit: null, schowek: null, plikiOdlozone: [], walidacja: 'n/a', powod: 'agent domkniecia czesciowego nie zwrocil wyniku — sprawdz git status i git stash list' }
+      : { zacommitowano: false, commit: null, schowek: null, plikiOdlozone: [], walidacja: 'n/a', powod: czesc.powod },
+  }
+}
+// ── Koniec wznowienia po przerwanym execute
 
 // ── Buildery promptow ──────────────────────────────────────────────────────
 
-function plannerPrompt(sciezka, faza) {
+function plannerPrompt(sciezka, faza, ukonczone = []) {
   return `Jestes plannerem fazy implementacji. Zbuduj liste Implementation Units gotowych do delegacji.
 
 Folder zadania: ${sciezka}
@@ -239,7 +359,9 @@ Faza do wykonania: ${faza}
    Po wiecej siegaj TYLKO wtedy, gdy jednostka odsyla do czegos, czego w tych wycinkach nie ma
    (np. decyzja opisana przy innej fazie). Nie czytaj dokumentow "dla kontekstu".
 2. W sekcji \`### Faza ${faza}\` planu technicznego zlokalizuj Implementation Units tej fazy.
-3. Jesli faza ${faza} jest juz ukonczona albo nie ma niezaznaczonych checkboxow IMPLEMENTACYJNYCH -> ustaw poza=true, iu=[].
+${ukonczone.length ? `   Jednostki zapisane commitem w poprzednim, przerwanym podejsciu do tej fazy: ${ukonczone.join(', ')}. Pomijasz je
+   (nie budujesz dla nich promptu), takze gdy ich checkboxy nie sa odhaczone.
+` : ''}3. Jesli faza ${faza} jest juz ukonczona albo nie ma niezaznaczonych checkboxow IMPLEMENTACYJNYCH -> ustaw poza=true, iu=[].
    Do ukonczenia NIE licza sie (pomijaj calkowicie): checkboxy z prefiksem "Weryfikacja:", "Operator:",
    oznaczone "[E2E]"/"[Manual]", oraz wszystkie checkboxy w sekcjach "## Do poprawy po review fazy N"
    i "## Operator checklist faza N" (obsluguje je review/fix, nie buildery).
@@ -337,7 +459,7 @@ function plikBramek(sciezka, faza) {
   return `/tmp/bramki-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.json`
 }
 
-function domknieciePrompt(sciezka, faza, buildResults, baza, plikBramek) {
+function domknieciePrompt(sciezka, faza, buildResults, baza, plikBramek, wczesniej = []) {
   const podsumowanieIU = buildResults
     .map((b) => `- ${b.id}: ${b.status}${b.odchylenia && b.odchylenia.length ? ` (odchylenia: ${b.odchylenia.join('; ')})` : ''}${b.nastepneKroki ? ` (nastepne kroki: ${b.nastepneKroki})` : ''}`)
     .join('\n')
@@ -347,8 +469,8 @@ Folder zadania: ${sciezka}
 Faza: ${faza}
 
 Raporty builderow:
-${podsumowanieIU}
-
+${podsumowanieIU || '(brak — w tym podejsciu zaden builder nie pracowal; walidujesz i domykasz stan repo od bazy fazy)'}
+${wczesniej.length ? `Jednostki zapisane commitem w poprzednim, przerwanym podejsciu (kod jest juz w repo, checkboxy odhaczone): ${wczesniej.join(', ')}.\nWalidacja, bramki i dossier obejmuja cala faze od bazy.\n` : ''}
 1. System-Wide Test Check: typecheck bez nowych bledow,
    istniejace testy przechodza, nowe testy pokrywaja happy path + error case, checkboxy "Test:" napisane i przechodza,
    importy nie lamia modulow, build (krok build wg .claude/stack/walidacja.md) przechodzi. Komendy z package.json.
@@ -412,7 +534,8 @@ if (!sciezka || faza === undefined) {
 }
 
 phase('Plan IU')
-const plan = await agent(plannerPrompt(sciezka, faza), { schema: IU_PLAN, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `planner:faza-${faza}` })
+const ukonczoneWczesniej = Array.isArray(args.iuUkonczone) ? args.iuUkonczone.filter((id) => typeof id === 'string' && id) : []
+const plan = await agent(plannerPrompt(sciezka, faza, ukonczoneWczesniej), { schema: IU_PLAN, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `planner:faza-${faza}` })
 
 // Null-guard: planner zabity/blad -> kontrolowany blocked zamiast TypeError (ktory wykoleilby caly autopilot).
 if (!plan) {
@@ -424,15 +547,22 @@ if (!plan) {
 const bazaZeStanu = /^[0-9a-f]{7,40}$/.test((args && args.baza) || '') ? args.baza : null
 if (bazaZeStanu) plan.baza = bazaZeStanu
 
-if (plan.poza || plan.iu.length === 0) {
-  return { fazaNumer: faza, status: 'completed', iu: [], commity: [], testy: 'brak', odchylenia: [], problem: null, baza: bazaZeStanu }
+plan.iu = plan.poza ? [] : bezUkonczonych(plan.iu, ukonczoneWczesniej)
+
+// Planner bez pracy. Bez bazy w stanie faza byla domknieta wczesniej — nic do zrobienia. Z baza w stanie poprzednie podejscie
+// przerwalo sie po czesci pracy (porazka bramki domkniecia po commicie, jednostki zapisane domknieciem czesciowym): domkniecie
+// biegnie jeszcze raz na stanie repo, zeby bramka, ktora zatrzymala faze, przeszla przed review (punkt 34).
+if (plan.iu.length === 0 && !bazaZeStanu) {
+  return { fazaNumer: faza, status: 'completed', iu: [], commity: [], testy: 'brak', odchylenia: [], problem: null, baza: null }
 }
 
 phase('Build')
 // BLOK doklejany deterministycznie w JS — kazdy builder dostaje prawa srodowiska niezaleznie od plannera.
 const promptIU = (iu) => `${iu.prompt}\n${BLOK_DLUGIE_KOMENDY}${BLOK_PYTANIE_BLOKERA}`
 let builds
-if (plan.strategia === 'parallel') {
+if (plan.iu.length === 0) {
+  builds = []
+} else if (plan.strategia === 'parallel') {
   // IU niezalezne — wszystkie buildery rownolegle (bariera, czekamy na komplet)
   builds = await parallel(
     plan.iu.map((iu) => () =>
@@ -453,33 +583,37 @@ if (plan.strategia === 'parallel') {
 const buildResults = builds.filter(Boolean)
 // Najpierw blocked (niesie pytanie blokera), potem guard kompletnosci.
 const zablokowany = buildResults.find((b) => b.status === 'blocked')
+// Domkniecie czesciowe (punkt 34): jednostki ukonczone ida do commita po walidacji, pliki nieukonczonej do schowka gita.
+async function zapiszUkonczone() {
+  const czesc = planCzesciowegoDomkniecia(plan, buildResults)
+  if (!czesc.mozna) return { czesc, czesciowe: null }
+  phase('Domkniecie')
+  const czesciowe = await agent(domkniecieCzesciowePrompt(sciezka, faza, czesc, bazaFazy(plan)), { schema: CZESCIOWE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie-czesciowe:faza-${faza}` })
+  return { czesc, czesciowe }
+}
 if (zablokowany) {
-  return {
+  const { czesc, czesciowe } = await zapiszUkonczone()
+  return wynikPrzerwanego({
     fazaNumer: faza,
     status: 'blocked',
     iu: buildResults.map((b) => ({ id: b.id, status: b.status })),
-    commity: [],
-    testy: 'n/a',
-    odchylenia: [],
     problem: zablokowany.pytanie || `IU ${zablokowany.id} zablokowany`,
-  }
+  }, plan, ukonczoneWczesniej, czesc, czesciowe)
 }
 // Guard: builder zabity przez runtime znika jako null — IU nie moze zniknac bezslednie.
 if (buildResults.length !== plan.iu.length) {
   const zwrocone = new Set(buildResults.map((b) => b.id))
   const brakujace = plan.iu.filter((iu) => !zwrocone.has(iu.id)).map((iu) => iu.id)
-  return {
+  const { czesc, czesciowe } = await zapiszUkonczone()
+  return wynikPrzerwanego({
     fazaNumer: faza,
     status: 'partial',
     iu: plan.iu.map((iu) => ({ id: iu.id, nazwa: iu.nazwa, status: zwrocone.has(iu.id) ? 'completed' : 'brak wyniku (kill/blad)' })),
-    commity: [],
-    testy: 'n/a',
-    odchylenia: [],
     problem: `builder(y) bez wyniku: ${brakujace.join(', ')} — IU niewykonane lub niezweryfikowane`,
-  }
+  }, plan, ukonczoneWczesniej, czesc, czesciowe)
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza)) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza), ukonczoneWczesniej) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 // Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.
 return wynik && { ...wynik, baza: bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan) }

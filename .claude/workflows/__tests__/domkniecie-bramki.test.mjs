@@ -51,7 +51,7 @@ test('planner zwraca baze fazy (HEAD przed builderami); JS bierze ja tylko jako 
   assert.equal(wf.bazaFazy({ baza: 'abc1234' }), 'abc1234')
   assert.equal(wf.bazaFazy({ baza: 'HEAD; rm -rf /' }), 'HEAD')
   assert.equal(wf.bazaFazy({}), 'HEAD')
-  assert.match(zrodlo, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\)\)/)
+  assert.match(zrodlo, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej\)/)
 })
 
 test('domkniecie uruchamia bramki z baza fazy, naprawia porazki bez wlasnego lintu, po naprawie dopisuje sume migracji', () => {
