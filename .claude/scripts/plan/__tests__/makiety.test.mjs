@@ -7,7 +7,7 @@
 // per ekran (`ekrany/<nazwa>.md`), pole IU `Makiety` i blok designerski liczony skryptem — builder dostaje tylko swoje ekrany.
 
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -175,4 +175,48 @@ test('kontekst designerski (dev-plan krok E): agenci w czesciach, zrzuty do plik
   assert.match(szablon, /\| `\*\*Makiety:\*\*` \| nazwy z `figma_screens`/)
   const skill = readFileSync(resolve(KATALOG, '../../../skills/dev-plan/SKILL.md'), 'utf8')
   assert.match(skill, /- \*\*Makiety\*\* — w planie z `figma_screens` każda IU ui\/fullstack wymienia ekrany/)
+})
+
+// Punkt 41 (aa-exam E3, IU-12): obecny mail logowania mial powitanie z imieniem, makieta nie, a granica zakresu zabraniala tekstow
+// spoza makiet — builder zwrocil `blocked` i run stanal. Jednostka, ktora zmienia istniejacy plik wedlug makiety, wypisuje w polu
+// „Znika z obecnej wersji”, czego makieta nie ma, z decyzja przy kazdym elemencie.
+const TABELA = (/** @type {string} */ akcja) => `**Pliki:**\n\n| Akcja | Plik | Linie dziś → po | Wymiary | Werdykt |\n|---|---|---|---|---|\n| ${akcja} | \`src/mail.ts\` | 8 → 40 | — | zostaje |\n`
+/** @param {{ akcja?: string, makiety?: string, znika?: string | null }} [o] @returns {string} */
+const iuPrzebudowy = ({ akcja = 'Modyfikuj', makiety = '`logowanie`', znika = null } = {}) =>
+  `- [ ] **IU-1: Mail logowania**\n\n**Cel:** c\n\n${TABELA(akcja)}\n**Delegate to:** feature-builder-fullstack\n\n**Makiety:** ${makiety}\n${znika === null ? '' : `\n**Znika z obecnej wersji:**${znika}\n`}\n**Scenariusze testowe:**\n- [Unit] mail bez powitania\n`
+const UWAGA_ZNIKA = 'IU-1: jednostka zmienia istniejący plik według makiety, a nie ma pola „Znika z obecnej wersji” — wypisz elementy obecnej wersji, których makieta nie ma, z decyzją przy każdym, albo „—”'
+/** @param {ReturnType<typeof parsujPlan>} p @returns {string[]} */
+const oZnikaniu = (p) => sprawdzMakiety(p, p.fazy.flatMap((f) => f.iu), tmpdir()).uwagi.filter((u) => u.includes('Znika z obecnej wersji'))
+
+test('pole „Znika z obecnej wersji”: lista z decyzjami, „—” = nic nie znika, brak pola, puste pole i placeholder = null', () => {
+  const lista = '\n- powitanie z imieniem (`email.service.ts:58`) — znika (R25)\n- stopka z adresem — zostaje (D3)'
+  const p = plan(iuPrzebudowy({ znika: lista }))
+  assert.equal(jednostka(p, 'IU-1').znika, lista.trim())
+  assert.deepEqual(jednostka(p, 'IU-1').problemy, [], 'lista pola nie jest problemem parsera')
+  assert.equal(jednostka(p, 'IU-1').scenariusze.length, 1, 'pole nie zjada scenariuszy')
+  assert.equal(jednostka(plan(iuPrzebudowy({ znika: ' —' })), 'IU-1').znika, '—')
+  for (const znika of [null, '', ' *(opcjonalne)*']) assert.equal(jednostka(plan(iuPrzebudowy({ znika })), 'IU-1').znika, null, JSON.stringify(znika))
+})
+
+test('sprawdzMakiety: Modyfikuj + Makiety bez pola „Znika z obecnej wersji” = uwaga; pole (lista albo „—”), sam Stwórz, Makiety „—” = bez uwagi', () => {
+  const bez = plan(iuPrzebudowy())
+  assert.deepEqual(oZnikaniu(bez), [UWAGA_ZNIKA])
+  assert.deepEqual(sprawdzMakiety(bez, bez.fazy.flatMap((f) => f.iu), tmpdir()).bledy, [], 'uwaga, nie blad')
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: ' —' }))), [])
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: '\n- powitanie z imieniem — znika (R25)' }))), [])
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ akcja: 'Stwórz' }))), [], 'nowy plik nie ma obecnej wersji')
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ akcja: 'Modyfikuj (e2e flow)' }))), [], 'plik flow to nie ekran')
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ makiety: '—' }))), [], 'jednostka bez ekranu z makiety')
+})
+
+test('sprawdzPlan niesie uwage o polu „Znika z obecnej wersji”, a szablony planu (rdzen i Expo) opisuja pole', () => {
+  const p = plan(iuPrzebudowy())
+  assert.ok(sprawdzPlan(p, tmpdir()).uwagi.includes(UWAGA_ZNIKA))
+  // W repo szablonu kopia Expo lezy w nakladce; w zbudowanym wariancie nakladki nie ma, a szablon pod .claude/ jest juz ta kopia.
+  const kopie = ['../../../skills/dev-plan/references/szablon-planu.md', '../../../../stacks/expo/nakladka/.claude/skills/dev-plan/references/szablon-planu.md']
+  for (const sciezka of kopie.filter((k, i) => i === 0 || existsSync(resolve(KATALOG, k)))) {
+    const szablon = readFileSync(resolve(KATALOG, sciezka), 'utf8')
+    assert.match(szablon, /\| `\*\*Znika z obecnej wersji:\*\*` \| `- <element obecnej wersji> \(<plik:linia>\) — znika \\\| zostaje \(<ID wymagania albo decyzji>\)`; `—` = nic nie znika \|/, sciezka)
+    assert.ok(szablon.indexOf('`**Teksty (verbatim):**`') < szablon.indexOf('`**Znika z obecnej wersji:**`'), `${sciezka}: po Tekstach`)
+  }
 })

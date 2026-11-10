@@ -77,7 +77,7 @@ const BUILD_RESULT = {
     pliki: { type: 'array', items: { type: 'string' } },
     odchylenia: { type: 'array', items: { type: 'string' } },
     nastepneKroki: { type: ['string', 'null'] },
-    pytanie: { type: ['string', 'null'], description: 'wypelnione gdy status=blocked' },
+    pytanie: { type: ['string', 'null'], description: 'wypelnione gdy status=blocked; po polsku, prostym jezykiem: co blokuje i gdzie, opcje ze skutkiem, rekomendacja (blok PYTANIE BLOKERA)' },
   },
   required: ['id', 'status'],
 }
@@ -188,7 +188,7 @@ const EXECUTE_RESULT = {
     commity: { type: 'array', items: { type: 'string' } },
     testy: { type: 'string', description: 'PASS/FAIL z liczbami lub "brak"' },
     odchylenia: { type: 'array', items: { type: 'string' } },
-    problem: { type: ['string', 'null'] },
+    problem: { type: ['string', 'null'], description: 'null przy completed; inaczej po polsku, prostym jezykiem: co nie przeszlo i gdzie, co operator moze z tym zrobic' },
     bramki: {
       type: 'object',
       additionalProperties: false,
@@ -209,6 +209,14 @@ const EXECUTE_RESULT = {
   },
   required: ['fazaNumer', 'status', 'iu', 'stanZapisany'],
 }
+
+// Pytanie blokera idzie 1:1 do powodu STOP-u, ktory operator czyta bez kontekstu buildera (punkt 41, aa-exam E3: pytanie po
+// angielsku, bez opcji). Blok doklejany w JS, wiec obowiazuje kazdego buildera kazdego stacku niezaleznie od plannera i pliku roli.
+const BLOK_PYTANIE_BLOKERA = `
+PYTANIE BLOKERA (gdy zwracasz status blocked): pole pytanie czyta operator w raporcie zatrzymania, bez dostepu do twojego
+kontekstu. Piszesz je po polsku, prostym jezykiem, w tej kolejnosci: (1) co blokuje prace i gdzie (jednostka, plik, pole planu
+albo makieta), (2) opcje do wyboru, kazda z jednym zdaniem skutku, (3) ktora opcje rekomendujesz i dlaczego. Bez skrotow
+z twojej pracy i bez nazw, ktorych operator nie zna z planu.`
 
 // ── Buildery promptow ──────────────────────────────────────────────────────
 
@@ -246,7 +254,7 @@ Faza do wykonania: ${faza}
    Jesli IU usuwa plik, ktorego importera zmienia albo usuwa inny IU tej fazy — strategia serial i IU usuwajacy plik
    po IU, ktory zmienia importera: builder nie usunie pliku z zywym importem i faza skonczy sie jako partial.
 5. Dla kazdego IU zbuduj KOMPLETNY prompt builderowi:
-   - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Teksty (verbatim), Wzorce, Scenariusze testowe, Weryfikacja)
+   - caly blok IU doslownie (Cel, Wymagania, Pliki, Podejscie, Teksty (verbatim), Znika z obecnej wersji, Wzorce, Scenariusze testowe, Weryfikacja)
    - DOMKNIJ ODWOLANIA DO DECYZJI. Builder pracuje w OSOBNYM kontekscie i nie widzi planu: odwolanie
      w rodzaju "straznik regresji D2" albo "zgodnie z decyzja D7" jest dla niego pustym stringiem.
      Dla KAZDEGO takiego odwolania w jednostce znajdz jego definicje w sekcji kluczowych decyzji planu
@@ -266,6 +274,10 @@ Faza do wykonania: ${faza}
    - wykluczenia z sekcji \`## Granice\` planu technicznego jako blok "Czego zadanie nie obejmuje:" z dopiskiem:
      "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
      zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.
+   - gdy IU ma pole "Znika z obecnej wersji" z lista elementow (nie sama kreska): pod polem dopisz zdanie
+     "Elementow z decyzja „znika” nie przenosisz z obecnego pliku ani ze wzorca, takze gdy obecny kod albo wzorzec je zawiera.
+     Gdy Podejscie albo scenariusz jednostki wymaga takiego elementu, zwroc status blocked i w polu pytanie nazwij te sprzecznosc."
+     Bez tego zdania builder bierze obecny plik za wzorzec i przenosi element, ktory operator kazal usunac.
    - dla feature-builder-ui|fullstack (takze wariantow -figma): gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
      i ma choc jedna niepusta sciezke, uruchom \`node .claude/scripts/plan/plan.mjs designerski <sciezka z linii "Plan techniczny:"> --iu <id IU>\`
      i niepuste pole \`tresc\` wyniku wklej doslownie (pusta — blok pomin). Skrypt daje DESIGN.md, SPEC.md oraz SPEC i PNG tylko ekranow
@@ -386,7 +398,9 @@ ${BLOK_DLUGIE_KOMENDY}
    status fazy od tego nie zalezy.
 
 Dzialaj autonomicznie. Zwroc obiekt zgodny ze schematem ExecuteResult
-(status=completed tylko gdy walidacja PASS, zadna bramka nie konczy sie porazka i wszystkie IU completed).`
+(status=completed tylko gdy walidacja PASS, zadna bramka nie konczy sie porazka i wszystkie IU completed).
+Pole problem przy statusie innym niz completed czyta operator w raporcie zatrzymania: piszesz je po polsku, prostym jezykiem —
+co nie przeszlo (nazwa walidacji albo bramki i trafienia), gdzie, i co operator moze z tym zrobic.`
 }
 
 // ── Orkiestracja ──────────────────────────────────────────────────────────
@@ -416,7 +430,7 @@ if (plan.poza || plan.iu.length === 0) {
 
 phase('Build')
 // BLOK doklejany deterministycznie w JS — kazdy builder dostaje prawa srodowiska niezaleznie od plannera.
-const promptIU = (iu) => `${iu.prompt}\n${BLOK_DLUGIE_KOMENDY}`
+const promptIU = (iu) => `${iu.prompt}\n${BLOK_DLUGIE_KOMENDY}${BLOK_PYTANIE_BLOKERA}`
 let builds
 if (plan.strategia === 'parallel') {
   // IU niezalezne — wszystkie buildery rownolegle (bariera, czekamy na komplet)

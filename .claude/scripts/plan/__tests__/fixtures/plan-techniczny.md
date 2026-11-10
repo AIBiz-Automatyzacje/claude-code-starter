@@ -108,6 +108,8 @@ Drugi akapit przeglądu nie trafia do pliku planu zadania.
 
 **Makiety:** `lista-ofert`
 
+**Znika z obecnej wersji:** —
+
 **Skills in play:** tailwind-react-guidelines, ux-ui-guidelines
 
 **Podejście:**

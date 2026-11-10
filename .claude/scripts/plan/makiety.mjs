@@ -9,6 +9,7 @@ import { existsSync } from 'node:fs'
 import { join, posix } from 'node:path'
 
 import { ekranyFigmy, poleTekstowe } from './plan-techniczny.mjs'
+import { bezOgonkow } from './pola-iu.mjs'
 
 /** @typedef {import('./plan-techniczny.mjs').Plan} Plan */
 /** @typedef {import('./pola-iu.mjs').Jednostka} Jednostka */
@@ -32,6 +33,18 @@ function budujeUi(iu) {
 }
 
 /**
+ * Punkt 41 (aa-exam E3, IU-12: obecny mail z imieniem, makieta bez powitania, granica „bez tekstow spoza makiet”): jednostka,
+ * ktora zmienia istniejacy plik wedlug makiety, wypisuje w polu „Znika z obecnej wersji”, czego makieta nie ma, z decyzja przy
+ * kazdym elemencie. Bez pola decyzje produktowa podejmuje builder albo run staje na `blocked`.
+ * @param {Jednostka} iu
+ * @returns {boolean}
+ */
+export function przebudowujeBezDecyzji(iu) {
+  const modyfikuje = iu.pliki.some((p) => bezOgonkow(p.akcja).toLowerCase() === 'modyfikuj')
+  return Boolean(iu.makiety && iu.makiety.length) && modyfikuje && iu.znika === null
+}
+
+/**
  * Bledy i uwagi walidacji planu: nazwa spoza `figma_screens` = blad (builder dostalby nieistniejacy ekran), jednostka UI bez pola
  * Makiety w planie z makietami = uwaga (dostanie wszystkie ekrany), pole Makiety w planie bez makiet = blad, ekran bez jednostki
  * w planie z polem Makiety = uwaga (tester E2E porownuje ekrany z pol Makiety jednostek fazy).
@@ -51,6 +64,9 @@ export function sprawdzMakiety(plan, jednostki, projekt) {
     if (brak.length) w.bledy.push(`figma_spec: SPEC podzielony na ekrany, brak ${brak.map((n) => `${katalog}/${n}.md`).join(', ')} — pobierz ekran ponownie (kontekst designerski, krok E)`)
   }
   for (const iu of jednostki) {
+    if (przebudowujeBezDecyzji(iu)) {
+      w.uwagi.push(`${iu.id}: jednostka zmienia istniejący plik według makiety, a nie ma pola „Znika z obecnej wersji” — wypisz elementy obecnej wersji, których makieta nie ma, z decyzją przy każdym, albo „—”`)
+    }
     if (iu.makiety === null) {
       if (ekrany.size && budujeUi(iu)) {
         w.uwagi.push(`${iu.id}: jednostka UI bez pola Makiety — builder dostanie wszystkie ${ekrany.size} ekrany i cały SPEC; wpisz ekrany, które buduje, albo „—”`)
