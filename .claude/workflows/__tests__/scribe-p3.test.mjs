@@ -73,6 +73,12 @@ test('scribe: status E2E „nie odegrano” jest w poleceniu, ksiegowanie bez zm
   assert.match(polecenie, /e2e\.mjs ksieguj/)
 })
 
+// Pilot Nawykometr W18 (runy 1 i 3): naglowek raportu mial „Gate: BLOKUJE” (stan z review), a wynik autopilota dla tej samej
+// fazy „gate: CZYSTE” (stan po cyklu fix) — dwa rozne werdykty pod jedna nazwa w archiwum zadania.
+test('scribe: werdykt w naglowku raportu jest nazwany jako gate review sprzed fixa', () => {
+  assert.match(prompt, /Werdykt w naglowku: "Gate review \(przed fixem\): <severityGate>" — gate fazy po cyklu fix podaje wynik autopilota\./)
+})
+
 test('scribe: prompt krotszy niz przed P8 (8297 znakow stalej czesci)', () => {
   assert.ok(prompt.length <= 7000, `stala czesc promptu scribe: ${prompt.length} znakow`)
 })

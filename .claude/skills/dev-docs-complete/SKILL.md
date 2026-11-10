@@ -47,9 +47,9 @@ Datę do plików bierz z `date +%F`.
    **Skąd brać dane do nagłówka i sekcji 0 — NIE uruchamiaj testów ani E2E w tej fazie** (suite w foreground przekracza limity Bash/watchdoga; wynik już jest w artefaktach):
    - `<N> testów`: `docs/active/<zadanie>/.autopilot-state.json` → `walidacjaWynik.testy` (string „PASS X/Y"); brak pliku/pola → „testy zielone wg walidacji końcowej" bez liczby.
    - `<M> scenariuszy E2E`: `grep -hE '^- \[x\].*\[E2E\]' docs/active/<zadanie>/*-zadania.md | grep -vcE 'Operator:|\[P[123]\]'` (bez kopii `Operator:` i pozycji findingów; brak trafień = 0, exit 1 to nie błąd).
-   - `<marker>` projektu głównego i `<ref e2e>`: tylko pierwsze 6 znaków hosta, bez wartości kluczy: `grep -ohE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local .env.e2e 2>/dev/null`.
+   - `<marker>` projektu głównego i `<ref e2e>`: tylko pierwsze 6 znaków hosta, bez wartości kluczy: `grep -ohE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local .env.e2e 2>/dev/null`. Marker pochodzi wyłącznie z wyniku tego polecenia; plik bez trafienia albo brak pliku zapisujesz jako „brak <plik> — ustal projekt przed startem”, bez markera.
    - Nazwa zmiennej z hasłem konta testowego: wyłącznie nazwy — `grep -oE '^[A-Z0-9_]*(PASSWORD|PASS|HASLO)[A-Z0-9_]*=' .env .env.local .env.e2e 2>/dev/null | cut -d= -f1 | sort -u`; brak → „konto testowe: patrz `.env.example`", nie zgaduj. **Zakaz `cat`/Read całego `.env*`.**
-   - Jeśli w projekcie istnieje wcześniejszy `docs/operator/*-smoke.md` — trzymaj się jego układu sekcji.
+   - Jeśli w projekcie istnieje wcześniejszy `docs/operator/*-smoke.md` — trzymaj się jego układu sekcji. Bierzesz z niego tylko układ: markerów projektów, adresów, kont ani kroków środowiska nie przepisujesz, bo opisują środowisko z dnia tamtego smoke'u.
 
    **Układ pliku** (wstawki zależne od stacku — narzędzie jazdy, czego automat nie sprawdzi, przykład klasy błędów, start aplikacji w sekcji 0 — bierzesz z `references/stack.md`, sekcja „Smoke operatora”):
 

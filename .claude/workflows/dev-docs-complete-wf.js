@@ -230,6 +230,7 @@ DANE DO NAGLOWKA I SEKCJI 0 — NIE uruchamiaj testow ani scenariuszy E2E (wynik
 - <N> testow: docs/active/${nazwaZadania}/.autopilot-state.json -> walidacjaWynik.testy ("PASS X/Y"); brak -> "testy zielone wg walidacji koncowej" bez liczby.
 - <M> scenariuszy E2E: \`grep -hE '^- \\[x\\].*\\[E2E\\]' docs/active/${nazwaZadania}/*-zadania.md | grep -vcE 'Operator:|\\[P[123]\\]'\` (bez kopii "Operator:" i pozycji findingow; brak trafien = 0).
 - marker projektu glownego / ref e2e: TYLKO pierwsze 6 znakow hosta: \`grep -ohE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local .env.e2e 2>/dev/null\`.
+  Marker pochodzi WYLACZNIE z wyniku tego polecenia. Plik bez trafienia albo brak pliku: wpisz "brak <plik> — ustal projekt przed startem", bez markera.
 - nazwa zmiennej z haslem konta testowego: TYLKO nazwy: \`grep -oE '^[A-Z0-9_]*(PASSWORD|PASS|HASLO)[A-Z0-9_]*=' .env .env.local .env.e2e 2>/dev/null | cut -d= -f1 | sort -u\`.
 ZAKAZ cat/Read calego .env* — nigdy nie wczytuj wartosci sekretow do kontekstu.
 
@@ -243,7 +244,7 @@ zamiast mobilnego viewportu) oznacz **[fizyczne urządzenie]**.
 PR WIELOCZESCIOWY: pozycje przypisuj do czesci, w ktorej kod faktycznie wchodzi (sprawdz plik w tabeli czesci, nie w tekscie planu; aa-exam: pole z czesci 4 w sekcji po deployu czesci 3). Przed merge'em kazdej
 czesci pozycja: przejscie kluczowego flow na stanie tej czesci, lokalnie. Odhaczanie miedzy czesciami: plik smoke'u lezy na \`feature/<zadanie>\`, commit lokalny tam jedzie z ostatnia czescia.
 ZMIANA SCHEMATU BEZ TRANSAKCJI (\`db:push\` i podobne): pozycja przed wdrozeniem to podglad SQL i sprawdzenie danych pod KAZDE nowe ograniczenie z tego podgladu, nie tylko to z planu.
-[Manual agent]: wykonaj je w tej sesji smoke'u przed pytaniem operatora, wynik wpisz przy pozycji.
+Pozycje "[Manual] agent:": wykonaj je w tej sesji smoke'u przed pytaniem operatora, wynik wpisz przy pozycji.
 PUNKTY WIZUALNE: Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy \`docs/active/<zadanie>/visual-diff/<ekran>-figma.png\` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka \`ekrany/<ekran>.md\`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”.
 Przed pierwszym punktem wizualnym smoke'u stoi zdanie z .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
 Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi
@@ -252,7 +253,8 @@ ramka ma zdanie do ramki z tej samej sekcji przed zdaniami koncowymi. Ramka konc
 Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
 „Następny krok: /clear, potem /dev-pr 3 --bez-merge”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej,
 a odhaczony plik bez commita zatrzymuje etap start /dev-pr na brudnym drzewie (piszemy_wirale 08.11).
-Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji.
+Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji. Bierzesz z niego tylko uklad:
+markerow projektow, adresow, kont ani krokow srodowiska nie przepisujesz, bo opisuja srodowisko z dnia tamtego smoke'u.
 
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;
 zastap nazwa zmiennej lub fraza "<haslo w .env.e2e>". E-mail konta testowego moze zostac.

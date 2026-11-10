@@ -231,6 +231,28 @@ test('SKILL.md 3.4b: wysyłki maili/SMS fazy kontra limit usługi na projekcie e
   assert.match(regula, /pozycja w checkliście przygotowania \(3\.7\)[^.]*`\[blokuje: faza N\]`/)
 })
 
+// Pilot Nawykometr W11 (runy 1 i 3): skill kazal pisac `[Manual agent]`, a `plan.mjs sprawdz` odrzucal ten znacznik jako
+// „scenariusz bez typu” — kazdy plan z krokiem agenta mial jedna czerwona runde walidacji. Znacznik ze skilla musi przejsc
+// walidator, trafic do zadania jako linia [Manual] i byc tym samym zapisem, ktorego szuka sesja smoke'u.
+test('SKILL.md 3.4b: zapis kroku ręcznego wykonalnego przez agenta przechodzi sprawdz, trafia do zadania i zgadza się ze smoke’em', () => {
+  const e2e = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b Scenariusze E2E i seedy'), SKILL_MD.indexOf('#### 3.5'))
+  const znacznik = /wykonalne przez agenta lokalnie[^\n]*?zapisujesz jako `([^`]+)`/.exec(e2e)?.[1] ?? ''
+  assert.equal(znacznik, '[Manual] agent:')
+  const pierwszy = przykladPlanu().match(/^- \[Unit\] [^\n]+$/m)?.[0] ?? ''
+  const plan = mutacja(pierwszy, `${pierwszy}\n- ${znacznik} smoke RLS przez psql na bazie e2e`)
+  assert.deepEqual(sprawdz(plan).bledy, [])
+  const korzen = projekt(plan)
+  try {
+    const zadania = [zadanieZPlanu(korzen, SCIEZKA_PLANU, { data: '2026-10-07' }).pliki.zadania].flat().join('\n')
+    assert.match(zadania, /^- \[ \] \[Manual\] agent: smoke RLS przez psql na bazie e2e \(IU-1\)$/m)
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+  const smoke = readFileSync(join(REPO, '.claude/workflows/dev-docs-complete-wf.js'), 'utf8')
+  assert.ok(smoke.includes(`Pozycje "${znacznik}": wykonaj je w tej sesji smoke'u przed pytaniem operatora`), 'smoke szuka tego samego zapisu')
+  assert.doesNotMatch(`${SKILL_MD}\n${smoke}`, /\[Manual agent\]/)
+})
+
 // P27 (2) (vibersi etap 5): scenariusz o statusie HTTP i meta trasy renderowanej przez serwer odpytywal port Vite, ktory na
 // kazdej sciezce odpowiada 200 i index.html — wynik zawsze „zgodny” albo `curl` na [Manual].
 // Treść stacku z 3.4b jest w slocie .claude/stack/plan-e2e.md (IU-1.4), 3.4b odsyła do sekcji „Serwer aplikacji w scenariuszu”.

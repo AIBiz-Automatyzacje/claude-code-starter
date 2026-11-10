@@ -1251,7 +1251,7 @@ function decyzjaClaudeMd(decyzje, sciezka) {
   return {
     stop: {
       powod: `start: CLAUDE.md nieuzgodniony po merge'u — ${pliki.map((p) => p.plik).join(', ')} (claude_md: do-uzgodnienia)`,
-      naprawa: `\`git switch ${decyzje.glowna}\` (z remote takze \`git pull --ff-only\`), potem ${pliki.map((p) => `/dev-pr --claude-md ${p.zadanie}`).join(', ')} (albo recznie claude_md: uzgodniono i commit na ${decyzje.glowna}), wroc na galaz zadania i swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+      naprawa: `\`git switch ${decyzje.glowna}\` (z remote takze \`git pull --ff-only\`), potem ${pliki.map((p) => `/dev-pr --claude-md ${p.zadanie}`).join(', ')} (albo recznie claude_md: uzgodniono i commit na ${decyzje.glowna}), wroc na galaz zadania, wciagnij uzgodniony CLAUDE.md (\`git merge ${decyzje.glowna}\`) i swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
     },
     uwaga: null,
   }
@@ -1505,7 +1505,10 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie }) {
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
   const decyzje = raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
   if (decyzje.length) akcje.push(`zmiany spoza planu do decyzji: ${decyzje.join('; ')}`)
-  const p2 = raporty.reduce((s, r) => s + (r?.fix?.nierozwiazaneP2 || 0), 0)
+  // Pozycja kontroli fixa zostawiona bez prefiksu OPERATOR: nie trafia do doDecyzjiOperatora i bez tej linii ginela w JSON-ie (pilot Nawykometr, run 3).
+  const kontrola = raporty.map((r) => ({ faza: r?.faza, ile: (r?.kontrolaFixa?.pominiete || []).filter((x) => !/^OPERATOR:/i.test(String(x).trim())).length + (r?.kontrolaFixa?.bezSladu || 0) })).filter((k) => k.ile > 0)
+  if (kontrola.length) akcje.push(`pozycje kontroli fixa bez naprawy: ${kontrola.map((k) => `faza ${k.faza} (${k.ile})`).join(', ')} — uzasadnienia w kontrolaFixa.pominiete wyniku runu`)
+  const p2 =raporty.reduce((s, r) => s + (r?.fix?.nierozwiazaneP2 || 0), 0)
   if (p2) akcje.push(`${p2} nierozwiazanych P2 w known-issues`)
   if (propozycjeBramek.length) akcje.push(`${propozycjeBramek.length} propozycji bramek z compoundu`)
   if (akcje.length) kroki.push(`Akcje operatora: ${akcje.join(', ')}.`)
