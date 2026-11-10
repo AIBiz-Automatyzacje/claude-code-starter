@@ -147,6 +147,19 @@ z nowym seedem; bez nowych paczek. Decyzje produktowe i akceptacja planu po stro
 Niesprawdzone w runie 3 (ścieżki nie wystąpiły): W23 (STOP startu E2E), W25 po `partial`, W17 (seed, który nie wszedł), D4
 (`[E2E]` → `[Manual]`), rozjazd zastany paczek w bramce gotowości (W22), klawiatura na fizycznym urządzeniu.
 
+### Po publikacji poprawek runu 3 (2026-11-10)
+
+- `main` szablonu `30d4ed2`, repo mobile `2ef6b6e`. Pierwszy push (`f7eff21`) dał czerwone CI w zadaniu `wariant-expo`: nowy test
+  bramki gotowości zależał od Maestro na maszynie. Wniosek dla kolejnych poprawek: test wołający `gotowosc()` bez atrapy narzędzi
+  sprawdzać też z `PATH` bez narzędzia jazdy, bo lokalne bramki tego nie pokażą.
+- Kopia: `feature/opinia-z-ustawien` zmergowany lokalnie do `main` (`1fe6905`), sync `5677264` → `2ef6b6e` (commit `b08e9dd`):
+  2 nowe, 24 zmienione, 161 usuniętych. Usunięcia to wyłącznie `__tests__/` maszynerii — pierwszy przebieg skryptu syncu, który
+  ich nie wozi do projektów (kopia w `.claude/.backups/`). Doctor OK z 4 uwagami, `e2e.mjs sprawdz`: gotowe.
+- **W21 sprawdzony na żywej kopii:** `plan.mjs gotowosc` zwraca `claudeMd.ok: false`, `zadania: ["opinia-z-ustawien"]` i naprawę
+  z `/dev-pr --claude-md` oraz `git merge main`. Pozostałe poprawki (W11, W18, W19, W32, W28) niesprawdzone na żywym runie.
+- Stan kopii: `main` `b08e9dd`, plik decyzji `opinia-z-ustawien` z `claude_md: do-uzgodnienia` (do uzgodnienia przed kolejnym
+  zadaniem), lokalna baza bez domyślnych uprawnień do nowych tabel.
+
 ## Niesprawdzone
 
 - Zgodność schematu lokalnego (z migracji repo) ze zdalną bazą — decyzja operatora: bez połączenia ze zdalną bazą.
