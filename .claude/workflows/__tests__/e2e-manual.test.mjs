@@ -31,7 +31,7 @@ function wytnij(zrodlo, kotwica, koniec) {
 
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const A = new Function(`${wytnij(autopilot, '// ── Bramka wejscia (P4)', '// ── Koniec bramki wejscia')}
-  return { decyzjaSrodowiskaE2e, srodowiskoPoReview, srodowiskoPoRestarcie, decyzjaPrzebudowy, advisorsZWyniku, sygnaturyZRestartu, decyzjaBlokeraSrodowiska }`)()
+  return { decyzjaSrodowiskaE2e, startZeSkryptu, srodowiskoPoReview, srodowiskoPoRestarcie, decyzjaPrzebudowy, advisorsZWyniku, sygnaturyZRestartu, decyzjaBlokeraSrodowiska }`)()
 // eslint-disable-next-line no-new-func -- jw.
 const R = new Function(`${wytnij(review, 'const SYGNATURY_BLOKERA = [', '// ── Koniec E2E po testerze')}
   return { PRZYCZYNY_SKIP, liczManualE2e, komendaKsiegowania, wykryjBlokerSrodowiska }`)()
@@ -223,7 +223,25 @@ test('w trakcie: wiring — sygnatury z restartu do args review, STOP stop-rebui
   assert.match(poReview, /const stopBlokera = decyzjaBlokeraSrodowiska\(review, numerFazy, sciezka\)\n\s+if \(stopBlokera\) \{\n\s+oznaczStan\(\)\n\s+return await stopRun\(\{ \.\.\.stopBlokera, faza: numerFazy, findings: review\.findings, raporty \}\)/)
   assert.ok(poReview.indexOf('decyzjaBlokeraSrodowiska(') < poReview.indexOf('srodowiskoPoReview('), 'STOP przed przelaczeniem na martwe')
   assert.match(review, /scribePrompt\(sciezka, faza, potwierdzone, przebieg, obalone, bezKsiegowaniaE2e\)/)
-  assert.match(review, /const bezKsiegowaniaE2e = Boolean\(blokerSrodowiska && blokerSrodowiska\.polityka === 'stop-rebuild'\)/)
+  assert.match(review, /const bezKsiegowaniaE2e = Boolean\(blokerSrodowiska && POLITYKI_STOP\.includes\(blokerSrodowiska\.polityka\)\)/)
+  assert.match(review, /const POLITYKI_STOP = \['stop-rebuild', 'stop-srodowisko'\]/)
+})
+
+// Pilot Nawykometr, run 1 (W17): seed padl na bazie e2e, oba scenariusze zeszly po cichu na [Manual], zadanie zarchiwizowane przy 0 PASS.
+test('w trakcie: seed, ktory nie wszedl = bloker stop-srodowisko (STOP z naprawa, linie [E2E] bez zmian), takze za wczesniejszym SKIP-em i przy bledzie sieci w dowodzie', () => {
+  const skip = (/** @type {string} */ dowod) => ({ checkbox: 'x', flow: 'x', wynik: 'SKIP', przyczyna: 'srodowisko', dowod })
+  const b = R.wykryjBlokerSrodowiska([skip('aplikacja nie odpowiada'), skip('seed nie wszedł: psql: error: connection to server at "127.0.0.1", port 54322 failed: Connection refused')])
+  assert.deepEqual([b?.klasa, b?.polityka], ['seed-nie-wszedl', 'stop-srodowisko'])
+  assert.match(b?.naprawa ?? '', /psql "\$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <seed>/)
+  assert.equal(R.wykryjBlokerSrodowiska([skip('seed nie wszedl: ERROR: Seed e3 odmawia pracy: brak public.e2e_env_marker')])?.polityka, 'stop-srodowisko')
+  // Zwrot w srodku dowodu albo przy FAIL (blad SQL seeda z fazy = defekt do fixa) nie zatrzymuje runu.
+  assert.equal(R.wykryjBlokerSrodowiska([skip('Metro milczy; wczesniej seed nie wszedł')])?.polityka, 'manual-restart')
+  assert.equal(R.wykryjBlokerSrodowiska([{ checkbox: 'x', flow: 'x', wynik: 'FAIL', przyczyna: 'nie-dotyczy', dowod: 'seed nie wszedł: ERROR: column "x" does not exist' }]), null)
+  const stop = A.decyzjaBlokeraSrodowiska({ blokerSrodowiska: b }, 2, ZADANIE)
+  assert.match(stop?.powod ?? '', /^Faza 2: srodowisko E2E wymaga naprawy \(seed-nie-wszedl\): "seed nie wszedł: psql: error/)
+  assert.match(stop?.powod ?? '', /Review pozostaje pending, linie \[E2E\] bez zmian/)
+  assert.match(stop?.naprawa ?? '', /^Zaaplikuj seed recznie .* Po naprawie swiezy run \(te same args, BEZ resumeFromRunId\)/)
+  assert.deepEqual(A.sygnaturyZRestartu(JSON.stringify({ sygnaturyBlokera: [{ wzorzec: 'x', klasa: 'k', polityka: 'stop-srodowisko' }] })).map((/** @type {{ polityka: string }} */ s) => s.polityka), ['stop-srodowisko'])
 })
 
 test('w trakcie: przyczyny SKIP w review-wf = kopia z ksiegowanie.mjs', () => {
@@ -330,6 +348,29 @@ test('start: agent uruchamia skrypt raz z limitem Basha 600 s i obsluguje wyjate
   assert.match(p, /timeout 600000/)
   assert.match(p, /jeden raz/)
   assert.match(p, /Kod 3/)
+  assert.match(p, /bez zmian w polu stdout/)
+})
+
+// Pilot Nawykometr, run 2: skrypt zwrocil kod 1 z komenda przebudowy w `naprawa`, a agent wpisal tekst zapasowy z `sprawdz`.
+test('start: pola ze stdout skryptu wygrywaja z przepisaniem agenta; STOP niesie komende przebudowy ze skryptu', () => {
+  const zeSkryptu = { status: 'niepowodzenie', scenariusze: 2, figmaScreens: false, envE2e: true, bazaE2e: true, serwer: 'brak', url: 'http://localhost:8081', log: null, bledy: ['dev-client starszy niż package-lock.json: expo-haptics'], detal: 'dev-client starszy niż package-lock.json: expo-haptics', naprawa: 'Przebuduj: npx expo run:ios --no-bundler. Wariant ad-hoc: xcodebuild CODE_SIGN_IDENTITY=- build' }
+  const odAgenta = start({ status: 'niepowodzenie', serwer: 'brak', detal: 'dev-client starszy', naprawa: 'Uruchom recznie: node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie docs/active/zadanie-x', stdout: `${JSON.stringify(zeSkryptu)}\n`, stanZapisany: true })
+  const w = A.startZeSkryptu(odAgenta)
+  assert.equal(w.naprawa, zeSkryptu.naprawa)
+  assert.equal(w.detal, zeSkryptu.detal)
+  assert.equal(w.stanZapisany, true, 'pola spoza skryptu zostaja od agenta')
+  const d = A.decyzjaSrodowiskaE2e(w, ZADANIE)
+  assert.match(d.stop.naprawa, /^Przebuduj: npx expo run:ios --no-bundler\. Wariant ad-hoc: xcodebuild CODE_SIGN_IDENTITY=- build Po naprawie swiezy run/)
+})
+
+test('start: stdout nieczytelny, z wyjatkiem albo z nieznanym statusem zostawia pola agenta; null zostaje nullem', () => {
+  const odAgenta = start({ status: 'niepowodzenie', naprawa: 'od agenta' })
+  for (const stdout of [null, undefined, 'Error: cos padlo', '{"wyjatek":"TypeError","status":"niepowodzenie","naprawa":"x"}', '{"status":"dziwny","naprawa":"x"}', '[1]']) {
+    assert.equal(A.startZeSkryptu({ ...odAgenta, stdout }).naprawa, 'od agenta', String(stdout))
+  }
+  assert.equal(A.startZeSkryptu(null), null)
+  assert.match(autopilot, /e2eStart = startZeSkryptu\(e2eStart\)\nconst srodowiskoStartu = decyzjaSrodowiskaE2e\(e2eStart, sciezka\)/)
+  assert.match(autopilot, /const NAPRAWA_ZAPASOWA_STARTU = \(sciezka\) => `Uruchom recznie: node \.claude\/scripts\/e2e\/e2e\.mjs start --zadanie/)
 })
 
 test('scribe: przegladarkowa „Weryfikacja:” bez markera dostaje kopie w Operator checklist (inaczej znika ze smoke)', () => {

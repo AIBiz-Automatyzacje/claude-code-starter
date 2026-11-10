@@ -106,6 +106,26 @@ test('bazaZastepcza: merge-base z galezia glowna; bez galezi glownej = HEAD', ()
   }
 })
 
+// Pilot Nawykometr, run 2: lokalna glowna przed zdalna (zadania zmergowane bez pushu) — merge-base ze zdalna obejmowal poprzednie zadania.
+test('bazaZastepcza: lokalna glowna przed zdalna = merge-base z lokalna (najblizszy), nie z pierwsza galezia z listy', () => {
+  const repo = noweRepo()
+  try {
+    git(repo, ['branch', '-M', 'main'])
+    zapisz(repo, { 'a.ts': 'a\n' })
+    const zdalna = commit(repo, 'stan zdalnej glownej')
+    git(repo, ['update-ref', 'refs/remotes/origin/main', zdalna])
+    zapisz(repo, { 'poprzednie.ts': 'x\n' })
+    const naMain = commit(repo, 'poprzednie zadanie, bez pushu')
+    git(repo, ['checkout', '-q', '-b', 'feature/x'])
+    zapisz(repo, { 'b.ts': 'b\n' })
+    commit(repo, 'faza')
+    assert.notEqual(zdalna, naMain)
+    assert.equal(bazaZastepcza(repo), naMain)
+  } finally {
+    usun(repo)
+  }
+})
+
 test('ponumerujDiff: numer linii w pliku po zmianie przy kontekscie i dodanej, usunieta bez numeru (piszemy_wirale: templates.ts:846)', () => {
   const wynik = ponumerujDiff(['diff --git a/a.ts b/a.ts', '--- a/a.ts', '+++ b/a.ts', '@@ -10,2 +40,2 @@ fn', ' stara', '-usunieta', '+nowa', '@@ -90 +120 @@', '+druga'].join('\n')).split('\n')
   assert.deepEqual(wynik.slice(4), ['   40 |  stara', '      | -usunieta', '   41 | +nowa', '@@ -90 +120 @@', '  120 | +druga'])

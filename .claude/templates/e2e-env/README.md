@@ -11,6 +11,10 @@ scenariusza wchodzi w pętlę fix jako finding P2 typ E2E. Cały przepis uruchom
   `.gitignore`, brak kluczy bazy e2e, brak tabeli markera przy seedach z jej guardem, ta sama baza co dev, zmieniona wypchnięta migracja, niedziałający
   agent-browser, serwer nie wstaje). Bez cichej degradacji: brak środowiska nie udaje świadomej rezygnacji.
   Świadomy opt-out: zmień marker `[E2E]` → `[Manual]` w pliku zadań (scenariusz wykonasz w smoke'u operatora).
+- **Seed nie wchodzi na bazę e2e w trakcie runu** (`psql` kończy go błędem z powodu połączenia, uprawnień, guardu bazy
+  albo brakującej migracji) → STOP z naprawą, nie `[Manual]`: scenariusz bez danych nie jest testem do odegrania ręcznie.
+  Review fazy zostaje otwarte, a świeży run po naprawie powtarza je z testerem. Błąd SQL w seedzie napisanym w tej fazie
+  to defekt do fixa.
 - **Test niewykonalny W TRAKCIE runu** (serwer padł, limit usługi zewnętrznej, popup OAuth, tester nie dał
   przebiegu) → linia `[E2E]` przechodzi na `[Manual]` z powodem `(MANUAL — <przyczyna>: <powód>)`,
   **run idzie dalej**, pozycja trafia do smoke'u operatora (`docs/operator/…-smoke.md`). Każda faza ze scenariuszami

@@ -29,6 +29,7 @@ Skrypt `.claude/scripts/e2e/e2e.mjs` podaje scenariusze fazy i stan Metro, któr
 - Gdy skill weryfikacji projektu istnieje, przeczytaj jego sekcje Drive i Evidence przed pierwszym scenariuszem, a dla każdego scenariusza znajdź w `mapa-funkcji.md` wpis o jego flow. `testID` i sposób logowania z mapy służą do oceny flow i przyczyny porażki, bo zostały sprawdzone na tej aplikacji; brak wpisu albo rozjazd mapy z aplikacją opisujesz w `dowod`.
 - Gdy sekcja fazy ma linię `[E2E]` wskazującą runner `.maestro/<etap>-run-all.sh`, uruchom go raz ze zmiennymi z `.env.e2e` i z jego wyjścia wyprowadź wpis PASS albo FAIL dla każdej linii `Test: [E2E]` fazy (dowód: fragment wyjścia) oraz wpis dla linii runnera. Scenariuszy objętych runnerem nie odgrywasz osobno, bo seedy są wzajemnie destrukcyjne i runner przeplata je ze scenariuszami.
 - Bez runnera, gdy scenariusz ma seed albo istnieje `.maestro/<flow>-seed.sql`, zaaplikuj go tuż przed scenariuszem: `psql "$SUPABASE_E2E_DB_URL" -v ON_ERROR_STOP=1 -f <seed>`, bo zbiorczy db-sync mógł go nadpisać seedem innego flow.
+- Gdy `psql` kończy seed kodem innym niż 0, nie odgrywaj scenariusza na starych danych. Błąd SQL w seedzie z mapy zmian fazy to wpis FAIL z findingiem P2 typ E2E i dosłownym komunikatem. W każdym innym przypadku (seed sprzed fazy, połączenie, uprawnienia, guard bazy) daj wpis SKIP z przyczyną `srodowisko` i polem `dowod` zaczynającym się od `seed nie wszedł: ` z dosłownym komunikatem `psql`, bo po tym początku orkiestrator zatrzymuje run z naprawą zamiast przenosić scenariusz na `[Manual]`.
 
 ### Seedy
 

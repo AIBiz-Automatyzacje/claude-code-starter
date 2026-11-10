@@ -16,8 +16,9 @@
 //   POLITYKA_OBCEGO             'stop' | 'zastap' — obcy proces na porcie E2E: STOP startu z PID-em albo zatrzymanie go i start
 //                               serwera pipeline'u (D11; zastap dla stacku, w ktorym serwer czyta env przy starcie)
 //   SYGNATURY_BLOKERA           SygnaturaBlokera[] — awarie srodowiska stacku w trakcie runu (dowod SKIP-u testera) z polityka
-//                               'manual-restart' ([Manual] + restart w nastepnej fazie) albo 'stop-rebuild' (STOP z naprawa,
-//                               D12); rdzen ma wlasne sygnatury dev servera i DNS, stack doklada swoje. Dane JSON (restart).
+//                               'manual-restart' ([Manual] + restart w nastepnej fazie), 'stop-rebuild' (STOP z naprawa,
+//                               D12) albo 'stop-srodowisko' (STOP z naprawa bez przebudowy); rdzen ma wlasne sygnatury dev
+//                               servera, DNS i seeda, ktory nie wszedl, stack doklada swoje. Dane JSON (restart).
 //   przedStartem(projekt, env)  WynikKroku: krok stacku przed startem i restartem serwera (Expo: urzadzenie, pliki env)
 //   poStarcie(projekt, env, konf) Promise<WynikKroku>: dowod stacku, gdy serwer juz odpowiada; porazka = STOP startu (Expo: canary)
 //   poZatrzymaniu(projekt)      { detal }: sprzatanie stacku po `e2e.mjs stop` (Expo: plik env)
@@ -33,7 +34,7 @@ import { adresHttp, tenSamSerwer } from './adres.mjs'
 /** @typedef {{ ok: boolean, detal: string }} WynikNarzedzia */
 /** @typedef {{ ok: boolean, detal: string, naprawa: string, przebudowa?: boolean }} WynikKroku przebudowa: restart serwera tego nie usunie, autopilot robi STOP */
 /**
- * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild', naprawa: string }} SygnaturaBlokera
+ * @typedef {{ wzorzec: string, flagi: string, klasa: string, polityka: 'manual-restart' | 'stop-rebuild' | 'stop-srodowisko', naprawa: string }} SygnaturaBlokera
  */
 
 // Web nie ma kroku stacku wokol serwera: Vite laduje .env.e2e flaga --mode e2e, a dowodem startu jest sonda zdrowia.

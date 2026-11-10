@@ -9,6 +9,7 @@ import { join } from 'node:path'
 
 import { PLIK_CANARY, przejdzCanary, wyslijReload } from './expo-canary.mjs'
 import { cofnijEnvE2e, PLIK_DEV, plikAdaptera, zapiszEnvE2e } from './expo-env.mjs'
+import { uwagaPaczekSdk } from './expo-paczki.mjs'
 import { trasyExpoRouter } from './expo-trasy.mjs'
 import { aplikacjaProjektu, OSTRZEZENIE_CLEAN, przygotujUrzadzenie, REBUILD, UWAGA_PODPISU_IOS, zrzutEkranu } from './expo-urzadzenie.mjs'
 
@@ -130,6 +131,8 @@ export const uwagiPlanowania = (projekt) => {
   if (plikAdaptera(projekt)) uwagi.push(`${PLIK_DEV} z poprzedniego przebiegu E2E przykrywa .env.local; po zakończonym przebiegu: node .claude/scripts/e2e/e2e.mjs stop`)
   const expo = ['app.json', 'app.config.js', 'app.config.ts'].some((p) => existsSync(join(projekt, p)))
   if (expo && !existsSync(join(projekt, PLIK_CANARY))) uwagi.push(`brak ${PLIK_CANARY}: canary dowodzi tylko, że aplikacja wstaje, nie że flow za logowaniem ruszy (wzór: .claude/templates/e2e-env/_canary.yaml)`)
+  const paczki = expo ? uwagaPaczekSdk(projekt) : null
+  if (paczki) uwagi.push(paczki)
   return uwagi
 }
 

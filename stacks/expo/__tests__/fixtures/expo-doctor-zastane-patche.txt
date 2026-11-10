@@ -1,0 +1,48 @@
+Running 20 checks on your project...
+19/20 checks passed. 1 checks failed. Possible issues detected:
+Use the --verbose flag to see more details about passed checks.
+
+✖ Check that packages match versions required by installed Expo SDK
+
+🔧 Patch version mismatches
+package                    expected  found    
+expo                       ~55.0.32  55.0.28  
+expo-apple-authentication  ~55.0.17  55.0.15  
+expo-application           ~55.0.19  55.0.18  
+expo-asset                 ~55.0.20  55.0.18  
+expo-build-properties      ~55.0.18  55.0.16  
+expo-dev-client            ~55.0.41  55.0.37  
+expo-device                ~55.0.21  55.0.19  
+expo-file-system           ~55.0.26  55.0.24  
+expo-linking               ~55.0.17  55.0.16  
+expo-localization          ~55.0.19  55.0.17  
+expo-network               ~55.0.18  55.0.16  
+expo-notifications         ~55.0.27  55.0.26  
+expo-router                ~55.0.18  55.0.17  
+expo-secure-store          ~55.0.18  55.0.16  
+expo-splash-screen         ~55.0.25  55.0.23  
+expo-sqlite                ~55.0.20  55.0.18  
+expo-video                 ~55.0.21  55.0.19  
+jest-expo                  ~55.0.22  55.0.20  
+
+Changelogs:
+- expo-apple-authentication → https://github.com/expo/expo/blob/sdk-55/packages/expo-apple-authentication/CHANGELOG.md
+- expo-application → https://github.com/expo/expo/blob/sdk-55/packages/expo-application/CHANGELOG.md
+- expo-asset → https://github.com/expo/expo/blob/sdk-55/packages/expo-asset/CHANGELOG.md
+- expo-build-properties → https://github.com/expo/expo/blob/sdk-55/packages/expo-build-properties/CHANGELOG.md
+- expo-dev-client → https://github.com/expo/expo/blob/sdk-55/packages/expo-dev-client/CHANGELOG.md
+- expo-device → https://github.com/expo/expo/blob/sdk-55/packages/expo-device/CHANGELOG.md
+- expo-file-system → https://github.com/expo/expo/blob/sdk-55/packages/expo-file-system/CHANGELOG.md
+- expo-linking → https://github.com/expo/expo/blob/sdk-55/packages/expo-linking/CHANGELOG.md
+- expo-localization → https://github.com/expo/expo/blob/sdk-55/packages/expo-localization/CHANGELOG.md
+- expo-network → https://github.com/expo/expo/blob/sdk-55/packages/expo-network/CHANGELOG.md
+- expo-notifications → https://github.com/expo/expo/blob/sdk-55/packages/expo-notifications/CHANGELOG.md
+- expo-router → https://github.com/expo/expo/blob/sdk-55/packages/expo-router/CHANGELOG.md
+- expo-secure-store → https://github.com/expo/expo/blob/sdk-55/packages/expo-secure-store/CHANGELOG.md
+- expo-splash-screen → https://github.com/expo/expo/blob/sdk-55/packages/expo-splash-screen/CHANGELOG.md
+- expo-sqlite → https://github.com/expo/expo/blob/sdk-55/packages/expo-sqlite/CHANGELOG.md
+- expo-video → https://github.com/expo/expo/blob/sdk-55/packages/expo-video/CHANGELOG.md
+
+18 packages out of date.
+Advice:
+Use 'npx expo install --check' to review and upgrade your dependencies.

@@ -316,9 +316,10 @@ const E2E_START = {
     bledy: { type: 'array', items: { type: 'string' } },
     detal: { type: 'string' },
     naprawa: { type: 'string' },
+    stdout: { type: ['string', 'null'], description: 'ostatnia linia stdout `e2e.mjs start` 1:1 (JSON w jednej linii); null, gdy skrypt nie wypisal JSON-a' },
     stanZapisany: POLE_STANU,
   },
-  required: ['status', 'scenariusze', 'figmaScreens', 'envE2e', 'bazaE2e', 'serwer', 'url', 'log', 'bledy', 'detal', 'naprawa', 'stanZapisany'],
+  required: ['status', 'scenariusze', 'figmaScreens', 'envE2e', 'bazaE2e', 'serwer', 'url', 'log', 'bledy', 'detal', 'naprawa', 'stdout', 'stanZapisany'],
 }
 
 const E2E_DB_SYNC_RESULT = {
@@ -567,17 +568,22 @@ przeczytaj ja przed krokiem 1.
 Poza wyjatkiem z kroku 2 NIE modyfikuj zadnych plikow. Zwroc {status, detal, czasZimnySek, czasKontrolnySek}.`
 }
 
+// Naprawa, gdy skrypt startu nie zwrocil wyniku. Wskazuje `start`, nie `sprawdz`: tylko start przechodzi krok stacku przed
+// serwerem (Expo: urzadzenie i swiezosc dev-clienta), a `sprawdz` przy starym dev-cliencie odpowiada „gotowe” (pilot Nawykometr, run 2).
+const NAPRAWA_ZAPASOWA_STARTU = (sciezka) => `Uruchom recznie: node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka} (pole naprawa w ostatniej linii stdout; po udanym starcie zatrzymaj serwer: node .claude/scripts/e2e/e2e.mjs stop)`
+
 // Repo bez aplikacji (projekt od zera, P17) skrypt rozpoznaje sam i zwraca status odroczone zamiast STOP-u.
 function e2eStartPrompt(sciezka) {
   return `Uruchom w korzeniu repo dokladnie jedno polecenie i przepisz jego wynik:
 \`node .claude/scripts/e2e/e2e.mjs start --zadanie ${sciezka}\`
 Narzedzie Bash wywolaj z timeout 600000 (start serwera czeka do 500 s) i uruchom polecenie jeden raz: powtorka postawilaby
 drugi serwer obok pierwszego. Skrypt sprawdza, czy zadanie potrzebuje przegladarki, sprawdza .env.e2e i uruchamia serwer aplikacji
-w tle. Kod wyjscia 0 albo 1 to wynik (STOP liczy orkiestrator): ostatnia linia stdout to JSON — zwroc jego pola 1:1. Kod 3
-(JSON z polem "wyjatek") albo brak JSON-a: status "niepowodzenie", bledy = [tresc wyjatku albo ostatnie linie wyjscia],
-detal = to samo, naprawa = "Uruchom recznie: node .claude/scripts/e2e/e2e.mjs sprawdz --zadanie ${sciezka}", scenariusze 0,
-figmaScreens false, envE2e i bazaE2e false, serwer "brak", url i log null. Plikow repo nie zmieniasz (poza zapisem stanu,
-jesli polecenie go zawiera).`
+w tle. Kod wyjscia 0 albo 1 to wynik (STOP liczy orkiestrator): ostatnia linia stdout to JSON — zwroc jego pola 1:1, a cala
+te linie bez zmian w polu stdout (orkiestrator czyta z niej pola skryptu, wiec pole naprawa przy kodzie 1 pochodzi ze skryptu,
+nie od ciebie). Kod 3 (JSON z polem "wyjatek") albo brak JSON-a: status "niepowodzenie", bledy = [tresc wyjatku albo ostatnie
+linie wyjscia], detal = to samo, naprawa = "${NAPRAWA_ZAPASOWA_STARTU(sciezka)}", scenariusze 0,
+figmaScreens false, envE2e i bazaE2e false, serwer "brak", url i log null, stdout = ostatnia linia stdout albo null. Plikow
+repo nie zmieniasz (poza zapisem stanu, jesli polecenie go zawiera).`
 }
 
 function e2eRestartPrompt(sciezka, numerFazy) {
@@ -1306,6 +1312,17 @@ function jsonZeStdout(tekst) {
   }
 }
 
+// Pola startu ze skryptu wygrywaja z przepisaniem agenta (pilot Nawykometr, run 2: agent podmienil `naprawa` skryptu na tekst
+// zapasowy i STOP bramki natywnej stracil komende przebudowy). Linia nieczytelna, z wyjatkiem albo z nieznanym statusem: pola agenta.
+const POLA_STARTU = ['status', 'scenariusze', 'figmaScreens', 'envE2e', 'bazaE2e', 'serwer', 'url', 'log', 'bledy', 'detal', 'naprawa']
+const STATUSY_STARTU = ['pominieto', 'brak-srodowiska', 'niepowodzenie', 'gotowe', 'odroczone']
+function startZeSkryptu(wynik) {
+  if (!wynik) return wynik
+  const s = jsonZeStdout(wynik.stdout)
+  if (!s || 'wyjatek' in s || !STATUSY_STARTU.includes(String(s.status))) return wynik
+  return { ...wynik, ...Object.fromEntries(POLA_STARTU.filter((p) => s[p] !== undefined).map((p) => [p, s[p]])) }
+}
+
 // Restart serwera przed testerem fazy (P17), wynik `e2e.mjs restart`: gotowe -> przegladarka w tej fazie; pominieto -> faza
 // bez scenariuszy i makiet; niepowodzenie -> 'martwe' w tej fazie, a ogon logu idzie do review (serwer polozony kodem fazy to
 // defekt do fixa, nie awaria srodowiska). Do konca runu tylko brak odpowiedzi w limicie startu: kazda nastepna proba to znowu
@@ -1360,7 +1377,7 @@ function sygnaturyZRestartu(stdout) {
   const w = jsonZeStdout(stdout)
   const lista = w && Array.isArray(w.sygnaturyBlokera) ? w.sygnaturyBlokera : []
   return lista.filter((s) => s && typeof s === 'object' && typeof s.wzorzec === 'string' && typeof s.klasa === 'string'
-    && ['manual-restart', 'stop-rebuild'].includes(s.polityka))
+    && ['manual-restart', 'stop-rebuild', 'stop-srodowisko'].includes(s.polityka))
 }
 
 // Bloker z polityka stop-rebuild (D12, mobile: brak modulu natywnego, entitlements): restart serwera go nie usunie, a faza
@@ -1368,10 +1385,19 @@ function sygnaturyZRestartu(stdout) {
 // (scribe ich nie ksiegowal) — swiezy run po przebudowie powtarza review fazy z testerem.
 function decyzjaBlokeraSrodowiska(review, numerFazy, sciezka) {
   const b = review && review.blokerSrodowiska
-  if (!b || !b.wykryty || b.polityka !== 'stop-rebuild') return null
+  if (!b || !b.wykryty) return null
+  if (b.polityka === 'stop-rebuild') {
+    return {
+      powod: `Faza ${numerFazy}: srodowisko E2E wymaga przebudowy (${b.klasa}): "${b.dowod}". Review pozostaje pending, linie [E2E] bez zmian.`,
+      naprawa: `${b.naprawa} Po przebudowie swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`,
+    }
+  }
+  // Polityka stop-srodowisko (seed nie wszedl na baze e2e): scenariusz bez danych nie idzie po cichu na [Manual] — operator
+  // naprawia srodowisko, a swiezy run powtarza review fazy z testerem (pilot Nawykometr, run 1: archiwum przy 0 PASS).
+  if (b.polityka !== 'stop-srodowisko') return null
   return {
-    powod: `Faza ${numerFazy}: srodowisko E2E wymaga przebudowy (${b.klasa}): "${b.dowod}". Review pozostaje pending, linie [E2E] bez zmian.`,
-    naprawa: `${b.naprawa} Po przebudowie swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`,
+    powod: `Faza ${numerFazy}: srodowisko E2E wymaga naprawy (${b.klasa}): "${b.dowod}". Review pozostaje pending, linie [E2E] bez zmian.`,
+    naprawa: `${b.naprawa} Po naprawie swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`,
   }
 }
 
@@ -1755,6 +1781,7 @@ if (!e2eStart) {
   log('E2E start: agent zwrocil null — retry raz')
   e2eStart = await agent(e2eStartPrompt(sciezka), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start:retry', phase: 'Bootstrap' })
 }
+e2eStart = startZeSkryptu(e2eStart)
 const srodowiskoStartu = decyzjaSrodowiskaE2e(e2eStart, sciezka)
 log(`E2E start: ${e2eStart ? `${e2eStart.status} (serwer: ${e2eStart.serwer}, scenariusze: ${e2eStart.scenariusze}) — ${e2eStart.detal}` : 'agent zwrocil null 2x'}`)
 if (srodowiskoStartu.stop) {
@@ -1823,14 +1850,20 @@ for (const numerFazy of kolejka) {
   let dossierZExecute = null
   if (faza.execute === 'pending') {
     await zapiszZaleglyStan()
-    const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy, stanPoExecute: trescStanu(stanPoExecute(stan, numerFazy)) })
+    // Baza ze stanu (execute przerwany po czesci pracy) idzie do execute-wf: wznowienie nie liczy bramek i dossier od HEAD-u po zmianach fazy.
+    const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy, baza: faza.baza || null, stanPoExecute: trescStanu(stanPoExecute(stan, numerFazy)) })
     if (!exec || exec.status !== 'completed') {
+      // Baza fazy zostaje w stanie takze przy execute bez „completed”: domkniecie moglo juz zacommitowac faze (porazka bramki po
+      // commicie), a swiezy run bez bazy dalby review diff od galezi glownej (pilot Nawykometr, run 2: 585 plikow zamiast 8).
+      const bazaZExecute = Boolean(exec && exec.baza && !faza.baza)
+      if (bazaZExecute) faza.baza = exec.baza
       // Domkniecie mialo zapisac stan tylko przy completed; gdy mimo to potwierdzilo zapis, STOP nadpisuje go stanem z pamieci.
-      if (exec && exec.stanZapisany) oznaczStan()
+      if (bazaZExecute || (exec && exec.stanZapisany)) oznaczStan()
       return await stopRun({ powod: `execute fazy ${numerFazy} zwrocil "${exec ? exec.status : 'null'}"${exec && exec.problem ? `: ${exec.problem}` : ''}`, faza: numerFazy, exec, raporty })
     }
     faza.execute = 'done'
-    faza.baza = exec.baza || null
+    // Planner bez pracy (`poza`, faza zrobiona przed STOP-em) nie zna bazy: zostaje ta ze stanu.
+    faza.baza = exec.baza || faza.baza || null
     dossierZExecute = exec.dossier || null
     if (!zapisPotwierdzony(exec)) {
       log(`Faza ${numerFazy}: domkniecie nie potwierdzilo zapisu stanu — zapis zapasowy`)

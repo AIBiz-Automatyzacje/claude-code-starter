@@ -197,6 +197,26 @@ test('PLAN_STATE: baza fazy przechodzi przez bootstrap (string albo null), stan 
   assert.match(wytnij('function bootstrapPrompt(', '\n}'), /Pole "baza" fazy \(jesli obecne\) przepisz 1:1/)
 })
 
+// Pilot Nawykometr, run 2: execute skonczyl „partial” po commicie fazy (porazka bramki stack), stan mial baza: null, a swiezy
+// run z plannerem bez pracy dal review diff od galezi glownej (585 plikow zamiast 8).
+test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem bez pracy', () => {
+  const petla = zrodlo.slice(zrodlo.indexOf("if (faza.execute === 'pending') {"), zrodlo.indexOf('// 2) REVIEW'))
+  // Autopilot: baza ze stanu idzie do execute-wf, zostaje w stanie przy STOP-ie i nie ginie, gdy execute jej nie zwraca.
+  assert.match(petla, /workflow\('dev-docs-execute-wf', \{ sciezka, faza: numerFazy, baza: faza\.baza \|\| null, stanPoExecute:/)
+  const stop = petla.slice(petla.indexOf("exec.status !== 'completed'"), petla.indexOf('return await stopRun('))
+  assert.match(stop, /const bazaZExecute = Boolean\(exec && exec\.baza && !faza\.baza\)\n\s+if \(bazaZExecute\) faza\.baza = exec\.baza\n/)
+  assert.match(stop, /if \(bazaZExecute \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
+  assert.match(petla, /faza\.baza = exec\.baza \|\| faza\.baza \|\| null/)
+  // Execute-wf: baza z args wygrywa z HEAD-em plannera (takze dla bramek i dossier domkniecia) i wraca przy plannerze bez pracy.
+  assert.match(zrodloExecute, /const bazaZeStanu = \/\^\[0-9a-f\]\{7,40\}\$\/\.test\(\(args && args\.baza\) \|\| ''\) \? args\.baza : null\nif \(bazaZeStanu\) plan\.baza = bazaZeStanu\n/)
+  assert.ok(zrodloExecute.indexOf('if (bazaZeStanu) plan.baza = bazaZeStanu') < zrodloExecute.indexOf('if (plan.poza || plan.iu.length === 0) {'), 'baza ze stanu przed wyjsciem plannera bez pracy')
+  assert.match(zrodloExecute, /status: 'completed', iu: \[\], commity: \[\], testy: 'brak', odchylenia: \[\], problem: null, baza: bazaZeStanu \}/)
+  // To samo przypisanie co w zrodle: po nim bazaFazy(plan) daje baze ze stanu, nie HEAD plannera.
+  const plan = { baza: 'fedcba9' }
+  plan.baza = 'abc1234'
+  assert.equal(ex.bazaFazy(plan), 'abc1234')
+})
+
 const zrodloReview = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
 // eslint-disable-next-line no-new-func -- ekstrakcja z pliku workflowu tego repo, nie z inputu
 const rv = new Function(
