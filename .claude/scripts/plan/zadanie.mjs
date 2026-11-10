@@ -41,10 +41,15 @@ function zrodla(projekt, plan, sciezkaPlanu) {
     `- Przygotowanie dla operatora: ${prep ? `\`${prep}\`` : 'brak'}`, '']
 }
 
+/** @param {Plan['fazy'][number]} f @returns {string} wiersz tabeli „Fazy” planu zadania (czyta go planner fazy) */
+export function wierszFazy(f) {
+  return `| ${f.numer} | ${f.nazwa} | ${f.iu.map((iu) => iu.id).join(', ')} | ${f.zalezyOd || 'Brak'} | `
+    + `${[...new Set(f.iu.map((iu) => iu.delegate))].join(', ')} |`
+}
+
 /** @param {string} projekt @param {Plan} plan @param {string} nazwa @param {string} data @param {string} sciezkaPlanu @param {Przygotowanie | null} prep */
 function planZadania(projekt, plan, nazwa, data, sciezkaPlanu, prep) {
-  const fazy = plan.fazy.map((f) => `| ${f.numer} | ${f.nazwa} | ${f.iu.map((iu) => iu.id).join(', ')} | ${f.zalezyOd || 'Brak'} | `
-    + `${[...new Set(f.iu.map((iu) => iu.delegate))].join(', ')} |`)
+  const fazy = plan.fazy.map(wierszFazy)
   const blokery = (prep?.odroczone ?? []).map((b) => `- [ ] faza ${b.faza} — ${b.tresc} · ${prep?.sciezka}:${b.linia}`)
   return [
     ...naglowek('Plan', nazwa, data, sciezkaPlanu),
@@ -92,7 +97,7 @@ function kontekstZadania(projekt, plan, nazwa, data, sciezkaPlanu, prep) {
 }
 
 /** @param {Jednostka} iu @returns {{ linie: string[], operator: string[] }} */
-function checkboxyIu(iu) {
+export function checkboxyIu(iu) {
   const linie = [
     `### ${iu.id}: ${iu.nazwa} (${iu.delegate})`, '',
     ...iu.pliki.map((p) => `- [ ] ${p.akcja || 'Plik'}: \`${p.sciezka}\``),
@@ -106,12 +111,17 @@ function checkboxyIu(iu) {
   return { linie, operator }
 }
 
+/** @param {Plan['fazy'][number]} f @returns {string[]} naglowek sekcji fazy w pliku zadan z liniami zaleznosci */
+export function naglowekFazy(f) {
+  return [`## Faza ${f.numer} — ${f.nazwa}`, '', `Zależy od: ${f.zalezyOd || 'Brak'}`, ...(f.rownolegleZ ? [`Równolegle z: ${f.rownolegleZ}`] : []), '']
+}
+
 /** @param {Plan} plan @param {string} nazwa @param {string} data @param {string} sciezkaPlanu */
 function zadaniaZadania(plan, nazwa, data, sciezkaPlanu) {
   const fazy = plan.fazy.flatMap((f) => {
     const iu = f.iu.map(checkboxyIu)
     const operator = iu.flatMap((j) => j.operator)
-    return [`## Faza ${f.numer} — ${f.nazwa}`, '', `Zależy od: ${f.zalezyOd || 'Brak'}`, ...(f.rownolegleZ ? [`Równolegle z: ${f.rownolegleZ}`] : []), '',
+    return [...naglowekFazy(f),
       ...iu.flatMap((j) => j.linie),
       ...(operator.length ? [`## Operator checklist faza ${f.numer}`, '', ...operator, ''] : [])]
   })

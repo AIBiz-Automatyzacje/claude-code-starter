@@ -8,6 +8,11 @@
 //                                                  czesci PR); rozmiarPr = szacunek plikow do recenzji bota per faza i czesc
 //   plan.mjs generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz]
 //                                                  pliki zadania z planu; bez --zapisz tylko liczniki; plan z bledami — nic
+//   plan.mjs odswiez <docs/active/zadanie> [--od <rewizja>] [--zapisz]
+//                                                  zmiana planu technicznego po starcie zadania: roznica miedzy planem z rewizji
+//                                                  (domyslnie HEAD) a obecnym nalozona na plik zadan; odhaczenia i linie przebiegu
+//                                                  zostaja, pozycja przeniesiona miedzy jednostkami zabiera odhaczenie; bez --zapisz
+//                                                  tylko lista zmian; stanu przebiegu nie zmienia
 //   plan.mjs gotowosc <docs/active/zadanie>        plan, srodowisko E2E, checklista przygotowania, galaz i czyste drzewo,
 //                                                  runner testow bez .claude/**
 //   plan.mjs blokery <docs/active/zadanie>         nieodhaczone blokery checklisty z faza, ktora wstrzymuja (bootstrap autopilota;
@@ -25,6 +30,7 @@ import { liczLinieKodu, podsumowanieBudzetu } from './budzet-pliku.mjs'
 import { rozmiarPlanu } from './czesci-pr.mjs'
 import { blokeryZadania, gotowosc } from './gotowosc.mjs'
 import { blokDesignerski } from './makiety.mjs'
+import { odswiezZadanie } from './odswiez.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
 import { zadanieZPlanu } from './zadanie.mjs'
@@ -34,12 +40,12 @@ const KOD_ZLYCH_ARGUMENTOW = 2
 const KOD_WYJATKU = 3
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, nazwa: { type: 'string' }, data: { type: 'string' },
-  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, iu: { type: 'string' },
+  zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, iu: { type: 'string' }, od: { type: 'string' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
+  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | odswiez <docs/active/zadanie> [--od <rewizja>] [--zapisz] | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -71,7 +77,7 @@ function odmowaZapisu(katalog, nadpisz) {
     return p ? readFileSync(join(katalog, p), 'utf8') : ''
   }
   if (pliki.includes('.autopilot-state.json') || pliki.some((p) => /^review-faza-\d+\.md$/.test(p))) {
-    return 'zadanie ma przebieg autopilota (.autopilot-state.json albo review-faza-N.md) — postępu nie nadpisuję'
+    return 'zadanie ma przebieg autopilota (.autopilot-state.json albo review-faza-N.md) — postępu nie nadpisuję; zmianę planu po starcie przenosi `plan.mjs odswiez <katalog zadania>`'
   }
   if (/^- \[x\]/m.test(tresc('-zadania.md'))) return 'plik zadań ma odhaczone pozycje — postępu nie nadpisuję'
   if (/^## Dziennik\n+\S/m.test(tresc('-kontekst.md'))) return 'dziennik w pliku kontekstu ma wpisy — postępu nie nadpisuję'
@@ -87,7 +93,7 @@ function planWzgledny(projekt, sciezka) {
 
 /**
  * @param {string[]} positionals
- * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string }} values
+ * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string }} values
  */
 function wykonaj(positionals, values) {
   const [polecenie, sciezka, ...reszta] = positionals
@@ -106,6 +112,12 @@ function wykonaj(positionals, values) {
   if (polecenie === 'gotowosc') {
     const wynik = gotowosc(projekt, sciezka.replace(/\/$/, ''))
     zakoncz(wynik, wynik.ok)
+  }
+  if (polecenie === 'odswiez') {
+    const { pliki, ...wynik } = odswiezZadanie(projekt, sciezka.replace(/\/$/, ''), { od: values.od })
+    const zapisane = wynik.ok && values.zapisz ? Object.keys(pliki) : []
+    for (const s of zapisane) writeFileSync(join(projekt, s), pliki[s])
+    zakoncz({ ...wynik, zapisane }, wynik.ok)
   }
   if (polecenie === 'blokery') zakoncz({ ok: true, ...blokeryZadania(projekt, sciezka.replace(/\/$/, '')) }, true)
   if (polecenie === 'designerski') {
