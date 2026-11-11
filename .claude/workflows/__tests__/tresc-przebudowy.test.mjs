@@ -141,6 +141,14 @@ test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis 
   assert.ok(zapis !== -1 && zapis < poExecute.indexOf("if (!exec || exec.status !== 'completed')"), 'zapis przed STOP-em execute')
   assert.match(autopilot, /przy znaczniku autopilot builder\s+rozstrzygnal sprzecznosc zrodel planu/)
   const review = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
+  // Weryfikacja partii 2026-11-11, punkt 48: tester E2E dostaje te sama wiedze co reviewer (finding E2E omija sceptykow i idzie do fixa).
+  // Regula stoi w pliku roli (procedura testera ma jedno zrodlo), w rdzeniu i w kopii wariantu Expo.
+  for (const rola of [plik('agents/feature-tester-e2e.md'), readFileSync(resolve(KATALOG, '../../../stacks/expo/nakladka/.claude/agents/feature-tester-e2e.md'), 'utf8')]) {
+    const klasyfikacja = sekcja(rola, '### Klasyfikacja i wynik', '\n### ')
+    assert.match(klasyfikacja, /wiersz `\[DECYZJA · faza N · autopilot\]` bieżącej fazy w sekcji `## Decyzje operatora` pliku `known-issues\.md`/)
+    assert.match(klasyfikacja, /brak tego, z czego builder zrezygnował, nie jest FAIL-em ani findingiem/)
+    assert.match(klasyfikacja, /FAIL zostaje, gdy aplikacja robi co innego niż opisany wybór/)
+  }
   const prompt = sekcja(review, 'function reviewerPrompt(', '\n}\n')
   assert.match(prompt, /wiersz "\[DECYZJA · faza \$\{faza\} · autopilot\]" w sekcji "## Decyzje operatora" pliku \$\{sciezka\}\/known-issues\.md/)
   assert.match(prompt, /Odstepstwo od Podejscia albo scenariusza opisane takim wierszem nie jest findingiem \(ani KOD, ani TEST\)/)

@@ -114,7 +114,7 @@ test('domkniecie: punkt zapisu stanu po dossier, tylko przy status=completed; be
 })
 
 test('wiring execute-wf: punkt zapisu doklejony do promptu domkniecia, wynik niesie baze fazy z JS', () => {
-  assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
+  assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej, decyzjeAutopilota\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
   assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)(, decyzjeAutopilota)? \}/)
   assert.match(zrodloExecute, /stanZapisany: \{ type: \['boolean', 'null'\]/)
 })
