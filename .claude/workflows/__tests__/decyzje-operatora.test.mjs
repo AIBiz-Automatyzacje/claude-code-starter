@@ -179,7 +179,7 @@ test('autopilot: raport bierze decyzje z pliku, takze z faz sprzed tego runu', (
 test('autopilot: raport przy smoke\'u podaje liczbe decyzji zamiast listy i nie podaje komendy PR', () => {
   const wejscie = { propozycjeBramek: [], czesci: true, zadanie: 'x', raporty: [], decyzjeZPliku: ['[DECYZJA · faza 1 · fix] src/a.ts:5 — limit', '[DECYZJA · faza 2 · review] src/b.ts:9 — zaleznosc'] }
   const zeSmoke = a.nastepneKroki({ ...wejscie, smoke: 'docs/operator/x-smoke.md' })
-  assert.deepEqual(zeSmoke, ['Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z docs/operator/x-smoke.md. Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: 2). Komende PR podaje koniec ramki; przed smoke\'em PR-a nie wysylaj.'])
+  assert.deepEqual(zeSmoke, ['Smoke w nowej sesji: `/clear`, potem `/dev-smoke x` (checklista docs/operator/x-smoke.md). Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: 2). Komende PR podaje koniec sesji smoke\'u; przed smoke\'em PR-a nie wysylaj.'])
   const bezSmoke = a.nastepneKroki({ ...wejscie, smoke: '' })
   assert.equal(bezSmoke.length, 2)
   assert.match(bezSmoke[0], /^Akcje operatora: zmiany spoza planu do decyzji \(2, .*src\/a\.ts:5 — limit; .*src\/b\.ts:9 — zaleznosc\.$/)

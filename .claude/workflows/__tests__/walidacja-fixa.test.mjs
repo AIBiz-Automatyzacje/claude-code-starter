@@ -146,7 +146,7 @@ test('punkt 5 i 40: wynik autopilota zaczyna od smoke\'u, potem akcje operatora;
     ${funkcja}; return nastepneKroki`)()
   const kroki = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [{ liczniki: { operator: 2 }, fix: { nierozwiazaneP2: 1 } }], propozycjeBramek: [], czesci: true, zadanie: 'x' })
   assert.equal(kroki.length, 2)
-  assert.match(kroki[0], /^Smoke w nowej sesji:.*x-smoke\.md\. Komende PR podaje koniec ramki; przed smoke'em PR-a nie wysylaj\.$/)
+  assert.match(kroki[0], /^Smoke w nowej sesji: `\/clear`, potem `\/dev-smoke x` \(checklista docs\/operator\/x-smoke\.md\)\. Komende PR podaje koniec sesji smoke'u; przed smoke'em PR-a nie wysylaj\.$/)
   assert.doesNotMatch(kroki.join('\n'), /\/dev-pr/, 'przy smoke\'u komenda PR nie stoi w raporcie')
   assert.match(kroki[1], /^Akcje operatora: 2 findingow OPERATOR.*1 nierozwiazanych P2/, 'faza z odegranym E2E nie dodaje pozycji')
   const bezSmoke = nastepneKroki({ smoke: '', raporty: [{ liczniki: { operator: 2 }, fix: { nierozwiazaneP2: 1 } }], propozycjeBramek: [], czesci: true, zadanie: 'x' })

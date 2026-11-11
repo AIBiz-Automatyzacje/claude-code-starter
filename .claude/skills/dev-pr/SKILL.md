@@ -106,7 +106,8 @@ nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza częś
 
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
-żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → krótkie
+żaden reviewer fazy nie widział. Poprawki po decyzjach, które sesja `/dev-smoke` już pokazała dwóm reviewerom
+(pusty commit-znacznik z liniami `Sprawdzone: <sha>`), skrypt pomija i podaje w polu `sprawdzone`. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → krótkie
 review wg akapitów „Zgoda na wysłanie” i „Review bez pytania” niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
 i bez review, także z `--review` (commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
 pomijasz i krótkiego review nie uruchamiasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd

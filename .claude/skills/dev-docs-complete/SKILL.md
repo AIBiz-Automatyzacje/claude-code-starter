@@ -51,7 +51,7 @@ Datę do plików bierz z `date +%F`.
    - `<M> scenariuszy E2E`: `grep -hE '^- \[x\].*\[E2E\]' docs/active/<zadanie>/*-zadania.md | grep -vcE 'Operator:|\[P[123]\]'` (bez kopii `Operator:` i pozycji findingów; brak trafień = 0, exit 1 to nie błąd).
    - `<marker>` projektu głównego i `<ref e2e>`: tylko pierwsze 6 znaków hosta, bez wartości kluczy: `grep -ohE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local .env.e2e 2>/dev/null`. Marker pochodzi wyłącznie z wyniku tego polecenia; plik bez trafienia albo brak pliku zapisujesz jako „brak <plik> — ustal projekt przed startem”, bez markera.
    - Nazwa zmiennej z hasłem konta testowego: wyłącznie nazwy — `grep -oE '^[A-Z0-9_]*(PASSWORD|PASS|HASLO)[A-Z0-9_]*=' .env .env.local .env.e2e 2>/dev/null | cut -d= -f1 | sort -u`; brak → „konto testowe: patrz `.env.example`", nie zgaduj. **Zakaz `cat`/Read całego `.env*`.**
-   - Jeśli w projekcie istnieje wcześniejszy `docs/operator/*-smoke.md` — trzymaj się jego układu sekcji. Bierzesz z niego tylko układ: markerów projektów, adresów, kont ani kroków środowiska nie przepisujesz, bo opisują środowisko z dnia tamtego smoke'u.
+   - Jeśli w projekcie istnieje wcześniejszy `docs/operator/*-smoke.md` — trzymaj się jego układu sekcji. Bierzesz z niego tylko układ: markerów projektów, adresów, kont ani kroków środowiska nie przepisujesz, bo opisują środowisko z dnia tamtego smoke'u. Wyjątek: sekcja „Jak kontynuować w nowej sesji” zawsze według układu niżej, bo starsze smoke'i mają długą ramkę do wklejania.
 
    **Układ pliku** (wstawki zależne od stacku — narzędzie jazdy, czego automat nie sprawdzi, przykład klasy błędów, start aplikacji w sekcji 0 — bierzesz z `references/stack.md`, sekcja „Smoke operatora”):
 
@@ -104,16 +104,9 @@ Datę do plików bierz z `date +%F`.
    - <z known-issues (bez sekcji `## P3 faza N` i `## Decyzje operatora`) / otwartych P1/P2 widocznych dla użytkownika — sprawy do obserwacji; to, co wymaga decyzji, stoi w „Decyzjach przed PR”>
 
    ## Jak kontynuować w nowej sesji
-   Skopiuj jako pierwszą wiadomość:
-   ```
-   Kontynuujemy smoke operatora zadania "<zadanie>" (branch feature/<zadanie>).
-   Checklista: docs/operator/YYYY-MM-DD-<zadanie>-smoke.md — prowadź mnie punkt po punkcie,
-   odhaczaj za mnie w pliku, a usterki naprawiaj od razu (z testem) zamiast odkładać.
-   <zdanie do ramki z sekcji „Punkty wizualne”>   ← tylko w smoke'u z punktami wizualnymi
-   Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez `git add -A`): /dev-pr wymaga czystego drzewa.
-   Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania
-   bez sekcji „Części PR”: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”). /dev-pr w tej sesji nie uruchamiaj.
-   ```
+   `/clear`, potem `/dev-smoke <zadanie>`. Sesja zaczyna od „Decyzji przed PR”, potem sama przechodzi listę i zatrzymuje
+   się tylko przy pozycjach dla człowieka. Kończy się linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”
+   (zadanie bez części PR: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”); /dev-pr w sesji smoke'u nie rusza.
    ```
 
    Reguły: sekrety tylko nazwami zmiennych; pozycje pogrupowane per wymaganie/ekran w kolejności, w jakiej operator przechodzi aplikację (nie per faza autopilota); każdy checkbox ma oczekiwany wynik; nie modyfikuj `*-zadania.md` ani raportów review.
@@ -175,7 +168,7 @@ Datę do plików bierz z `date +%F`.
 📄 Pliki: plan.md, kontekst.md, zadania.md, podsumowanie.md, review-faza-*.md
 
 🧪 Smoke operatora: docs/operator/YYYY-MM-DD-$ARGUMENTS-smoke.md (N pozycji[, ⚠️ E [E2E] nieuruchomionych])
-   → przejdź go w przeglądarce/na urządzeniu zanim zmergujesz; ramka „Jak kontynuować w nowej sesji" jest na końcu pliku
+   → w nowej sesji: /clear, potem /dev-smoke $ARGUMENTS (decyzje najpierw, potem lista); przed smoke'em PR-a nie wysyłaj
 
 📝 Decyzje: docs/decisions/YYYY-MM-DD-$ARGUMENTS.md (claude_md: do-uzgodnienia — CLAUDE.md uzgadnia się po merge'u PR)
 

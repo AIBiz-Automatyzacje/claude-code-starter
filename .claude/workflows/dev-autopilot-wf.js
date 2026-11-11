@@ -1526,9 +1526,9 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   // Punkt 40: zrodlem decyzji jest sekcja w known-issues (odczyt walidacji koncowej), bo `raporty` nie maja faz sprzed tego runu.
   // Bez odczytu (walidacja w poprzednim runie) zostaje lista z pamieci runu.
   const decyzje = Array.isArray(decyzjeZPliku) ? decyzjeZPliku : raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
-  // Punkt 40, krok 3: przy smoke'u raport prowadzi jedna droga. Decyzje stoja na poczatku smoke'u, a komenda PR na koncu jego ramki —
+  // Punkt 40, krok 3: przy smoke'u raport prowadzi jedna droga. Decyzje stoja na poczatku smoke'u, a komende PR podaje koniec sesji /dev-smoke (krok 4) —
   // lista decyzji i komenda w raporcie dawaly druga droge, z pominieciem smoke'u (aa-exam 03.11: raport konczyl sie gotowa komenda PR).
-  if (smoke) kroki.push(`Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z ${smoke}.${decyzje.length ? ` Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: ${decyzje.length}).` : ''} Komende PR podaje koniec ramki; przed smoke'em PR-a nie wysylaj.`)
+  if (smoke) kroki.push(`Smoke w nowej sesji: \`/clear\`, potem \`/dev-smoke ${zadanie}\` (checklista ${smoke}).${decyzje.length ? ` Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: ${decyzje.length}).` : ''} Komende PR podaje koniec sesji smoke'u; przed smoke'em PR-a nie wysylaj.`)
   const akcje = []
   const nieOdegrane = fazyNieOdegrane(raporty)
   if (nieOdegrane.length) akcje.push(`E2E nie odegrano — do odegrania recznie albo ponownie: ${nieOdegrane.map((f) => `faza ${f.faza} (scenariuszy: ${f.scenariusze})`).join(', ')}`)

@@ -24,5 +24,4 @@ Punkty wizualne przechodzi operator ręcznie, bez osobnego narzędzia: aplikacji
 Makieta to `visual-diff/<ekran>-figma.png`; zrzut testera, jeśli powstał, to `visual-diff/<ekran>-actual.png`.
 
 - Zdanie przed pierwszym punktem wizualnym smoke'u: „Punkty wizualne przejdziesz ręcznie: ekran na symulatorze obok pliku `visual-diff/<ekran>-figma.png`.”
-- Zdanie do ramki „Jak kontynuować w nowej sesji”: „Przy punktach wizualnych porównaj ekran z symulatora z makietą i wpisz decyzję w linii punktu.”
 - Kontrola po zapisie pliku: każdy punkt wizualny ma istniejący `visual-diff/<ekran>-figma.png`; punkt bez pliku poprawiasz albo usuwasz.

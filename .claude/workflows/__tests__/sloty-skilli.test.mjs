@@ -1,5 +1,5 @@
 // Szwy stackowe w skillach (plan szablonu mobile z rdzenia, IU-1.4). Tekst zależny od stacku w skillach rdzenia
-// (dev-plan, dev-docs-complete, dev-prep, dev-compound, weryfikacja-setup) leży w `references/stack.md` skilla (D20) albo
+// (dev-plan, dev-docs-complete, dev-smoke, dev-prep, dev-compound, weryfikacja-setup) leży w `references/stack.md` skilla (D20) albo
 // w slocie `.claude/stack/*.md` współdzielonym z workflowami; SKILL.md odsyła do nazwanej sekcji. Wariant web slotów
 // niesie dawną treść skilli, nakładka stacku podmienia pliki w całości.
 //
@@ -17,7 +17,7 @@ const KORZEN = resolve(CLAUDE, '..')
 /** @param {string} sciezka wzgledem korzenia repo */
 const czytaj = (sciezka) => readFileSync(join(KORZEN, sciezka), 'utf8')
 
-const SKILLE = ['dev-plan', 'dev-docs-complete', 'dev-prep', 'dev-compound', 'weryfikacja-setup']
+const SKILLE = ['dev-plan', 'dev-docs-complete', 'dev-smoke', 'dev-prep', 'dev-compound', 'weryfikacja-setup']
 // Pliki rdzenia skilli. Poza listą: dev-plan/references/szablon-planu.md — przykładowy plan z ścieżkami web
 // (wyjątek strażnika słów stacku, IU-1.5).
 const PLIKI_RDZENIA = [...SKILLE.map((s) => `.claude/skills/${s}/SKILL.md`), '.claude/skills/dev-plan/references/przygotowanie-operatora.md']

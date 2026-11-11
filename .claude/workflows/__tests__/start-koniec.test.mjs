@@ -377,35 +377,49 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
   assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), pr\.uwaga, uwagaZmiennych\(smoke\)\]/)
 })
 
-// P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji: sesja glowna 4,49 M wobec 1,42 M wszystkich runow PR. Ramka smoke'u
-// konczy sie linia z /clear i /dev-pr; sama sesja smoke'u PR nie wysyla. Ta sama tresc w workflowie i w skillu.
-test('smoke: ramka „Jak kontynuowac” konczy smoke linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” bez /dev-pr w sesji', () => {
+// P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji: sesja glowna 4,49 M wobec 1,42 M wszystkich runow PR. Sesja smoke'u
+// konczy sie linia z /clear i /dev-pr, sama PR nie wysyla. Punkt 40, krok 4: dluga ramka do wklejania zniknela, smoke prowadzi
+// skill /dev-smoke; sekcja „Jak kontynuowac” w pliku smoke'u (workflow i skill archiwizacji) podaje komende skilla i linie konca.
+test('smoke: sekcja „Jak kontynuowac” odsyla do /dev-smoke, a /dev-smoke konczy linia „Następny krok” bez /dev-pr w sesji', () => {
   /** @type {(nazwaZadania: string) => string} */
   // eslint-disable-next-line no-new-func -- jw.
   const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
-  const linia = 'Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania'
-  assert.ok(smokePrompt('zadanie-x').includes(linia))
-  assert.match(smokePrompt('zadanie-x'), /„Następny krok: \/clear, potem \/dev-pr 3 --bez-merge”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
+  const plaski = (/** @type {string} */ t) => t.replace(/\n\s*/g, ' ')
+  const p = plaski(smokePrompt('zadanie-x'))
   const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
-  assert.ok(skill.includes(linia))
-  assert.match(skill, /„Następny krok: \/clear, potem \/dev-pr 3 --bez-merge”\)\. \/dev-pr w tej sesji nie uruchamiaj\./)
-  assert.match(skill, /— po smoke'u: \/clear, potem \/dev-pr 3 --bez-merge --czesc 1\n/, 'raport archiwizacji: ta sama komenda')
-  // Punkt 37 (piszemy_wirale 08.11): ramka kazala „odhaczaj za mnie w pliku” bez commita, a etap start /dev-pr staje na brudnym
-  // drzewie. Sesja smoke'u commituje plik checklisty jawna sciezka; zdanie stoi w ramce przed linia „Następny krok”.
-  const commit = 'Po przejściu smoke\'u zacommituj plik checklisty jawną ścieżką (bez `git add -A`): /dev-pr wymaga czystego drzewa.'
-  const p = smokePrompt('zadanie-x')
-  const ramka = skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'))
-  for (const [nazwa, tekst] of /** @type {[string, string][]} */ ([['workflow', p], ['skill', ramka]])) {
-    const i = tekst.indexOf(commit)
-    assert.ok(i !== -1, `${nazwa}: zdanie o commicie pliku smoke'u w ramce`)
-    assert.ok(i < tekst.indexOf(linia), `${nazwa}: commit przed linia „Następny krok”`)
+  const ramka = plaski(skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'), skill.indexOf('Reguły: sekrety tylko nazwami')))
+  const zdania = [
+    'Sesja zaczyna od „Decyzji przed PR”, potem sama przechodzi listę i zatrzymuje się tylko przy pozycjach dla człowieka.',
+    'Kończy się linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (zadanie bez części PR: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”); /dev-pr w sesji smoke\'u nie rusza.',
+  ]
+  for (const z of zdania) {
+    assert.ok(p.includes(z), `workflow: ${z}`)
+    assert.ok(ramka.includes(z), `skill: ${z}`)
   }
-  assert.ok(ramka.indexOf('odhaczaj za mnie w pliku') < ramka.indexOf(commit))
+  assert.ok(p.includes('`/clear`, potem `/dev-smoke zadanie-x`'), 'workflow: komenda skilla z nazwa zadania')
+  assert.ok(ramka.includes('`/clear`, potem `/dev-smoke <zadanie>`'), 'skill: komenda skilla')
+  // Ramki do wklejania juz nie ma: starsze smoke'i nie moga jej przeniesc przez regule ukladu sekcji.
+  assert.doesNotMatch(ramka, /Skopiuj jako pierwszą wiadomość|odhaczaj za mnie w pliku/)
+  assert.doesNotMatch(p, /ramka do wklejenia jako pierwsza wiadomosc|odhaczaj za mnie w pliku/)
+  assert.match(p, /Wyjatek ukladu: sekcja "Jak kontynuowac w nowej sesji" zawsze wg zdan wyzej/)
+  assert.match(skill, /Wyjątek: sekcja „Jak kontynuować w nowej sesji” zawsze według układu niżej/)
+  assert.match(skill, /— po smoke'u: \/clear, potem \/dev-pr 3 --bez-merge --czesc 1\n/, 'raport archiwizacji: ta sama komenda')
+  assert.match(skill, /→ w nowej sesji: \/clear, potem \/dev-smoke \$ARGUMENTS/, 'raport archiwizacji odsyla do skilla')
+  // Punkt 37 (piszemy_wirale 08.11): odhaczony plik bez commita zatrzymywal etap start /dev-pr na brudnym drzewie. Commit pliku
+  // smoke'u jawna sciezka robi teraz skill /dev-smoke, przed linia „Następny krok”.
+  const smokeSkill = plaski(readFileSync(resolve(KATALOG, '../../skills/dev-smoke/SKILL.md'), 'utf8'))
+  const koniec = smokeSkill.slice(smokeSkill.indexOf('## 5. Koniec'))
+  const commit = 'Zacommituj plik smoke\'u i dokumenty zmienione w sesji jawnymi ścieżkami, bez `git add -A` (`/dev-pr` wymaga czystego drzewa)'
+  const linia = 'Ostatnia linia: „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”'
+  assert.ok(koniec.includes(commit), 'dev-smoke: commit pliku smoke\'u')
+  assert.ok(koniec.includes(linia) && koniec.indexOf(commit) < koniec.indexOf(linia), 'dev-smoke: commit przed linia „Następny krok”')
+  assert.ok(koniec.includes('bez niej „Następny krok: /clear, potem /dev-pr 3 --bez-merge”'))
+  assert.ok(koniec.includes('`/dev-pr` w tej sesji nie uruchamiasz'))
 })
 
 // P24 IU-8: punkty wizualne smoke'u mają format czytany przez przegląd stacku; narzędzie i zdania do smoke'u leżą w slocie
 // dev-docs-complete/references/stack.md, sekcja „Punkty wizualne” (IU-2.7, D2). Treść web: stacks/web/__tests__/makieta.test.mjs.
-test('smoke: format punktu wizualnego w workflowie i w skillu, zdania i kontrola ze slotu, zdanie do ramki przed zdaniami końcowymi', () => {
+test('smoke: format punktu wizualnego w workflowie i w skillu, zdania i kontrola ze slotu, bez zdania do ramki', () => {
   /** @type {(nazwaZadania: string) => string} */
   // eslint-disable-next-line no-new-func -- jw.
   const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
@@ -425,12 +439,11 @@ test('smoke: format punktu wizualnego w workflowie i w skillu, zdania i kontrola
   assert.match(p, /Kontrola makiet po zapisie pliku: wg \.claude\/skills\/dev-docs-complete\/references\/stack\.md, sekcja „Punkty wizualne”/)
   assert.match(splaszczony, /Przed pierwszym punktem wizualnym smoke'u stoi zdanie z `references\/stack\.md`, sekcja „Punkty wizualne”/)
   assert.match(splaszczony, /Kontrola makiet po zapisie pliku: wg `references\/stack\.md`, sekcja „Punkty wizualne”/)
-  // Ramka nadal kończy się zdaniami o „Następny krok” (P22 B2) — zdanie do ramki stoi przed nimi.
-  const ramka = skill.slice(skill.indexOf('## Jak kontynuować w nowej sesji'))
-  const zdanieRamki = '<zdanie do ramki z sekcji „Punkty wizualne”>'
-  assert.ok(ramka.indexOf(zdanieRamki) !== -1 && ramka.indexOf(zdanieRamki) < ramka.indexOf('Po ostatnim punkcie zakończ linią'))
-  assert.match(ramka, /\/dev-pr w tej sesji nie uruchamiaj\.\n {3}```/)
-  assert.ok(p.indexOf('ramka ma zdanie do ramki z tej samej sekcji') < p.indexOf('Po ostatnim punkcie zakończ linią'))
+  // Punkt 40, krok 4: ramki nie ma, więc zdania do ramki też nie; przegląd punktów wizualnych w sesji opisuje slot /dev-smoke.
+  assert.doesNotMatch(slot, /Zdanie do ramki/)
+  assert.doesNotMatch(skill, /zdanie do ramki/)
+  assert.doesNotMatch(p, /zdanie do ramki/)
+  assert.match(readFileSync(resolve(KATALOG, '../../skills/dev-smoke/references/stack.md'), 'utf8'), /^## Punkty wizualne$/m)
   const linie = skill.split('\n')
   const i = linie.findIndex((l) => /^ {3}- \[ \] .*obok `visual-diff\/<ekran>-figma\.png`/.test(l))
   assert.ok(i > 0, 'szablon ma punkt wizualny')

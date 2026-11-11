@@ -256,17 +256,17 @@ zamiast mobilnego viewportu) oznacz **[fizyczne urządzenie]**.
 PR WIELOCZESCIOWY: pozycje przypisuj do czesci, w ktorej kod faktycznie wchodzi (sprawdz plik w tabeli czesci, nie w tekscie planu; aa-exam: pole z czesci 4 w sekcji po deployu czesci 3). Przed merge'em kazdej
 czesci pozycja: przejscie kluczowego flow na stanie tej czesci, lokalnie. Odhaczanie miedzy czesciami: plik smoke'u lezy na \`feature/<zadanie>\`, commit lokalny tam jedzie z ostatnia czescia.
 ZMIANA SCHEMATU BEZ TRANSAKCJI (\`db:push\` i podobne): pozycja przed wdrozeniem to podglad SQL i sprawdzenie danych pod KAZDE nowe ograniczenie z tego podgladu, nie tylko to z planu.
-Pozycje "[Manual] agent:": wykonaj je w tej sesji smoke'u przed pytaniem operatora, wynik wpisz przy pozycji.
 PUNKTY WIZUALNE: Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy \`docs/active/<zadanie>/visual-diff/<ekran>-figma.png\` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka \`ekrany/<ekran>.md\`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”.
 Przed pierwszym punktem wizualnym smoke'u stoi zdanie z .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
-Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi
-ramka ma zdanie do ramki z tej samej sekcji przed zdaniami koncowymi. Ramka konczy sie zdaniami:
-"Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez \`git add -A\`): /dev-pr wymaga czystego drzewa.
-Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
-„Następny krok: /clear, potem /dev-pr 3 --bez-merge”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej,
-a odhaczony plik bez commita zatrzymuje etap start /dev-pr na brudnym drzewie (piszemy_wirale 08.11).
+Na koncu sekcja "Jak kontynuowac w nowej sesji" w ukladzie ze skilla, bez ramki do wklejania: sesje smoke'u prowadzi skill /dev-smoke
+(decyzje, krotkie review poprawek, agent wykonuje pozycje sam poza wyjatkami dla czlowieka, commit pliku smoke'u). Sekcja ma zdania:
+"\`/clear\`, potem \`/dev-smoke ${nazwaZadania}\`. Sesja zaczyna od „Decyzji przed PR”, potem sama przechodzi listę i zatrzymuje
+się tylko przy pozycjach dla człowieka. Kończy się linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”
+(zadanie bez części PR: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”); /dev-pr w sesji smoke'u nie rusza." — smoke i PR w jednej
+sesji kosztuja kilka razy wiecej (vibersi etap 4).
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji. Bierzesz z niego tylko uklad:
 markerow projektow, adresow, kont ani krokow srodowiska nie przepisujesz, bo opisuja srodowisko z dnia tamtego smoke'u.
+Wyjatek ukladu: sekcja "Jak kontynuowac w nowej sesji" zawsze wg zdan wyzej, bo starsze smoke'i maja dluga ramke do wklejania.
 
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;
 zastap nazwa zmiennej lub fraza "<haslo w .env.e2e>". E-mail konta testowego moze zostac.

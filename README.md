@@ -40,7 +40,9 @@ Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + 
    Na końcu dostajesz gotowe polecenie autopilota.
 4. **`dev-autopilot-wf`** - wykonuje fazy jedna po drugiej: implementacja, review, naprawa. Na koniec zapisuje wnioski,
    archiwizuje zadanie i zostawia Ci listę rzeczy do ręcznego sprawdzenia (`docs/operator/<data>-<zadanie>-smoke.md`).
-5. **`/dev-pr`** - tworzy PR, czeka na recenzję bota, prowadzi tury poprawek i zapisuje, czego nasze review nie złapało.
+5. **`/dev-smoke`** - w nowej sesji przechodzi tę listę: najpierw pyta Cię o decyzje (popraw, zostaw jak jest, odłóż),
+   potem sam klika aplikację i naprawia usterki; zatrzymuje się tylko przy tym, co musisz zrobić Ty (produkcja, hasło, telefon).
+6. **`/dev-pr`** - tworzy PR, czeka na recenzję bota, prowadzi tury poprawek i zapisuje, czego nasze review nie złapało.
    Bot recenzji (CodeRabbit, konfiguruje go `/coderabbit-setup`) jest opcjonalny: `/dev-pr --bez-bota` prowadzi PR do merge'a bez niego
    (PR, CI, krótkie review zmian po archiwizacji, merge).
 
