@@ -1521,8 +1521,11 @@ function fazyNieOdegrane(raporty) {
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
-function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte }) {
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus }) {
   const kroki = []
+  // Pad autora smoke'u albo calej archiwizacji (weryfikacja partii 2026-11-11, punkt 49): brak pliku nie znaczy „brak pozycji”.
+  // Raport konczyl sie wtedy komenda PR, a ostrzezenie bylo tylko w logu; pozycje „Operator checklist” i [Manual] nie trafily nigdzie.
+  const bezListy = smokeStatus === 'agent-null' || smokeStatus === 'complete-null'
   // Punkt 40, krok 6 (punkt 45): zdanie o otwartych sprawach z otwarte.mjs (przez archiwizacje), nie ze slow modelu.
   if (typeof otwarte === 'string' && otwarte) kroki.push(`Automat zamkniety. ${otwarte}`)
   // Punkt 40: zrodlem decyzji jest sekcja w known-issues (odczyt walidacji koncowej), bo `raporty` nie maja faz sprzed tego runu.
@@ -1530,6 +1533,7 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   const decyzje = Array.isArray(decyzjeZPliku) ? decyzjeZPliku : raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
   // Punkt 40, krok 3: przy smoke'u raport prowadzi jedna droga. Decyzje stoja na poczatku smoke'u, a komende PR podaje koniec sesji /dev-smoke (krok 4) —
   // lista decyzji i komenda w raporcie dawaly druga droge, z pominieciem smoke'u (aa-exam 03.11: raport konczyl sie gotowa komenda PR).
+  if (bezListy) kroki.push(`Lista smoke'u NIE powstala (${smokeStatus === 'agent-null' ? 'autor smoke\'u padl' : 'archiwizacja nie zwrocila wyniku — sprawdz docs/active/ i git status'}): pozycje „Operator checklist” i [Manual] nie zostaly przeniesione. Najpierw \`/clear\` i \`/dev-docs-complete ${zadanie}\`, potem \`/dev-smoke ${zadanie}\`. Przed smoke'em PR-a nie wysylaj.`)
   if (smoke) kroki.push(`Smoke w nowej sesji: \`/clear\`, potem \`/dev-smoke ${zadanie}\` (checklista ${smoke}).${decyzje.length ? ` Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: ${decyzje.length}).` : ''} Komende PR podaje koniec sesji smoke'u; przed smoke'em PR-a nie wysylaj.`)
   const akcje = []
   const nieOdegrane = fazyNieOdegrane(raporty)
@@ -1547,7 +1551,7 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   if (akcje.length) kroki.push(`Akcje operatora: ${akcje.join(', ')}.`)
   // Tryb autonomiczny bez merge'a: samo `/dev-pr` to pytanie po kazdej turze (piszemy_wirale 08.11: 5 pytan w jednej czesci),
   // a liczba tur bez --bez-merge to merge, czesto deploy, bez pytania.
-  if (!smoke) kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
+  if (!smoke && !bezListy) kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
   return kroki
 }
 
@@ -2557,7 +2561,7 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
-  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null }),
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null') }),
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),

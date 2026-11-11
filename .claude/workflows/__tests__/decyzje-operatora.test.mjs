@@ -229,6 +229,22 @@ test('skill archiwizacji: zrodlo 7 i uklad pliku z „Decyzjami przed PR” prze
   assert.match(skillComplete, /bez sekcji `## P3 faza N` i `## Decyzje operatora`/)
 })
 
+// Weryfikacja partii 2026-11-11, punkt 49: po padzie autora smoke'u raport mowil „Otwarte: brak” i konczyl sie komenda PR.
+test('autopilot: po padzie autora smoke\'u albo archiwizacji raport nie podaje komendy PR, tylko droge do listy smoke\'u', () => {
+  const wejscie = { propozycjeBramek: [], czesci: true, zadanie: 'x', raporty: [], decyzjeZPliku: ['[DECYZJA · faza 1 · fix] src/a.ts:5 — limit'], smoke: '' }
+  const pad = a.nastepneKroki({ ...wejscie, smokeStatus: 'agent-null', otwarte: 'Otwarte: nieznane — lista smoke\'u nie powstala (autor smoke\'u padl), pozycje do sprawdzenia nie sa policzone; wygeneruj ja: /dev-docs-complete x.' })
+  assert.match(pad[0], /^Automat zamkniety\. Otwarte: nieznane/)
+  assert.match(pad[1], /^Lista smoke'u NIE powstala \(autor smoke'u padl\): .*Najpierw `\/clear` i `\/dev-docs-complete x`, potem `\/dev-smoke x`\. Przed smoke'em PR-a nie wysylaj\.$/)
+  assert.match(pad[2], /^Akcje operatora: zmiany spoza planu do decyzji \(1,/, 'decyzje zostaja w raporcie, bo smoke ich nie pokaze')
+  assert.ok(pad.every((k) => !/\/dev-pr/.test(k)), 'bez komendy PR')
+  const bezArchiwum = a.nastepneKroki({ ...wejscie, smokeStatus: 'complete-null', otwarte: null })
+  assert.match(bezArchiwum[0], /^Lista smoke'u NIE powstala \(archiwizacja nie zwrocila wyniku/)
+  assert.ok(bezArchiwum.every((k) => !/\/dev-pr/.test(k)))
+  // Zadanie bez pozycji smoke'u: jak dotad komenda PR.
+  assert.match(a.nastepneKroki({ ...wejscie, smokeStatus: 'brak-pozycji' }).at(-1) ?? '', /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1`/)
+  assert.match(autopilot, /smokeStatus: complete \? complete\.smokeStatus : \(stan\.zakonczenie\.complete === 'done' \? null : 'complete-null'\) \}\),/)
+})
+
 // Krok 6 (punkt 45): raport autopilota zaczyna sie od zdania o otwartych sprawach z archiwizacji (otwarte.mjs); bez zdania uklad bez zmian.
 test('autopilot: „Automat zamkniety.” ze zdaniem o otwartych sprawach na poczatku raportu', () => {
   const wejscie = { propozycjeBramek: [], czesci: false, zadanie: 'x', raporty: [], decyzjeZPliku: [], smoke: 'docs/operator/x-smoke.md' }
