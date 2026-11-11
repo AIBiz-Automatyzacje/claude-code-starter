@@ -174,3 +174,46 @@ test('autopilot: raport bierze decyzje z pliku, takze z faz sprzed tego runu', (
   assert.match(a.nastepneKroki({ ...baza, raporty: zPamieci, decyzjeZPliku: null })[0], /z pamieci/)
   assert.match(autopilot, /decyzjeZPliku: stan\.walidacjaWynik \? \(stan\.walidacjaWynik\.decyzjeOtwarte \|\| \[\]\) : null/)
 })
+
+// ── Krok 2: smoke zaczyna sie od sekcji „Decyzje przed PR” ────────────────────────────────────────────────────────────
+// Przed poprawka wiersz decyzji szedl do smoke'u tylko jako „znany problem” i tylko wtedy, gdy opisywal zachowanie na ekranie:
+// decyzja o zaleznosci albo o zakresie nie trafiala do operatora wcale.
+
+const complete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'utf8')
+const skillComplete = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+const smokePrompt = wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')
+
+test('smoke: autor bierze kazdy wiersz sekcji decyzji jako pozycje „Decyzje przed PR” na poczatku dokumentu', () => {
+  const zrodlo7 = wytnij(smokePrompt, '7. DECYZJE OPERATORA:', 'w polu decyzje.')
+  assert.match(zrodlo7, /wiersze sekcji "## Decyzje operatora" z docs\/active\/\$\{nazwaZadania\}\/known-issues\.md/)
+  assert.match(zrodlo7, /kazdy wiersz, takze bez skutku\s+na ekranie/)
+  assert.match(zrodlo7, /sekcji "## Decyzje przed PR"\. Sekcja stoi na poczatku dokumentu, przed czerwonymi flagami/)
+  assert.match(zrodlo7, /„zostaw jak jest”/)
+  assert.match(zrodlo7, /nie zgadujesz/)
+  assert.match(zrodlo7, /nie przenosisz do „Znanych problemow”/)
+})
+
+test('smoke: sekcja decyzji nie wpada do „Znanych problemow”, a same decyzje wystarcza, zeby plik powstal', () => {
+  assert.match(smokePrompt, /Sekcje "## Decyzje operatora" tez tu pomin: jej wiersze obsluguje punkt 7\./)
+  assert.match(smokePrompt, /hierarchii \(1\)-\(7\) nie ma ANI JEDNEJ pozycji/)
+  assert.match(smokePrompt, /Nie wymyslaj pozycji spoza zrodel \(1\)-\(7\)\./)
+  assert.doesNotMatch(smokePrompt, /hierarchii \(1\)-\(6\)|zrodel \(1\)-\(6\)/)
+})
+
+test('smoke: wynik autora ma licznik decyzji, a log archiwizacji go pokazuje', () => {
+  assert.match(complete, /decyzje: \{ type: 'integer', description: 'ile pozycji ma sekcja "Decyzje przed PR"/)
+  assert.match(complete, /smoke\.decyzje \? `, w tym decyzji przed PR: \$\{smoke\.decyzje\}` : ''/)
+})
+
+test('skill archiwizacji: zrodlo 7 i uklad pliku z „Decyzjami przed PR” przed czerwonymi flagami', () => {
+  assert.match(skillComplete, /7\. \*\*decyzje operatora:\*\* wiersze sekcji `## Decyzje operatora`/)
+  assert.match(skillComplete, /źródła \(1\)–\(7\) są puste/)
+  const decyzje = skillComplete.indexOf('## Decyzje przed PR   ←')
+  const flagi = skillComplete.indexOf('## ⚠️ E2E przebiegło i padło (znany defekt)   ←')
+  assert.ok(decyzje !== -1 && decyzje < flagi, 'sekcja decyzji stoi w ukladzie przed czerwonymi flagami')
+  const uklad = skillComplete.slice(decyzje, flagi)
+  for (const pole of ['- [ ] D1 (faza N, <fix | tura poprawkowa | review>)', 'Gdzie: `<plik:linia>`', 'Opcja A: zostaw jak jest', 'Część PR: <N>']) {
+    assert.ok(uklad.includes(pole), `uklad decyzji ma pole: ${pole}`)
+  }
+  assert.match(skillComplete, /bez sekcji `## P3 faza N` i `## Decyzje operatora`/)
+})

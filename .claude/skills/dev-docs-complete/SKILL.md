@@ -29,10 +29,12 @@ Datę do plików bierz z `date +%F`.
    1. niezaznaczone checkboxy z `## Operator checklist faza N` w `*-zadania.md` (wszystkie fazy),
    2. scenariusze `[Manual]` z `*-zadania.md` i z planu technicznego (ścieżka w `Plan techniczny:`),
    3. findingi typu OPERATOR z `review-faza-*.md` (poza fix: natywne okna, których narzędzie jazdy nie obsłuży, fizyczne urządzenie, warunki środowiskowe),
-   4. otwarte wpisy z `docs/active/$ARGUMENTS/known-issues.md` (jeśli istnieje) oraz otwarte `[P1]`/`[P2]` z `## Do poprawy po review fazy N`. Sekcje `## P3 faza N` w known-issues pomiń — nity zostają w known-issues (opis PR, bot), smoke ich nie sprawdza. „Otwarte" = poza sekcją `## Zamkniete`; gdy sekcji nie ma, pomiń wpisy, które same lub późniejsza faza oznaczają jako ZAMKNIĘTY/naprawione/zweryfikowane — ale jeśli zamknięto tylko bloker, a sama weryfikacja (np. przebieg E2E w przeglądarce) pozostała, wpisz ją jako checkbox do wykonania, nie jako „znany problem". Z obu źródeł bierz **wyłącznie** wpisy opisujące zachowanie na ekranie/urządzeniu lub flow do ręcznego przejścia; notatki środowiskowe (`.env.local`, projekt Supabase, restart dev servera), dane testowe i pułapki narzędziowe pomiń,
+   4. otwarte wpisy z `docs/active/$ARGUMENTS/known-issues.md` (jeśli istnieje) oraz otwarte `[P1]`/`[P2]` z `## Do poprawy po review fazy N`. Sekcje `## P3 faza N` w known-issues pomiń — nity zostają w known-issues (opis PR, bot), smoke ich nie sprawdza. Sekcję `## Decyzje operatora` też tu pomiń: jej wiersze obsługuje źródło 7. „Otwarte" = poza sekcją `## Zamkniete`; gdy sekcji nie ma, pomiń wpisy, które same lub późniejsza faza oznaczają jako ZAMKNIĘTY/naprawione/zweryfikowane — ale jeśli zamknięto tylko bloker, a sama weryfikacja (np. przebieg E2E w przeglądarce) pozostała, wpisz ją jako checkbox do wykonania, nie jako „znany problem". Z obu źródeł bierz **wyłącznie** wpisy opisujące zachowanie na ekranie/urządzeniu lub flow do ręcznego przejścia; notatki środowiskowe (`.env.local`, projekt Supabase, restart dev servera), dane testowe i pułapki narzędziowe pomiń,
    4b. scenariusze `[E2E]` przeniesione w trakcie runu na `[Manual]` (środowisko padło, limit zewnętrzny, harness, pad testera — automat ich nie wykonał): `node .claude/scripts/e2e/e2e.mjs lista-manual --zadanie docs/active/$ARGUMENTS` (JSON: pozycje z fazą, treścią, przyczyną i powodem) → sekcja `## E2E do odegrania ręcznie (środowisko w trakcie runu)` na początku dokumentu, po czerwonych flagach; jeden checkbox na pozycję z powodem (bywa skrócony z „…”) i odsyłaczem pełny powód: `docs/completed/$ARGUMENTS/review-faza-<faza>.md`, sekcja „Bookkeeping checkboxow” (nagłówek raportu bez polskich znaków). To nie jest czerwona flaga — run świadomie oddał je człowiekowi; w sekcjach ekranów ich nie powtarzaj.
    5. **czerwona flaga:** niezaznaczone `[E2E]` (`grep -nE '^- \[ \].*\[E2E\]' docs/active/$ARGUMENTS/*-zadania.md | grep -vE 'Operator:|\[P[123]\]'` — ten sam grep co completion-gate autopilota; kopie `Operator:` w Operator checklist i pozycje findingów `[P1]/[P2]/[P3]` w „Do poprawy" nie są scenariuszami; brak trafień = exit 1, to nie błąd). Rozdziel: linie z suffixem `(FAIL:` → sekcja `## ⚠️ E2E przebiegło i padło (znany defekt)` z odesłaniem do known-issues (**nie** radź zmiany na `[Manual]` — ukryłaby znany defekt); pozostałe → `## ⚠️ E2E nieuruchomione`. Obie sekcje na początku dokumentu.
    6. zmienne środowiska dodane w gałęzi: `node .claude/scripts/smoke/zmienne.mjs` (JSON: `zmienne[]` z nazwą i źródłami `plik:linia` — z `.env*.example` i użyć w kodzie, także dodane odchyleniem w fazach, których plan nie wymienia) → każda zmienna to checkbox w „0. Przygotowanie": nazwa, gdzie ją ustawić (lokalnie albo w zmiennych runtime deployu) i źródło, wartości nigdy. Po zapisie pliku kontrola `node .claude/scripts/smoke/zmienne.mjs --smoke <plik>`: kod 1 = pole `braki` (zmienne, których nazwy w pliku nie ma) — dopisz je i powtórz kontrolę, aż kod będzie 0.
+
+   7. **decyzje operatora:** wiersze sekcji `## Decyzje operatora` z `docs/active/$ARGUMENTS/known-issues.md` — każdy wiersz, także bez skutku na ekranie (brak pliku albo sekcji = brak decyzji). To sprawy, których automat nie rozstrzygnął, bo naprawa wykracza poza plan (zapisuje je fix, tura poprawkowa i review autopilota). Każdy wiersz to jedna pozycja sekcji `## Decyzje przed PR` na początku dokumentu, przed czerwonymi flagami: naprawa po decyzji zmienia kod, który operator sprawdza w dalszych sekcjach. Dla każdego wiersza czytasz kod pod `plik:linia` i zapisujesz pytanie jednym zdaniem po polsku, miejsce, 2–3 opcje ze skutkiem dla użytkownika na ekranie (jedna z opcji to zawsze „zostaw jak jest”) i część PR, w której leży plik (zadanie bez części: bez tego pola). Skutku, którego nie da się ustalić z kodu, nie zgadujesz: piszesz „skutek do ustalenia” i co sprawdzić. Wiersza nie pomijasz, nie łączysz z innym i nie przenosisz do „Znanych problemów”.
 
    **Hierarchia stanu i dedup** (źródła się nakładają — scribe review kopiuje każdy finding OPERATOR do `## Operator checklist faza N`, a `[Manual]` z IU też tam ląduje):
    - `## Operator checklist faza N` w `*-zadania.md` jest **jedynym źródłem stanu**. Pozycja `[x]` tam = temat zamknięty: pomiń jej odpowiednik w raporcie review (finding OPERATOR o tym samym IU/pliku/temacie), w `[Manual]` planu i w known-issues. Źródła (2)–(4) służą do wzbogacenia kroków/oczekiwanego wyniku pozycji z (1); pozycja spoza (1) wchodzi tylko, gdy w zadaniach nie ma jej wcale (dopasowanie po IU-K / pliku / ekranie).
@@ -42,7 +44,7 @@ Datę do plików bierz z `date +%F`.
 
    **Punkty wizualne** przegląda operator (jak: `references/stack.md`, sekcja „Punkty wizualne”). Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy `docs/active/<zadanie>/visual-diff/<ekran>-figma.png` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka `ekrany/<ekran>.md`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: `<trasa>` obok `visual-diff/<ekran>-figma.png` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”. Przed pierwszym punktem wizualnym smoke'u stoi zdanie z `references/stack.md`, sekcja „Punkty wizualne”. Kontrola makiet po zapisie pliku: wg `references/stack.md`, sekcja „Punkty wizualne”.
 
-   Jeśli po zastosowaniu hierarchii źródła (1)–(6) są puste — nie twórz pliku, powiedz „brak pozycji do ręcznego sprawdzenia".
+   Jeśli po zastosowaniu hierarchii źródła (1)–(7) są puste — nie twórz pliku, powiedz „brak pozycji do ręcznego sprawdzenia".
 
    **Skąd brać dane do nagłówka i sekcji 0 — NIE uruchamiaj testów ani E2E w tej fazie** (suite w foreground przekracza limity Bash/watchdoga; wynik już jest w artefaktach):
    - `<N> testów`: `docs/active/<zadanie>/.autopilot-state.json` → `walidacjaWynik.testy` (string „PASS X/Y"); brak pliku/pola → „testy zielone wg walidacji końcowej" bez liczby.
@@ -64,6 +66,14 @@ Datę do plików bierz z `date +%F`.
 
    Dlaczego to nie jest formalność: <1–3 zdania o klasie błędów niewidocznych w testach w tym stacku,
    przykład klasy ze slotu stacku — z indeksu wiedzy `docs/learned-patterns.md` / known-issues projektu, jeśli są>.
+
+   ## Decyzje przed PR   ← tylko gdy źródło (7) ma wiersze
+   Rozstrzygnij je przed dalszymi punktami: naprawa po decyzji zmienia kod, który potem sprawdzasz.
+   - [ ] D1 (faza N, <fix | tura poprawkowa | review>): <pytanie jednym zdaniem>
+     - Gdzie: `<plik:linia>`
+     - Opcja A: zostaw jak jest → <co użytkownik widzi dziś>
+     - Opcja B: <zmiana> → <co użytkownik zobaczy po zmianie>
+     - Część PR: <N>   ← tylko w zadaniu z częściami PR
 
    ## ⚠️ E2E przebiegło i padło (znany defekt)   ← tylko gdy są linie z suffixem `(FAIL:`
    - [ ] [E2E] <treść checkboxa> — defekt opisany w `docs/completed/<zadanie>/known-issues.md` (faza N); napraw kod i uruchom scenariusz ponownie (tester E2E w review autopilota). NIE zmieniaj na `[Manual]`.
@@ -91,7 +101,7 @@ Datę do plików bierz z `date +%F`.
    ## 2. …
 
    ## Znane problemy (nie blokują, sprawdź czy nadal występują)
-   - <z known-issues (bez sekcji `## P3 faza N`) / otwartych P1/P2 widocznych dla użytkownika>
+   - <z known-issues (bez sekcji `## P3 faza N` i `## Decyzje operatora`) / otwartych P1/P2 widocznych dla użytkownika — sprawy do obserwacji; to, co wymaga decyzji, stoi w „Decyzjach przed PR”>
 
    ## Jak kontynuować w nowej sesji
    Skopiuj jako pierwszą wiadomość:

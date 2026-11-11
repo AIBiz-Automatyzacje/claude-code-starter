@@ -17,6 +17,7 @@ const SMOKE_RESULT = {
     plik: { type: 'string', description: 'sciezka docs/operator/<data>-<zadanie>-smoke.md ("" gdy nic do sprawdzenia recznie)' },
     pozycje: { type: 'integer', description: 'liczba checkboxow do recznego sprawdzenia' },
     e2eNieuruchomione: { type: 'integer', description: 'ile [E2E] z zadania pozostalo NIEZAZNACZONYCH (powinno byc 0 po completion-gate)' },
+    decyzje: { type: 'integer', description: 'ile pozycji ma sekcja "Decyzje przed PR" (wiersze sekcji "## Decyzje operatora" z known-issues); 0 gdy sekcji nie ma' },
     zrodla: { type: 'array', items: { type: 'string' }, description: 'skad zebrano pozycje (sekcje/pliki)' },
     zmienne: { type: 'string', description: 'ostatnia linia stdout ostatniego `zmienne.mjs` 1:1 (JSON w jednej linii)' },
   },
@@ -204,7 +205,7 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
    (smoke leci na projekcie GLOWNYM, nie e2e).
 4. Otwarte wpisy z docs/active/${nazwaZadania}/known-issues.md (jesli plik istnieje) i otwarte [P1]/[P2] z
    "## Do poprawy po review fazy N". Z known-issues sekcje "## P3 faza N" pomin — nity zostaja w known-issues
-   (opis PR, bot), smoke ich nie sprawdza. "Otwarte" = poza sekcja "## Zamkniete"; gdy sekcji nie ma — pomin wpisy,
+   (opis PR, bot), smoke ich nie sprawdza. Sekcje "## Decyzje operatora" tez tu pomin: jej wiersze obsluguje punkt 7. "Otwarte" = poza sekcja "## Zamkniete"; gdy sekcji nie ma — pomin wpisy,
    ktore same lub pozniejsza faza oznaczaja jako ZAMKNIETY/naprawione. Z OBU zrodel bierz WYLACZNIE wpisy
    opisujace zachowanie na ekranie/w przegladarce lub flow do recznego przejscia; notatki srodowiskowe, dane
    testowe i pulapki narzedziowe pomin.
@@ -222,11 +223,19 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
 6. ZMIENNE SRODOWISKA dodane w galezi: \`node .claude/scripts/smoke/zmienne.mjs\` (JSON: zmienne[] z nazwa i zrodla plik:linia —
    z .env*.example i uzyc w kodzie, takze dodane odchyleniem w fazach, ktorych plan nie wymienia). Kazda zmienna to checkbox
    w sekcji "0. Przygotowanie": nazwa, gdzie ja ustawic (lokalnie albo w zmiennych runtime deployu) i zrodlo — wartosci nigdy.
+7. DECYZJE OPERATORA: wiersze sekcji "## Decyzje operatora" z docs/active/${nazwaZadania}/known-issues.md — kazdy wiersz, takze bez skutku
+   na ekranie (brak pliku albo sekcji = brak decyzji). To sprawy, ktorych automat nie rozstrzygnal, bo naprawa wykracza poza plan.
+   Kazdy wiersz to jedna pozycja sekcji "## Decyzje przed PR". Sekcja stoi na poczatku dokumentu, przed czerwonymi flagami z (5):
+   naprawa po decyzji zmienia kod, ktory operator sprawdza w dalszych sekcjach. Dla kazdego wiersza przeczytaj kod pod plik:linia
+   i zapisz pozycje wg ukladu ze skilla: pytanie jednym zdaniem po polsku, miejsce (plik:linia), 2–3 opcje ze skutkiem dla uzytkownika
+   na ekranie (jedna z opcji to zawsze „zostaw jak jest”) i czesc PR, w ktorej lezy plik (tabela czesci; zadanie bez czesci: bez tego pola).
+   Skutku, ktorego nie da sie ustalic z kodu, nie zgadujesz: piszesz „skutek do ustalenia” i co sprawdzic. Wiersza nie pomijasz,
+   nie laczysz z innym i nie przenosisz do „Znanych problemow”; liczbe pozycji zwracasz w polu decyzje.
 
 DEDUP: kazdy temat raz — Test [Manual] z IU, jego kopia w Operator checklist i wzmianka w findingu OPERATOR
 to JEDEN checkbox w sekcji ekranu; kroki scal, nie powielaj.
 
-Jesli po zastosowaniu hierarchii (1)-(6) nie ma ANI JEDNEJ pozycji — nie tworz pliku, zwroc plik:"" i pozycje:0, a w zmienne
+Jesli po zastosowaniu hierarchii (1)-(7) nie ma ANI JEDNEJ pozycji — nie tworz pliku, zwroc plik:"" i pozycje:0, a w zmienne
 ostatnia linie stdout \`zmienne.mjs\` z kroku 6.
 
 DANE DO NAGLOWKA I SEKCJI 0 — NIE uruchamiaj testow ani scenariuszy E2E (wynik juz jest w artefaktach):
@@ -239,7 +248,7 @@ ZAKAZ cat/Read calego .env* — nigdy nie wczytuj wartosci sekretow do kontekstu
 
 W przeciwnym razie zapisz docs/operator/<YYYY-MM-DD>-${nazwaZadania}-smoke.md (data z \`date +%F\`,
 \`mkdir -p docs/operator\`) wedlug ukladu ze skilla: naglowek ze statusem, akapit "dlaczego to nie jest
-formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruchomic apke; jakie dane/konta
+formalnosc", sekcja "Decyzje przed PR" (gdy zrodlo 7 ma wiersze), sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruchomic apke; jakie dane/konta
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
 kazdy z konkretnym oczekiwanym wynikiem. ODSYLACZE w smoke'u do plikow zadania pisz jako docs/completed/${nazwaZadania}/…:
 operator czyta smoke po archiwizacji, a docs/active/${nazwaZadania}/ juz wtedy nie istnieje (punkty wizualne maja wlasny format nizej). Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
@@ -267,7 +276,7 @@ ktorych nazwy nie ma w pliku — dopisz je wedlug kroku 6 i uruchom kontrole pon
 ostatnia linie stdout ostatniej kontroli zwracasz w polu zmienne.
 Kontrola makiet po zapisie pliku: wg .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
 
-Nie wymyslaj pozycji spoza zrodel (1)-(6). Nie modyfikuj *-zadania.md ani raportow review.
+Nie wymyslaj pozycji spoza zrodel (1)-(7). Nie modyfikuj *-zadania.md ani raportow review.
 Zwroc obiekt zgodny ze schematem.`
 
 phase('Smoke operatora')
@@ -281,7 +290,7 @@ if (!smoke) {
 const smokePlik = (smoke && smoke.plik) || ''
 const smokeStatus = !smoke ? 'agent-null' : (smokePlik ? 'plik' : 'brak-pozycji')
 log(`Smoke operatora: ${smokeStatus === 'plik'
-  ? `${smokePlik} (${smoke.pozycje} pozycji${smoke.e2eNieuruchomione ? `, UWAGA: ${smoke.e2eNieuruchomione} [E2E] nieuruchomionych` : ''})`
+  ? `${smokePlik} (${smoke.pozycje} pozycji${smoke.decyzje ? `, w tym decyzji przed PR: ${smoke.decyzje}` : ''}${smoke.e2eNieuruchomione ? `, UWAGA: ${smoke.e2eNieuruchomione} [E2E] nieuruchomionych` : ''})`
   : smokeStatus === 'brak-pozycji'
     ? 'brak pozycji do recznego sprawdzenia — plik nie powstal'
     : 'agent padl 2x — plik NIE powstal, pozycje Operator checklist/[Manual] NIE zostaly przeniesione; wygeneruj recznie: /dev-docs-complete ' + nazwaZadania}`)

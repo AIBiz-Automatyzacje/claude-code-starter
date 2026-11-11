@@ -362,7 +362,8 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
   const p = smokePrompt('zadanie-x')
   assert.match(p, /6\. ZMIENNE SRODOWISKA dodane w galezi: `node \.claude\/scripts\/smoke\/zmienne\.mjs`/)
   assert.match(p, /KONTROLA ZMIENNYCH po zapisie pliku: `node \.claude\/scripts\/smoke\/zmienne\.mjs --smoke <plik>`\. Kod 1 = pole braki[\s\S]*Nie konczysz, dopoki kod nie jest 0/)
-  assert.match(p, /spoza zrodel \(1\)-\(6\)/)
+  // Punkt 40, krok 2: zrodlo 7 to wiersze sekcji decyzji z known-issues.
+  assert.match(p, /spoza zrodel \(1\)-\(7\)/)
   assert.match(wytnij(complete, 'const SMOKE_RESULT = {', '\n}\n'), /required: \['plik', 'pozycje', 'e2eNieuruchomione', 'zmienne'\]/)
   const z = (/** @type {object} */ o) => `cos\n${JSON.stringify(o)}`
   const sekretny = { nazwa: 'SUPABASE_SECRET_KEY', zrodla: ['.env.example:17'] }
