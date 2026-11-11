@@ -98,7 +98,7 @@ function planWzgledny(projekt, sciezka) {
 
 /**
  * @param {string[]} positionals
- * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string, fazy?: string, otwarte?: string }} values
+ * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string, fazy?: string, otwarte?: string, 'pomin-brakujace'?: boolean }} values
  */
 function wykonaj(positionals, values) {
   const [polecenie, sciezka, ...reszta] = positionals

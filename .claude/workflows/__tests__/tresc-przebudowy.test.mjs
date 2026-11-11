@@ -8,7 +8,7 @@
 // Kazdy etap dostaje swoj kawalek: brainstorm pyta o zasade, prep spisuje obecna wersje do zamowienia makiety, plan zapisuje
 // decyzje przy kazdym elemencie, a pytanie blokera przychodzi po polsku z opcjami.
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
@@ -143,8 +143,10 @@ test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis 
   const review = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
   // Weryfikacja partii 2026-11-11, punkt 48: tester E2E dostaje te sama wiedze co reviewer (finding E2E omija sceptykow i idzie do fixa).
   // Regula stoi w pliku roli (procedura testera ma jedno zrodlo), w rdzeniu i w kopii wariantu Expo.
-  for (const rola of [plik('agents/feature-tester-e2e.md'), readFileSync(resolve(KATALOG, '../../../stacks/expo/nakladka/.claude/agents/feature-tester-e2e.md'), 'utf8')]) {
-    const klasyfikacja = sekcja(rola, '### Klasyfikacja i wynik', '\n### ')
+  // W repo szablonu kopia Expo lezy w nakladce; w zbudowanym wariancie nakladki nie ma, a plik pod .claude/ jest juz ta kopia.
+  const role = ['../../agents/feature-tester-e2e.md', '../../../stacks/expo/nakladka/.claude/agents/feature-tester-e2e.md']
+  for (const sciezka of role.filter((r, i) => i === 0 || existsSync(resolve(KATALOG, r)))) {
+    const klasyfikacja = sekcja(readFileSync(resolve(KATALOG, sciezka), 'utf8'), '### Klasyfikacja i wynik', '\n### ')
     assert.match(klasyfikacja, /wiersz `\[DECYZJA · faza N · autopilot\]` bieżącej fazy w sekcji `## Decyzje operatora` pliku `known-issues\.md`/)
     assert.match(klasyfikacja, /brak tego, z czego builder zrezygnował, nie jest FAIL-em ani findingiem/)
     assert.match(klasyfikacja, /FAIL zostaje, gdy aplikacja robi co innego niż opisany wybór/)

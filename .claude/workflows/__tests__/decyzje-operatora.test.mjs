@@ -37,7 +37,7 @@ function wytnij(zrodlo, kotwica, koniec) {
  *   pozycjeOperatora: (nienaprawione: unknown) => string[],
  *   wierszDecyzji: (faza: number, zrodlo: string, pozycja: string) => string,
  *   decyzjeKnownIssuesPrompt: (sciezka: string, faza: number, wiersze: string[]) => string,
- *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null, otwarte?: string | null }) => string[],
+ *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null, otwarte?: string | null, smokeStatus?: string | null }) => string[],
  *   SEKCJA_DECYZJI: string,
  * }}
  */

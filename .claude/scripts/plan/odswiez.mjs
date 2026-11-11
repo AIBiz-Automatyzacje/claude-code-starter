@@ -210,7 +210,7 @@ function dodaj(linie, stare, nowe, w, pula) {
       const zakres = sekcjaIu(linie, iu.id)
       if (stara && !zakres) return void w.konflikty.push(`${iu.id}: brak sekcji jednostki w pliku zadań`)
       if (zakres) {
-        if (linie[zakres[0]] !== iu.naglowek) {
+        if (stara && stara.naglowek !== iu.naglowek && linie[zakres[0]] !== iu.naglowek) {
           linie[zakres[0]] = iu.naglowek
           w.zmiany.naglowki.push(iu.naglowek)
         }
