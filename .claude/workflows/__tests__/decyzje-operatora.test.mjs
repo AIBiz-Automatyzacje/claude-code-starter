@@ -37,7 +37,7 @@ function wytnij(zrodlo, kotwica, koniec) {
  *   pozycjeOperatora: (nienaprawione: unknown) => string[],
  *   wierszDecyzji: (faza: number, zrodlo: string, pozycja: string) => string,
  *   decyzjeKnownIssuesPrompt: (sciezka: string, faza: number, wiersze: string[]) => string,
- *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null }) => string[],
+ *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null, otwarte?: string | null }) => string[],
  *   SEKCJA_DECYZJI: string,
  * }}
  */
@@ -227,4 +227,13 @@ test('skill archiwizacji: zrodlo 7 i uklad pliku z „Decyzjami przed PR” prze
     assert.ok(uklad.includes(pole), `uklad decyzji ma pole: ${pole}`)
   }
   assert.match(skillComplete, /bez sekcji `## P3 faza N` i `## Decyzje operatora`/)
+})
+
+// Krok 6 (punkt 45): raport autopilota zaczyna sie od zdania o otwartych sprawach z archiwizacji (otwarte.mjs); bez zdania uklad bez zmian.
+test('autopilot: „Automat zamkniety.” ze zdaniem o otwartych sprawach na poczatku raportu', () => {
+  const wejscie = { propozycjeBramek: [], czesci: false, zadanie: 'x', raporty: [], decyzjeZPliku: [], smoke: 'docs/operator/x-smoke.md' }
+  const z = a.nastepneKroki({ ...wejscie, otwarte: 'Otwarte: 4 pozycji smoke\'u, 1 odłożonych (docs/operator/odlozone.md).' })
+  assert.equal(z[0], 'Automat zamkniety. Otwarte: 4 pozycji smoke\'u, 1 odłożonych (docs/operator/odlozone.md).')
+  assert.match(z[1] ?? '', /^Smoke w nowej sesji:/)
+  assert.deepEqual(a.nastepneKroki({ ...wejscie, otwarte: null }), a.nastepneKroki(wejscie))
 })

@@ -45,7 +45,7 @@ const A = new Function(
 // eslint-disable-next-line no-new-func -- jw.
 const C = new Function(
   `${wytnij(complete, '// ── Archiwum (P4)', '// ── Koniec archiwum')}
-   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, czesciPr, czesciZWyniku, uwagaZmiennych, PROG_PLIKOW_PR }`,
+   return { pathspecArchiwum, krokOgrodu, komunikatArchiwum, szkieletDecyzji, sprawdzDecyzje, czesciPr, czesciZWyniku, uwagaZmiennych, zdanieOtwartych, PROG_PLIKOW_PR }`,
 )()
 
 const ZADANIE = 'docs/active/zadanie-x'
@@ -374,7 +374,7 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
   assert.match(C.uwagaZmiennych({ plik: '', zmienne: z({ baza: 'a', zmienne: [sekretny] }) }), /bez pozycji w smoke'u: SUPABASE_SECRET_KEY/)
   assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: z({ baza: 'a', zmienne: [sekretny] }) }), /bez --smoke/)
   assert.match(C.uwagaZmiennych({ plik: 'docs/operator/s.md', zmienne: 'Error: cos' }), /^UWAGA: kontrola zmiennych srodowiska w smoke'u bez wyniku/)
-  assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), pr\.uwaga, uwagaZmiennych\(smoke\)\]/)
+  assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), pr\.uwaga, uwagaZmiennych\(smoke\),/)
 })
 
 // P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji: sesja glowna 4,49 M wobec 1,42 M wszystkich runow PR. Sesja smoke'u
@@ -448,4 +448,17 @@ test('smoke: format punktu wizualnego w workflowie i w skillu, zdania i kontrola
   const i = linie.findIndex((l) => /^ {3}- \[ \] .*obok `visual-diff\/<ekran>-figma\.png`/.test(l))
   assert.ok(i > 0, 'szablon ma punkt wizualny')
   assert.match(linie[i - 1], /^ {3}<zdanie przed punktami z sekcji „Punkty wizualne”>/)
+})
+
+// Punkt 40, krok 6 (punkt 45): zdanie o otwartych sprawach z otwarte.mjs przez archiwizacje do raportu autopilota, nie ze slow modelu.
+test('archiwizacja: zdanie o otwartych sprawach 1:1 z otwarte.mjs; brak wyniku = uwaga, nie zgadywanie', () => {
+  const z = (/** @type {unknown} */ o) => `cos na stdout\n${JSON.stringify(o)}`
+  assert.equal(C.zdanieOtwartych(z({ ok: true, zdanie: 'Otwarte: 2 pozycji smoke\'u, 1 odłożonych (docs/operator/odlozone.md).' })), 'Otwarte: 2 pozycji smoke\'u, 1 odłożonych (docs/operator/odlozone.md).')
+  assert.equal(C.zdanieOtwartych(z({ ok: false, wyjatek: 'x' })), null)
+  assert.equal(C.zdanieOtwartych(z({ ok: true, zdanie: 'Wszystko zamknięte w całości.' })), null, 'zdanie spoza skryptu odrzucone')
+  assert.equal(C.zdanieOtwartych(''), null)
+  assert.match(complete, /10\. Otwarte sprawy: \\`node \.claude\/scripts\/smoke\/otwarte\.mjs --zadanie \$\{nazwaZadania\}\\` -> otwarte = ostatnia linia stdout 1:1/)
+  assert.match(complete, /otwarte \? null : `UWAGA: liczba otwartych spraw nieznana/)
+  assert.match(complete, /return \{ \.\.\.wynik, otwarte, uwagi,/)
+  assert.match(autopilot, /otwarte: \(complete && complete\.otwarte\) \|\| null \}\),/)
 })

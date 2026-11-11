@@ -1521,8 +1521,10 @@ function fazyNieOdegrane(raporty) {
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
-function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku }) {
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte }) {
   const kroki = []
+  // Punkt 40, krok 6 (punkt 45): zdanie o otwartych sprawach z otwarte.mjs (przez archiwizacje), nie ze slow modelu.
+  if (typeof otwarte === 'string' && otwarte) kroki.push(`Automat zamkniety. ${otwarte}`)
   // Punkt 40: zrodlem decyzji jest sekcja w known-issues (odczyt walidacji koncowej), bo `raporty` nie maja faz sprzed tego runu.
   // Bez odczytu (walidacja w poprzednim runie) zostaje lista z pamieci runu.
   const decyzje = Array.isArray(decyzjeZPliku) ? decyzjeZPliku : raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
@@ -2551,7 +2553,7 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
-  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null }),
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null }),
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),

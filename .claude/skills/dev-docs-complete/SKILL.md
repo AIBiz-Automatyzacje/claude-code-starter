@@ -170,6 +170,8 @@ Datę do plików bierz z `date +%F`.
 🧪 Smoke operatora: docs/operator/YYYY-MM-DD-$ARGUMENTS-smoke.md (N pozycji[, ⚠️ E [E2E] nieuruchomionych])
    → w nowej sesji: /clear, potem /dev-smoke $ARGUMENTS (decyzje najpierw, potem lista); przed smoke'em PR-a nie wysyłaj
 
+📌 <zdanie z `node .claude/scripts/smoke/otwarte.mjs --zadanie $ARGUMENTS`, pole `zdanie`, 1:1 — np. „Otwarte: N pozycji smoke'u, M odłożonych (docs/operator/odlozone.md).”>
+
 📝 Decyzje: docs/decisions/YYYY-MM-DD-$ARGUMENTS.md (claude_md: do-uzgodnienia — CLAUDE.md uzgadnia się po merge'u PR)
 
 🔀 PR: jedna część (N plików do recenzji) | M części: część 1 fazy a–b (N), … — po smoke'u: /clear, potem /dev-pr 3 --bez-merge --czesc 1

@@ -198,6 +198,22 @@ test('gotowosc: stara baza wiedzy i przerosniety kontekst startowy = uwagi higie
   assert.deepEqual([w.higiena.ok, w.git.brudne.length > 0], [true, true], 'higiena nie zmienia ok — tu blokuje juz brudne drzewo')
 }))
 
+// Punkt 40, krok 6: sprawy odlozone w smoke'u (docs/operator/odlozone.md) nie trafialy nigdzie dalej. Bramka je pokazuje, ale nie
+// blokuje startu (decyzja operatora 2026-11-11: sprawa innego etapu nie zatrzymuje pracy; o wejsciu do etapu decyduje /dev-prep).
+test('gotowosc: otwarte sprawy odlozone z etapem i linia, bez wplywu na ok', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
+  const przed = gotowosc(k, ZADANIE, { narzedzia })
+  assert.deepEqual(przed.odlozone, { ok: true, plik: 'docs/operator/odlozone.md', otwarte: [] })
+  mkdirSync(join(k, 'docs/operator'), { recursive: true })
+  writeFileSync(join(k, 'docs/operator/odlozone.md'), '# Sprawy odłożone\n\n- [ ] [etap: etap 5] sklep D2: limit — `src/k.ts:9` (smoke 2026-11-11)\n- [x] [etap: etap 4] zrobione\n')
+  git(k, ['add', 'docs/operator/odlozone.md'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: odlozone'])
+  const w = gotowosc(k, ZADANIE, { narzedzia })
+  assert.deepEqual(w.odlozone.otwarte, [{ linia: 3, etap: 'etap 5', tresc: 'sklep D2: limit — `src/k.ts:9` (smoke 2026-11-11)' }])
+  assert.equal(w.ok, przed.ok, 'odlozone nie zmieniaja ok bramki')
+}))
+
 // P22 A1: runner testow projektu zbierajacy .claude/** (live-10-demo: vitest run bez configu) wychodzi w bramce, nie w bootstrapie.
 // Sync nie wozi testow maszynerii do projektow: bez pliku testu pod .claude/ brak configu nie blokuje (testy.ok true).
 test('gotowosc: vitest bez configu i test pod .claude/ → testy.ok false z poprawka i STOP; config z include tests/ → ok', () => wRepo((k) => {

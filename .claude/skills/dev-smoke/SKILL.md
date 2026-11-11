@@ -39,7 +39,8 @@ rekomendacja i dlaczego. Pytanie ma trzy wyjścia (pierwsze to rekomendacja z do
 - **Odłóż** — dopisz pozycję do `docs/operator/odlozone.md` (brak pliku = utwórz z nagłówkiem `# Sprawy odłożone` i zdaniem
   „Pozycje odłożone w smoke'u do późniejszego etapu; czyta je `/dev-prep` i bramka gotowości planu.”):
   `- [ ] [etap: <etykieta>] <zadanie> D<n>: <pytanie> — \`<plik:linia>\` (smoke <YYYY-MM-DD>)`. Etykieta to etap, do którego
-  operator odkłada sprawę; nie podał go → „następny etap”.
+  operator odkłada sprawę; nie podał go → „następny etap”. Pozycję odhacza (`[x]` z numerem commitu) sesja, która sprawę
+  później wykona; plik czytają `/dev-prep` i bramka gotowości planu.
 
 Po każdej decyzji zapisz ślad w dwóch miejscach:
 - plik smoke'u: linia `- [ ] D<n> …` → `- [x] D<n> … → <poprawione w <sha 12 znaków> | zostaw jak jest | odłożone>`;
@@ -105,7 +106,8 @@ Sekretów nie czytasz: wartości z `.env*` nie wczytujesz do kontekstu, w pliku 
 1. Zacommituj plik smoke'u i dokumenty zmienione w sesji jawnymi ścieżkami, bez `git add -A` (`/dev-pr` wymaga czystego
    drzewa): `docs(<zadanie>): smoke operatora`. Dokumenty: plik smoke'u, `docs/completed/<zadanie>/known-issues.md`,
    plik decyzji zadania, `docs/operator/odlozone.md` — te, które się zmieniły.
-2. Jedno zdanie: ile pozycji zostało otwartych, ile odłożonych, ile poprawek w sesji.
+2. Zdanie o otwartych sprawach: pole `zdanie` z `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>` 1:1 (liczy pliki po
+   commicie), potem ile poprawek w sesji. Nie piszesz, że wszystko zamknięte, dopóki zdanie nie brzmi „Otwarte: brak …”.
 3. Ostatnia linia: „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”, gdy podsumowanie zadania
    (`docs/completed/<zadanie>/<zadanie>-podsumowanie.md`) ma sekcję „Części PR”; bez niej „Następny krok: /clear, potem
    /dev-pr 3 --bez-merge”. `/dev-pr` w tej sesji nie uruchamiasz: smoke i PR w jednej sesji kosztują kilka razy więcej.

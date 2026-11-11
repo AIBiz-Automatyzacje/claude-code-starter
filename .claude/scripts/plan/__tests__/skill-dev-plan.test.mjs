@@ -262,3 +262,11 @@ test('SKILL.md 3.4b: [Manual] bez podziału na człowieka i agenta, wyjątki jak
 test('3.4b odsyła do sekcji slotu plan-e2e o serwerze aplikacji w scenariuszu (treść web: stacks/web/__tests__/e2e-adapter.test.mjs)', () => {
   assert.match(SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b'), SKILL_MD.indexOf('#### 3.5')), /`\.claude\/stack\/plan-e2e\.md`, sekcja „Serwer aplikacji w scenariuszu”/)
 })
+
+// Punkt 40, krok 6: bramka pokazuje sprawy odlozone w smoke'u, handoff je wypisuje, start nie czeka (decyzja operatora 2026-11-11).
+test('SKILL.md 6.6 i handoff: pozycja odlozone wypisana z etapem, nie blokuje', () => {
+  const bramka = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.6 Bramka gotowości'), SKILL_MD.indexOf('#### 6.7'))
+  assert.match(bramka, /Wynik ma osiem pozycji/)
+  assert.match(bramka, /- `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań \(`docs\/operator\/odlozone\.md`/)
+  assert.match(SKILL_MD, /^ {3}- Odłożone: <brak \/ M otwartych: etap — treść \(linia\) — nie blokują>$/m)
+})

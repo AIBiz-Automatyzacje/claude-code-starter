@@ -316,7 +316,7 @@ Skrypt zapisuje `docs/active/<zadanie>/<zadanie>-plan.md`, `-kontekst.md` i `-za
 node .claude/scripts/plan/plan.mjs gotowosc docs/active/<zadanie>
 ```
 
-Wynik ma siedem pozycji, każdą wypisujesz w handoffie:
+Wynik ma osiem pozycji, każdą wypisujesz w handoffie:
 
 - `plan` — błędy strukturalne planu technicznego (po 6.2 zwykle puste);
 - `e2e` — scenariusze `[E2E]` i makiety `figma_screens` vs środowisko: to samo sprawdzenie co bootstrap autopilota (`.env.e2e` w `.gitignore`, klucze bazy e2e, baza inna niż dev, `migrations.sum`, kontrola narzędzia jazdy z adaptera E2E), bez startu serwera. Brak `.env.e2e` przy scenariuszach albo pozycja w `bledy` zatrzyma autopilota przed fazą 1 → setup albo poprawka wg `.claude/templates/e2e-env/README.md` (jednorazowo, ~30 min); przy scenariuszach druga droga to opt-out `[E2E]` → `[Manual]` w planie i ponowne `generuj --nadpisz`. Zadanie z samymi makietami bez `.env.e2e` przechodzi (porównanie z makietą idzie bez przeglądarki do operatora), a przy błędnym `.env.e2e` naprawiasz plik. `uwagi` (brak skilla weryfikacji projektu) nie blokują startu — wypisz je z komendą `/weryfikacja-setup`;
@@ -325,6 +325,7 @@ Wynik ma siedem pozycji, każdą wypisujesz w handoffie:
 - `testy` — runner testów projektu (vitest, jest) nie zbiera testów maszynerii z `.claude/**`; `ok: false` = autopilot zatrzyma się na `npm test` na starcie → wpisz do configu `poprawka` i zacommituj;
 - `claudeMd` — pliki decyzji na gałęzi głównej bez `claude_md: do-uzgodnienia`; `ok: false` = autopilot zatrzyma się na starcie → wypisz `naprawa` (uzgodnienie na gałęzi głównej przez `/dev-pr --claude-md <zadanie>`, potem wciągnięcie głównej do gałęzi zadania);
 - `higiena` — nie blokuje, ale każdą `uwagi` wypisz z komendą przed startem: stara baza wiedzy (`learned-patterns.md` w `.claude/rules/`, przed konwersją: `/dev-compound-refresh --konwersja`) albo kontekst startowy agenta ponad próg (CLAUDE.md + reguły bez `paths:`) kosztują każdego agenta każdej fazy. Operator decyduje, czy porządkuje przed autopilotem; pełna lista kontroli jest w doctorze (`bash .claude/scripts/doctor/doctor.sh`).
+- `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań (`docs/operator/odlozone.md`, `otwarte`: etap, treść, linia). Wypisz każdą z etapem; sprawa z etykietą tego etapu, której nie ma w planie, to pytanie do operatora, czy wchodzi teraz (dopisanie IU), czy czeka dalej (zmiana etykiety w pliku).
 
 Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignore` po setupie e2e) zmienia śledzone pliki: zacommituj je jawnymi ścieżkami (`git add <ścieżki> && git commit -m "docs(<zadanie>): przygotowanie operatora"`) i uruchom `gotowosc` ponownie. Autopilota nie uruchamiasz przy czerwonej bramce.
 
@@ -360,6 +361,7 @@ Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruch
    - Testy: <OK / nie dotyczy / szczegół + poprawka configu>
    - CLAUDE.md: <OK / zadania do uzgodnienia + naprawa → STOP>
    - Higiena: <OK / uwagi z komendą — nie blokują>
+   - Odłożone: <brak / M otwartych: etap — treść (linia) — nie blokują>
 
 ➡️ Następny krok: autopilot w tej sesji <albo: w nowej sesji — ta sesja zmieniła .claude/>:
    Workflow({ scriptPath: ".claude/workflows/dev-autopilot-wf.js", args: "docs/active/<zadanie>" })

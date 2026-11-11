@@ -42,8 +42,9 @@ const COMPLETE_RESULT = {
       required: ['plik', 'claudeMd'],
     },
     rozmiarPr: { type: 'string', description: 'ostatnia linia stdout `czesci.mjs` po commicie 1:1 (JSON w jednej linii)' },
+    otwarte: { type: 'string', description: 'ostatnia linia stdout `smoke/otwarte.mjs --zadanie` 1:1 (JSON w jednej linii)' },
   },
-  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'rozmiarPr'],
+  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'rozmiarPr', 'otwarte'],
 }
 
 const DOPISEK_RESULT = {
@@ -169,6 +170,19 @@ function czesciPr(czesci, nazwaZadania) {
   ].join('\n')
   return { uwaga, sekcja }
 }
+// Punkt 40, krok 6 (punkt 45): raport konczyl sie zdaniem modelu „zamkniete w calosci”, choc smoke mial otwarte pozycje.
+// Zdanie o otwartych sprawach bierzemy 1:1 z otwarte.mjs (liczy pliki); brak wyniku = null i uwaga, nie zgadywanie.
+function zdanieOtwartych(tekst) {
+  const linia = String(tekst || '').trim().split('\n').pop() || ''
+  let w = null
+  try {
+    w = JSON.parse(linia)
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+  }
+  return w && w.ok === true && typeof w.zdanie === 'string' && w.zdanie.startsWith('Otwarte: ') ? w.zdanie : null
+}
+
 // ── Koniec archiwum ───────────────────────────────────────────────────────
 
 // smokeStatus liczony w JS (agent archiwizacji nie wie tego lepiej niz orkiestrator):
@@ -366,6 +380,8 @@ ${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md
    Jesli git commit nie powiedzie sie lub nie ma zmian — zwroc commit: "" i opisz powod w rezultaty (nie przerywaj archiwizacji).
 9. Czesci PR-a: \`node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/${nazwaZadania}\` -> rozmiarPr = ostatnia linia stdout 1:1
    (JSON w jednej linii), bez zmian — takze przy kodzie 1 (czesc za duza) i 3 (wyjatek).
+10. Otwarte sprawy: \`node .claude/scripts/smoke/otwarte.mjs --zadanie ${nazwaZadania}\` -> otwarte = ostatnia linia stdout 1:1
+   (JSON w jednej linii), bez zmian — takze przy kodzie 3 (wyjatek). Liczb z tego wyniku nie przepisujesz do podsumowania sam.
 
 NIE uruchamiaj /dev-compound (zrobi to orkiestrator). Dzialaj autonomicznie.
 Zwroc obiekt zgodny ze schematem CompleteResult (commit = hash z kroku 8 lub "").`,
@@ -377,7 +393,10 @@ if (!wynik) {
 
 // Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a czesc PR ponad progiem omija bot.
 const pr = czesciPr(czesciZWyniku(wynik.rozmiarPr), nazwaZadania)
-const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), pr.uwaga, uwagaZmiennych(smoke)].filter(Boolean)
+const otwarte = zdanieOtwartych(wynik.otwarte)
+const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), pr.uwaga, uwagaZmiennych(smoke),
+  otwarte ? null : `UWAGA: liczba otwartych spraw nieznana — sprawdz: node .claude/scripts/smoke/otwarte.mjs --zadanie ${nazwaZadania}`].filter(Boolean)
+if (otwarte) log(otwarte)
 for (const u of uwagi) log(u)
 if (pr.sekcja && wynik.commit) {
   const dopisek = await agent(
@@ -393,4 +412,4 @@ Potem \`git add docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md\`
   )
   if (!dopisek || !dopisek.zapisano) log('UWAGA: sekcja „Części PR” nie trafila do podsumowania — jest w wyniku runu (czesciPr); /dev-pr --czesc jej potrzebuje')
 }
-return { ...wynik, uwagi, czesciPr: pr.sekcja, smokeOperatora: smokePlik, smokeStatus }
+return { ...wynik, otwarte, uwagi, czesciPr: pr.sekcja, smokeOperatora: smokePlik, smokeStatus }
