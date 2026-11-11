@@ -78,6 +78,7 @@ const BUILD_RESULT = {
     odchylenia: { type: 'array', items: { type: 'string' } },
     nastepneKroki: { type: ['string', 'null'] },
     pytanie: { type: ['string', 'null'], description: 'wypelnione gdy status=blocked; po polsku, prostym jezykiem: co blokuje i gdzie, opcje ze skutkiem, rekomendacja (blok PYTANIE BLOKERA)' },
+    decyzje: { type: 'array', items: { type: 'string' }, description: 'sprzecznosci zrodel rozstrzygniete wg blok HIERARCHIA ZRODEL, po polsku: "<plik:linia> — <zrodlo A> mowi …, <zrodlo B> mowi … → wybrano …; cofniecie: …"' },
   },
   required: ['id', 'status'],
 }
@@ -209,6 +210,22 @@ const EXECUTE_RESULT = {
   },
   required: ['fazaNumer', 'status', 'iu', 'stanZapisany'],
 }
+
+// Punkt 41, krok 6 (aa-exam E3, wf_1c69a604-076): scenariusz wymagal imienia w mailu, makieta i teksty go nie mialy — builder
+// stanal, a faza z nim. Cel operatora: autopilot przechodzi calosc. Builder rozstrzyga sprzecznosc zrodel sam, gdy wybor jest
+// zgodny z wyzszym zrodlem, niczego nie dodaje i da sie go cofnac; wybor idzie jako decyzja autopilota do known-issues
+// (sekcja „Decyzje operatora”), a stamtad do „Decyzji przed PR” w smoke'u (punkt 40). STOP zostaje dla nieodwracalnego i pracy
+// spoza Granic (decyzja operatora 2026-11-11). Blok doklejany w JS kazdemu builderowi, jak PYTANIE BLOKERA.
+const BLOK_HIERARCHIA_ZRODEL = `
+HIERARCHIA ZRODEL (gdy zrodla jednostki mowia co innego): Granice zakresu > makieta i Teksty (verbatim) > Kluczowe decyzje
+i pole „Znika z obecnej wersji” > Podejscie > Scenariusze testowe > obecny kod i wzorce. Przy sprzecznosci wybierasz opcje zgodna
+z wyzszym zrodlem, gdy (a) niczego nie dodaje ponad zrodla (nowego tekstu, pola danych, zaleznosci, zachowania) i (b) da sie ja
+cofnac zwykla zmiana kodu. Scenariusz testowy dopasowujesz do wybranej opcji (test sprawdza zachowanie, ktore zostawiasz).
+Kazdy taki wybor wpisujesz do pola decyzje, po polsku: "<plik:linia> — <zrodlo A> mowi …, <zrodlo B> mowi … → wybrano …;
+cofniecie: …". Operator potwierdzi go albo zmieni w smoke'u, a review nie traktuje go jako bledu.
+Status blocked zostaje tylko, gdy: zadna opcja nie spelnia (a) i (b); wybor jest nieodwracalny albo dotyka danych (migracja
+zmieniajaca lub usuwajaca dane), bezpieczenstwa (uwierzytelnienie, uprawnienia, polityki dostepu) albo pieniedzy (platnosci,
+kwoty); jednostka wymaga pracy wykluczonej w Granicach.`
 
 // Pytanie blokera idzie 1:1 do powodu STOP-u, ktory operator czyta bez kontekstu buildera (punkt 41, aa-exam E3: pytanie po
 // angielsku, bez opcji). Blok doklejany w JS, wiec obowiazuje kazdego buildera kazdego stacku niezaleznie od plannera i pliku roli.
@@ -398,7 +415,8 @@ ${ukonczone.length ? `   Jednostki zapisane commitem w poprzednim, przerwanym po
      zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.
    - gdy IU ma pole "Znika z obecnej wersji" z lista elementow (nie sama kreska): pod polem dopisz zdanie
      "Elementow z decyzja „znika” nie przenosisz z obecnego pliku ani ze wzorca, takze gdy obecny kod albo wzorzec je zawiera.
-     Gdy Podejscie albo scenariusz jednostki wymaga takiego elementu, zwroc status blocked i w polu pytanie nazwij te sprzecznosc."
+     Gdy Podejscie albo scenariusz jednostki wymaga takiego elementu, wygrywa decyzja „znika” (HIERARCHIA ZRODEL): nie przenosisz
+     elementu, dopasowujesz scenariusz i wpisujesz wybor do pola decyzje."
      Bez tego zdania builder bierze obecny plik za wzorzec i przenosi element, ktory operator kazal usunac.
    - dla feature-builder-ui|fullstack (takze wariantow -figma): gdy sekcja "Designerski kontekst" w ${sciezka}/*-kontekst.md istnieje
      i ma choc jedna niepusta sciezke, uruchom \`node .claude/scripts/plan/plan.mjs designerski <sciezka z linii "Plan techniczny:"> --iu <id IU>\`
@@ -558,7 +576,7 @@ if (plan.iu.length === 0 && !bazaZeStanu) {
 
 phase('Build')
 // BLOK doklejany deterministycznie w JS — kazdy builder dostaje prawa srodowiska niezaleznie od plannera.
-const promptIU = (iu) => `${iu.prompt}\n${BLOK_DLUGIE_KOMENDY}${BLOK_PYTANIE_BLOKERA}`
+const promptIU = (iu) => `${iu.prompt}\n${BLOK_DLUGIE_KOMENDY}${BLOK_HIERARCHIA_ZRODEL}${BLOK_PYTANIE_BLOKERA}`
 let builds
 if (plan.iu.length === 0) {
   builds = []
@@ -591,10 +609,17 @@ async function zapiszUkonczone() {
   const czesciowe = await agent(domkniecieCzesciowePrompt(sciezka, faza, czesc, bazaFazy(plan)), { schema: CZESCIOWE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie-czesciowe:faza-${faza}` })
   return { czesc, czesciowe }
 }
+// Decyzje autopilota z builderow (HIERARCHIA ZRODEL) liczone w JS; autopilot zapisuje je w known-issues jak decyzje fixa. Takze
+// przy zatrzymaniu: jednostki ukonczone przed blokerem zapisuje domkniecie czesciowe. Builder zablokowany nie daje decyzji
+// (jego pliki ida do schowka gita).
+const decyzjeAutopilota = buildResults.filter((b) => b.status !== 'blocked').flatMap((b) => (Array.isArray(b.decyzje) ? b.decyzje : [])
+  .map((d) => String(d).trim()).filter(Boolean).map((d) => `${b.id}: ${d}`))
+
 if (zablokowany) {
   const { czesc, czesciowe } = await zapiszUkonczone()
   return wynikPrzerwanego({
     fazaNumer: faza,
+    decyzjeAutopilota,
     status: 'blocked',
     iu: buildResults.map((b) => ({ id: b.id, status: b.status })),
     problem: zablokowany.pytanie || `IU ${zablokowany.id} zablokowany`,
@@ -607,6 +632,7 @@ if (buildResults.length !== plan.iu.length) {
   const { czesc, czesciowe } = await zapiszUkonczone()
   return wynikPrzerwanego({
     fazaNumer: faza,
+    decyzjeAutopilota,
     status: 'partial',
     iu: plan.iu.map((iu) => ({ id: iu.id, nazwa: iu.nazwa, status: zwrocone.has(iu.id) ? 'completed' : 'brak wyniku (kill/blad)' })),
     problem: `builder(y) bez wyniku: ${brakujace.join(', ')} — IU niewykonane lub niezweryfikowane`,
@@ -616,4 +642,4 @@ if (buildResults.length !== plan.iu.length) {
 phase('Domkniecie')
 const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza), ukonczoneWczesniej) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 // Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.
-return wynik && { ...wynik, baza: bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan) }
+return wynik && { ...wynik, baza: bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan), decyzjeAutopilota }

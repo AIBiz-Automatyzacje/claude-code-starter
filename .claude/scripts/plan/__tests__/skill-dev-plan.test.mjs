@@ -266,7 +266,29 @@ test('3.4b odsyła do sekcji slotu plan-e2e o serwerze aplikacji w scenariuszu (
 // Punkt 40, krok 6: bramka pokazuje sprawy odlozone w smoke'u, handoff je wypisuje, start nie czeka (decyzja operatora 2026-11-11).
 test('SKILL.md 6.6 i handoff: pozycja odlozone wypisana z etapem, nie blokuje', () => {
   const bramka = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.6 Bramka gotowości'), SKILL_MD.indexOf('#### 6.7'))
-  assert.match(bramka, /Wynik ma osiem pozycji/)
+  assert.match(bramka, /Wynik ma (osiem|dziewięć) pozycji/)
   assert.match(bramka, /- `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań \(`docs\/operator\/odlozone\.md`/)
   assert.match(SKILL_MD, /^ {3}- Odłożone: <brak \/ M otwartych: etap — treść \(linia\) — nie blokują>$/m)
+})
+
+// Punkt 41, kroki 3 i 5 (aa-exam E3): przeglad spojnosci kazdej fazy agentem ze swiezym kontekstem, znaleziska jako pytania do
+// operatora, powtorka do zera otwartych i zapis z odciskiem planu, ktory sprawdza bramka gotowosci (decyzje operatora 2026-11-11:
+// zawsze, takze plan Lekki; bramka blokuje).
+test('SKILL.md 6.2b: przegląd spójności każdej fazy, pytania do operatora, powtórka do zera, zapis w commicie i w bramce', () => {
+  const krok = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.2b Przegląd spójności planu'), SKILL_MD.indexOf('#### 6.3 Git i branch'))
+  assert.match(krok, /Każdy plan, także Lekki, przechodzi przegląd spójności/)
+  assert.match(krok, /narzędziem `Agent` z typem `spojnosc-planu`, po jednym agencie na fazę planu/)
+  assert.match(krok, /pokazujesz operatorowi po jednej narzędziem `AskUserQuestion`[^.]*rekomendacja jako pierwsza opcja/)
+  assert.match(krok, /Pozycji nie rozstrzygasz sam\./)
+  assert.match(krok, /aż każda faza ma wynik „brak otwartych pozycji”/)
+  assert.match(krok, /plan\.mjs spojnosc docs\/plans\/<plik>\.md --zapisz --fazy <wszystkie fazy po przecinku> --otwarte 0/)
+  assert.ok(SKILL_MD.indexOf('#### 6.2 Walidacja planu skryptem') < SKILL_MD.indexOf('#### 6.2b'), 'przegląd po zielonym sprawdz')
+  assert.match(SKILL_MD, /plan techniczny, zapis przeglądu spójności `docs\/plans\/<plik>\.spojnosc\.json`/)
+  assert.match(SKILL_MD, /Wynik ma dziewięć pozycji/)
+  assert.match(SKILL_MD, /- `spojnosc` — przegląd spójności planu \(6\.2b\)[^\n]*`ok: false` zatrzymuje start/)
+  assert.match(SKILL_MD, /^ {3}- Spójność: <OK \(fazy: …\) \/ powod → STOP>$/m)
+  const agent = readFileSync(join(REPO, '.claude/agents/spojnosc-planu.md'), 'utf8')
+  assert.match(agent, /^name: spojnosc-planu$/m)
+  assert.match(agent, /Planu nie zmieniasz\./)
+  assert.match(agent, /Faza N: brak otwartych pozycji\./, 'pusty wynik ma stałe zdanie, którego szuka skill')
 })

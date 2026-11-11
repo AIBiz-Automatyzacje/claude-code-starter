@@ -66,9 +66,17 @@ function cli(korzen, argumenty) {
   return { kod: w.status, json: w.stdout ? JSON.parse(w.stdout) : null }
 }
 
-/** @param {string} korzen gotowe zadanie na galezi feature/ z commitem */
-function zadanieNaGalezi(korzen) {
+/** @param {string} korzen @returns {string} oznaczenia faz planu po przecinku (stan przegladu wymienia fazy bez przegladu) */
+const fazyPlanu = (korzen) => cli(korzen, ['spojnosc', PLAN]).json.fazyBez.join(',')
+
+/**
+ * Gotowe zadanie na galezi feature/ z commitem. Punkt 41: /dev-plan zapisuje przeglad spojnosci (6.2b) przed commitem
+ * inicjalnym, wiec zadanie bez przegladu to osobny przypadek (`{ przeglad: false }`).
+ * @param {string} korzen @param {{ przeglad?: boolean }} [o]
+ */
+function zadanieNaGalezi(korzen, o = {}) {
   git(korzen, ['checkout', '-qb', 'feature/publikacja-ofert'])
+  if (o.przeglad !== false) assert.equal(cli(korzen, ['spojnosc', PLAN, '--zapisz', '--fazy', fazyPlanu(korzen), '--otwarte', '0', '--data', '2026-10-07']).kod, 0)
   assert.equal(cli(korzen, ['generuj', PLAN, '--data', '2026-10-07', '--zapisz']).kod, 0)
   git(korzen, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'add', '-A'])
   git(korzen, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: inicjalizacja planu'])
@@ -327,4 +335,41 @@ test('zle argumenty: kod 2', () => wRepo((k) => {
   assert.equal(cli(k, ['nieznane', PLAN]).kod, 2)
   assert.equal(cli(k, ['generuj', PLAN, '--data', '7.10.2026']).kod, 2)
   assert.equal(cli(k, ['sprawdz', 'docs/plans/brak.md']).kod, 2)
+}))
+
+// Punkt 41, kroki 3 i 5 (aa-exam E3, wf_1c69a604-076): test wymagal imienia w mailu, makieta go nie miala — faza 3 stanela,
+// bo nikt nie zestawil planu z makieta przed runem. Bramka blokuje start bez aktualnego przegladu spojnosci z zerem otwartych.
+test('gotowosc: przeglad spojnosci — brak, otwarte, faza bez przegladu i zmiana tresci planu blokuja; odhaczenie w planie nie', () => wRepo((k) => {
+  const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
+  zadanieNaGalezi(k, { przeglad: false })
+  const fazy = fazyPlanu(k).split(',')
+  assert.ok(fazy.length >= 2, 'fixture ma kilka faz')
+  const bez = gotowosc(k, ZADANIE, { narzedzia })
+  assert.deepEqual([bez.ok, bez.spojnosc.ok, bez.spojnosc.fazyBez], [false, false, fazy])
+  assert.match(bez.spojnosc.powod, /^brak zapisu przeglądu spójności planu → \/dev-plan krok 6\.2b/)
+
+  const zapisz = (/** @type {string} */ f, /** @type {string} */ otwarte) => cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', f, '--otwarte', otwarte])
+  assert.equal(zapisz(fazy.join(','), '2').kod, 1)
+  assert.match(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.powod, /^przegląd spójności ma otwarte pozycje \(2\)/)
+  assert.equal(zapisz(fazy[0] ?? '', '0').kod, 1)
+  assert.match(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.powod, new RegExp(`^fazy bez przeglądu spójności: ${fazy.slice(1).join(', ')}`))
+  assert.deepEqual(zapisz('1,99', '0').json.bledy, [`fazy spoza planu: 99 (plan ma: ${fazy.join(', ')})`])
+  assert.equal(cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', '1']).kod, 2, 'zapis bez --otwarte to zle argumenty')
+
+  const ok = zapisz(fazy.join(','), '0')
+  assert.deepEqual([ok.kod, ok.json.ok], [0, true])
+  const zapis = JSON.parse(readFileSync(join(k, PLAN.replace(/\.md$/, '.spojnosc.json')), 'utf8'))
+  assert.deepEqual([zapis.plan, zapis.fazy, zapis.otwarte], [PLAN, fazy, 0])
+  git(k, ['add', '-A'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: przeglad'])
+  assert.equal(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.ok, true)
+
+  // Execute odhacza scenariusze w planie technicznym po fazie: odcisk bez stanu checkboxow zostaje ten sam.
+  const plan = readFileSync(join(k, PLAN), 'utf8')
+  assert.ok(/^\s*- \[ \]/m.test(plan), 'fixture ma checkboxy')
+  writeFileSync(join(k, PLAN), plan.replace(/^(\s*- )\[ \]/gm, '$1[x]').replace(/\n/g, '\r\n'))
+  assert.equal(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.ok, true, 'odhaczenia i CRLF nie zmieniaja odcisku')
+  // Zmiana tresci planu po przegladzie wymaga przegladu od nowa.
+  writeFileSync(join(k, PLAN), plan.replace('## Granice zakresu', '## Granice zakresu\n\n- nowe wykluczenie'))
+  assert.match(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.powod, /^plan zmieniony po przeglądzie spójności/)
 }))

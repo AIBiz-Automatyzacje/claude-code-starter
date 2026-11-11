@@ -450,6 +450,10 @@ ${zrodlaBlok(faza, kontekst)}
 Kazdy finding dostaje wage P1 (blokuje), P2 (wazny) albo P3 (nit) i typ KOD, TEST, E2E, OPERATOR albo DECYZJA.
 Finding, ktorego naprawa przekracza „Granice planu” z dossier, dodaje zaleznosc albo runner testow, ma typ DECYZJA, nawet gdy defekt jest realny: opis podaje, co operator ma rozstrzygnac i jakie sa wyjscia.
 Typ OPERATOR zostaje dla weryfikacji, ktorej nie da sie wykonac bez czlowieka albo zewnetrznego srodowiska; decyzji o zakresie nim nie oznaczasz.
+Decyzje autopilota (punkt 41): wiersz "[DECYZJA · faza ${faza} · autopilot]" w sekcji "## Decyzje operatora" pliku ${sciezka}/known-issues.md
+opisuje sprzecznosc zrodel planu, ktora builder rozstrzygnal wg hierarchii zrodel (np. scenariusz wymagal tekstu, ktorego makieta nie ma).
+Odstepstwo od Podejscia albo scenariusza opisane takim wierszem nie jest findingiem (ani KOD, ani TEST): rozstrzyga je operator w smoke'u.
+Finding zglaszasz tylko wtedy, gdy kod robi co innego niz opisany wybor albo wybor dotyka danych, bezpieczenstwa lub pieniedzy (typ DECYZJA).
 Wynik to obiekt {findings:[...]} zgodny ze schematem; pliki projektu zostaja bez zmian.
 ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }

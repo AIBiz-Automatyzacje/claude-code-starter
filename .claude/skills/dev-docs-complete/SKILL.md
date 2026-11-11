@@ -69,7 +69,7 @@ Datę do plików bierz z `date +%F`.
 
    ## Decyzje przed PR   ← tylko gdy źródło (7) ma wiersze
    Rozstrzygnij je przed dalszymi punktami: naprawa po decyzji zmienia kod, który potem sprawdzasz.
-   - [ ] D1 (faza N, <fix | tura poprawkowa | review>): <pytanie jednym zdaniem>
+   - [ ] D1 (faza N, <fix | tura poprawkowa | review | autopilot>): <pytanie jednym zdaniem>
      - Gdzie: `<plik:linia>`
      - Opcja A: zostaw jak jest → <co użytkownik widzi dziś>
      - Opcja B: <zmiana> → <co użytkownik zobaczy po zmianie>

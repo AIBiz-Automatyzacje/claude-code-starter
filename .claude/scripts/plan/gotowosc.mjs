@@ -3,6 +3,7 @@
 // runner testow projektu bez testow maszynerii z .claude/** (P22 A1: inaczej `npm test` w runie pada na starcie),
 // pliki decyzji na galezi glownej bez `claude_md: do-uzgodnienia` (bootstrap zatrzymuje na nich run). Sprawy odlozone w smoke'u
 // (docs/operator/odlozone.md) bramka tylko pokazuje: start nie czeka na sprawe innego etapu (decyzja operatora, punkt 40 krok 6).
+// Aktualny przeglad spojnosci planu z zerem otwartych pozycji blokuje start (punkt 41: decyzja produktowa wychodzila w runie).
 // Autopilot nie przelacza galezi i zatrzymuje run na brudnym drzewie, wiec te warunki sprawdzamy przed jego startem.
 
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -21,6 +22,7 @@ import { potrzebyZadania } from '../e2e/start.mjs'
 import { KOMENDA_GENERATORA, maSkillWeryfikacji, PLIK_SKILLA } from '../e2e/weryfikacja.mjs'
 import { parsujPlan, poleTekstowe } from './plan-techniczny.mjs'
 import { przygotowanie } from './przygotowanie.mjs'
+import { stanPrzegladu } from './spojnosc.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
 
 /**
@@ -32,6 +34,7 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] },
  *   testy: { ok: boolean, runner: string | null, szczegol: string, poprawka: string },
  *   claudeMd: { ok: boolean, glowna: string | null, zadania: string[], naprawa: string },
+ *   spojnosc: import('./spojnosc.mjs').StanPrzegladu,
  *   higiena: { ok: true, uwagi: string[] },
  *   odlozone: { ok: true, plik: string, otwarte: { linia: number, etap: string, tresc: string }[] } }} Gotowosc
  */
@@ -165,11 +168,12 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     git: { ok: galaz === wymagana && !brudne.length, galaz, wymagana, brudne },
     testy: testyProjektu(projekt),
     claudeMd: decyzjeClaudeMd(projekt),
+    spojnosc: stanPrzegladu(projekt, wskaznik, plan ? plan.fazy.map((f) => f.oznaczenie) : []),
     higiena: higienaZadania(projekt),
     odlozone: { ok: /** @type {const} */ (true), ...otwarte(projekt).odlozone },
   }
   return {
-    ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok && wynik.claudeMd.ok,
+    ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok && wynik.claudeMd.ok && wynik.spojnosc.ok,
     zadanie,
     planTechniczny: wskaznik,
     ...wynik,

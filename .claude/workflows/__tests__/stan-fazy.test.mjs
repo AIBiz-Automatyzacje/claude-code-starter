@@ -115,7 +115,7 @@ test('domkniecie: punkt zapisu stanu po dossier, tylko przy status=completed; be
 
 test('wiring execute-wf: punkt zapisu doklejony do promptu domkniecia, wynik niesie baze fazy z JS', () => {
   assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
-  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\) \}/)
+  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)(, decyzjeAutopilota)? \}/)
   assert.match(zrodloExecute, /stanZapisany: \{ type: \['boolean', 'null'\]/)
 })
 
@@ -213,7 +213,7 @@ test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem be
   assert.match(zrodloExecute, /const bazaZeStanu = \/\^\[0-9a-f\]\{7,40\}\$\/\.test\(\(args && args\.baza\) \|\| ''\) \? args\.baza : null\nif \(bazaZeStanu\) plan\.baza = bazaZeStanu\n/)
   assert.ok(zrodloExecute.indexOf('if (bazaZeStanu) plan.baza = bazaZeStanu') < zrodloExecute.indexOf('if (plan.iu.length === 0 && !bazaZeStanu) {'), 'baza ze stanu przed wyjsciem plannera bez pracy')
   assert.match(zrodloExecute, /if \(plan\.iu\.length === 0 && !bazaZeStanu\) \{\n {2}return \{ fazaNumer: faza, status: 'completed', iu: \[\], commity: \[\], testy: 'brak', odchylenia: \[\], problem: null, baza: null \}/)
-  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\) \}/)
+  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)(, decyzjeAutopilota)? \}/)
   // To samo przypisanie co w zrodle: po nim bazaFazy(plan) daje baze ze stanu, nie HEAD plannera.
   const plan = { baza: 'fedcba9' }
   plan.baza = 'abc1234'

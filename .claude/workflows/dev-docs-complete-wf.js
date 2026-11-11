@@ -243,6 +243,8 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
    naprawa po decyzji zmienia kod, ktory operator sprawdza w dalszych sekcjach. Dla kazdego wiersza przeczytaj kod pod plik:linia
    i zapisz pozycje wg ukladu ze skilla: pytanie jednym zdaniem po polsku, miejsce (plik:linia), 2–3 opcje ze skutkiem dla uzytkownika
    na ekranie (jedna z opcji to zawsze „zostaw jak jest”) i czesc PR, w ktorej lezy plik (tabela czesci; zadanie bez czesci: bez tego pola).
+   Wiersz ze znacznikiem "autopilot" to wybor, ktory builder juz wprowadzil przy sprzecznosci zrodel planu (punkt 41): opcja
+   „zostaw jak jest” opisuje ten wybor (co uzytkownik widzi dzis), druga opcja — zrodlo, ktore przegralo (np. tekst ze scenariusza).
    Skutku, ktorego nie da sie ustalic z kodu, nie zgadujesz: piszesz „skutek do ustalenia” i co sprawdzic. Wiersza nie pomijasz,
    nie laczysz z innym i nie przenosisz do „Znanych problemow”; liczbe pozycji zwracasz w polu decyzje.
 

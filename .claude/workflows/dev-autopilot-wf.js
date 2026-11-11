@@ -1565,8 +1565,9 @@ function wierszDecyzji(faza, zrodlo, pozycja) {
 }
 
 function decyzjeKnownIssuesPrompt(sciezka, faza, wiersze) {
-  return `Zapisz decyzje dla operatora do ${sciezka}/known-issues.md. To pozycje fazy ${faza}, ktorych naprawa wykracza poza plan:
-kod zostal bez zmian, a rozstrzyga operator.
+  return `Zapisz decyzje dla operatora do ${sciezka}/known-issues.md. To pozycje fazy ${faza} do rozstrzygniecia przez operatora:
+przy znacznikach fix, tura poprawkowa i review naprawa wykracza poza plan i kod zostal bez zmian; przy znaczniku autopilot builder
+rozstrzygnal sprzecznosc zrodel planu (wybor zgodny z wyzszym zrodlem, odwracalny), a operator go potwierdza albo zmienia.
 
 Wiersze (tresc gotowa, przenies bez zmian):
 --- POCZATEK WIERSZY ---
@@ -1928,6 +1929,9 @@ for (const numerFazy of kolejka) {
     await zapiszZaleglyStan()
     // Baza ze stanu (execute przerwany po czesci pracy) idzie do execute-wf: wznowienie nie liczy bramek i dossier od HEAD-u po zmianach fazy.
     const exec = await workflow('dev-docs-execute-wf', { sciezka, faza: numerFazy, baza: faza.baza || null, iuUkonczone: faza.iuUkonczone || [], stanPoExecute: trescStanu(stanPoExecute(stan, numerFazy)) })
+    // Punkt 41, krok 6: wybory builderow przy sprzecznosci zrodel (HIERARCHIA ZRODEL) ida do known-issues zaraz po execute,
+    // takze przed STOP-em — swiezy run i smoke czytaja je z pliku, a review traktuje opisane odstepstwo jako decyzje, nie blad.
+    await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])
     if (!exec || exec.status !== 'completed') {
       // Baza fazy zostaje w stanie takze przy execute bez „completed”: domkniecie moglo juz zacommitowac faze (porazka bramki po
       // commicie), a swiezy run bez bazy dalby review diff od galezi glownej (pilot Nawykometr, run 2: 585 plikow zamiast 8).
