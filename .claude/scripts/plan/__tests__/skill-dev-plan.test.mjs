@@ -231,15 +231,21 @@ test('SKILL.md 3.4b: wysyłki maili/SMS fazy kontra limit usługi na projekcie e
   assert.match(regula, /pozycja w checkliście przygotowania \(3\.7\)[^.]*`\[blokuje: faza N\]`/)
 })
 
-// Pilot Nawykometr W11 (runy 1 i 3): skill kazal pisac `[Manual agent]`, a `plan.mjs sprawdz` odrzucal ten znacznik jako
-// „scenariusz bez typu” — kazdy plan z krokiem agenta mial jedna czerwona runde walidacji. Znacznik ze skilla musi przejsc
-// walidator, trafic do zadania jako linia [Manual] i byc tym samym zapisem, ktorego szuka sesja smoke'u.
-test('SKILL.md 3.4b: zapis kroku ręcznego wykonalnego przez agenta przechodzi sprawdz, trafia do zadania i zgadza się ze smoke’em', () => {
+// Pilot Nawykometr W11 (runy 1 i 3): skill kazal pisac `[Manual agent]`, ktorego `plan.mjs sprawdz` nie znal; poprawka `c8d4580`
+// dala `[Manual] agent:`. Punkt 40, krok 4: sesja /dev-smoke wykonuje kazda pozycje sama poza wyjatkami dla czlowieka, wiec
+// znacznik kroku agenta znika z planowania i z polecenia autora smoke'u. Starszy plan z `[Manual] agent:` nadal przechodzi sprawdz.
+test('SKILL.md 3.4b: [Manual] bez podziału na człowieka i agenta, wyjątki jak w /dev-smoke; stary zapis `[Manual] agent:` przechodzi sprawdz', () => {
   const e2e = SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b Scenariusze E2E i seedy'), SKILL_MD.indexOf('#### 3.5'))
-  const znacznik = /wykonalne przez agenta lokalnie[^\n]*?zapisujesz jako `([^`]+)`/.exec(e2e)?.[1] ?? ''
-  assert.equal(znacznik, '[Manual] agent:')
+  assert.match(e2e, /`\[Manual\]` zapisujesz bez podziału na kroki człowieka i agenta: sesja smoke'u \(`\/dev-smoke`\) wykonuje każdą pozycję sama/)
+  const smokeSkill = readFileSync(join(REPO, '.claude/skills/dev-smoke/SKILL.md'), 'utf8')
+  for (const w of ['produkcja i deploy', 'zewnętrzne konsole', 'fizyczne urządzenie', 'prawdziwa skrzynka pocztowa', 'płatność prawdziwą kartą', 'wpisanie hasła', 'ocena punktów wizualnych']) {
+    assert.ok(e2e.includes(w), `3.4b: wyjatek „${w}”`)
+    assert.ok(smokeSkill.includes(w), `dev-smoke: wyjatek „${w}”`)
+  }
+  const smoke = readFileSync(join(REPO, '.claude/workflows/dev-docs-complete-wf.js'), 'utf8')
+  assert.doesNotMatch(`${SKILL_MD}\n${smoke}`, /\[Manual\] agent:|\[Manual agent\]/)
   const pierwszy = przykladPlanu().match(/^- \[Unit\] [^\n]+$/m)?.[0] ?? ''
-  const plan = mutacja(pierwszy, `${pierwszy}\n- ${znacznik} smoke RLS przez psql na bazie e2e`)
+  const plan = mutacja(pierwszy, `${pierwszy}\n- [Manual] agent: smoke RLS przez psql na bazie e2e`)
   assert.deepEqual(sprawdz(plan).bledy, [])
   const korzen = projekt(plan)
   try {
@@ -248,9 +254,6 @@ test('SKILL.md 3.4b: zapis kroku ręcznego wykonalnego przez agenta przechodzi s
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }
-  const smoke = readFileSync(join(REPO, '.claude/workflows/dev-docs-complete-wf.js'), 'utf8')
-  assert.ok(smoke.includes(`Pozycje "${znacznik}": wykonaj je w tej sesji smoke'u przed pytaniem operatora`), 'smoke szuka tego samego zapisu')
-  assert.doesNotMatch(`${SKILL_MD}\n${smoke}`, /\[Manual agent\]/)
 })
 
 // P27 (2) (vibersi etap 5): scenariusz o statusie HTTP i meta trasy renderowanej przez serwer odpytywal port Vite, ktory na
@@ -258,4 +261,12 @@ test('SKILL.md 3.4b: zapis kroku ręcznego wykonalnego przez agenta przechodzi s
 // Treść stacku z 3.4b jest w slocie .claude/stack/plan-e2e.md (IU-1.4), 3.4b odsyła do sekcji „Serwer aplikacji w scenariuszu”.
 test('3.4b odsyła do sekcji slotu plan-e2e o serwerze aplikacji w scenariuszu (treść web: stacks/web/__tests__/e2e-adapter.test.mjs)', () => {
   assert.match(SKILL_MD.slice(SKILL_MD.indexOf('#### 3.4b'), SKILL_MD.indexOf('#### 3.5')), /`\.claude\/stack\/plan-e2e\.md`, sekcja „Serwer aplikacji w scenariuszu”/)
+})
+
+// Punkt 40, krok 6: bramka pokazuje sprawy odlozone w smoke'u, handoff je wypisuje, start nie czeka (decyzja operatora 2026-11-11).
+test('SKILL.md 6.6 i handoff: pozycja odlozone wypisana z etapem, nie blokuje', () => {
+  const bramka = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.6 Bramka gotowości'), SKILL_MD.indexOf('#### 6.7'))
+  assert.match(bramka, /Wynik ma osiem pozycji/)
+  assert.match(bramka, /- `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań \(`docs\/operator\/odlozone\.md`/)
+  assert.match(SKILL_MD, /^ {3}- Odłożone: <brak \/ M otwartych: etap — treść \(linia\) — nie blokują>$/m)
 })

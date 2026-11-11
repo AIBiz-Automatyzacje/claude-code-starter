@@ -69,7 +69,7 @@ Zdarzenie `zgloszenie` (tryb „od razu”) ma pola `punkt`, `ekran`, `trasa`, `
    z `visual-diff/zgloszenia/` commitujesz z artefaktami zadania (razem ze smoke'iem albo dokumentem ustaleń) — nieśledzony
    plik zatrzymałby `/dev-pr` na kontroli czystości drzewa.
 2. Odtwórz usterkę w aplikacji na trasie punktu przy szerokości `szerokosc` (pomiar agent-browserem bez zrzutu: `snapshot`,
-   `get box`, `get styles`), napraw ją z testem i commitem, jak mówi ramka „Jak kontynuować” smoke'u. Przy zbudowanym
+   `get box`, `get styles`), napraw ją z testem i commitem, jak mówi skill `/dev-smoke` (sekcja „Lista”). Przy zbudowanym
    serwerze (nie Vite dev) przebuduj aplikację i uruchom serwer od nowa.
 3. Daj znać narzędziu:
    ```

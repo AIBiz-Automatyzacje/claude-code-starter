@@ -690,6 +690,8 @@ test('punkt 38: --review i --bez-review w argument-hint, tabeli trybow i kroku 1
   assert.match(poArchiwum, /→ bez pytania o review i bez review, także z `--review`/)
   assert.match(poArchiwum, /→ oba pytania pomijasz i krótkiego review nie uruchamiasz/)
   assert.match(poArchiwum, /zapytaj o review w każdym trybie, chyba że komenda niesie `--bez-review`\./)
+  // Punkt 40, krok 4: poprawki po decyzjach sprawdzone w sesji /dev-smoke nie ida do krotkiego review drugi raz.
+  assert.match(poArchiwum, /sesja `\/dev-smoke` już pokazała dwóm reviewerom \(pusty commit-znacznik z liniami `Sprawdzone: <sha>`\), skrypt pomija i podaje w polu `sprawdzone`/)
 })
 
 // E5-6 (vibersi etap 5, cz. 3): tabela czesci liczy pliki przy archiwizacji (122), commity smoke'u po archiwum doszly do

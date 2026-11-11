@@ -58,7 +58,7 @@ const BLOK_LIMIT_P3 = `
 === LIMIT I AKCYJNOSC P3 (nity) ===
 Zglaszasz najwyzej 5 findingow P3; gdy widzisz wiecej, wybierz 5 najwartosciowszych. Limit dotyczy wagi P3 — P1 i P2
 zglaszasz wszystkie, bo przemilczany P1 kosztuje wiecej niz kazda liczba nitow. Findingi typu OPERATOR (warunek
-srodowiskowy, nie defekt) nie wliczaja sie do piatki.
+srodowiskowy, nie defekt) i DECYZJA (naprawa poza planem) nie wliczaja sie do piatki.
 P3 trafia do known-issues zadania i do opisu PR, gdzie czyta go operator albo bot bez kontekstu tego review, wiec
 zglaszasz go wtedy, gdy spelnia oba warunki:
   (a) pole \`plik\` wskazuje dokladnie jeden plik z numerem linii (\`sciezka/plik.ts:123\`, nie "?", "kilka miejsc"
@@ -87,7 +87,7 @@ const FINDINGS = {
         additionalProperties: false,
         properties: {
           severity: { type: 'string', enum: ['P1', 'P2', 'P3'] },
-          typ: { type: 'string', enum: ['KOD', 'TEST', 'E2E', 'OPERATOR'], description: 'OPERATOR = weryfikacja niewykonalna headless (wymaga realnego deploya / zewnetrznego srodowiska / providera OAuth) — nie defekt kodu, nie idzie do fix' },
+          typ: { type: 'string', enum: ['KOD', 'TEST', 'E2E', 'OPERATOR', 'DECYZJA'], description: 'OPERATOR = weryfikacja niewykonalna headless (wymaga realnego deploya / zewnetrznego srodowiska / providera OAuth) — nie defekt kodu, nie idzie do fix. DECYZJA = defekt realny, ale naprawa wykracza poza plan (Granice planu, nowa zaleznosc albo runner, zmiana zachowania dla uzytkownika spoza planu) — rozstrzyga operator, nie idzie do fix' },
           plik: { type: 'string', description: 'plik:linia lub "?"' },
           opis: { type: 'string' },
         },
@@ -184,7 +184,7 @@ const REVIEW_RESULT = {
         additionalProperties: false,
         properties: {
           severity: { type: 'string', enum: ['P1', 'P2', 'P3'] },
-          typ: { type: 'string', enum: ['KOD', 'TEST', 'E2E', 'OPERATOR'] },
+          typ: { type: 'string', enum: ['KOD', 'TEST', 'E2E', 'OPERATOR', 'DECYZJA'] },
           plik: { type: 'string' },
           opis: { type: 'string' },
         },
@@ -194,7 +194,7 @@ const REVIEW_RESULT = {
     liczniki: {
       type: 'object',
       additionalProperties: false,
-      properties: { p1: { type: 'integer' }, p2: { type: 'integer' }, p3: { type: 'integer' }, operator: { type: 'integer', description: 'findingi OPERATOR — poza fix, do operator-checklist' } },
+      properties: { p1: { type: 'integer' }, p2: { type: 'integer' }, p3: { type: 'integer' }, operator: { type: 'integer', description: 'findingi OPERATOR — poza fix, do operator-checklist' }, decyzje: { type: 'integer', description: 'findingi DECYZJA — poza fix, do sekcji decyzji w known-issues' } },
       required: ['p1', 'p2', 'p3'],
     },
     severityGate: { type: 'string', enum: ['BLOKUJE', 'ZASTRZEZENIA', 'CZYSTE'] },
@@ -447,8 +447,9 @@ finding P1 typ KOD na plik:linia z diffu i doslownym bledem z logu. Przyczyna po
 function reviewerPrompt(sciezka, faza, fokus, poprzednie, kontekst, dodatki = '') {
   return `Review fazy ${faza} zadania w folderze ${sciezka}. Os: ${fokus}.
 ${zrodlaBlok(faza, kontekst)}
-Kazdy finding dostaje wage P1 (blokuje), P2 (wazny) albo P3 (nit) i typ KOD, TEST, E2E albo OPERATOR.
-Finding, ktorego naprawa przekracza „Granice planu” z dossier, dodaje zaleznosc albo runner testow, ma typ OPERATOR (decyzja czlowieka), nawet gdy defekt jest realny.
+Kazdy finding dostaje wage P1 (blokuje), P2 (wazny) albo P3 (nit) i typ KOD, TEST, E2E, OPERATOR albo DECYZJA.
+Finding, ktorego naprawa przekracza „Granice planu” z dossier, dodaje zaleznosc albo runner testow, ma typ DECYZJA, nawet gdy defekt jest realny: opis podaje, co operator ma rozstrzygnac i jakie sa wyjscia.
+Typ OPERATOR zostaje dla weryfikacji, ktorej nie da sie wykonac bez czlowieka albo zewnetrznego srodowiska; decyzji o zakresie nim nie oznaczasz.
 Wynik to obiekt {findings:[...]} zgodny ze schematem; pliki projektu zostaja bez zmian.
 ${dodatki}${BLOK_ZAUFANIE}${BLOK_LIMIT_P3}${mapaBlok(kontekst)}${rereviewBlok(poprzednie)}`
 }
@@ -590,8 +591,10 @@ ${JSON.stringify(obalone || [], null, 2)}
      ### P3 · KOD · \`sciezka/plik.ts:7\`
      ## Findingi OPERATOR
      ### OPERATOR · \`sciezka/plik.sql:20\`
-   Zawsze wszystkie cztery sekcje (pusta = "Brak."); finding jako "### <SEVERITY> · <TYP> · \`<plik:linia>\`"
-   (typ KOD | TEST | E2E; OPERATOR bez typu), bez numeracji, emoji, nawiasow kwadratowych i "P2-1". Tresc findingu pod naglowkiem; adnotacje
+     ## Findingi DECYZJA
+     ### DECYZJA · \`sciezka/plik.ts:88\`
+   Zawsze wszystkie piec sekcji (pusta = "Brak."); finding jako "### <SEVERITY> · <TYP> · \`<plik:linia>\`"
+   (typ KOD | TEST | E2E; OPERATOR i DECYZJA bez typu), bez numeracji, emoji, nawiasow kwadratowych i "P2-1". Tresc findingu pod naglowkiem; adnotacje
    "[sceptyk: …]" z opisu jako "*(sceptyk: …)*".
 1b. W tym samym raporcie, po findingach i przed blokiem "## Przebieg review" z punktu 7 (ten blok jest OSTATNI — po nim
    orkiestrator poznaje, ze zapis sie domknal), sekcja "## Obalone przez verify (nie do naprawy)": jedna linia na finding
@@ -605,13 +608,17 @@ ${JSON.stringify(obalone || [], null, 2)}
    "- [ ] Operator: <tresc> — Operator action: <kroki>" (prefiks "Operator:" wyklucza checkbox z liczenia ukonczenia fazy),
    z markerem [E2E] zamienionym na [Manual]. Obie sekcje zapisz jako calosc z TEGO review: istniejaca kopie tej samej
    linii/flow zaktualizuj zamiast dodawac druga, stare pozycje, ktorych tu nie ma, usun.
+   Findingi typu DECYZJA nie ida do zadnej z tych dwoch sekcji: zapisz je w ${sciezka}/known-issues.md w sekcji "## Decyzje operatora",
+   jeden wiersz na finding: "- [DECYZJA · faza ${faza} · review] <plik:linia> — <opis>". Brak pliku — utworz go; brak sekcji — wstaw ja na poczatku pliku,
+   pod naglowkiem pierwszego poziomu (gdy jest), przed pierwsza sekcja "## "; sekcja jest — dopisz brakujace wiersze bez duplikatow
+   (ten sam plik:linia i opis = ten sam wiersz), istniejacych nie usuwaj i nie zmieniaj. Naglowek sekcji wystepuje w pliku dokladnie raz.
 2a. P3 typu KOD/TEST zapisz w ${sciezka}/known-issues.md w sekcji "## P3 faza ${faza}", jeden wiersz na finding:
    "- 🟡 [P3/<os>] <plik:linia> — <opis>", os = pole _zrodlo findingu (/dev-pr pyta przed PR o P3 osi correctness i security). Fix naprawia tylko P1 i P2; P3 z tej sekcji ida do opisu PR i do bota. Brak pliku —
    utworz go; sekcja juz jest (powtorka review po STOP-ie) — dopisz brakujace wiersze bez duplikatow (ten sam plik:linia
    i opis = ten sam wiersz); istniejacych nie usuwaj. Nowa sekcja stoi przed "## Zamkniete" (gdy jest),
-   inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. P3 typu E2E i OPERATOR obsluguja punkty 2 i 3.
+   inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. P3 typu E2E, OPERATOR i DECYZJA obsluguja punkty 2 i 3.
 2b. W ${sciezka}/*-kontekst.md dopisz do sekcji \`## Dziennik\` jedna pozycje o tym review: gate, liczniki
-   P1/P2/P3/OPERATOR, sciezka raportu i najwazniejszy wniosek.
+   P1/P2/P3/OPERATOR/DECYZJA, sciezka raportu i najwazniejszy wniosek.
 3. Bookkeeping checkboxow fazy ${faza}.
    a) Linie z markerem [E2E] (Test: i Weryfikacja:) ksieguje sam skrypt — nie edytuj ich recznie i nie kopiuj ich
       do Operator checklist. ${przebieg.e2eTryb === 'pominiety' ? 'Tester E2E nie byl w tej fazie uruchomiony — linii [E2E] nie ruszasz.' : bezKsiegowaniaE2e ? 'Srodowisko E2E wymaga przebudowy albo naprawy (STOP runu po review) — linii [E2E] nie ruszasz; powtorka review po naprawie odegra je od nowa.' : `Uruchom w korzeniu repo dokladnie:
@@ -646,14 +653,14 @@ ${komendaKsiegowania(sciezka, faza, przebieg.e2ePrzebiegi || [], przebieg.e2eTes
      - [ ] Manual: \`<tresc>\` — wymaga operatora
      - [ ] Niejasne: \`<tresc>\` — wymaga przeformulowania w planie
      - [ ] FAIL: \`<tresc>\` — \`<skrot bledu>\` (P2)
-4. Policz liczniki: p1/p2/p3 rozlacznie, kazdy finding raz wg swojej wagi (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR). P2 z bookkeepingu: CLI FAIL, Grep FAIL; P3 z bookkeepingu: Niejasne.
-5. Ustaw severityGate: BLOKUJE (sa P1) / ZASTRZEZENIA (tylko P2) / CZYSTE (zero P1/P2 — sam P3/OPERATOR nie blokuje gate'u).
+4. Policz liczniki: p1/p2/p3 rozlacznie, kazdy finding raz wg swojej wagi (tylko KOD/TEST/E2E) oraz operator (osobno — findingi OPERATOR) i decyzje (osobno — findingi DECYZJA). P2 z bookkeepingu: CLI FAIL, Grep FAIL; P3 z bookkeepingu: Niejasne.
+5. Ustaw severityGate: BLOKUJE (sa P1) / ZASTRZEZENIA (tylko P2) / CZYSTE (zero P1/P2 — sam P3/OPERATOR/DECYZJA nie blokuje gate'u).
 6. Policz e2e {passed, failed, skipped} Z LISTY "Przebiegi E2E" (checkboxy bez wpisu licz jako skipped).
 7. Na koniec raportu wklej DOKLADNIE ten blok (1:1, NIE przeliczaj liczb — sa policzone przez orkiestratora):
 
 ${przebiegBlok(przebieg)}
 
-Zwroc obiekt zgodny ze schematem ReviewResult (findings = finalna lista po bookkeepingu, z findingami OPERATOR wlacznie).`
+Zwroc obiekt zgodny ze schematem ReviewResult (findings = finalna lista po bookkeepingu, z findingami OPERATOR i DECYZJA wlacznie).`
 }
 
 function inspekcjaPrompt(sciezka, faza) {
@@ -669,13 +676,15 @@ Zwroc {kompletny, raportSciezka, e2e}.`
 
 // Liczniki i gate licza sie w JS z findings[] — tak samo jak robi to orkiestrator (policzFindingi
 // w dev-autopilot-wf.js). Findingi OPERATOR sa poza gate'em: to warunki srodowiskowe, nie defekty.
+// DECYZJA (punkt 40) tez jest poza gate'em i poza fixem: naprawa wykracza poza plan, rozstrzyga operator.
 function podsumujFindingi(findings) {
-  const istotne = findings.filter((f) => f.typ !== 'OPERATOR')
+  const istotne = findings.filter((f) => f.typ !== 'OPERATOR' && f.typ !== 'DECYZJA')
   const liczniki = {
     p1: istotne.filter((f) => f.severity === 'P1').length,
     p2: istotne.filter((f) => f.severity === 'P2').length,
     p3: istotne.filter((f) => f.severity === 'P3').length,
-    operator: findings.length - istotne.length,
+    operator: findings.filter((f) => f.typ === 'OPERATOR').length,
+    decyzje: findings.filter((f) => f.typ === 'DECYZJA').length,
   }
   const severityGate = liczniki.p1 > 0 ? 'BLOKUJE' : liczniki.p2 > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
   return { liczniki, severityGate }
@@ -799,7 +808,7 @@ const tiery = { ...TIERY_DOMYSLNE, ...((args && args.tiery) || {}) }
 // `effort: undefined` bywa traktowane inaczej niz brak pola — dokladamy klucz tylko gdy tier jest ustawiony.
 const zEffortem = (opts, effort) => (effort ? { ...opts, effort } : opts)
 if (!sciezka || faza === undefined) {
-  return { fazaNumer: -1, findings: [], liczniki: { p1: 0, p2: 0, p3: 0, operator: 0 }, severityGate: 'BLOKUJE', raportSciezka: '', e2e: { passed: 0, failed: 0, skipped: 0 } }
+  return { fazaNumer: -1, findings: [], liczniki: { p1: 0, p2: 0, p3: 0, operator: 0, decyzje: 0 }, severityGate: 'BLOKUJE', raportSciezka: '', e2e: { passed: 0, failed: 0, skipped: 0 } }
 }
 
 // Rozdziel poprzednie findingi po obszarze odpowiedzialnego agenta (pusta lista w trybie swiezego review).
@@ -1101,15 +1110,16 @@ phase('Verify')
 // Ominiecie dotyczy WYLACZNIE zrodla 'e2e' (tester ma za soba przebieg); reviewer kodu, ktory sklasyfikowal finding
 // jako typ E2E z lektury kodu, nadal przechodzi przez sceptykow.
 const zE2eTestera = (f) => f.typ === 'E2E' && f._zrodlo === 'e2e'
-const doWeryfikacji = dedup.filter((f) => (f.severity === 'P1' || f.severity === 'P2') && f.typ !== 'OPERATOR' && !zE2eTestera(f))
+// DECYZJA jak OPERATOR: sceptyk obala defekt kodem, a o zakresie planu rozstrzyga operator.
+const doWeryfikacji = dedup.filter((f) => (f.severity === 'P1' || f.severity === 'P2') && f.typ !== 'OPERATOR' && f.typ !== 'DECYZJA' && !zE2eTestera(f))
 const e2eBezVerify = dedup.filter((f) => (f.severity === 'P1' || f.severity === 'P2') && zE2eTestera(f))
 // Globalny limit P3 PO dedupie — per-reviewerowy BLOK_LIMIT_P3 nie ogranicza AGREGATU (8 reviewerow x 5).
 // Przycinamy JAWNIE (log + metryka p3Odrzucone), nigdy po cichu: milczace uciecie czytaloby sie jak
 // "tyle bylo", a to falszywy obraz jakosci fazy. P1/P2 NIE sa tu dotykane pod zadnym warunkiem.
 // OPERATOR poza limitem P3 (spojnie z BLOK_LIMIT_P3 per reviewer): odrzucony finding OPERATOR nie trafilby
 // do "## Operator checklist faza N" ani do smoke'u operatora, a scribe bez findingu odznaczylby [E2E] jako PASS.
-const wszystkieNity = dedup.filter((f) => f.severity === 'P3' && f.typ !== 'OPERATOR')
-const operatorowe = dedup.filter((f) => f.typ === 'OPERATOR')
+const wszystkieNity = dedup.filter((f) => f.severity === 'P3' && f.typ !== 'OPERATOR' && f.typ !== 'DECYZJA')
+const operatorowe = dedup.filter((f) => f.typ === 'OPERATOR' || f.typ === 'DECYZJA')
 // Wybor round-robin po ZRODLE, nie `slice` po kolejnosci wstawiania. Powod (review adwersaryjny 2026-08-08,
 // mobile): findingi wchodza do Mapy w kolejnosci reviewerow (security, performance, architecture,
 // typescript, spec-compliance, simplicity, test-coverage, e2e), wiec proste `slice(0,8)` przy 20+ nitach
@@ -1160,7 +1170,7 @@ function wybierzNity(nityLista, limit, plikiWaznych) {
 }
 // Pliki findingow waznych tej fazy — bez OPERATOR (nie sa defektem kodu, fix ich nie otwiera).
 const plikiWaznych = new Set(
-  dedup.filter((f) => (f.severity === 'P1' || f.severity === 'P2') && f.typ !== 'OPERATOR').map((f) => kluczPliku(f.plik))
+  dedup.filter((f) => (f.severity === 'P1' || f.severity === 'P2') && f.typ !== 'OPERATOR' && f.typ !== 'DECYZJA').map((f) => kluczPliku(f.plik))
 )
 plikiWaznych.delete('?')
 plikiWaznych.delete('')
@@ -1309,7 +1319,7 @@ const potwierdzone = [
   ...operatorowe,
   ...nity,
 ]
-log(`Verify: z ${doWeryfikacji.length} findingow P1/P2 spoza testera potwierdzono ${potwierdzoneKod.length} (+ ${e2eBezVerify.length} E2E testera bez verify, + ${operatorowe.length} OPERATOR, + ${nity.length} nitow)`)
+log(`Verify: z ${doWeryfikacji.length} findingow P1/P2 spoza testera potwierdzono ${potwierdzoneKod.length} (+ ${e2eBezVerify.length} E2E testera bez verify, + ${operatorowe.length} OPERATOR i DECYZJA, + ${nity.length} nitow)`)
 
 // Metryki przebiegu liczone w JS (Filar 3: agent nigdy nie liczy tego, co JS wie na pewno).
 // Ida do raportu review (widok dla czlowieka) I do orkiestratora -> stan -> telemetria (strojenie progow).
@@ -1391,7 +1401,7 @@ if (!wynik) {
   return {
     fazaNumer: faza,
     findings: potwierdzone,
-    liczniki: { p1: 0, p2: 0, p3: 0, operator: 0 },
+    liczniki: { p1: 0, p2: 0, p3: 0, operator: 0, decyzje: 0 },
     severityGate: 'BLOKUJE',
     raportSciezka: '',
     e2e: { passed: 0, failed: 0, skipped: 0 },

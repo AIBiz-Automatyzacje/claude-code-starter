@@ -8,7 +8,10 @@
 //   po-archiwum.mjs --zadanie <nazwa> [--galaz <ref>] [--czesc N]
 // galaz domyslnie feature/<nazwa>. Commity po archiwum jada w ostatniej czesci PR (czesci nieostatnie koncza sie przed
 // archiwum) — przy --czesc N < liczby czesci z podsumowania wTejCzesci = false.
-// Wynik: JSON w jednej linii { ok, archiwum, galaz, zakres, czesci, wTejCzesci, commity: [{ sha, temat, plikiKodu }], plikiKodu }.
+// Commity, ktore sesja /dev-smoke juz pokazala dwom reviewerom (poprawki po decyzjach operatora), pomija: sesja oznacza je pustym
+// commitem-znacznikiem o temacie `chore(<nazwa>): krótkie review poprawek decyzji` z liniami `Sprawdzone: <pelny sha>` w tresci
+// (punkt 40, krok 4). Commit spoza znacznika (np. poprawka po findingu z tego review) idzie do krotkiego review jak dotad.
+// Wynik: JSON w jednej linii { ok, archiwum, galaz, zakres, czesci, wTejCzesci, commity: [{ sha, temat, plikiKodu }], plikiKodu, sprawdzone }.
 // archiwum null = brak commitu `docs(<nazwa>): archiwum` na galezi (zadanie niezarchiwizowane). Kod wyjscia: 0 = ok,
 // 2 = zle argumenty, 3 = wyjatek (JSON z polem wyjatek).
 
@@ -29,6 +32,16 @@ function tematyPipeline(zadanie) {
     new RegExp(`^docs\\(${z}\\): (części PR w podsumowaniu|rozmiar PR w podsumowaniu|CLAUDE\\.md uzgodniony po merge'u)$`),
     /^fix\(pr\): tura \d+ — poprawki po review bota$/,
   ]
+}
+
+/** @param {string} zadanie @returns {string} temat pustego commitu, ktorym /dev-smoke oznacza commity po krotkim review */
+export function tematZnacznika(zadanie) {
+  return `chore(${zadanie}): krótkie review poprawek decyzji`
+}
+
+/** @param {string} tresc pelna wiadomosc commitu-znacznika @returns {string[]} sha z linii `Sprawdzone: <sha>` */
+export function shaSprawdzone(tresc) {
+  return [...tresc.matchAll(/^Sprawdzone: ([0-9a-f]{40})\s*$/gm)].map((m) => m[1])
 }
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string} */
@@ -64,14 +77,20 @@ export function poArchiwum(projekt, { zadanie, galaz = `feature/${zadanie}`, cze
     .find((l) => l.slice(41) === temat)?.slice(0, 40) ?? null
   const czesci = liczbaCzesci(projekt, galaz, zadanie)
   const wTejCzesci = !czesc || !czesci || czesc >= czesci
-  if (!archiwum) return { ok: true, archiwum, galaz, zakres: null, czesci, wTejCzesci, commity: [], plikiKodu: [] }
+  if (!archiwum) return { ok: true, archiwum, galaz, zakres: null, czesci, wTejCzesci, commity: [], plikiKodu: [], sprawdzone: [] }
   const pipeline = tematyPipeline(zadanie)
-  const commity = git(projekt, ['log', '--reverse', '--format=%H%x09%s', `${archiwum}..${galaz}`]).split('\n').filter(Boolean)
+  const wZakresie = git(projekt, ['log', '--reverse', '--format=%H%x09%s', `${archiwum}..${galaz}`]).split('\n').filter(Boolean)
     .map((l) => ({ sha: l.slice(0, 40), temat: l.slice(41) }))
-    .filter((c) => !pipeline.some((r) => r.test(c.temat)))
+  const znacznik = tematZnacznika(zadanie)
+  const shaZakresu = new Set(wZakresie.map((c) => c.sha))
+  // Tylko sha z tego zakresu: znacznik nie wyklucza commitu spoza galezi ani sprzed archiwum.
+  const sprawdzone = [...new Set(wZakresie.filter((c) => c.temat === znacznik)
+    .flatMap((c) => shaSprawdzone(git(projekt, ['show', '-s', '--format=%B', c.sha]))))].filter((sha) => shaZakresu.has(sha))
+  const commity = wZakresie
+    .filter((c) => c.temat !== znacznik && !sprawdzone.includes(c.sha) && !pipeline.some((r) => r.test(c.temat)))
     .map((c) => ({ ...c, plikiKodu: git(projekt, ['show', '--name-only', '--format=', c.sha]).split('\n').filter((p) => p && plikKodu(p)) }))
   const plikiKodu = [...new Set(commity.flatMap((c) => c.plikiKodu))].sort()
-  return { ok: true, archiwum, galaz, zakres: `${archiwum.slice(0, 12)}..${galaz}`, czesci, wTejCzesci, commity, plikiKodu }
+  return { ok: true, archiwum, galaz, zakres: `${archiwum.slice(0, 12)}..${galaz}`, czesci, wTejCzesci, commity, plikiKodu, sprawdzone }
 }
 
 // realpath i fileURLToPath: sciezka ze spacja albo polskimi znakami jest w URL-u zakodowana (%20), /var → /private/var.

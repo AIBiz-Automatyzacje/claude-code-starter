@@ -135,7 +135,8 @@ test('punkt 25: pozycje zastrzezone dla operatora ida do kontroli, a tura popraw
   assert.match(zrodloWf, /doDecyzjiOperatora/)
 })
 
-test('punkt 5: wynik autopilota ma kroki w kolejnosci smoke, akcje operatora, dopiero potem PR', () => {
+// Punkt 40, krok 3 (decyzja operatora 2026-11-11): przy smoke'u raport nie podaje komendy PR — jest na koncu ramki smoke'u.
+test('punkt 5 i 40: wynik autopilota zaczyna od smoke\'u, potem akcje operatora; komenda PR tylko bez smoke\'u', () => {
   const zrodloWf = readFileSync(new URL('../dev-autopilot-wf.js', import.meta.url), 'utf8')
   const start = zrodloWf.indexOf('function nastepneKroki(')
   const funkcja = zrodloWf.slice(start, zrodloWf.indexOf('\n}\n', start) + 3)
@@ -144,10 +145,13 @@ test('punkt 5: wynik autopilota ma kroki w kolejnosci smoke, akcje operatora, do
     ${wytnij(zrodloWf, 'function fazyNieOdegrane(', '\n}\n')}
     ${funkcja}; return nastepneKroki`)()
   const kroki = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [{ liczniki: { operator: 2 }, fix: { nierozwiazaneP2: 1 } }], propozycjeBramek: [], czesci: true, zadanie: 'x' })
-  assert.equal(kroki.length, 3)
-  assert.match(kroki[0], /^Smoke w nowej sesji:.*x-smoke\.md/)
+  assert.equal(kroki.length, 2)
+  assert.match(kroki[0], /^Smoke w nowej sesji: `\/clear`, potem `\/dev-smoke x` \(checklista docs\/operator\/x-smoke\.md\)\. Komende PR podaje koniec sesji smoke'u; przed smoke'em PR-a nie wysylaj\.$/)
+  assert.doesNotMatch(kroki.join('\n'), /\/dev-pr/, 'przy smoke\'u komenda PR nie stoi w raporcie')
   assert.match(kroki[1], /^Akcje operatora: 2 findingow OPERATOR.*1 nierozwiazanych P2/, 'faza z odegranym E2E nie dodaje pozycji')
-  assert.match(kroki[2], /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1` \(zadanie x\)\.$/)
+  const bezSmoke = nastepneKroki({ smoke: '', raporty: [{ liczniki: { operator: 2 }, fix: { nierozwiazaneP2: 1 } }], propozycjeBramek: [], czesci: true, zadanie: 'x' })
+  assert.equal(bezSmoke.length, 2)
+  assert.match(bezSmoke[1], /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1` \(zadanie x\)\.$/)
   // Punkt 35 (dashboard E2, fazy 7–11): faza z samymi SKIP testera interaktywnego miala gate CZYSTE i nie bylo jej w krokach.
   const zNieOdegrana = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [
     { faza: 7, gate: 'CZYSTE', liczniki: { operator: 0 }, przebieg: { e2eStatus: 'nie odegrano (tryb interaktywny) — zaden z 2 scenariuszy nie ma PASS ani FAIL', e2eCheckboxy: 2, e2eSkip: 2 } },

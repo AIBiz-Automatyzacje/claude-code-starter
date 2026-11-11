@@ -18,6 +18,5 @@ układ dokumentu, źródła pozycji i hierarchia stanu są w SKILL.md.
 Punkty wizualne czyta narzędzie makiet (`/makieta`).
 
 - Zdanie przed pierwszym punktem wizualnym smoke'u: „Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke'u wpisz /makieta.”
-- Zdanie do ramki „Jak kontynuować w nowej sesji”: „Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).”
 - Kontrola po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik> --pola`. Kod 1 = pole problemy (linie spoza
   formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.

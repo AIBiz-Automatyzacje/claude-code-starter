@@ -118,6 +118,7 @@ Ogłoś wynik jednym zdaniem. Przy **pure-data** sekcja „Makiety" nie powstaje
 | `.env.example`, `.env.local` (tylko **nazwy** zmiennych — `grep -o '^[A-Z_]*='`) | które klucze już są ustawione, a które trzeba zdobyć |
 | Checklisty wcześniejszych etapów w `docs/operator/` (nazwy wg 0.3) | co dostarczono wcześniej — nie powtarzaj; trzymaj się układu sekcji tamtych plików |
 | `docs/solutions/` | wcześniejsze wnioski o tej domenie |
+| Sprawy odłożone w smoke'u: `node .claude/scripts/smoke/otwarte.mjs` (pole `odlozone.otwarte`: etap, treść, linia w `docs/operator/odlozone.md`) | operator odłożył je na później; każda otwarta trafia do sekcji „Decyzje” (2.1), żeby nie zginęła |
 | katalogi assetów (`references/stack.md`, sekcja „Skan repo”) | jakie assety już są |
 
 **Nigdy nie czytaj ani nie cytuj wartości sekretów.** Operuj wyłącznie nazwami zmiennych — dokument trafia do gita.
@@ -145,6 +146,8 @@ Na górze dokumentu, bo zwykle blokują resztę: nieodwracalne wybory (bundle id
 Każdą zapisz jako **pytanie zamknięte z wypisanymi opcjami**, nie jako temat do przemyślenia. Pytanie bez opcji wraca do Ciebie po tygodniu w tej samej postaci. Oznacz **[blokuje: planowanie]** te, bez których `/dev-plan` nie napisze IU (zasada 0.5 `dev-plan`: nierozwiązany bloker planowania).
 
 **Recenzja pull requestów.** Gdy projekt nie ma `.coderabbit.yaml`, a `node .claude/scripts/pr/tryb-recenzji.mjs` zwraca `plik: false` (wybór jeszcze nie padł), dodaj decyzję: „Kto recenzuje pull requesty: bot CodeRabbit czy bez bota?” z opcjami A) CodeRabbit — `/coderabbit-setup` i aplikacja na GitHubie (repo prywatne: płatny plan), `/dev-pr` czeka na jego recenzję i prowadzi tury poprawek, B) bez bota — `node .claude/scripts/pr/tryb-recenzji.mjs --ustaw bez-bota` i commit pliku `.claude/projekt.json`; `/dev-pr` prowadzi PR przez CI i krótkie review do merge'a. Bot jest opcjonalny i zmienia tylko to, kto recenzuje PR jako pierwszy. Decyzja nie blokuje planowania, ale przy etapie na ponad 150 plików ustal ją przed `/dev-plan`: z botem plan musi podzielić PR na części, bez bota nie.
+
+**Sprawy odłożone w smoke'u.** Każda otwarta pozycja `odlozone.otwarte` ze skanu (1.2) to decyzja bez markera blokady: „<treść> (odłożone do: <etap>) — wchodzi do tego etapu czy czeka dalej?” z opcjami A) wchodzi — `/dev-plan` dopisze ją do planu, B) czeka — zmień etykietę etapu w `docs/operator/odlozone.md`, C) rezygnacja — odhacz pozycję w `docs/operator/odlozone.md` z dopiskiem „rezygnacja <data>”. Pliku spraw odłożonych nie zmieniasz sam: robi to operator po wyborze albo sesja, która sprawę wykona (odhacza ją z numerem commitu).
 
 **Decyzja, która zmienia wymaganie.** Gdy któraś opcja jest sprzeczna z dokumentem źródłowym (wymaganie mówi co innego albo decyzja je zawęża), dopisz pod pytaniem linię `Zmienia wymaganie: <ID> przy wyborze <opcja>`. Dokumentu wymagań nie poprawiasz: operator wpisuje „Ustalono” po tym skillu, a `/dev-plan` czyta wypełnioną decyzję obok źródła (0.3) i po jego zgodzie poprawia wskazane wymaganie, zanim napisze plan. Bez tej linii decyzja nowsza niż wymaganie zostaje tylko w checkliście i plan powstaje z dwóch sprzecznych źródeł (aa-exam E3: D1 nowsze niż R48).
 

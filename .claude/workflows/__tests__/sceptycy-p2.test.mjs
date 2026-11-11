@@ -229,8 +229,9 @@ test('schematy werdyktow: trzy etykiety i dowod, bez realny i severityKorekta', 
   assert.match(schematy, /required: \['indeks', 'etykieta', 'dowod', 'uzasadnienie'\]/)
 })
 
-test('wiring — E2E testera i OPERATOR dalej poza verify', () => {
-  assert.match(zrodlo, /const doWeryfikacji = dedup\.filter\(\(f\) => \(f\.severity === 'P1' \|\| f\.severity === 'P2'\) && f\.typ !== 'OPERATOR' && !zE2eTestera\(f\)\)/)
+// Punkt 40: typ DECYZJA (naprawa poza planem) omija sceptykow tak jak OPERATOR.
+test('wiring — E2E testera, OPERATOR i DECYZJA dalej poza verify', () => {
+  assert.match(zrodlo, /const doWeryfikacji = dedup\.filter\(\(f\) => \(f\.severity === 'P1' \|\| f\.severity === 'P2'\) && f\.typ !== 'OPERATOR' && f\.typ !== 'DECYZJA' && !zE2eTestera\(f\)\)/)
 })
 
 // Zmiana kontraktu (P3, tabela D6): reviewer i sceptyk P1 przypiete na `high` zamiast efortu sesji (null), scribe `low`.

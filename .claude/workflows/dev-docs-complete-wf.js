@@ -17,6 +17,7 @@ const SMOKE_RESULT = {
     plik: { type: 'string', description: 'sciezka docs/operator/<data>-<zadanie>-smoke.md ("" gdy nic do sprawdzenia recznie)' },
     pozycje: { type: 'integer', description: 'liczba checkboxow do recznego sprawdzenia' },
     e2eNieuruchomione: { type: 'integer', description: 'ile [E2E] z zadania pozostalo NIEZAZNACZONYCH (powinno byc 0 po completion-gate)' },
+    decyzje: { type: 'integer', description: 'ile pozycji ma sekcja "Decyzje przed PR" (wiersze sekcji "## Decyzje operatora" z known-issues); 0 gdy sekcji nie ma' },
     zrodla: { type: 'array', items: { type: 'string' }, description: 'skad zebrano pozycje (sekcje/pliki)' },
     zmienne: { type: 'string', description: 'ostatnia linia stdout ostatniego `zmienne.mjs` 1:1 (JSON w jednej linii)' },
   },
@@ -41,8 +42,9 @@ const COMPLETE_RESULT = {
       required: ['plik', 'claudeMd'],
     },
     rozmiarPr: { type: 'string', description: 'ostatnia linia stdout `czesci.mjs` po commicie 1:1 (JSON w jednej linii)' },
+    otwarte: { type: 'string', description: 'ostatnia linia stdout `smoke/otwarte.mjs --zadanie` 1:1 (JSON w jednej linii)' },
   },
-  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'rozmiarPr'],
+  required: ['archiwum', 'pliki', 'commit', 'decyzje', 'rozmiarPr', 'otwarte'],
 }
 
 const DOPISEK_RESULT = {
@@ -168,6 +170,19 @@ function czesciPr(czesci, nazwaZadania) {
   ].join('\n')
   return { uwaga, sekcja }
 }
+// Punkt 40, krok 6 (punkt 45): raport konczyl sie zdaniem modelu „zamkniete w calosci”, choc smoke mial otwarte pozycje.
+// Zdanie o otwartych sprawach bierzemy 1:1 z otwarte.mjs (liczy pliki); brak wyniku = null i uwaga, nie zgadywanie.
+function zdanieOtwartych(tekst) {
+  const linia = String(tekst || '').trim().split('\n').pop() || ''
+  let w = null
+  try {
+    w = JSON.parse(linia)
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e
+  }
+  return w && w.ok === true && typeof w.zdanie === 'string' && w.zdanie.startsWith('Otwarte: ') ? w.zdanie : null
+}
+
 // ── Koniec archiwum ───────────────────────────────────────────────────────
 
 // smokeStatus liczony w JS (agent archiwizacji nie wie tego lepiej niz orkiestrator):
@@ -204,7 +219,7 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
    (smoke leci na projekcie GLOWNYM, nie e2e).
 4. Otwarte wpisy z docs/active/${nazwaZadania}/known-issues.md (jesli plik istnieje) i otwarte [P1]/[P2] z
    "## Do poprawy po review fazy N". Z known-issues sekcje "## P3 faza N" pomin — nity zostaja w known-issues
-   (opis PR, bot), smoke ich nie sprawdza. "Otwarte" = poza sekcja "## Zamkniete"; gdy sekcji nie ma — pomin wpisy,
+   (opis PR, bot), smoke ich nie sprawdza. Sekcje "## Decyzje operatora" tez tu pomin: jej wiersze obsluguje punkt 7. "Otwarte" = poza sekcja "## Zamkniete"; gdy sekcji nie ma — pomin wpisy,
    ktore same lub pozniejsza faza oznaczaja jako ZAMKNIETY/naprawione. Z OBU zrodel bierz WYLACZNIE wpisy
    opisujace zachowanie na ekranie/w przegladarce lub flow do recznego przejscia; notatki srodowiskowe, dane
    testowe i pulapki narzedziowe pomin.
@@ -222,11 +237,19 @@ Zbierz WYLACZNIE to, czego automat nie sprawdzil:
 6. ZMIENNE SRODOWISKA dodane w galezi: \`node .claude/scripts/smoke/zmienne.mjs\` (JSON: zmienne[] z nazwa i zrodla plik:linia —
    z .env*.example i uzyc w kodzie, takze dodane odchyleniem w fazach, ktorych plan nie wymienia). Kazda zmienna to checkbox
    w sekcji "0. Przygotowanie": nazwa, gdzie ja ustawic (lokalnie albo w zmiennych runtime deployu) i zrodlo — wartosci nigdy.
+7. DECYZJE OPERATORA: wiersze sekcji "## Decyzje operatora" z docs/active/${nazwaZadania}/known-issues.md — kazdy wiersz, takze bez skutku
+   na ekranie (brak pliku albo sekcji = brak decyzji). To sprawy, ktorych automat nie rozstrzygnal, bo naprawa wykracza poza plan.
+   Kazdy wiersz to jedna pozycja sekcji "## Decyzje przed PR". Sekcja stoi na poczatku dokumentu, przed czerwonymi flagami z (5):
+   naprawa po decyzji zmienia kod, ktory operator sprawdza w dalszych sekcjach. Dla kazdego wiersza przeczytaj kod pod plik:linia
+   i zapisz pozycje wg ukladu ze skilla: pytanie jednym zdaniem po polsku, miejsce (plik:linia), 2–3 opcje ze skutkiem dla uzytkownika
+   na ekranie (jedna z opcji to zawsze „zostaw jak jest”) i czesc PR, w ktorej lezy plik (tabela czesci; zadanie bez czesci: bez tego pola).
+   Skutku, ktorego nie da sie ustalic z kodu, nie zgadujesz: piszesz „skutek do ustalenia” i co sprawdzic. Wiersza nie pomijasz,
+   nie laczysz z innym i nie przenosisz do „Znanych problemow”; liczbe pozycji zwracasz w polu decyzje.
 
 DEDUP: kazdy temat raz — Test [Manual] z IU, jego kopia w Operator checklist i wzmianka w findingu OPERATOR
 to JEDEN checkbox w sekcji ekranu; kroki scal, nie powielaj.
 
-Jesli po zastosowaniu hierarchii (1)-(6) nie ma ANI JEDNEJ pozycji — nie tworz pliku, zwroc plik:"" i pozycje:0, a w zmienne
+Jesli po zastosowaniu hierarchii (1)-(7) nie ma ANI JEDNEJ pozycji — nie tworz pliku, zwroc plik:"" i pozycje:0, a w zmienne
 ostatnia linie stdout \`zmienne.mjs\` z kroku 6.
 
 DANE DO NAGLOWKA I SEKCJI 0 — NIE uruchamiaj testow ani scenariuszy E2E (wynik juz jest w artefaktach):
@@ -239,7 +262,7 @@ ZAKAZ cat/Read calego .env* — nigdy nie wczytuj wartosci sekretow do kontekstu
 
 W przeciwnym razie zapisz docs/operator/<YYYY-MM-DD>-${nazwaZadania}-smoke.md (data z \`date +%F\`,
 \`mkdir -p docs/operator\`) wedlug ukladu ze skilla: naglowek ze statusem, akapit "dlaczego to nie jest
-formalnosc", sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruchomic apke; jakie dane/konta
+formalnosc", sekcja "Decyzje przed PR" (gdy zrodlo 7 ma wiersze), sekcja "0. Przygotowanie" (ktory projekt/baza po markerze; jak uruchomic apke; jakie dane/konta
 potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (nie per faza) z checkboxami,
 kazdy z konkretnym oczekiwanym wynikiem. ODSYLACZE w smoke'u do plikow zadania pisz jako docs/completed/${nazwaZadania}/…:
 operator czyta smoke po archiwizacji, a docs/active/${nazwaZadania}/ juz wtedy nie istnieje (punkty wizualne maja wlasny format nizej). Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
@@ -247,17 +270,17 @@ zamiast mobilnego viewportu) oznacz **[fizyczne urządzenie]**.
 PR WIELOCZESCIOWY: pozycje przypisuj do czesci, w ktorej kod faktycznie wchodzi (sprawdz plik w tabeli czesci, nie w tekscie planu; aa-exam: pole z czesci 4 w sekcji po deployu czesci 3). Przed merge'em kazdej
 czesci pozycja: przejscie kluczowego flow na stanie tej czesci, lokalnie. Odhaczanie miedzy czesciami: plik smoke'u lezy na \`feature/<zadanie>\`, commit lokalny tam jedzie z ostatnia czescia.
 ZMIANA SCHEMATU BEZ TRANSAKCJI (\`db:push\` i podobne): pozycja przed wdrozeniem to podglad SQL i sprawdzenie danych pod KAZDE nowe ograniczenie z tego podgladu, nie tylko to z planu.
-Pozycje "[Manual] agent:": wykonaj je w tej sesji smoke'u przed pytaniem operatora, wynik wpisz przy pozycji.
 PUNKTY WIZUALNE: Punktem wizualnym jest pozycja ze źródeł (1)–(6), która porównuje ekran z makietą, gdy \`docs/active/<zadanie>/visual-diff/<ekran>-figma.png\` istnieje; W×H to wymiary makiety z tabeli SPEC.md albo nagłówka \`ekrany/<ekran>.md\`, ze znakiem ×. Punkt wizualny ma postać „- [ ] <Urządzenie>[, <stan>]: \`<trasa>\` obok \`visual-diff/<ekran>-figma.png\` (viewport <W>×<H>) → Wejście: <adres z przykładowym slugiem z seeda i co kliknąć>. Porównaj: <2–4 konkretne elementy z makiety albo SPEC>. Stany: <każdy stan i jak go wywołać: panel „Sieć”, konto, dane; „brak” dla ekranu bez stanów>”: trasa w backtickach z przykładowym slugiem z seeda (bez znanej trasy „<opis wejścia> obok …”), jedna makieta na punkt, viewport bez dwukropka, bez ogólników typu „zgodne z makietą”.
 Przed pierwszym punktem wizualnym smoke'u stoi zdanie z .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
-Na koncu sekcja "Jak kontynuowac w nowej sesji" z jedna ramka do wklejenia jako pierwsza wiadomosc. W smoke'u z punktami wizualnymi
-ramka ma zdanie do ramki z tej samej sekcji przed zdaniami koncowymi. Ramka konczy sie zdaniami:
-"Po przejściu smoke'u zacommituj plik checklisty jawną ścieżką (bez \`git add -A\`): /dev-pr wymaga czystego drzewa.
-Po ostatnim punkcie zakończ linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1” (podsumowanie zadania bez sekcji „Części PR”:
-„Następny krok: /clear, potem /dev-pr 3 --bez-merge”). /dev-pr w tej sesji nie uruchamiaj." — smoke i PR w jednej sesji kosztuja kilka razy wiecej,
-a odhaczony plik bez commita zatrzymuje etap start /dev-pr na brudnym drzewie (piszemy_wirale 08.11).
+Na koncu sekcja "Jak kontynuowac w nowej sesji" w ukladzie ze skilla, bez ramki do wklejania: sesje smoke'u prowadzi skill /dev-smoke
+(decyzje, krotkie review poprawek, agent wykonuje pozycje sam poza wyjatkami dla czlowieka, commit pliku smoke'u). Sekcja ma zdania:
+"\`/clear\`, potem \`/dev-smoke ${nazwaZadania}\`. Sesja zaczyna od „Decyzji przed PR”, potem sama przechodzi listę i zatrzymuje
+się tylko przy pozycjach dla człowieka. Kończy się linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”
+(zadanie bez części PR: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”); /dev-pr w sesji smoke'u nie rusza." — smoke i PR w jednej
+sesji kosztuja kilka razy wiecej (vibersi etap 4).
 Jesli w projekcie istnieje wczesniejszy docs/operator/*-smoke.md — trzymaj sie jego ukladu sekcji. Bierzesz z niego tylko uklad:
 markerow projektow, adresow, kont ani krokow srodowiska nie przepisujesz, bo opisuja srodowisko z dnia tamtego smoke'u.
+Wyjatek ukladu: sekcja "Jak kontynuowac w nowej sesji" zawsze wg zdan wyzej, bo starsze smoke'i maja dluga ramke do wklejania.
 
 W CALYM pliku zadnych wartosci hasel/tokenow/kluczy — takze gdy cytujesz known-issues lub review;
 zastap nazwa zmiennej lub fraza "<haslo w .env.e2e>". E-mail konta testowego moze zostac.
@@ -267,7 +290,7 @@ ktorych nazwy nie ma w pliku — dopisz je wedlug kroku 6 i uruchom kontrole pon
 ostatnia linie stdout ostatniej kontroli zwracasz w polu zmienne.
 Kontrola makiet po zapisie pliku: wg .claude/skills/dev-docs-complete/references/stack.md, sekcja „Punkty wizualne”.
 
-Nie wymyslaj pozycji spoza zrodel (1)-(6). Nie modyfikuj *-zadania.md ani raportow review.
+Nie wymyslaj pozycji spoza zrodel (1)-(7). Nie modyfikuj *-zadania.md ani raportow review.
 Zwroc obiekt zgodny ze schematem.`
 
 phase('Smoke operatora')
@@ -281,7 +304,7 @@ if (!smoke) {
 const smokePlik = (smoke && smoke.plik) || ''
 const smokeStatus = !smoke ? 'agent-null' : (smokePlik ? 'plik' : 'brak-pozycji')
 log(`Smoke operatora: ${smokeStatus === 'plik'
-  ? `${smokePlik} (${smoke.pozycje} pozycji${smoke.e2eNieuruchomione ? `, UWAGA: ${smoke.e2eNieuruchomione} [E2E] nieuruchomionych` : ''})`
+  ? `${smokePlik} (${smoke.pozycje} pozycji${smoke.decyzje ? `, w tym decyzji przed PR: ${smoke.decyzje}` : ''}${smoke.e2eNieuruchomione ? `, UWAGA: ${smoke.e2eNieuruchomione} [E2E] nieuruchomionych` : ''})`
   : smokeStatus === 'brak-pozycji'
     ? 'brak pozycji do recznego sprawdzenia — plik nie powstal'
     : 'agent padl 2x — plik NIE powstal, pozycje Operator checklist/[Manual] NIE zostaly przeniesione; wygeneruj recznie: /dev-docs-complete ' + nazwaZadania}`)
@@ -357,6 +380,8 @@ ${szkieletDecyzji(nazwaZadania)}   Tresc: sekcje "## Decyzje" i "## Do CLAUDE.md
    Jesli git commit nie powiedzie sie lub nie ma zmian — zwroc commit: "" i opisz powod w rezultaty (nie przerywaj archiwizacji).
 9. Czesci PR-a: \`node .claude/scripts/pr/czesci.mjs --zadanie docs/completed/${nazwaZadania}\` -> rozmiarPr = ostatnia linia stdout 1:1
    (JSON w jednej linii), bez zmian — takze przy kodzie 1 (czesc za duza) i 3 (wyjatek).
+10. Otwarte sprawy: \`node .claude/scripts/smoke/otwarte.mjs --zadanie ${nazwaZadania}\` -> otwarte = ostatnia linia stdout 1:1
+   (JSON w jednej linii), bez zmian — takze przy kodzie 3 (wyjatek). Liczb z tego wyniku nie przepisujesz do podsumowania sam.
 
 NIE uruchamiaj /dev-compound (zrobi to orkiestrator). Dzialaj autonomicznie.
 Zwroc obiekt zgodny ze schematem CompleteResult (commit = hash z kroku 8 lub "").`,
@@ -368,7 +393,10 @@ if (!wynik) {
 
 // Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a czesc PR ponad progiem omija bot.
 const pr = czesciPr(czesciZWyniku(wynik.rozmiarPr), nazwaZadania)
-const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), pr.uwaga, uwagaZmiennych(smoke)].filter(Boolean)
+const otwarte = zdanieOtwartych(wynik.otwarte)
+const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), pr.uwaga, uwagaZmiennych(smoke),
+  otwarte ? null : `UWAGA: liczba otwartych spraw nieznana — sprawdz: node .claude/scripts/smoke/otwarte.mjs --zadanie ${nazwaZadania}`].filter(Boolean)
+if (otwarte) log(otwarte)
 for (const u of uwagi) log(u)
 if (pr.sekcja && wynik.commit) {
   const dopisek = await agent(
@@ -384,4 +412,4 @@ Potem \`git add docs/completed/${nazwaZadania}/${nazwaZadania}-podsumowanie.md\`
   )
   if (!dopisek || !dopisek.zapisano) log('UWAGA: sekcja „Części PR” nie trafila do podsumowania — jest w wyniku runu (czesciPr); /dev-pr --czesc jej potrzebuje')
 }
-return { ...wynik, uwagi, czesciPr: pr.sekcja, smokeOperatora: smokePlik, smokeStatus }
+return { ...wynik, otwarte, uwagi, czesciPr: pr.sekcja, smokeOperatora: smokePlik, smokeStatus }

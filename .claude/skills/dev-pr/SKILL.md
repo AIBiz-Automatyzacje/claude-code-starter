@@ -106,7 +106,8 @@ nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza częś
 
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
-żaden reviewer fazy nie widział. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → krótkie
+żaden reviewer fazy nie widział. Poprawki po decyzjach, które sesja `/dev-smoke` już pokazała dwóm reviewerom
+(pusty commit-znacznik z liniami `Sprawdzone: <sha>`), skrypt pomija i podaje w polu `sprawdzone`. `wTejCzesci: true` i niepuste `plikiKodu` (pliki poza `docs/` i `.claude/`) → krótkie
 review wg akapitów „Zgoda na wysłanie” i „Review bez pytania” niżej. `archiwum: null`, puste `plikiKodu` albo `wTejCzesci: false` → bez pytania o review
 i bez review, także z `--review` (commity po archiwum jadą w ostatniej części). PR gałęzi już istnieje (`gh pr view --json number` zwraca numer) → oba pytania
 pomijasz i krótkiego review nie uruchamiasz: zmiany są już na zewnątrz, a bot je recenzuje. Kod wyjścia skryptu 3 (`wyjatek`) → podaj operatorowi błąd
@@ -391,6 +392,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
    Merge: <zmergowany / gotowy do decyzji: lista niespełnionych warunków / --bez-merge>
    CI po merge'u: <ciGlownej z compoundu albo kroku CLAUDE.md, 1:1; failure/cancelled = „deploy commitu merge'a niepotwierdzony”>
    CLAUDE.md: <uzgodniony (przed → po zn, commit, push) / STOP: powód / nie dotyczy — PR niezmergowany>
+   Otwarte sprawy: <pole `zdanie` z `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>`, 1:1>
 
 <tabela każdej tury z pola `tabela` etapu napraw, w kolejności tur>
 
@@ -412,6 +414,9 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
 
 Przy części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>”: tury idą same, a merge, czyli
 często deploy, zostaje decyzją operatora. Tryb interaktywny (`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.
+
+Linię „Otwarte sprawy” bierzesz ze skryptu, nie z pamięci sesji: dopóki zdanie nie brzmi „Otwarte: brak …”, nie piszesz, że zadanie
+jest zamknięte w całości (punkt 45: raport mówił „zamknięte w całości” przy otwartych pozycjach smoke'u).
 
 Gdy któraś sekcja jest pusta — napisz to jednym słowem zamiast pomijać nagłówek. „Brak propozycji do
 reviewerów" to informacja; brak sekcji to luka, której operator nie zauważy.

@@ -38,6 +38,10 @@
       "opis": "dev-docs-complete: wstawki smoke'u operatora (narzędzie jazdy, czego automat nie sprawdzi, klasa błędów, start aplikacji, narzędzie przeglądu punktów wizualnych)."
     },
     {
+      "plik": ".claude/skills/dev-smoke/references/stack.md",
+      "opis": "dev-smoke: narzędzie, którym sesja smoke'u klika (przeglądarka albo symulator), i przegląd punktów wizualnych."
+    },
+    {
       "plik": ".claude/skills/dev-prep/references/stack.md",
       "opis": "dev-prep: katalogi ekranów i assetów, start serwera API w E2E, pole wymiarów ekranu w makietach."
     },

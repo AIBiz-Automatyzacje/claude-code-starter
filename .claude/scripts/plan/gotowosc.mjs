@@ -1,7 +1,8 @@
 // Bramka gotowosci zadania przed autopilotem (PLAN-POPRAWY P13, krok 6.6 skilla dev-plan): plan techniczny bez bledow,
 // srodowisko dla scenariuszy [E2E] (sprawdzenie jak w bootstrapie), checklista przygotowania bez pozycji blokujacych start, galaz zadania i czyste drzewo,
 // runner testow projektu bez testow maszynerii z .claude/** (P22 A1: inaczej `npm test` w runie pada na starcie),
-// pliki decyzji na galezi glownej bez `claude_md: do-uzgodnienia` (bootstrap zatrzymuje na nich run).
+// pliki decyzji na galezi glownej bez `claude_md: do-uzgodnienia` (bootstrap zatrzymuje na nich run). Sprawy odlozone w smoke'u
+// (docs/operator/odlozone.md) bramka tylko pokazuje: start nie czeka na sprawe innego etapu (decyzja operatora, punkt 40 krok 6).
 // Autopilot nie przelacza galezi i zatrzymuje run na brudnym drzewie, wiec te warunki sprawdzamy przed jego startem.
 
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -12,6 +13,7 @@ import { sciezkaPlanu } from '../dossier/dokumenty.mjs'
 import { plikZadania } from '../dossier/zadanie.mjs'
 import { kontekstStartowy, wiedzaProjektu } from '../doctor/higiena.mjs'
 import { sprawdzRunnerTestow } from '../doctor/runner-testow.mjs'
+import { otwarte } from '../smoke/otwarte.mjs'
 import { uwagiPlanowania } from '../e2e/adapter.mjs'
 import { gotowoscAdvisors } from '../e2e/advisors.mjs'
 import { bledySrodowiska, envE2e, NARZEDZIA } from '../e2e/srodowisko.mjs'
@@ -30,7 +32,8 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   git: { ok: boolean, galaz: string, wymagana: string, brudne: string[] },
  *   testy: { ok: boolean, runner: string | null, szczegol: string, poprawka: string },
  *   claudeMd: { ok: boolean, glowna: string | null, zadania: string[], naprawa: string },
- *   higiena: { ok: true, uwagi: string[] } }} Gotowosc
+ *   higiena: { ok: true, uwagi: string[] },
+ *   odlozone: { ok: true, plik: string, otwarte: { linia: number, etap: string, tresc: string }[] } }} Gotowosc
  */
 
 /**
@@ -163,6 +166,7 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     testy: testyProjektu(projekt),
     claudeMd: decyzjeClaudeMd(projekt),
     higiena: higienaZadania(projekt),
+    odlozone: { ok: /** @type {const} */ (true), ...otwarte(projekt).odlozone },
   }
   return {
     ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok && wynik.claudeMd.ok,

@@ -22,9 +22,16 @@ test('slot web: zdania o /makieta i kontrola makieta.mjs sprawdz w sekcji „Pun
   const slot = czytaj('.claude/skills/dev-docs-complete/references/stack.md').replace(/\n\s+/g, ' ')
   for (const z of [
     'Punkty wizualne przejdziesz narzędziem makiet: w sesji smoke\'u wpisz /makieta.',
-    'Przy punktach wizualnych uruchom /makieta; przed /clear zatrzymaj narzędzie (makieta.mjs stop).',
     'Kontrola po zapisie pliku: `node .claude/scripts/makieta/makieta.mjs sprawdz --smoke <plik> --pola`. Kod 1 = pole problemy (linie spoza formatu albo bez PNG makiety) — popraw wskazane linie i uruchom kontrolę jeszcze raz; smoke bez punktów wizualnych daje kod 0.',
   ]) assert.ok(slot.includes(z), z)
+})
+
+// Punkt 40, krok 4: ramka „Jak kontynuować” zniknęła; /makieta i zatrzymanie narzędzia przed /clear podaje slot skilla /dev-smoke.
+test('slot web /dev-smoke: punkty wizualne przez /makieta, zatrzymanie narzędzia przed /clear', () => {
+  const slot = czytaj('.claude/skills/dev-smoke/references/stack.md').replace(/\n\s+/g, ' ')
+  const sekcja = slot.slice(slot.indexOf('## Punkty wizualne'))
+  assert.match(sekcja, /zaproponuj `\/makieta`/)
+  assert.ok(sekcja.includes('Przed `/clear` zatrzymaj narzędzie: `node .claude/scripts/makieta/makieta.mjs stop`.'))
 })
 
 // P24 IU-8 po recenzji: szablon kroku 3 daje punkt wizualny, który przechodzi kontrolę formatu narzędzia; skill /makieta używa

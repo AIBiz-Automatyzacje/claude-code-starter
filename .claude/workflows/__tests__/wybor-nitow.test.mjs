@@ -167,10 +167,11 @@ test('nity nadwyzkowe w stopniu 1 tez ida round-robinem, a nie blokiem jednego r
 
 // ── Kotwica wywolania w workflowie ─────────────────────────────────────────
 
-test('wiring — zbior plikow waznych powstaje z P1/P2 bez typu OPERATOR', () => {
+// Punkt 40: typ DECYZJA tez nie otwiera pliku dla fixa.
+test('wiring — zbior plikow waznych powstaje z P1/P2 bez typow OPERATOR i DECYZJA', () => {
   assert.match(
     zrodlo,
-    /const plikiWaznych = new Set\(\s*\n\s*dedup\.filter\(\(f\) => \(f\.severity === 'P1' \|\| f\.severity === 'P2'\) && f\.typ !== 'OPERATOR'\)\.map\(\(f\) => kluczPliku\(f\.plik\)\)\s*\n\s*\)/,
+    /const plikiWaznych = new Set\(\s*\n\s*dedup\.filter\(\(f\) => \(f\.severity === 'P1' \|\| f\.severity === 'P2'\) && f\.typ !== 'OPERATOR' && f\.typ !== 'DECYZJA'\)\.map\(\(f\) => kluczPliku\(f\.plik\)\)\s*\n\s*\)/,
     'stopien 1 ma sie opierac na plikach realnych findingow waznych, nie na findingach OPERATOR'
   )
   assert.match(zrodlo, /const nity = wybierzNity\(wszystkieNity, LIMIT_P3_GLOBALNY, plikiWaznych\)/)
