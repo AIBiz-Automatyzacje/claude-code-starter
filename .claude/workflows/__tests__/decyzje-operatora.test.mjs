@@ -175,6 +175,17 @@ test('autopilot: raport bierze decyzje z pliku, takze z faz sprzed tego runu', (
   assert.match(autopilot, /decyzjeZPliku: stan\.walidacjaWynik \? \(stan\.walidacjaWynik\.decyzjeOtwarte \|\| \[\]\) : null/)
 })
 
+// Krok 3: przy smoke'u jedna droga — raport podaje liczbe decyzji i odsyla do smoke'u, bez listy decyzji i bez komendy PR.
+test('autopilot: raport przy smoke\'u podaje liczbe decyzji zamiast listy i nie podaje komendy PR', () => {
+  const wejscie = { propozycjeBramek: [], czesci: true, zadanie: 'x', raporty: [], decyzjeZPliku: ['[DECYZJA · faza 1 · fix] src/a.ts:5 — limit', '[DECYZJA · faza 2 · review] src/b.ts:9 — zaleznosc'] }
+  const zeSmoke = a.nastepneKroki({ ...wejscie, smoke: 'docs/operator/x-smoke.md' })
+  assert.deepEqual(zeSmoke, ['Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z docs/operator/x-smoke.md. Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: 2). Komende PR podaje koniec ramki; przed smoke\'em PR-a nie wysylaj.'])
+  const bezSmoke = a.nastepneKroki({ ...wejscie, smoke: '' })
+  assert.equal(bezSmoke.length, 2)
+  assert.match(bezSmoke[0], /^Akcje operatora: zmiany spoza planu do decyzji \(2, .*src\/a\.ts:5 — limit; .*src\/b\.ts:9 — zaleznosc\.$/)
+  assert.match(bezSmoke[1], /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1` \(zadanie x\)\.$/)
+})
+
 // ── Krok 2: smoke zaczyna sie od sekcji „Decyzje przed PR” ────────────────────────────────────────────────────────────
 // Przed poprawka wiersz decyzji szedl do smoke'u tylko jako „znany problem” i tylko wtedy, gdy opisywal zachowanie na ekranie:
 // decyzja o zaleznosci albo o zakresie nie trafiala do operatora wcale.

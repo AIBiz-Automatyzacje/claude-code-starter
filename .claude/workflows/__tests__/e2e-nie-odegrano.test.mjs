@@ -103,7 +103,8 @@ test('fazyNieOdegrane: rozpoznaje status z review-wf po zapisie do stanu; liczba
 test('nastepneKroki: fazy z E2E „nie odegrano” ida do akcji operatora z numerami faz i liczba scenariuszy', () => {
   const nieOdegrana = (/** @type {number} */ faza, /** @type {number} */ n) => ({ faza, liczniki: { operator: 0 }, przebieg: { e2eStatus: status({ przebiegi: Array.from({ length: n }, () => SKIP_HARNESS) }), e2eCheckboxy: n, e2eSkip: n } })
   const kroki = nastepneKroki({ smoke: 'docs/operator/x-smoke.md', raporty: [{ faza: 6, liczniki: { operator: 1 }, przebieg: { e2eStatus: 'wykonany (tryb interaktywny)', e2eSkip: 0 } }, nieOdegrana(7, 3), nieOdegrana(8, 5)], propozycjeBramek: [], czesci: false, zadanie: 'x' })
-  assert.equal(kroki.length, 3)
+  // Punkt 40, krok 3: przy smoke'u raport nie ma trzeciego kroku z komenda PR (jest na koncu ramki smoke'u).
+  assert.equal(kroki.length, 2)
   assert.match(kroki[1], /^Akcje operatora: E2E nie odegrano — do odegrania recznie albo ponownie: faza 7 \(scenariuszy: 3\), faza 8 \(scenariuszy: 5\), 1 findingow OPERATOR/)
   const bez = nastepneKroki({ smoke: '', raporty: [{ faza: 6, liczniki: { operator: 0 }, przebieg: { e2eStatus: 'wykonany (tryb interaktywny)' } }], propozycjeBramek: [], czesci: false, zadanie: 'x' })
   assert.deepEqual(bez, ["Po smoke'u: `/clear`, potem `/dev-pr 3 --bez-merge` (zadanie x)."], 'bez takich faz raport bez dodatkowej pozycji')

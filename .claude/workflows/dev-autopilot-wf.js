@@ -1523,16 +1523,19 @@ function fazyNieOdegrane(raporty) {
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
 function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku }) {
   const kroki = []
-  if (smoke) kroki.push(`Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z ${smoke}.`)
+  // Punkt 40: zrodlem decyzji jest sekcja w known-issues (odczyt walidacji koncowej), bo `raporty` nie maja faz sprzed tego runu.
+  // Bez odczytu (walidacja w poprzednim runie) zostaje lista z pamieci runu.
+  const decyzje = Array.isArray(decyzjeZPliku) ? decyzjeZPliku : raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
+  // Punkt 40, krok 3: przy smoke'u raport prowadzi jedna droga. Decyzje stoja na poczatku smoke'u, a komenda PR na koncu jego ramki —
+  // lista decyzji i komenda w raporcie dawaly druga droge, z pominieciem smoke'u (aa-exam 03.11: raport konczyl sie gotowa komenda PR).
+  if (smoke) kroki.push(`Smoke w nowej sesji: wklej ramke „Jak kontynuować w nowej sesji” z ${smoke}.${decyzje.length ? ` Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: ${decyzje.length}).` : ''} Komende PR podaje koniec ramki; przed smoke'em PR-a nie wysylaj.`)
   const akcje = []
   const nieOdegrane = fazyNieOdegrane(raporty)
   if (nieOdegrane.length) akcje.push(`E2E nie odegrano — do odegrania recznie albo ponownie: ${nieOdegrane.map((f) => `faza ${f.faza} (scenariuszy: ${f.scenariusze})`).join(', ')}`)
   const operator = raporty.reduce((s, r) => s + (r?.liczniki?.operator || 0), 0)
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
-  // Punkt 40: zrodlem jest sekcja decyzji w known-issues (odczyt walidacji koncowej), bo `raporty` nie maja faz sprzed tego runu.
-  // Bez odczytu (walidacja w poprzednim runie) zostaje lista z pamieci runu.
-  const decyzje = Array.isArray(decyzjeZPliku) ? decyzjeZPliku : raporty.flatMap((r) => r?.doDecyzjiOperatora || [])
-  if (decyzje.length) akcje.push(`zmiany spoza planu do decyzji (${decyzje.length}, sekcja „Decyzje operatora” w known-issues): ${decyzje.join('; ')}`)
+  // Bez pliku smoke'u (brak pozycji albo pad autora) lista decyzji w raporcie jest jedynym miejscem, w ktorym operator je zobaczy.
+  if (decyzje.length && !smoke) akcje.push(`zmiany spoza planu do decyzji (${decyzje.length}, sekcja „Decyzje operatora” w known-issues): ${decyzje.join('; ')}`)
   // Pozycja kontroli fixa zostawiona bez prefiksu OPERATOR: nie trafia do doDecyzjiOperatora i bez tej linii ginela w JSON-ie (pilot Nawykometr, run 3).
   const kontrola = raporty.map((r) => ({ faza: r?.faza, ile: (r?.kontrolaFixa?.pominiete || []).filter((x) => !/^OPERATOR:/i.test(String(x).trim())).length + (r?.kontrolaFixa?.bezSladu || 0) })).filter((k) => k.ile > 0)
   if (kontrola.length) akcje.push(`pozycje kontroli fixa bez naprawy: ${kontrola.map((k) => `faza ${k.faza} (${k.ile})`).join(', ')} — uzasadnienia w kontrolaFixa.pominiete wyniku runu`)
@@ -1542,7 +1545,7 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   if (akcje.length) kroki.push(`Akcje operatora: ${akcje.join(', ')}.`)
   // Tryb autonomiczny bez merge'a: samo `/dev-pr` to pytanie po kazdej turze (piszemy_wirale 08.11: 5 pytan w jednej czesci),
   // a liczba tur bez --bez-merge to merge, czesto deploy, bez pytania.
-  kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
+  if (!smoke) kroki.push(`Po smoke'u: \`/clear\`, potem \`/dev-pr 3 --bez-merge${czesci ? ' --czesc 1' : ''}\` (zadanie ${zadanie}).`)
   return kroki
 }
 
