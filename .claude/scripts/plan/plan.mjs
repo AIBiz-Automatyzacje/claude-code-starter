@@ -17,6 +17,9 @@
 //                                                  runner testow bez .claude/**
 //   plan.mjs blokery <docs/active/zadanie>         nieodhaczone blokery checklisty z faza, ktora wstrzymuja (bootstrap autopilota;
 //                                                  pozycje startu = faza 1)
+//   plan.mjs spojnosc <plan.md> [--zapisz --fazy <1,2,…> --otwarte <N>]
+//                                                  stan przegladu spojnosci planu (odcisk bez stanu checkboxow); z --zapisz
+//                                                  zapis docs/plans/<plan>.spojnosc.json po przegladzie agentem spojnosc-planu
 //   plan.mjs designerski <plan.md> --iu <IU-N>      blok kontekstu designerskiego buildera jednostki (DESIGN.md, SPEC.md, SPEC
 //                                                  i PNG ekranow z pola Makiety); tresc pusta = blok pominiety
 // Wynik: JSON na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (bledy planu, STOP bramki, katalog zadania zajety),
@@ -32,6 +35,7 @@ import { blokeryZadania, gotowosc } from './gotowosc.mjs'
 import { blokDesignerski } from './makiety.mjs'
 import { odswiezZadanie } from './odswiez.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
+import { stanPrzegladu, zapiszPrzeglad } from './spojnosc.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
 import { zadanieZPlanu } from './zadanie.mjs'
 
@@ -41,11 +45,12 @@ const KOD_WYJATKU = 3
 const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, nazwa: { type: 'string' }, data: { type: 'string' },
   zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, iu: { type: 'string' }, od: { type: 'string' },
+  fazy: { type: 'string' }, otwarte: { type: 'string' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | odswiez <docs/active/zadanie> [--od <rewizja>] [--zapisz] | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
+  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | odswiez <docs/active/zadanie> [--od <rewizja>] [--zapisz] | spojnosc <plan.md> [--zapisz --fazy <1,2> --otwarte <N>] | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -93,7 +98,7 @@ function planWzgledny(projekt, sciezka) {
 
 /**
  * @param {string[]} positionals
- * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string }} values
+ * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string, fazy?: string, otwarte?: string }} values
  */
 function wykonaj(positionals, values) {
   const [polecenie, sciezka, ...reszta] = positionals
@@ -120,6 +125,19 @@ function wykonaj(positionals, values) {
     zakoncz({ ...wynik, zapisane }, wynik.ok)
   }
   if (polecenie === 'blokery') zakoncz({ ok: true, ...blokeryZadania(projekt, sciezka.replace(/\/$/, '')) }, true)
+  if (polecenie === 'spojnosc') {
+    const planRel = planWzgledny(projekt, sciezka)
+    const fazyPlanu = parsujPlan(readFileSync(join(projekt, planRel), 'utf8')).fazy.map((f) => f.oznaczenie)
+    if (values.zapisz) {
+      if (!values.fazy || !/^\d+$/.test(values.otwarte ?? '')) zleArgumenty('spojnosc --zapisz wymaga --fazy <1,2,…> i --otwarte <liczba>')
+      const fazy = values.fazy.split(',').map((f) => f.trim()).filter(Boolean)
+      const nieznane = fazy.filter((f) => !fazyPlanu.includes(f))
+      if (nieznane.length) zakoncz({ ok: false, bledy: [`fazy spoza planu: ${nieznane.join(', ')} (plan ma: ${fazyPlanu.join(', ')})`] }, false)
+      zapiszPrzeglad(projekt, planRel, { fazy, otwarte: Number(values.otwarte), data })
+    }
+    const stan = stanPrzegladu(projekt, planRel, fazyPlanu)
+    zakoncz(stan, stan.ok)
+  }
   if (polecenie === 'designerski') {
     if (!values.iu) zleArgumenty('designerski wymaga --iu <IU-N>')
     const plan = parsujPlan(readFileSync(join(projekt, planWzgledny(projekt, sciezka)), 'utf8'))
