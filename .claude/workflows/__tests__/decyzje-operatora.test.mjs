@@ -223,7 +223,7 @@ test('skill archiwizacji: zrodlo 7 i uklad pliku z „Decyzjami przed PR” prze
   const flagi = skillComplete.indexOf('## ⚠️ E2E przebiegło i padło (znany defekt)   ←')
   assert.ok(decyzje !== -1 && decyzje < flagi, 'sekcja decyzji stoi w ukladzie przed czerwonymi flagami')
   const uklad = skillComplete.slice(decyzje, flagi)
-  for (const pole of ['- [ ] D1 (faza N, <fix | tura poprawkowa | review>)', 'Gdzie: `<plik:linia>`', 'Opcja A: zostaw jak jest', 'Część PR: <N>']) {
+  for (const pole of ['- [ ] D1 (faza N, <fix | tura poprawkowa | review | autopilot>)', 'Gdzie: `<plik:linia>`', 'Opcja A: zostaw jak jest', 'Część PR: <N>']) {
     assert.ok(uklad.includes(pole), `uklad decyzji ma pole: ${pole}`)
   }
   assert.match(skillComplete, /bez sekcji `## P3 faza N` i `## Decyzje operatora`/)

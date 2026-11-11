@@ -95,7 +95,9 @@ test('planner fazy przekazuje builderowi pole „Znika z obecnej wersji” z zak
   assert.match(planner, /caly blok IU doslownie \(Cel, Wymagania, Pliki, Podejscie, Teksty \(verbatim\), Znika z obecnej wersji, Wzorce, Scenariusze testowe, Weryfikacja\)/)
   assert.match(planner, /gdy IU ma pole "Znika z obecnej wersji" z lista elementow \(nie sama kreska\): pod polem dopisz zdanie/)
   assert.match(planner, /Elementow z decyzja „znika” nie przenosisz z obecnego pliku ani ze wzorca/)
-  assert.match(planner, /Gdy Podejscie albo scenariusz jednostki wymaga takiego elementu, zwroc status blocked/)
+  // Punkt 41, krok 6: decyzja „znika” wygrywa z Podejsciem i scenariuszem (hierarchia zrodel) — wybor jawny, bez STOP-u fazy.
+  assert.match(planner, /Gdy Podejscie albo scenariusz jednostki wymaga takiego elementu, wygrywa decyzja „znika” \(HIERARCHIA ZRODEL\)/)
+  assert.doesNotMatch(planner, /wymaga takiego elementu, zwroc status blocked/)
 })
 
 test('pytanie blokera i problem domkniecia: po polsku, prostym jezykiem, z opcjami i rekomendacja — blok doklejany w JS kazdemu builderowi', () => {
@@ -104,10 +106,44 @@ test('pytanie blokera i problem domkniecia: po polsku, prostym jezykiem, z opcja
   assert.match(blok, /Piszesz je po polsku, prostym jezykiem, w tej kolejnosci: \(1\) co blokuje prace i gdzie/)
   assert.match(blok, /\(2\) opcje do wyboru, kazda z jednym zdaniem skutku, \(3\) ktora opcje rekomendujesz i dlaczego/)
   // Kazdy builder (parallel i serial) dostaje prompt przez promptIU, wiec blok nie zalezy od plannera ani pliku roli stacku.
-  assert.match(EXECUTE, /const promptIU = \(iu\) => `\$\{iu\.prompt\}\\n\$\{BLOK_DLUGIE_KOMENDY\}\$\{BLOK_PYTANIE_BLOKERA\}`/)
+  assert.match(EXECUTE, /const promptIU = \(iu\) => `\$\{iu\.prompt\}\\n\$\{BLOK_DLUGIE_KOMENDY\}\$\{BLOK_HIERARCHIA_ZRODEL\}\$\{BLOK_PYTANIE_BLOKERA\}`/)
   assert.equal(EXECUTE.split('agent(promptIU(iu)').length - 1, 2, 'oba wywolania builderow ida przez promptIU')
   assert.match(EXECUTE, /pytanie: \{ type: \['string', 'null'\], description: 'wypelnione gdy status=blocked; po polsku, prostym jezykiem/)
   // Porazka domkniecia tez trafia do powodu STOP-u.
   assert.match(EXECUTE, /problem: \{ type: \['string', 'null'\], description: 'null przy completed; inaczej po polsku, prostym jezykiem/)
   assert.match(sekcja(EXECUTE, 'function domknieciePrompt(', '\n}\n'), /Pole problem przy statusie innym niz completed czyta operator w raporcie zatrzymania: piszesz je po polsku, prostym jezykiem/)
+})
+
+// Punkt 41, krok 6 (aa-exam E3, wf_1c69a604-076): builder stanal na sprzecznosci scenariusza (imie w mailu) z makieta i tekstami.
+// Decyzja operatora 2026-11-11: builder rozstrzyga sam wg hierarchii zrodel, gdy wybor niczego nie dodaje i da sie go cofnac;
+// wybor idzie jako decyzja autopilota do known-issues i „Decyzji przed PR”, review go nie zglasza. STOP dla nieodwracalnego
+// (dane, bezpieczenstwo, pieniadze) i pracy spoza Granic.
+test('builder: hierarchia zrodel z warunkami samodzielnego wyboru, polem decyzje i wyjatkami STOP-u', () => {
+  const blok = sekcja(EXECUTE, 'const BLOK_HIERARCHIA_ZRODEL = `', '`\n')
+  assert.match(blok, /Granice zakresu > makieta i Teksty \(verbatim\) > Kluczowe decyzje\s+i pole „Znika z obecnej wersji” > Podejscie > Scenariusze testowe > obecny kod i wzorce/)
+  assert.match(blok, /\(a\) niczego nie dodaje ponad zrodla[^\n]*\n?[^\n]*\(b\) da sie ja\s+cofnac/)
+  assert.match(blok, /Scenariusz testowy dopasowujesz do wybranej opcji/)
+  assert.match(blok, /Kazdy taki wybor wpisujesz do pola decyzje, po polsku/)
+  assert.match(blok, /Status blocked zostaje tylko, gdy: zadna opcja nie spelnia \(a\) i \(b\); wybor jest nieodwracalny albo dotyka danych[^;]*bezpieczenstwa[^;]*pieniedzy[^;]*; jednostka wymaga pracy wykluczonej w Granicach/)
+  assert.match(EXECUTE, /decyzje: \{ type: 'array', items: \{ type: 'string' \}, description: 'sprzecznosci zrodel rozstrzygniete wg blok HIERARCHIA ZRODEL/)
+  // Granice zostaja zakazem: blok wykluczen dalej kaze zwrocic blocked.
+  assert.match(sekcja(EXECUTE, 'function plannerPrompt(', '\n}\n'), /Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne\. Gdy jednostka wymaga takiej pracy,\s+zwroc status blocked/)
+})
+
+test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis zaraz po execute, review ich nie zglasza', () => {
+  assert.match(EXECUTE, /const decyzjeAutopilota = buildResults\.filter\(\(b\) => b\.status !== 'blocked'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
+  assert.match(EXECUTE, /\.map\(\(d\) => `\$\{b\.id\}: \$\{d\}`\)\)/)
+  assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
+  assert.match(EXECUTE, /baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\), decyzjeAutopilota \}/)
+  const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
+  const poExecute = autopilot.slice(autopilot.indexOf("const exec = await workflow('dev-docs-execute-wf'"))
+  const zapis = poExecute.indexOf("await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])")
+  assert.ok(zapis !== -1 && zapis < poExecute.indexOf("if (!exec || exec.status !== 'completed')"), 'zapis przed STOP-em execute')
+  assert.match(autopilot, /przy znaczniku autopilot builder\s+rozstrzygnal sprzecznosc zrodel planu/)
+  const review = readFileSync(resolve(KATALOG, '../dev-docs-review-wf.js'), 'utf8')
+  const prompt = sekcja(review, 'function reviewerPrompt(', '\n}\n')
+  assert.match(prompt, /wiersz "\[DECYZJA · faza \$\{faza\} · autopilot\]" w sekcji "## Decyzje operatora" pliku \$\{sciezka\}\/known-issues\.md/)
+  assert.match(prompt, /Odstepstwo od Podejscia albo scenariusza opisane takim wierszem nie jest findingiem \(ani KOD, ani TEST\)/)
+  const complete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'utf8')
+  assert.match(complete, /Wiersz ze znacznikiem "autopilot" to wybor, ktory builder juz wprowadzil/)
 })

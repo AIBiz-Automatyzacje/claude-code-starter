@@ -155,7 +155,7 @@ test('planner: kontekst designerski dla UI i fullstack, warianty -figma przy mak
 })
 
 test('pola BUILD_RESULT czytane z workflowu', () => {
-  assert.deepEqual(polaWyniku(), ['id', 'status', 'pliki', 'odchylenia', 'nastepneKroki', 'pytanie'])
+  assert.deepEqual(polaWyniku(), ['id', 'status', 'pliki', 'odchylenia', 'nastepneKroki', 'pytanie', 'decyzje'])
 })
 
 for (const builder of BUILDERY_ZE_SZKIELETEM) {
