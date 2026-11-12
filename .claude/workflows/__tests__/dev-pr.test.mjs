@@ -262,8 +262,9 @@ test('pole claude_md: sciezka spoza docs/decisions albo ze znakami powloki = bra
 test('compound: krok push w prompcie (to samo brzmienie co claude-md), pola push w schemacie, UWAGA w logu bez pusha', () => {
   const compound = wytnij("if (etap === 'compound') {", "\n}\n")
   const claudeMd = wytnij("if (etap === 'claude-md') {", "\n}\n")
-  assert.match(compound, /\n6\. \$\{KROK_CI_GLOWNEJ\}\n7\. \$\{KROK_PUSH\}/, 'compound czeka na CI glownej, potem pushuje swoj commit')
-  assert.match(claudeMd, /\n4\. \$\{KROK_CI_GLOWNEJ\}\n5\. \$\{KROK_PUSH\}/, 'claude-md uzywa tych samych krokow')
+  assert.match(compound, /\n\$\{krokiPoCommicie\(6\)\}/, 'compound: kroki po commicie od pkt 6')
+  assert.match(claudeMd, /\n\$\{krokiPoCommicie\(4\)\}/, 'claude-md uzywa tych samych krokow')
+  assert.match(zrodlo, /`\$\{nr\}\. \$\{KROK_CI_GLOWNEJ\}\\n\$\{nr \+ 1\}\. \$\{KROK_PUSH\}`/, 'najpierw CI glownej, potem push')
   assert.match(wytnij('const KROK_PUSH = `', '"OK".`'), /bez --force i bez innej galezi/)
   assert.match(compound, /commit null, push false, pushDetal "brak commita" i pomin pkt 7 \(pkt 6 robisz\)/)
   assert.match(compound, /if \(wynik\.commit && !wynik\.push\) log\(`\/dev-pr compound: UWAGA — commit \$\{wynik\.commit\} bez pusha/)
@@ -1024,11 +1025,40 @@ test('etap decyzja: odpowiedz niesie znacznik, etap stan podaje nastepny krok po
   assert.deepEqual([s.wynik.status, s.wynik.sufit, s.wynik.nastepnyKrok], ['OK', true, 'merge'])
 })
 
-test('tryb bez pusha: claude-md i compound nie wypychaja na glowna (aa-exam: push = deploy)', () => {
-  assert.match(zrodlo, /5\. \$\{KROK_PUSH\}\$\{uwagaBezPusha\}/)
-  assert.match(zrodlo, /7\. \$\{KROK_PUSH\}\$\{uwagaBezPusha\}/)
-  assert.match(zrodlo, /TRYB BEZ PUSHA/)
-  assert.match(zrodlo, /git push origin "\$\(git branch --show-current\)"/, 'push bez upstreamu (aa-exam, compound czesci 1)')
+// W35 (pilot mobile, run 4, 12.11): `/dev-pr --claude-md opinia-z-ustawien --bez-push` wypchnal commit 8ebb1ec na origin —
+// zakaz stal w poleceniu za krokiem `git push origin`, agent wykonal push i zwrocil push true, a JS tego nie sprawdzal.
+const UZG_DO_COMMITU = { glowna: 'main', naGlownej: true, plikDecyzji: 'docs/decisions/2026-11-10-poczta.md', poleClaudeMd: 'do-uzgodnienia', prZmergowany: null, fakty: ['x'], rozjazdy: [], znPrzed: 1000, znPo: 1100, zmiany: 'dopisano x' }
+const COMMIT_CM = { pole: 'uzgodniono', commit: 'abc1234', ciGlownej: 'nie-dotyczy', push: false, pushDetal: 'bez pushu: decyzja operatora' }
+const WPISY_COMPOUND = { wpisy: [], odmowy: [], indeks: 'bez zmian', propozycjeDoReviewerow: [], plikPropozycji: null, commit: 'def5678', ciGlownej: 'nie-dotyczy', push: false, pushDetal: 'bez pushu: decyzja operatora' }
+
+test('tryb bez pusha: polecenia claude-md i compound bez krokow pushu i CI glownej (aa-exam: push = deploy; W35)', async () => {
+  const cm = await uruchom({ etap: 'claude-md', zadanie: 'poczta', bezPusha: true }, [UZG_DO_COMMITU, COMMIT_CM])
+  const co = await uruchom({ etap: 'compound', zadanie: 'poczta', watki: [], bezPusha: true }, [WPISY_COMPOUND])
+  for (const [nazwa, prompt] of [['claude-md', cm.prompty[1]], ['compound', co.prompty[0]]]) {
+    assert.ok(prompt, `${nazwa}: agent commitu dostal polecenie`)
+    assert.match(prompt, /BEZ PUSHA \(decyzja operatora/, nazwa)
+    assert.doesNotMatch(prompt, /git push origin/, `${nazwa}: w trybie bez pusha polecenie nie zawiera komendy pushu`)
+    assert.doesNotMatch(prompt, /gh run (list|watch)/, `${nazwa}: bez czekania na CI glownej`)
+  }
+  assert.deepEqual([cm.wynik.status, cm.wynik.push, cm.wynik.pushMimoBezPusha], ['OK', false, false])
+  assert.equal(co.wynik.pushMimoBezPusha, false)
+  const zPushem = await uruchom({ etap: 'claude-md', zadanie: 'poczta' }, [UZG_DO_COMMITU, { ...COMMIT_CM, ciGlownej: 'success', push: true, pushDetal: 'OK' }])
+  assert.match(zPushem.prompty[1], /git push origin "\$\(git branch --show-current\)"/, 'push bez upstreamu (aa-exam, compound czesci 1)')
+  assert.match(zPushem.prompty[1], /gh run list --branch <glowna> --commit <SHA>/)
+  assert.doesNotMatch(zPushem.prompty[1], /BEZ PUSHA/)
+  assert.equal(zPushem.wynik.pushMimoBezPusha, false, 'push bez trybu bez pusha to nie naruszenie')
+})
+
+test('tryb bez pusha: push zwrocony mimo trybu = pushMimoBezPusha i UWAGA w logu (W35)', async () => {
+  const logi = []
+  const odp = [UZG_DO_COMMITU, { ...COMMIT_CM, push: true, pushDetal: 'OK' }]
+  const agent = async () => odp.shift() ?? null
+  const wynik = await new AsyncFunction('args', 'agent', 'log', 'phase', zrodlo.replace(/^export const meta = /m, 'const meta = '))(
+    { etap: 'claude-md', zadanie: 'poczta', bezPusha: true }, agent, (/** @type {string} */ l) => logi.push(l), () => {})
+  assert.equal(wynik.pushMimoBezPusha, true)
+  assert.ok(logi.some((l) => /claude-md: UWAGA — commit abc1234 WYPCHNIETY mimo trybu bez pusha/.test(l)), logi.join('\n'))
+  const co = await uruchom({ etap: 'compound', zadanie: 'poczta', watki: [], bezPusha: true }, [{ ...WPISY_COMPOUND, push: true, pushDetal: 'OK' }])
+  assert.equal(co.wynik.pushMimoBezPusha, true)
 })
 
 // Punkt 39 znalezisk (decyzja operatora 2026-11-08: CodeRabbit opcjonalny; 2026-11-10: tryb lekki). Projekt bez bota przechodzil
