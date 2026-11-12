@@ -109,11 +109,15 @@ test('bramki z wpisow: mechanizm plik:linia = wdrozone bez propozycji; null, bra
   ])
   assert.deepEqual(C.propozycjeBramek(wpisy).map((p) => p.solution), ['docs/solutions/a/lint.md'], 'do operatora tylko mechanizm, ktorego nie ma w kodzie')
   // Ksztalt liczy JS: opis, sam hash, commit, zakres linii, linia 0, sciezka bezwzgledna i nie-tekst to brak mechanizmu.
-  for (const zly of ['wprowadzone w turze 1', '63bc1f2', 'commit 63bc1f2 (apply-purchase.ts:50)', 'src/a.ts', 'src/a.ts:', 'src/a.ts:0', 'src/a.ts:10-20', 'src/a.ts:50 unia', '/Users/x/src/a.ts:50', ':50', '', 50, undefined]) {
+  // Punkt 55 (43): dokument i test to nie mechanizm w kodzie.
+  for (const zly of ['wprowadzone w turze 1', '63bc1f2', 'commit 63bc1f2 (apply-purchase.ts:50)', 'src/a.ts', 'src/a.ts:', 'src/a.ts:0', 'src/a.ts:10-20', 'src/a.ts:50 unia', '/Users/x/src/a.ts:50', ':50', '', 50, undefined,
+    'docs/solutions/a/unia.md:12', 'src/__tests__/apply.ts:5', 'src/apply-purchase.test.ts:50', 'e2e/zakup.spec.ts:7']) {
     const w = [{ ...unia, mechanizm: zly }]
     assert.deepEqual(C.bramkiWdrozone(w), [], `wdrozone: ${String(zly)}`)
     assert.equal(C.propozycjeBramek(w).length, 1, `propozycja: ${String(zly)}`)
   }
+  // Poprawny ksztalt poza docs/ i testami przechodzi (takze plik o nazwie z „test” bez kropki-rozszerzenia testu).
+  for (const dobry of ['src/testing/helpers.ts:3', 'docsy/a.ts:1', 'supabase/functions/_shared/apply-purchase.ts:50']) assert.equal(C.bramkiWdrozone([{ ...unia, mechanizm: dobry }]).length, 1, dobry)
   const { mechanizm: _bez, ...bezPola } = unia
   assert.equal(C.propozycjeBramek([bezPola]).length, 1, 'wpis bez pola (wynik sprzed zmiany schematu) zostaje propozycja')
   assert.deepEqual(C.bramkiWdrozone([]), [])

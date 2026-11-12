@@ -65,7 +65,10 @@ const MECHANIZM_W_KODZIE = `MECHANIZM JUZ W KODZIE (pole mechanizm wpisu; tylko 
 // Wartosc o innym ksztalcie niz plik:linia (opis, sam hash, sciezka bezwzgledna) = brak mechanizmu: wpis idzie do operatora.
 function miejsceMechanizmu(w) {
   const m = typeof w.mechanizm === 'string' ? w.mechanizm.trim() : ''
-  return /^[^\s:/][^\s:]*:[1-9]\d*$/.test(m) ? m : null
+  if (!/^[^\s:/][^\s:]*:[1-9]\d*$/.test(m)) return null
+  // Weryfikacja partii, punkt 55 (43): dokument albo test to nie mechanizm w kodzie — wpis idzie do operatora (strona bezpieczna).
+  const sciezka = m.slice(0, m.lastIndexOf(':'))
+  return sciezka.startsWith('docs/') || sciezka.includes('__tests__/') || /\.(test|spec)\./.test(sciezka) ? null : m
 }
 function propozycjeBramek(wpisy) {
   return wpisy
