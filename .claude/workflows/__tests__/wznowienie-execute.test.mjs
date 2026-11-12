@@ -145,9 +145,8 @@ test('wiring execute-wf: oba przerwane wyjscia ida przez domkniecie czesciowe i 
   assert.equal(orkiestracja.split('const { czesc, czesciowe } = await zapiszUkonczone()').length - 1, 2, 'blocked i builder bez wyniku')
   assert.equal(orkiestracja.split('return wynikPrzerwanego({').length - 1, 2)
   // Zwroty przerwanego execute bez bazy znikaja; jedyny literal `commity: []` + `testy: 'n/a'` to galaz domkniecia bez wyniku (punkt 54), z baza.
-  const bezWyniku = orkiestracja.indexOf('if (!wynik) {')
-  assert.doesNotMatch(orkiestracja.slice(0, bezWyniku), /commity: \[\],\n\s+testy: 'n\/a'/, 'stare zwroty bez bazy znikaja')
-  assert.match(orkiestracja.slice(bezWyniku), /testy: 'n\/a',[\s\S]*?baza: bazaWyniku,/)
+  assert.doesNotMatch(orkiestracja, /commity: \[\],\n\s+testy: 'n\/a'/, 'stare zwroty bez bazy znikaja; galaz bez wyniku zyje w wynikDomkniecia')
+  assert.match(orkiestracja, /return wynikDomkniecia\(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota\)/)
   assert.match(orkiestracja, /agent\(domkniecieCzesciowePrompt\(sciezka, faza, czesc, bazaFazy\(plan\)\), \{ schema: CZESCIOWE_RESULT, agentType: 'klasa-orkiestracyjny'/)
   assert.match(orkiestracja, /if \(!czesc\.mozna\) return \{ czesc, czesciowe: null \}/)
   assert.match(wytnij(EXECUTE, 'const BLOK_PYTANIE_BLOKERA = `', '.`\n'), /Pole pliki wypelniasz takze przy blocked i partial: kazdy plik, ktory zdazyles utworzyc albo zmienic \(pusta lista, gdy zadnego\)/)
