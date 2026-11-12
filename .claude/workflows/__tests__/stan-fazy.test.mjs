@@ -185,7 +185,7 @@ test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika
   // IU-1.8 (D12): plus STOP blokera srodowiska z polityka stop-rebuild adaptera (review pending, przebudowa) = 13
   const kod = zrodlo.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')
   // Punkt 24 znalezisk: plus dwa STOP-y walidacji nieuruchomionej przez srodowisko agenta (fix, tura poprawkowa) = 15
-  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 15)
+  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 16)
   assert.equal(zrodlo.match(/label: 'stan:zapis'/g)?.length, 1)
 })
 
@@ -228,7 +228,7 @@ test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem be
   assert.match(petla, /workflow\('dev-docs-execute-wf', \{ sciezka, faza: numerFazy, baza: faza\.baza \|\| null, iuUkonczone: faza\.iuUkonczone \|\| \[\], stanPoExecute:/)
   const stop = petla.slice(petla.indexOf("exec.status !== 'completed'"), petla.indexOf('return await stopRun('))
   assert.match(stop, /const bazaZExecute = Boolean\(exec && exec\.baza && !faza\.baza\)\n\s+if \(bazaZExecute\) faza\.baza = exec\.baza\n/)
-  assert.match(stop, /if \(bazaZExecute \|\| ukonczoneZExecute \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
+  assert.match(stop, /if \(bazaZExecute \|\| ukonczoneZExecute \|\| licznikDecyzjiZmieniony \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
   assert.match(petla, /faza\.baza = exec\.baza \|\| faza\.baza \|\| null/)
   // Execute-wf: baza z args wygrywa z HEAD-em plannera (takze dla bramek i dossier domkniecia). Punkt 34 zmienil wyjscie plannera
   // bez pracy: z baza w stanie biegnie domkniecie (bramka, ktora zatrzymala faze, przechodzi przed review) i ono zwraca baze;

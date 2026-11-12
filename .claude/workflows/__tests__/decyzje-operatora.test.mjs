@@ -39,6 +39,9 @@ function wytnij(zrodlo, kotwica, koniec) {
  *   decyzjeKnownIssuesPrompt: (sciezka: string, faza: number, wiersze: string[]) => string,
  *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null, otwarte?: string | null, smokeStatus?: string | null, niezapisane?: string[] }) => string[],
  *   SEKCJA_DECYZJI: string,
+ *   decyzjeAutopilotaPoExecute: (faza: { decyzjeAutopilota?: unknown }, exec: { decyzjeAutopilota?: unknown } | null) => number,
+ *   gateZOtwartychSpraw: (w: { nierozwiazaneP2?: number, decyzjeOperatora?: number, decyzjeAutopilota?: number }) => string,
+ *   poleNiezapisanych: (lista: string[]) => { decyzjeNiezapisane?: string[] },
  * }}
  */
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
@@ -53,7 +56,10 @@ const a = new Function('log', `${wytnij(autopilot, 'const SEKCJA_DECYZJI = ', '\
   ${wytnij(autopilot, 'function pozycjeOperatora(', '\n}\n')}
   ${wytnij(autopilot, 'function wierszDecyzji(', '\n}\n')}
   ${wytnij(autopilot, 'function decyzjeKnownIssuesPrompt(', '\n}\n')}
-  return { policzFindingi, otwartePoReview, polaczFindingiPoPowtorce, pozycjeOperatora, wierszDecyzji, decyzjeKnownIssuesPrompt, nastepneKroki, SEKCJA_DECYZJI }`)(() => {})
+  ${wytnij(autopilot, 'function decyzjeAutopilotaPoExecute(', '\n}\n')}
+  ${wytnij(autopilot, 'function gateZOtwartychSpraw(', '\n}\n')}
+  ${wytnij(autopilot, 'function poleNiezapisanych(', '\n}\n')}
+  return { decyzjeAutopilotaPoExecute, gateZOtwartychSpraw, poleNiezapisanych, policzFindingi, otwartePoReview, polaczFindingiPoPowtorce, pozycjeOperatora, wierszDecyzji, decyzjeKnownIssuesPrompt, nastepneKroki, SEKCJA_DECYZJI }`)(() => {})
 
 /** @type {{ podsumujFindingi: (findings: Finding[]) => { liczniki: Liczniki, severityGate: string } }} */
 // eslint-disable-next-line no-new-func -- jw.
@@ -144,13 +150,33 @@ test('autopilot: fix nie dubluje decyzji jako P2 w known-issues, a faza z decyzj
   const fix = wytnij(autopilot, 'function fixPrompt(', '\n}\n')
   assert.doesNotMatch(fix, /dopisz P2 do known-issues/)
   assert.match(fix, /Do known-issues jej nie dopisujesz i nie liczysz jej w nierozwiazaneP2/)
-  assert.match(autopilot, /gateFazy = fix\.nierozwiazaneP2 > 0 \|\| doDecyzjiOperatora\.length > 0 \|\| decyzjeAutopilotaFazy > 0 \? 'ZASTRZEZENIA' : 'CZYSTE'/)
   // Punkt 48 (pokrewne): decyzja autopilota tez daje ZASTRZEZENIA — w fazie z fixem i w fazie bez findingow (fix: none).
-  assert.match(autopilot, /\} else if \(faza\.fix === 'none'\) \{\n {4}gateFazy = decyzjeAutopilotaFazy > 0 \? 'ZASTRZEZENIA' : 'CZYSTE'\n/)
+  // Walidacja 51–55, punkt 60: gate liczony funkcja wykonana na danych, nie dopasowaniem wyrazenia w petli.
+  assert.equal(a.gateZOtwartychSpraw({}), 'CZYSTE')
+  assert.equal(a.gateZOtwartychSpraw({ nierozwiazaneP2: 0, decyzjeOperatora: 0, decyzjeAutopilota: 0 }), 'CZYSTE')
+  assert.equal(a.gateZOtwartychSpraw({ nierozwiazaneP2: 1 }), 'ZASTRZEZENIA')
+  assert.equal(a.gateZOtwartychSpraw({ decyzjeOperatora: 2 }), 'ZASTRZEZENIA')
+  assert.equal(a.gateZOtwartychSpraw({ decyzjeAutopilota: 1 }), 'ZASTRZEZENIA')
   const petla = autopilot.slice(autopilot.indexOf('for (const numerFazy of kolejka) {'))
-  assert.match(petla, /let decyzjeAutopilotaFazy = 0\n/)
-  assert.match(petla, /await zapiszDecyzje\(numerFazy, 'autopilot', [^\n]+\)\n {4}decyzjeAutopilotaFazy = exec && Array\.isArray\(exec\.decyzjeAutopilota\) \? exec\.decyzjeAutopilota\.length : 0\n/)
-  assert.ok(petla.indexOf('let decyzjeAutopilotaFazy = 0') < petla.indexOf("if (faza.execute === 'pending') {"), 'licznik zerowany na fazie, przed execute')
+  assert.match(petla, /\n {4}gateFazy = gateZOtwartychSpraw\(\{ nierozwiazaneP2: fix\.nierozwiazaneP2, decyzjeOperatora: doDecyzjiOperatora\.length, decyzjeAutopilota: decyzjeAutopilotaFazy \}\)\n/)
+  // Po ustawieniu gate'u w galezi fix: none nic go nie zmienia przed raportem fazy.
+  assert.match(petla, /\} else if \(faza\.fix === 'none'\) \{\n {4}gateFazy = gateZOtwartychSpraw\(\{ decyzjeAutopilota: decyzjeAutopilotaFazy \}\)\n {2}\}\n\n {2}historia\[numerFazy\] = cykle\n {2}log\(`Faza \$\{numerFazy\}: koniec — gate \$\{gateFazy\}/)
+  // Walidacja 51–55, punkt 57: licznik to suma ze stanu fazy i z biezacego execute — jednostka z decyzja zapisana przed
+  // przerwaniem jest w swiezym runie pomijana, wiec sam wynik execute dawal 0 i gate CZYSTE.
+  assert.equal(a.decyzjeAutopilotaPoExecute({}, null), 0)
+  assert.equal(a.decyzjeAutopilotaPoExecute({}, { decyzjeAutopilota: ['IU-1: a', 'IU-2: b'] }), 2)
+  assert.equal(a.decyzjeAutopilotaPoExecute({ decyzjeAutopilota: 1 }, { decyzjeAutopilota: [] }), 1, 'wznowiony execute bez nowych decyzji')
+  assert.equal(a.decyzjeAutopilotaPoExecute({ decyzjeAutopilota: 1 }, { decyzjeAutopilota: ['IU-3: c'] }), 2)
+  assert.equal(a.decyzjeAutopilotaPoExecute({ decyzjeAutopilota: 2 }, null), 2, 'faza wznowiona od review')
+  assert.equal(a.decyzjeAutopilotaPoExecute({ decyzjeAutopilota: -1 }, { decyzjeAutopilota: 'x' }), 0, 'smieci w stanie i wyniku')
+  assert.match(petla, /\n {2}let decyzjeAutopilotaFazy = decyzjeAutopilotaPoExecute\(faza, null\)\n/)
+  // Od zapisu decyzji do STOP-u execute: licznik z funkcji, zapis w stanie fazy, nic pomiedzy.
+  assert.match(petla, /await zapiszDecyzje\(numerFazy, 'autopilot', [^\n]+\)\n {4}decyzjeAutopilotaFazy = decyzjeAutopilotaPoExecute\(faza, exec\)\n {4}const licznikDecyzjiZmieniony = decyzjeAutopilotaFazy !== \(faza\.decyzjeAutopilota \|\| 0\)\n {4}if \(licznikDecyzjiZmieniony\) faza\.decyzjeAutopilota = decyzjeAutopilotaFazy\n {4}if \(!exec \|\| exec\.status !== 'completed'\) \{\n/)
+  assert.match(petla, /if \(licznikDecyzjiZmieniony\) oznaczStan\(\)\n {4}log\(`Faza \$\{numerFazy\}: Execute OK/)
+  assert.ok(petla.indexOf('let decyzjeAutopilotaFazy = ') < petla.indexOf("if (faza.execute === 'pending') {"), 'licznik ustawiany na fazie, przed execute')
+  // Schemat stanu i bootstrap niosa licznik miedzy runami.
+  assert.match(autopilot, /\n {10}decyzjeAutopilota: \{ type: 'integer', description: /)
+  assert.match(autopilot, /Pole "decyzjeAutopilota" fazy \(jesli obecne\) przepisz 1:1/)
 })
 
 test('autopilot: DECYZJA z review nie idzie do fixa, ma wlasny licznik i nie wraca po powtorce review', () => {
@@ -192,14 +218,47 @@ test('autopilot: decyzje niezapisane w known-issues ida do Akcji operatora, wyni
     assert.match(akcje, /decyzje niezapisane w known-issues \(1\): \[DECYZJA · faza 2 · autopilot\] IU-4: src\/mail\.ts:12 — mail bez imienia\.$/)
   }
   assert.equal(a.nastepneKroki({ smoke: '', propozycjeBramek: [], czesci: false, zadanie: 'x', raporty: [], decyzjeZPliku: [], niezapisane: [] }).length, 1, 'pusta lista = bez pozycji')
-  const zapis = wytnij(autopilot, 'async function zapiszDecyzje(', '\n}\n')
-  assert.match(zapis, /if \(!pozycje\.length\) return true/)
-  assert.match(zapis, /decyzjeNiezapisane\.push\(\.\.\.wiersze\.map\(\(w\) => w\.replace\(\/\^- \/, ''\)\)\)/)
-  assert.match(zapis, /return false\n {2}\}/)
+  assert.deepEqual(a.poleNiezapisanych([]), {})
+  const lista = ['x']
+  const pole = a.poleNiezapisanych(lista)
+  assert.deepEqual(pole, { decyzjeNiezapisane: ['x'] })
+  assert.notEqual(pole.decyzjeNiezapisane, lista, 'kopia listy')
   assert.match(autopilot, /niezapisane: decyzjeNiezapisane, nieOdegraneZeStanu: e2eNieOdegrane \}\),\n {2}decyzjeNiezapisane,/)
-  assert.match(wytnij(autopilot, 'async function stopRun(', '\n}\n'), /\.\.\.\(decyzjeNiezapisane\.length \? \{ decyzjeNiezapisane: \[\.\.\.decyzjeNiezapisane\] \} : \{\}\)/)
+  assert.match(wytnij(autopilot, 'async function stopRun(', '\n}\n'), /artefaktyStop: artefakty, \.\.\.poleNiezapisanych\(decyzjeNiezapisane\) \}\n\}\n$/)
   // Lista runu stoi przed stopRun i zapisem decyzji (zapis jest przed STOP-em execute).
   assert.ok(autopilot.indexOf('const decyzjeNiezapisane = []') < autopilot.indexOf('async function stopRun('))
+})
+
+// Walidacja 51–55, punkt 60: zapiszDecyzje wykonane z atrapa agenta. Dopasowanie tekstu przepuszczalo `!zapis && !zapis.zapisano`:
+// odpowiedz { zapisano: false } uchodzila za sukces i decyzje ginely po cichu.
+test('autopilot: zapiszDecyzje — brak wyniku agenta i zapisano: false trafiaja do decyzjeNiezapisane; udany zapis i pusta lista nie', async () => {
+  /** @param {unknown} odpowiedz @returns {Promise<{ wynik: boolean, niezapisane: string[], wywolan: number, logi: string[] }>} */
+  const przebieg = async (odpowiedz, pozycje = ['IU-4: src/mail.ts:12 — mail bez imienia', 'IU-5: b.ts:1 — B']) => {
+    /** @type {string[]} */
+    const niezapisane = []
+    /** @type {string[]} */
+    const logi = []
+    let wywolan = 0
+    // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
+    const zapiszDecyzje = new Function('agent', 'log', 'decyzjeNiezapisane', 'sciezka', 'P3_KNOWN_ISSUES', `${wytnij(autopilot, 'const SEKCJA_DECYZJI = ', '\n')}
+      ${wytnij(autopilot, 'function instrukcjaCommita(', '\n}\n')}
+      ${wytnij(autopilot, 'function wierszDecyzji(', '\n}\n')}
+      ${wytnij(autopilot, 'function decyzjeKnownIssuesPrompt(', '\n}\n')}
+      ${wytnij(autopilot, 'async function zapiszDecyzje(', '\n}\n')}
+      return zapiszDecyzje`)(async () => { wywolan++; return odpowiedz }, (/** @type {string} */ l) => logi.push(l), niezapisane, 'docs/active/x', {})
+    return { wynik: await zapiszDecyzje(2, 'autopilot', pozycje), niezapisane, wywolan, logi }
+  }
+  const oczekiwane = ['[DECYZJA · faza 2 · autopilot] IU-4: src/mail.ts:12 — mail bez imienia', '[DECYZJA · faza 2 · autopilot] IU-5: b.ts:1 — B']
+  for (const odpowiedz of [null, { zapisano: false }, { zapisano: false, commit: 'abc' }]) {
+    const p = await przebieg(odpowiedz)
+    assert.equal(p.wynik, false, JSON.stringify(odpowiedz))
+    assert.deepEqual(p.niezapisane, oczekiwane, JSON.stringify(odpowiedz))
+    assert.match(p.logi.join('\n'), /UWAGA — 2 decyzji operatora \(autopilot\) nie zapisano/)
+  }
+  const udany = await przebieg({ zapisano: true, commit: 'abc1234' })
+  assert.deepEqual([udany.wynik, udany.niezapisane, udany.wywolan], [true, [], 1])
+  const pusty = await przebieg(null, [])
+  assert.deepEqual([pusty.wynik, pusty.niezapisane, pusty.wywolan], [true, [], 0], 'bez pozycji agent nie rusza')
 })
 
 // Krok 3: przy smoke'u jedna droga — raport podaje liczbe decyzji i odsyla do smoke'u, bez listy decyzji i bez komendy PR.
