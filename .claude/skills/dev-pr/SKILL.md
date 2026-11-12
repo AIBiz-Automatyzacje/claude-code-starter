@@ -384,6 +384,11 @@ którego ostatnia linia to „Następny krok: /clear, potem /dev-pr 3 --bez-merg
 świeża sesja nie niesie kontekstu poprzedniej części, a operator wpisuje komendę sam. Krok CLAUDE.md workflow pomija
 (`pominiety: true`) — plik decyzji jedzie w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
 
+**Część albo PR niezmergowany** (odpowiedź „Jeszcze nie” albo niespełnione warunki bramki): ostatnia linia raportu to
+„Następny krok: <co ma się wydarzyć, np. zielone CI>, potem /clear i /dev-pr 3 --bez-merge --czesc <N> — dokończy i zapyta o merge”;
+przy jednym PR ta sama linia bez `--czesc <N>`. Linii z `--czesc <N+1>` przed merge'em części N nie podajesz: start części
+N+1 zatrzyma się na niezmergowanej części N.
+
 ## Raport końcowy
 
 Po `ZMERGOWANY` pierwsza linia raportu to „ZMERGOWANY”, nie rekomendacja sprzed merge'a.
@@ -394,7 +399,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
    Tury: <N wykonanych> / <limit albo "interaktywnie"> (sufit 3)
    Wątki: naprawione <a> · odrzucone z dokumentem decyzji <b> · do operatora <c> · nieruszone <d>
    Walidacja ostatniej tury: PASS/FAIL/BRAK-KOMEND
-   Merge: <zmergowany / gotowy do decyzji: lista niespełnionych warunków / --bez-merge>
+   Merge: <zmergowany / gotowy do decyzji: lista niespełnionych warunków / warunki spełnione, operator: „Jeszcze nie”>
    CI po merge'u: <ciGlownej z compoundu albo kroku CLAUDE.md, 1:1; failure/cancelled = „deploy commitu merge'a niepotwierdzony”>
    CLAUDE.md: <uzgodniony (przed → po zn, commit, push) / STOP: powód / nie dotyczy — PR niezmergowany>
    Otwarte sprawy: <pole `zdanie` z `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>`, 1:1>
@@ -417,8 +422,9 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
 ⚠️ Do Twojej decyzji: <wątki do-operatora, jeden wiersz na wątek z wplywNaProjekt>
 ```
 
-Przy części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>”: tury idą same, a merge, czyli
-często deploy, zostaje decyzją operatora. Tryb interaktywny (`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.
+Przy zmergowanej części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>”: tury idą same, a merge, czyli
+często deploy, zostaje decyzją operatora. Część albo PR niezmergowany kończy linia z akapitu „Część albo PR niezmergowany”
+(krok 6): ta sama komenda z `--czesc <N>`, która dokończy i zapyta o merge. Tryb interaktywny (`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.
 
 Linię „Otwarte sprawy” bierzesz ze skryptu, nie z pamięci sesji: dopóki zdanie nie brzmi „Otwarte: brak …”, nie piszesz, że zadanie
 jest zamknięte w całości (punkt 45: raport mówił „zamknięte w całości” przy otwartych pozycjach smoke'u).

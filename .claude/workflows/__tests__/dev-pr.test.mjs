@@ -626,8 +626,21 @@ test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krot
 
 test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>” bez startu kolejnej', () => {
   assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”\.\s+Kolejnej części nie uruchamiasz w tej sesji/)
-  assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”/)
+  assert.match(skillPr, /Przy zmergowanej części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”/)
   assert.doesNotMatch(skillPr, /dalej: \/dev-pr --czesc N\+1\]/)
+})
+
+// Punkt 51: linia „--czesc <N+1>” po niezmergowanej czesci N prowadzila na STOP startu czesci N+1. Ostatnia linia raportu
+// zalezy od stanu: zmergowana czesc = nastepna czesc, niezmergowana = ta sama komenda, ktora dokonczy i zapyta o merge.
+test('punkt 51: ostatnia linia raportu zalezy od merge\'a — niezmergowana czesc wraca ta sama komenda z --czesc <N>', () => {
+  const tekst = skillPr.replace(/\n/g, ' ')
+  assert.match(tekst, /\*\*Część albo PR niezmergowany\*\* \(odpowiedź „Jeszcze nie” albo niespełnione warunki bramki\): ostatnia linia raportu to „Następny krok: <co ma się wydarzyć, np\. zielone CI>, potem \/clear i \/dev-pr 3 --bez-merge --czesc <N> — dokończy i zapyta o merge”; przy jednym PR ta sama linia bez `--czesc <N>`\./)
+  assert.match(tekst, /Linii z `--czesc <N\+1>` przed merge'em części N nie podajesz/)
+  assert.match(tekst, /Część albo PR niezmergowany kończy linia z akapitu „Część albo PR niezmergowany” \(krok 6\)/)
+  assert.match(skillPr, /Merge: <zmergowany \/ gotowy do decyzji: lista niespełnionych warunków \/ warunki spełnione, operator: „Jeszcze nie”>/)
+  // Akapit czesci zmergowanej stoi przed niezmergowanej, oba w kroku 6 przed raportem.
+  const zm = skillPr.indexOf('**Część nieostatnia**'), niezm = skillPr.indexOf('**Część albo PR niezmergowany**')
+  assert.ok(zm > 0 && zm < niezm && niezm < skillPr.indexOf('## Raport końcowy'))
 })
 
 // Punkt 38 (piszemy_wirale 08.11, /dev-pr --czesc 1 i 2): raporty i handoffy podawaly `/dev-pr --czesc N`, czyli tryb interaktywny,
