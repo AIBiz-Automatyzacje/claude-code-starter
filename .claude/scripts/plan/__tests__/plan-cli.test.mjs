@@ -213,7 +213,7 @@ test('gotowosc: otwarte sprawy odlozone z etapem i linia, bez wplywu na ok', () 
   zadanieNaGalezi(k)
   const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
   const przed = gotowosc(k, ZADANIE, { narzedzia })
-  assert.deepEqual(przed.odlozone, { ok: true, plik: 'docs/operator/odlozone.md', otwarte: [] })
+  assert.deepEqual(przed.odlozone, { ok: true, plik: 'docs/operator/odlozone.md', otwarte: [], decyzje: [] })
   mkdirSync(join(k, 'docs/operator'), { recursive: true })
   writeFileSync(join(k, 'docs/operator/odlozone.md'), '# Sprawy odłożone\n\n- [ ] [etap: etap 5] sklep D2: limit — `src/k.ts:9` (smoke 2026-11-11)\n- [x] [etap: etap 4] zrobione\n')
   git(k, ['add', 'docs/operator/odlozone.md'])
@@ -221,6 +221,14 @@ test('gotowosc: otwarte sprawy odlozone z etapem i linia, bez wplywu na ok', () 
   const w = gotowosc(k, ZADANIE, { narzedzia })
   assert.deepEqual(w.odlozone.otwarte, [{ linia: 3, etap: 'etap 5', tresc: 'sklep D2: limit — `src/k.ts:9` (smoke 2026-11-11)' }])
   assert.equal(w.ok, przed.ok, 'odlozone nie zmieniaja ok bramki')
+  // Punkt 52: decyzje poprzednich zadan bez rozstrzygniecia (smoke pominiety) — widoczne w bramce, bez wplywu na ok.
+  mkdirSync(join(k, 'docs/completed/sklep'), { recursive: true })
+  writeFileSync(join(k, 'docs/completed/sklep/known-issues.md'), '# K\n\n## Decyzje operatora\n\n- [DECYZJA · faza 1 · fix] src/a.ts:5 — limit\n')
+  git(k, ['add', 'docs/completed'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: archiwum'])
+  const zDecyzja = gotowosc(k, ZADANIE, { narzedzia })
+  assert.deepEqual(zDecyzja.odlozone.decyzje, [{ zadanie: 'sklep', wiersz: '[DECYZJA · faza 1 · fix] src/a.ts:5 — limit' }])
+  assert.equal(zDecyzja.ok, przed.ok, 'decyzje nie zmieniaja ok bramki')
 }))
 
 // P22 A1: runner testow projektu zbierajacy .claude/** (live-10-demo: vitest run bez configu) wychodzi w bramce, nie w bootstrapie.

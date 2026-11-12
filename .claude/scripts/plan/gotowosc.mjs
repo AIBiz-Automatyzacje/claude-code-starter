@@ -36,7 +36,7 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   claudeMd: { ok: boolean, glowna: string | null, zadania: string[], naprawa: string },
  *   spojnosc: import('./spojnosc.mjs').StanPrzegladu,
  *   higiena: { ok: true, uwagi: string[] },
- *   odlozone: { ok: true, plik: string, otwarte: { linia: number, etap: string, tresc: string }[] } }} Gotowosc
+ *   odlozone: { ok: true, plik: string, otwarte: { linia: number, etap: string, tresc: string }[], decyzje: { zadanie: string, wiersz: string }[] } }} Gotowosc
  */
 
 /**
@@ -165,6 +165,7 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
   // Zadanie z migracjami (P17): advisors bez tokenu albo bazy e2e nie pobiegnie — uwaga, nie bloker (security sprawdzi recznie).
   const advisors = zadania.includes('supabase/migrations/') ? gotowoscAdvisors(projekt, srodowisko) : null
   if (advisors && !advisors.gotowe) e2e.uwagi.push(advisors.uwaga)
+  const sprawy = otwarte(projekt)
   const wynik = {
     plan: { ok: !walidacja.bledy.length, bledy: walidacja.bledy, uwagi: walidacja.uwagi },
     e2e,
@@ -174,7 +175,8 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     claudeMd: decyzjeClaudeMd(projekt),
     spojnosc: stanPrzegladu(projekt, wskaznik, plan ? plan.fazy.map((f) => f.oznaczenie) : []),
     higiena: higienaZadania(projekt),
-    odlozone: { ok: /** @type {const} */ (true), ...otwarte(projekt).odlozone },
+    // Punkt 52: decyzje poprzednich zadan bez rozstrzygniecia (smoke pominiety) — pokazane, nie blokuja.
+    odlozone: { ok: /** @type {const} */ (true), ...sprawy.odlozone, decyzje: sprawy.decyzje ?? [] },
   }
   return {
     ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok && wynik.claudeMd.ok && wynik.spojnosc.ok,

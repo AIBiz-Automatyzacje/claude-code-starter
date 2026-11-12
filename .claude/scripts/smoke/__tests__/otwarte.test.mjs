@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { liczSmoke, otwarte, parsujOdlozone, plikSmoke, zdanieOtwartych } from '../otwarte.mjs'
+import { decyzjeNierozstrzygniete, liczSmoke, otwarte, parsujOdlozone, plikSmoke, zdanieOtwartych } from '../otwarte.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = resolve(KATALOG, '..', 'otwarte.mjs')
@@ -125,4 +125,32 @@ test('/dev-smoke: odłożona pozycja listy i usterka (U<n>) mają wzory, które 
   const linie = [wypelnij(usterka), wypelnij(pozycja)]
   assert.deepEqual(parsujOdlozone(linie.join('\n')).map((p) => [p.etap, p.tresc.split(':')[0]]), [['etap 4', 'sklep U<n>'], ['etap 4', 'sklep smoke']])
   assert.match(plaski, /a w pliku smoke'u pozycja `- \[x\] … → odłożone do <etykieta>`/)
+})
+
+// Punkt 52: decyzji nierozstrzygnietych (smoke pominiety albo przerwany) nie widzial ani /dev-prep, ani bramka gotowosci.
+test('decyzjeNierozstrzygniete: wiersze [DECYZJA bez ROZSTRZYGNIĘTA z sekcji „Decyzje operatora” archiwum; tylko bez --zadanie', () => {
+  const KI = '# Known issues — sklep\n\n## Decyzje operatora\n\n- [DECYZJA · faza 1 · fix] src/a.ts:5 — limit\n- [DECYZJA · faza 2 · autopilot] IU-4: mail bez imienia → ROZSTRZYGNIĘTA (smoke 2026-11-11): zostaw jak jest\n  - podpunkt\n\n## Faza 1\n\n- [DECYZJA · faza 1 · fix] poza sekcja\n'
+  const k = projekt({
+    'docs/completed/sklep/known-issues.md': KI.replace(/\n/g, '\r\n'),
+    'docs/completed/blog/known-issues.md': '# K\n\n## Zamkniete\n\n- x\n',
+    'docs/completed/bez-pliku/podsumowanie.md': '#\n',
+  })
+  try {
+    assert.deepEqual(decyzjeNierozstrzygniete(k), [{ zadanie: 'sklep', wiersz: '[DECYZJA · faza 1 · fix] src/a.ts:5 — limit' }])
+    assert.deepEqual(otwarte(k).decyzje, [{ zadanie: 'sklep', wiersz: '[DECYZJA · faza 1 · fix] src/a.ts:5 — limit' }])
+    assert.equal(Object.hasOwn(otwarte(k, { zadanie: 'sklep' }), 'decyzje'), false, 'z --zadanie liczy plik smoke\'u')
+    assert.equal(otwarte(k).zdanie, 'Otwarte: brak (bez smoke\'u, nic odłożonego).', 'zdanie bez zmian')
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+  const pusty = projekt({ 'README.md': '#\n' })
+  try {
+    assert.deepEqual(decyzjeNierozstrzygniete(pusty), [], 'brak docs/completed')
+  } finally {
+    rmSync(pusty, { recursive: true, force: true })
+  }
+  const plaski = (/** @type {string} */ s) => readFileSync(resolve(KATALOG, '../../../skills', s), 'utf8').replace(/\n\s*/g, ' ')
+  assert.match(plaski('dev-prep/SKILL.md'), /Pole `decyzje` to decyzje poprzednich zadań, których nikt nie rozstrzygnął \(smoke pominięty albo przerwany\)/)
+  assert.match(plaski('dev-prep/SKILL.md'), /\*\*Decyzje poprzednich zadań bez rozstrzygnięcia\.\*\* Każda pozycja pola `decyzje` ze skanu \(1\.2\) trafia do sekcji „Decyzje” z odsyłaczem: .*`\/dev-smoke <zadanie>`/)
+  assert.match(plaski('dev-plan/SKILL.md'), /Pole `decyzje` \(zadanie, wiersz\) to decyzje poprzednich zadań, których nikt nie rozstrzygnął \(smoke pominięty albo przerwany\): wypisz każdą z odsyłaczem do `\/dev-smoke <zadanie>`; nie blokują\./)
 })
