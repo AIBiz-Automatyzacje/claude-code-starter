@@ -225,7 +225,10 @@ Kazdy taki wybor wpisujesz do pola decyzje, po polsku: "<plik:linia> — <zrodlo
 cofniecie: …". Operator potwierdzi go albo zmieni w smoke'u, a review nie traktuje go jako bledu.
 Status blocked zostaje tylko, gdy: zadna opcja nie spelnia (a) i (b); wybor jest nieodwracalny albo dotyka danych (migracja
 zmieniajaca lub usuwajaca dane), bezpieczenstwa (uwierzytelnienie, uprawnienia, polityki dostepu) albo pieniedzy (platnosci,
-kwoty); jednostka wymaga pracy wykluczonej w Granicach.`
+kwoty); bez pracy wykluczonej w Granicach jednostki nie da sie ukonczyc. Gdy elementu wykluczonego w Granicach zada tylko nizsze
+zrodlo (Podejscie, scenariusz, obecny kod albo wzorzec), a reszte jednostki da sie zrobic bez niego: pomijasz element, dopasowujesz
+scenariusz i wpisujesz wybor do pola decyzje (np. scenariusz chce imienia w mailu, a Granice zabraniaja tekstow spoza makiet →
+mail bez imienia jako decyzja, nie blocked).`
 
 // Pytanie blokera idzie 1:1 do powodu STOP-u, ktory operator czyta bez kontekstu buildera (punkt 41, aa-exam E3: pytanie po
 // angielsku, bez opcji). Blok doklejany w JS, wiec obowiazuje kazdego buildera kazdego stacku niezaleznie od plannera i pliku roli.
@@ -418,7 +421,8 @@ ${ukonczone.length ? `   Jednostki zapisane commitem w poprzednim, przerwanym po
      pomin), bo regula wklejona do promptu delegacji jest przez buildera stosowana, a regula czekajaca w pliku bywa pomijana.
    - wykluczenia z sekcji \`## Granice\` planu technicznego jako blok "Czego zadanie nie obejmuje:" z dopiskiem:
      "Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne. Gdy jednostka wymaga takiej pracy,
-     zwroc status blocked i w polu pytanie nazwij te prace." Plan bez tej sekcji — blok pomin.
+     zwroc status blocked i w polu pytanie nazwij te prace (wyjatek: element zadany tylko przez nizsze zrodlo — HIERARCHIA ZRODEL)."
+     Plan bez tej sekcji — blok pomin.
    - gdy IU ma pole "Znika z obecnej wersji" z lista elementow (nie sama kreska): pod polem dopisz zdanie
      "Elementow z decyzja „znika” nie przenosisz z obecnego pliku ani ze wzorca, takze gdy obecny kod albo wzorzec je zawiera.
      Gdy Podejscie albo scenariusz jednostki wymaga takiego elementu, wygrywa decyzja „znika” (HIERARCHIA ZRODEL): nie przenosisz
