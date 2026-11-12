@@ -1558,7 +1558,7 @@ function fazyNieOdegrane(raporty) {
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
-function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus, niezapisane }) {
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus, niezapisane, nieOdegraneZeStanu }) {
   const kroki = []
   // Pad autora smoke'u albo calej archiwizacji (weryfikacja partii 2026-11-11, punkt 49): brak pliku nie znaczy „brak pozycji”.
   // Raport konczyl sie wtedy komenda PR, a ostrzezenie bylo tylko w logu; pozycje „Operator checklist” i [Manual] nie trafily nigdzie.
@@ -1573,7 +1573,9 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   if (bezListy) kroki.push(`Lista smoke'u NIE powstala (${smokeStatus === 'agent-null' ? 'autor smoke\'u padl' : 'archiwizacja nie zwrocila wyniku — sprawdz docs/active/ i git status'}): pozycje „Operator checklist” i [Manual] nie zostaly przeniesione. Najpierw \`/clear\` i \`/dev-docs-complete ${zadanie}\`, potem \`/dev-smoke ${zadanie}\`. Przed smoke'em PR-a nie wysylaj.`)
   if (smoke) kroki.push(`Smoke w nowej sesji: \`/clear\`, potem \`/dev-smoke ${zadanie}\` (checklista ${smoke}).${decyzje.length ? ` Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: ${decyzje.length}).` : ''} Komende PR podaje koniec sesji smoke'u; przed smoke'em PR-a nie wysylaj.`)
   const akcje = []
-  const nieOdegrane = fazyNieOdegrane(raporty)
+  // Punkt 55 (35): kroki liczyly „nie odegrano” z `raporty` (fazy tego runu), a log koncowy ze stanu zadania — faza z review
+  // w poprzednim runie znikala z krokow. Koniec runu podaje liste ze stanu; bez niej (wywolania sprzed tej zmiany) — z raportow.
+  const nieOdegrane = Array.isArray(nieOdegraneZeStanu) ? nieOdegraneZeStanu : fazyNieOdegrane(raporty)
   if (nieOdegrane.length) akcje.push(`E2E nie odegrano — do odegrania recznie albo ponownie: ${nieOdegrane.map((f) => `faza ${f.faza} (scenariuszy: ${f.scenariusze})`).join(', ')}`)
   const operator = raporty.reduce((s, r) => s + (r?.liczniki?.operator || 0), 0)
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
@@ -2617,7 +2619,7 @@ return {
   uwagiArchiwum: (complete && complete.uwagi) || [],
   // Punkt 53: zadanie w toku z nieaktualnym przegladem spojnosci planu — run poszedl, operator widzi uwage w wyniku.
   uwagaSpojnosci: bramkaSpojnosci.uwaga,
-  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null'), niezapisane: decyzjeNiezapisane }),
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null'), niezapisane: decyzjeNiezapisane, nieOdegraneZeStanu: e2eNieOdegrane }),
   decyzjeNiezapisane,
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),

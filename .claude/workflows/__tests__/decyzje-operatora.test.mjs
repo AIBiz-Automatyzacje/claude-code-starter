@@ -196,7 +196,7 @@ test('autopilot: decyzje niezapisane w known-issues ida do Akcji operatora, wyni
   assert.match(zapis, /if \(!pozycje\.length\) return true/)
   assert.match(zapis, /decyzjeNiezapisane\.push\(\.\.\.wiersze\.map\(\(w\) => w\.replace\(\/\^- \/, ''\)\)\)/)
   assert.match(zapis, /return false\n {2}\}/)
-  assert.match(autopilot, /niezapisane: decyzjeNiezapisane \}\),\n {2}decyzjeNiezapisane,/)
+  assert.match(autopilot, /niezapisane: decyzjeNiezapisane, nieOdegraneZeStanu: e2eNieOdegrane \}\),\n {2}decyzjeNiezapisane,/)
   assert.match(wytnij(autopilot, 'async function stopRun(', '\n}\n'), /\.\.\.\(decyzjeNiezapisane\.length \? \{ decyzjeNiezapisane: \[\.\.\.decyzjeNiezapisane\] \} : \{\}\)/)
   // Lista runu stoi przed stopRun i zapisem decyzji (zapis jest przed STOP-em execute).
   assert.ok(autopilot.indexOf('const decyzjeNiezapisane = []') < autopilot.indexOf('async function stopRun('))
@@ -269,7 +269,7 @@ test('autopilot: po padzie autora smoke\'u albo archiwizacji raport nie podaje k
   assert.ok(bezArchiwum.every((k) => !/\/dev-pr/.test(k)))
   // Zadanie bez pozycji smoke'u: jak dotad komenda PR.
   assert.match(a.nastepneKroki({ ...wejscie, smokeStatus: 'brak-pozycji' }).at(-1) ?? '', /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1`/)
-  assert.match(autopilot, /smokeStatus: complete \? complete\.smokeStatus : \(stan\.zakonczenie\.complete === 'done' \? null : 'complete-null'\), niezapisane: decyzjeNiezapisane \}\),/)
+  assert.match(autopilot, /smokeStatus: complete \? complete\.smokeStatus : \(stan\.zakonczenie\.complete === 'done' \? null : 'complete-null'\), niezapisane: decyzjeNiezapisane, nieOdegraneZeStanu: e2eNieOdegrane \}\),/)
 })
 
 // Krok 6 (punkt 45): raport autopilota zaczyna sie od zdania o otwartych sprawach z archiwizacji (otwarte.mjs); bez zdania uklad bez zmian.
