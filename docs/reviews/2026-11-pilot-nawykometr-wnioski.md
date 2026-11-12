@@ -3,8 +3,13 @@
 Zbiór wniosków z pilota (plan `docs/plans/2026-11-01-001-feat-szablon-mobile-z-rdzenia-plan.md`, Etap 4, krok 1: kopia).
 Poprawki wchodzą jedną gałęzią `popr/*` po runie autopilota na kopii, z bramkami i wierszem w planie.
 
-Kopia: `../_pilot-mobile/Nawykometr-kopia` (lokalny klon, `pushurl` = `BRAK`, bez kluczy do zdalnych baz, lokalny Supabase
-w Dockerze z `project_id` = `nawykometr-kopia`).
+Kopia: `../_pilot-mobile/Nawykometr-kopia` (lokalny klon, bez kluczy do zdalnych baz, lokalny Supabase w Dockerze z
+`project_id` = `nawykometr-kopia`). Do runu 3 `origin` = lokalny `../Nawykometr` z `pushurl` = `BRAK`; od runu 4 `origin` =
+prywatne repo testowe, a lokalny `../Nawykometr` to zdalny `nawykometr-lokalny` z `pushurl` = `BRAK` (sekcja „Run 4”).
+
+**Zasada nadrzędna (decyzja operatora 2026-11-11):** szablon testujemy wyłącznie na kopiach. Prawdziwych projektów
+(`Nawykometr` z remote `nawykometr-app`, `gramywpadla`, `vibersi` i inne) pilot nie dotyka: bez syncu, gałęzi, baz i zmian
+w `.claude/`. Etap `/dev-pr` sprawdzamy na kopii z prywatnym repo testowym na GitHubie.
 
 ## Wnioski
 
@@ -159,6 +164,19 @@ Niesprawdzone w runie 3 (ścieżki nie wystąpiły): W23 (STOP startu E2E), W25 
   z `/dev-pr --claude-md` oraz `git merge main`. Pozostałe poprawki (W11, W18, W19, W32, W28) niesprawdzone na żywym runie.
 - Stan kopii: `main` `b08e9dd`, plik decyzji `opinia-z-ustawien` z `claude_md: do-uzgodnienia` (do uzgodnienia przed kolejnym
   zadaniem), lokalna baza bez domyślnych uprawnień do nowych tabel.
+
+## Run 4 — przygotowanie: repo testowe (2026-11-12)
+
+- Repo testowe: prywatne `nawykometr-kopia-pilot` w organizacji, bez CI (kopia nie ma `.github/`), do usunięcia po pilocie.
+- Przed pushem skan wszystkich blobów historii `main` kopii (2343) na wzorce kluczy (Supabase `sbp_`, JWT, Stripe, Anthropic,
+  GitHub, AWS, Google, Slack, Resend, klucze prywatne, hasło w adresie bazy, wartości `EXPO_TOKEN` / `SUPABASE_ACCESS_TOKEN` /
+  `SERVICE_ROLE_KEY`) i na nazwy plików: z `.env*` tylko `.env.example` i `.claude/templates/e2e-env/.env.e2e.example`;
+  trafienia wyłącznie w przykładowych wpisach dokumentacji szablonu (`<hasło>`, `sbp_...`, `sk_live_abc…`). Wypchnięty tylko `main`
+  (`b08e9dd`).
+- Skill `/dev-pr` (`dev-pr-wf.js`) pushuje na `origin` i liczy rozmiar PR względem `origin/main`. Z `origin` = lokalny
+  `../Nawykometr` (`pushurl` `BRAK`, `main` 36 commitów za kopią) etap PR nie mógłby wypchnąć gałęzi, a `niewypchnieteGlowna`
+  zawyżyłby rozmiar. Dlatego w kopii `origin` przemianowany na `nawykometr-lokalny` (`pushurl` `BRAK` zostaje), a repo testowe
+  dodane jako `origin`; `main` śledzi `origin/main`. To ustawienie pilota, nie błąd szablonu (projekt z GitHubem ma `origin`).
 
 ## Niesprawdzone
 

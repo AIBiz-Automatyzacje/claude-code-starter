@@ -513,10 +513,10 @@ dalej `0615a5a`. **Etap 3 zamknięty.** Defekty z runów: D4 naprawiany przed pi
 - Przed syncem każdego projektu: konwersja jego `.claude/rules/learned-patterns.md` (gramywpadla 49 reguł, Nawykometr 7)
   do `docs/solutions/` / reguł projektu i commit — inaczej sync usunie edytowany plik (D21). Sprawdzić, czy projekt stoi
   na NativeWind v5 preview ze znanymi błędami `react-native-css` (sprawdzone 2026-11-09: `react-native-css` 3.0.7 to stabilny `latest`, nie nightly; szczegóły niżej).
-- `Nawykometr` (dziś na mobile `6fbd49d`): `/sync-template --dry-run`, potem sync; doctor; jedno małe zadanie przez
-  `/dev-plan` → autopilot → smoke → `/dev-pr`. Sprawdzić: env-up na emulatorze, tester Maestro, księgowanie [E2E], bramka natywna.
-- Wnioski → poprawki w `stacks/expo/` (publikacja ręczna do końca pilotu, D4). Potem `gramywpadla` (dziś `23e0d92`, starszy —
-  najpierw dry-run). Po udanym pilocie: włączenie automatu z IU-3.3.
+- Kopia `Nawykometru` (dziś na mobile `6fbd49d`): `/sync-template --dry-run`, potem sync; doctor; jedno małe zadanie przez
+  `/dev-plan` → autopilot → smoke → `/dev-pr` (na repo testowym). Sprawdzić: env-up na emulatorze, tester Maestro, księgowanie [E2E], bramka natywna.
+- Wnioski → poprawki w `stacks/expo/` (publikacja ręczna do końca pilotu, D4). Wyłącznie na kopiach (decyzja operatora
+  2026-11-11, niżej). Po udanym pilocie: włączenie automatu z IU-3.3.
 
 Pierwsza publikacja przez CI (2026-11-08, za zgodą operatora): `workflow_dispatch` (run `42530552390`) dla `76d41f3`, decyzja
 `publikuj`, commit bota `fb79426` `sync: rdzeń 76d41f3…` w repo mobile (6 plików D4 i `.rdzen-version`), push kluczem deploy
@@ -528,9 +528,15 @@ po pushu dalej wyłączony.
    poszło do `nawykometr-app`): konwersja `learned-patterns.md`, `/sync-template --dry-run`, sync, doctor, plugin expo, jedno
    małe zadanie `/dev-plan` → autopilot → smoke. Wnioski → poprawki w `stacks/expo/` (albo rdzeniu, gdy bez tego się nie da),
    publikacja przez `workflow_dispatch` za zgodą, ponowny sync kopii. E2E tylko na bazie z `.env.e2e`, nigdy na bazie z `.env`.
-2. **Prawdziwy Nawykometr** po zielonej kopii: konwersja reguł (gotowa z kopii), sync na osobnej gałęzi `popr/*`, jedno małe
-   zadanie z pełnym `/dev-pr` (tego kopia nie sprawdzi: brak repo na GitHubie i bota). Za osobną zgodą operatora.
-3. Potem `gramywpadla` tą samą drogą (49 reguł, najpierw dry-run na kopii).
+2. ~~Prawdziwy Nawykometr po zielonej kopii~~ i 3. ~~`gramywpadla` tą samą drogą~~ — **wypadają (decyzja operatora
+   2026-11-11): szablon testujemy wyłącznie na kopiach.** Prawdziwych projektów (`Nawykometr` z remote `nawykometr-app`,
+   `gramywpadla`, `vibersi` i inne) pilot nie dotyka: bez syncu, gałęzi, baz i zmian w `.claude/`. Etap `/dev-pr` (wysyłka
+   PR, recenzja, merge) sprawdzamy na kopii z **prywatnym repozytorium testowym** na GitHubie (`nawykometr-kopia-pilot` w
+   organizacji, do usunięcia po pilocie): w kopii repo testowe jest zdalnym `origin` (skill `/dev-pr` pushuje i liczy rozmiar
+   PR względem `origin`), a dawny `origin` (lokalny `../Nawykometr`) przemianowany na `nawykometr-lokalny` z `pushurl`
+   `BRAK`. Przed pierwszym pushem skan historii kopii (wszystkie bloby `main`) na klucze i pliki `.env`: tylko `.env.example`
+   i przykładowe wpisy z dokumentacji szablonu. Recenzja najpierw w trybie `--bez-bota`; bot (CodeRabbit) tylko bez nowych
+   kont i kosztów. Kopia `gramywpadla`, jeśli będzie potrzebna, tą samą drogą.
 
 Stan Nawykometru (odczyt 2026-11-08, bez zmian w projekcie): `main` `5ad1445` (2026-11-01), drzewo czyste, gałęzie
 `feature/e5-e4-hardening-energia` i `feature/e6-notyfikacje-dogfooding`; szablon `6fbd49d` (`.template-version`, brak
