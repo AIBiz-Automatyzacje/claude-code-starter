@@ -135,15 +135,22 @@ test('builder: hierarchia zrodel z warunkami samodzielnego wyboru, polem decyzje
 })
 
 test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis zaraz po execute, review ich nie zglasza', () => {
-  assert.match(EXECUTE, /const decyzjeAutopilota = buildResults\.filter\(\(b\) => b\.status !== 'blocked'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
-  assert.match(EXECUTE, /\.map\(\(d\) => `\$\{b\.id\}: \$\{d\}`\)\)/)
+  // Walidacja 51–55, punkt 60: filtr wykonany na danych (tekst przepuszczal `decyzjeUkonczonych.push(...decyzjeAutopilota)` dopisane obok).
+  // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
+  const decyzjeBuilderow = new Function(`${sekcja(EXECUTE, 'function decyzjeBuilderow(', '\n}\n')}\n}\nreturn decyzjeBuilderow`)()
+  const buildery = [
+    { id: 'IU-1', status: 'completed', decyzje: [' a.ts:1 — wybrano A ', '', '  '] }, { id: 'IU-2', status: 'partial', decyzje: ['b.ts:2 — wybrano B'] },
+    { id: 'IU-3', status: 'blocked', decyzje: ['c.ts:3 — wybrano C'] }, { id: 'IU-4', status: 'completed' }, { id: 'IU-5', status: 'completed', decyzje: 'nie lista' },
+  ]
+  assert.deepEqual(decyzjeBuilderow(buildery, false), ['IU-1: a.ts:1 — wybrano A', 'IU-2: b.ts:2 — wybrano B'], 'wszyscy poza blocked')
+  assert.deepEqual(decyzjeBuilderow(buildery, true), ['IU-1: a.ts:1 — wybrano A'], 'tylko ukonczone')
+  assert.match(EXECUTE, /\nconst decyzjeAutopilota = decyzjeBuilderow\(buildResults, false\)\nconst decyzjeUkonczonych = decyzjeBuilderow\(buildResults, true\)\n\nif \(zablokowany\) \{\n/)
   assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota: decyzjeUkonczonych,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
   // Punkt 48 (pokrewne): builder `partial` przy przerwaniu oddaje pliki do schowka — jego decyzje nie ida do zapisu.
-  assert.match(EXECUTE, /const decyzjeUkonczonych = buildResults\.filter\(\(b\) => b\.status === 'completed'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
   assert.doesNotMatch(EXECUTE, /return wynikPrzerwanego\(\{\n {4}fazaNumer: faza,\n {4}decyzjeAutopilota,/)
   // Pelne domkniecie dostaje dotychczasowa liste (wszyscy poza blocked).
   assert.match(EXECUTE, /ukonczoneWczesniej, decyzjeAutopilota\) \+ punktZapisuStanu/)
-  assert.match(EXECUTE, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
+  assert.match(EXECUTE, /return wynikDomkniecia\(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota\)/)
   const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
   const poExecute = autopilot.slice(autopilot.indexOf("const exec = await workflow('dev-docs-execute-wf'"))
   const zapis = poExecute.indexOf("await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])")

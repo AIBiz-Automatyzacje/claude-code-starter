@@ -146,7 +146,7 @@ test('opis autopilota i handoff: start to osobna wiadomość z samym poleceniem;
     assert.ok(readFileSync(join(REPO, katalog, 'przygotuj-kopie.sh'), 'utf8').includes('i uruchom osobną wiadomością z samym tym poleceniem: /dev-autopilot-wf docs/active/smoke-autopilot'), `${katalog}/przygotuj-kopie.sh`)
     assert.doesNotMatch(readFileSync(join(REPO, katalog, 'README.md'), 'utf8'), /__tests__/, `${katalog}/README.md: testow projekt nie dostaje`)
   }
-  assert.match(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'), /return `\/dev-autopilot-wf \$\{sciezka\} \(osobna wiadomosc z samym tym poleceniem, bez warunkow i prosb\)`/)
+  assert.match(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'), /return `w osobnej wiadomosci z samym poleceniem \(bez warunkow i prosb\): \/dev-autopilot-wf \$\{sciezka\}`/)
 })
 
 // Znaleziska 2026-11-02 pkt 31 (dashboard E2): sesja planowania zmieniła .claude/agents/feature-tester-e2e.md, a handoff mówił

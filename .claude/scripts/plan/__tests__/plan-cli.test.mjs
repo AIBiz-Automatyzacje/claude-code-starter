@@ -419,7 +419,16 @@ test('odciskPlanu: odhaczenia w kazdej postaci listy, biale znaki, CRLF, BOM i s
     ['BOM', `\uFEFF${plan}`],
     ['sekcja realizacji na koncu', `${plan}\n${SEKCJA_REALIZACJI}\n\n- faza 1, IU-1: mail bez imienia (Granice)\n`],
     ['sekcja realizacji z podsekcja', `${plan}\n${SEKCJA_REALIZACJI}\n\n### Faza 1\n\n- faza 1, IU-2: x\n`],
+    // Walidacja 51–55, punkt 61: naglowek sekcji w postaci, w jakiej napisze go agent domkniecia.
+    ['sekcja realizacji poziomu 3', `${plan}\n### Decyzje z realizacji\n\n- faza 1, IU-1: x\n`],
+    ['sekcja realizacji z dwukropkiem i mala litera', `${plan}\n##  decyzje z realizacji: \n\n- faza 1, IU-1: x\n`],
+    ['sekcja realizacji poziomu 3 w srodku, konczy ja naglowek poziomu 3', plan.replace('## Granice zakresu', '### Decyzje z realizacji\n- x\n#### szczegol\n- y\n\n## Granice zakresu')],
   ])) assert.equal(odciskPlanu(wariant), bazowy, opis)
+  // Checkbox w komorce tabeli: odhaczenie nie zmienia odcisku, zmiana tresci wiersza tak.
+  const zTabela = `${plan}\n| Stan | Krok |\n|---|---|\n| [ ] | migracja |\n|[ ]| seed |\n`
+  assert.equal(odciskPlanu(zTabela.replace('| [ ] |', '| [x] |').replace('|[ ]|', '|[X]|')), odciskPlanu(zTabela), 'odhaczenie w tabeli')
+  assert.notEqual(odciskPlanu(zTabela.replace('migracja', 'migracja danych')), odciskPlanu(zTabela), 'tresc wiersza tabeli')
+  assert.notEqual(odciskPlanu(zTabela), bazowy, 'tabela jest trescia planu')
 
   for (const [opis, wariant] of /** @type {[string, string][]} */ ([
     ['zmiana tekstu pozycji z checkboxem', plan.replace('`a` — lista', '`a` — lista z filtrem')],
@@ -429,6 +438,8 @@ test('odciskPlanu: odhaczenia w kazdej postaci listy, biale znaki, CRLF, BOM i s
     ['zmiana w Podejsciu', plan.replace('Lista ofert z filtrem.', 'Lista ofert bez filtra.')],
     ['linia w nowej sekcji po sekcji realizacji', `${plan}\n${SEKCJA_REALIZACJI}\n\n- faza 1: x\n\n## Inna\n\n- nowe\n`],
     ['sekcja o innej nazwie', `${plan}\n## Decyzje z realizacji fazy 2\n\n- x\n`],
+    ['sekcja realizacji poziomu 3: naglowek tego samego poziomu ja konczy', `${plan}\n### Decyzje z realizacji\n\n- x\n\n### Inna\n\n- nowe\n`],
+    ['naglowek poziomu 1 o tej nazwie to nie sekcja', `${plan}\n# Decyzje z realizacji\n\n- x\n`],
   ])) assert.notEqual(odciskPlanu(wariant), bazowy, opis)
 })
 

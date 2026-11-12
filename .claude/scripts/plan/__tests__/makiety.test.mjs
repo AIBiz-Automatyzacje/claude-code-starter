@@ -221,6 +221,9 @@ test('pole „Znika z obecnej wersji”: element bez „znika” albo „zostaje
   assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: ' imię w powitaniu' }))), ['IU-1: pole „Znika z obecnej wersji” ma element bez decyzji „znika” albo „zostaje”: imię w powitaniu'], 'pole bez listy = jeden element')
   assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: ' imię w powitaniu — znika' }))), [])
   assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: ' —' }))), [])
+  // Walidacja 51–55, punkt 61: liczba mnoga i decyzja w linii kontynuacji pod elementem to tez decyzja; podobne slowa nie.
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: '\n- filtry i sortowanie (`Lista.tsx:40`) — znikają (R3)\n- linki w stopce — zostają\n- powitanie z imieniem (`email.service.ts:58`)\n  — znika (R25)\n2) baner\n   zostaje do etapu 5' }))), [])
+  assert.deepEqual(oZnikaniu(plan(iuPrzebudowy({ znika: '\n- baner — pozostaje\n3. filtr — zanika\n- stopka — znikanie animowane' }))).map((u) => u.split(': ').pop()), ['- baner — pozostaje', '3. filtr — zanika', '- stopka — znikanie animowane'])
   // Uwaga dotyczy kazdej jednostki z polem, takze z plikiem Stwórz (decyzja bez elementu i tak jest luka).
   assert.equal(oZnikaniu(plan(iuPrzebudowy({ akcja: 'Stwórz', znika: '\n- baner' }))).length, 1)
   assert.ok(sprawdzPlan(p, tmpdir()).uwagi.some((u) => u.endsWith(': * link wypisu')), 'sprawdzPlan niesie uwage')

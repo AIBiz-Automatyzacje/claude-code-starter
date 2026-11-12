@@ -145,9 +145,8 @@ test('wiring execute-wf: oba przerwane wyjscia ida przez domkniecie czesciowe i 
   assert.equal(orkiestracja.split('const { czesc, czesciowe } = await zapiszUkonczone()').length - 1, 2, 'blocked i builder bez wyniku')
   assert.equal(orkiestracja.split('return wynikPrzerwanego({').length - 1, 2)
   // Zwroty przerwanego execute bez bazy znikaja; jedyny literal `commity: []` + `testy: 'n/a'` to galaz domkniecia bez wyniku (punkt 54), z baza.
-  const bezWyniku = orkiestracja.indexOf('if (!wynik) {')
-  assert.doesNotMatch(orkiestracja.slice(0, bezWyniku), /commity: \[\],\n\s+testy: 'n\/a'/, 'stare zwroty bez bazy znikaja')
-  assert.match(orkiestracja.slice(bezWyniku), /testy: 'n\/a',[\s\S]*?baza: bazaWyniku,/)
+  assert.doesNotMatch(orkiestracja, /commity: \[\],\n\s+testy: 'n\/a'/, 'stare zwroty bez bazy znikaja; galaz bez wyniku zyje w wynikDomkniecia')
+  assert.match(orkiestracja, /return wynikDomkniecia\(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota\)/)
   assert.match(orkiestracja, /agent\(domkniecieCzesciowePrompt\(sciezka, faza, czesc, bazaFazy\(plan\)\), \{ schema: CZESCIOWE_RESULT, agentType: 'klasa-orkiestracyjny'/)
   assert.match(orkiestracja, /if \(!czesc\.mozna\) return \{ czesc, czesciowe: null \}/)
   assert.match(wytnij(EXECUTE, 'const BLOK_PYTANIE_BLOKERA = `', '.`\n'), /Pole pliki wypelniasz takze przy blocked i partial: kazdy plik, ktory zdazyles utworzyc albo zmienic \(pusta lista, gdy zadnego\)/)
@@ -203,10 +202,15 @@ test('autopilot: lista idzie do execute-wf, STOP utrwala nowa liste i mowi opera
   assert.match(wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: 'autopilot/e3/faza-3#2', plikiOdlozone: duzo, powod: null } }),
     /schowku gita "autopilot\/e3\/faza-3#2" \(git stash list\): src\/p0\.ts, .*, src\/p9\.ts i 3 innych; nie przywracaj/)
   assert.equal(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: 'autopilot/e3/faza-3', plikiOdlozone: ['src/mail.ts'], powod: 'schowek autopilot/e3/faza-3 nie wrocil do drzewa: git stash list' } }),
-    ' Jednostek ukonczonych nie zapisano (schowek autopilot/e3/faza-3 nie wrocil do drzewa: git stash list): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie. Schowek gita "autopilot/e3/faza-3" nie wrocil do drzewa (git stash list), sa w nim pliki jednostki nieukonczonej: src/mail.ts — przywroc go (git stash pop) przed decyzja i swiezym runem.')
+    ' Jednostek ukonczonych nie zapisano (schowek autopilot/e3/faza-3 nie wrocil do drzewa: git stash list): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie. Schowek gita "autopilot/e3/faza-3" nie wrocil do drzewa (git stash list), sa w nim pliki jednostki nieukonczonej: src/mail.ts — przywroc go (git stash pop) przed decyzja i swiezym runem; gdy git znowu odmowi, nie usuwaj wpisu (bez git stash drop): pokaz blad w sesji i popros o przywrocenie plikow ze schowka.')
   assert.equal(wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: null, plikiOdlozone: [], powod: null } }), ' Jednostki ukonczone zapisane commitem fedcba9: IU-10 — swiezy run zacznie od przerwanej.')
   assert.equal(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: null, plikiOdlozone: [], powod: 'typecheck: TS2304' } }),
     ' Jednostek ukonczonych nie zapisano (typecheck: TS2304): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.')
+  // Walidacja 51–55, punkt 60: prog listy plikow (10 nazw w calosci, od 11 reszta liczba) i schowek bez listy plikow.
+  const nPlikow = (/** @type {number} */ n) => wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: 's', plikiOdlozone: Array.from({ length: n }, (_, i) => `p${i}`), powod: null } })
+  assert.match(nPlikow(10), /\(git stash list\): p0, p1, p2, p3, p4, p5, p6, p7, p8, p9; nie przywracaj/)
+  assert.match(nPlikow(11), /\(git stash list\): p0, p1, p2, p3, p4, p5, p6, p7, p8, p9 i 1 innych; nie przywracaj/)
+  assert.match(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: 's#2', plikiOdlozone: [], powod: 'hook' } }), /Schowek gita "s#2" nie wrocil do drzewa \(git stash list\) — przywroc go/)
   // Execute zakonczony w domknieciu (porazka bramki) nie ma pola `czesciowe`: powod STOP-u bez dopisku.
   assert.equal(wf.opisCzesciowego({ status: 'partial', problem: 'bramka stack' }), '')
   assert.equal(wf.opisCzesciowego(null), '')

@@ -79,7 +79,10 @@ test('importerzyPliku: import( i require( ze specyfikatorem w nastepnej linii; z
     ...PLIKI,
     'src/pages/leniwy.tsx': "const Odznaka = lazy(() =>\n  import(\n    '@/components/invites/urgency-badge'\n  ),\n)\n",
     'src/lib/stary.js': "const x = require(\n\n  './../components/invites/urgency-badge'\n)\n",
-    'src/lib/log.ts': "console.log(\n  './components/invites/urgency-badge'\n)\n",
+    // Walidacja 51–55, punkt 60: sciezki wskazuja usuwany plik (od src/lib/ to ../components/…), wiec o wyniku decyduje
+    // warunek „linia importu”; wczesniejsza sciezka ./components/… odpadala wczesniej i przypadek niczego nie sprawdzal.
+    'src/lib/log.ts': "console.log(\n  '../components/invites/urgency-badge'\n)\n",
+    'src/lib/lista.ts': "export const SCIEZKI = [\n  '@/components/invites/urgency-badge',\n]\n",
   }, (k) => assert.deepEqual(importerzyPliku(k, ODZNAKA), [SEKCJA, 'src/lib/stary.js', 'src/pages/leniwy.tsx']))
 })
 

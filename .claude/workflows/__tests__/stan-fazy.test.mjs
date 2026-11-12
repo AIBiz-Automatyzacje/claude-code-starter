@@ -116,17 +116,27 @@ test('domkniecie: punkt zapisu stanu po dossier, tylko przy status=completed; be
 test('wiring execute-wf: punkt zapisu doklejony do promptu domkniecia, wynik niesie baze fazy z JS', () => {
   assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej, decyzjeAutopilota\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
   assert.match(zrodloExecute, /const bazaWyniku = bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)\n/)
-  assert.match(zrodloExecute, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
+  assert.match(zrodloExecute, /return wynikDomkniecia\(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota\)/)
   assert.match(zrodloExecute, /stanZapisany: \{ type: \['boolean', 'null'\]/)
 })
 
 // Weryfikacja partii 26–45, punkt 54: `return wynik && {…}` przy padzie domkniecia dawal null — stan bez bazy, decyzje przepadaly.
 test('execute-wf: domkniecie bez wyniku = partial z baza fazy, decyzjami i jednostkami builderow (zgodny z EXECUTE_RESULT)', () => {
   assert.doesNotMatch(zrodloExecute, /return wynik && \{/)
-  const galaz = zrodloExecute.slice(zrodloExecute.indexOf('if (!wynik) {'), zrodloExecute.indexOf('return { ...wynik, baza: bazaWyniku'))
-  assert.ok(galaz.length > 0 && zrodloExecute.indexOf('if (!wynik) {') > zrodloExecute.indexOf("label: `domkniecie:faza-${faza}`"), 'galaz po domknieciu')
-  assert.match(galaz, /status: 'partial',\n {4}iu: buildResults\.map\(\(b\) => \(\{ id: b\.id, status: b\.status \}\)\),\n {4}commity: \[\],\n {4}testy: 'n\/a',\n {4}odchylenia: \[\],/)
-  assert.match(galaz, /problem: 'domkniecie fazy nie zwrocilo wyniku \(agent padl albo zostal przerwany\) — commit fazy mogl juz powstac: sprawdz git log i git status',\n {4}baza: bazaWyniku,\n {4}decyzjeAutopilota,\n/)
+  // Walidacja 51–55, punkt 60: funkcja wykonana na danych (dopasowanie tekstu przepuszczalo `if (!wynik) return null` dopisane obok).
+  // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
+  const wynikDomkniecia = new Function(`${wytnij('function wynikDomkniecia(', '\n}\n', zrodloExecute)}\nreturn wynikDomkniecia`)()
+  const buildery = [{ id: 'IU-1', status: 'completed', decyzje: ['x'] }, { id: 'IU-2', status: 'partial' }]
+  assert.deepEqual(wynikDomkniecia(null, 2, buildery, 'abc1234', ['IU-1: x']), {
+    fazaNumer: 2, status: 'partial', iu: [{ id: 'IU-1', status: 'completed' }, { id: 'IU-2', status: 'partial' }], commity: [], testy: 'n/a', odchylenia: [],
+    problem: 'domkniecie fazy nie zwrocilo wyniku (agent padl albo zostal przerwany) — commit fazy mogl juz powstac: sprawdz git log i git status',
+    baza: 'abc1234', decyzjeAutopilota: ['IU-1: x'],
+  })
+  assert.deepEqual(wynikDomkniecia({ fazaNumer: 2, status: 'completed', baza: 'stara' }, 2, buildery, null, []), { fazaNumer: 2, status: 'completed', baza: null, decyzjeAutopilota: [] })
+  // Koniec orkiestracji: wynik agenta domkniecia idzie prosto do funkcji, bez instrukcji pomiedzy.
+  assert.ok(zrodloExecute.endsWith("label: `domkniecie:faza-${faza}` })\n// Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.\nconst bazaWyniku = bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan)\nreturn wynikDomkniecia(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota)\n"), 'koncowka execute-wf')
+  const galaz = wytnij('function wynikDomkniecia(', '\n}\n', zrodloExecute)
+  assert.match(galaz, /if \(!wynik\) \{/)
   // Pola galezi sa w schemacie wyniku domkniecia (baza i decyzjeAutopilota dokleja JS takze w galezi z wynikiem).
   const schemat = wytnij('const EXECUTE_RESULT = {', '\n}', zrodloExecute)
   for (const pole of ['fazaNumer', 'status', 'iu', 'commity', 'testy', 'odchylenia', 'problem']) assert.match(schemat, new RegExp(`\\n {4}${pole}: \\{`), pole)
@@ -175,7 +185,7 @@ test('wiring: zmiany stanu oznaczaja zapis (oznaczStan), gole zapiszStan() znika
   // IU-1.8 (D12): plus STOP blokera srodowiska z polityka stop-rebuild adaptera (review pending, przebudowa) = 13
   const kod = zrodlo.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')
   // Punkt 24 znalezisk: plus dwa STOP-y walidacji nieuruchomionej przez srodowisko agenta (fix, tura poprawkowa) = 15
-  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 15)
+  assert.equal(kod.match(/(?<!function )\boznaczStan\(\)/g)?.length, 16)
   assert.equal(zrodlo.match(/label: 'stan:zapis'/g)?.length, 1)
 })
 
@@ -218,7 +228,7 @@ test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem be
   assert.match(petla, /workflow\('dev-docs-execute-wf', \{ sciezka, faza: numerFazy, baza: faza\.baza \|\| null, iuUkonczone: faza\.iuUkonczone \|\| \[\], stanPoExecute:/)
   const stop = petla.slice(petla.indexOf("exec.status !== 'completed'"), petla.indexOf('return await stopRun('))
   assert.match(stop, /const bazaZExecute = Boolean\(exec && exec\.baza && !faza\.baza\)\n\s+if \(bazaZExecute\) faza\.baza = exec\.baza\n/)
-  assert.match(stop, /if \(bazaZExecute \|\| ukonczoneZExecute \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
+  assert.match(stop, /if \(bazaZExecute \|\| ukonczoneZExecute \|\| licznikDecyzjiZmieniony \|\| \(exec && exec\.stanZapisany\)\) oznaczStan\(\)/)
   assert.match(petla, /faza\.baza = exec\.baza \|\| faza\.baza \|\| null/)
   // Execute-wf: baza z args wygrywa z HEAD-em plannera (takze dla bramek i dossier domkniecia). Punkt 34 zmienil wyjscie plannera
   // bez pracy: z baza w stanie biegnie domkniecie (bramka, ktora zatrzymala faze, przechodzi przed review) i ono zwraca baze;
@@ -227,7 +237,7 @@ test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem be
   assert.ok(zrodloExecute.indexOf('if (bazaZeStanu) plan.baza = bazaZeStanu') < zrodloExecute.indexOf('if (plan.iu.length === 0 && !bazaZeStanu) {'), 'baza ze stanu przed wyjsciem plannera bez pracy')
   assert.match(zrodloExecute, /if \(plan\.iu\.length === 0 && !bazaZeStanu\) \{\n {2}return \{ fazaNumer: faza, status: 'completed', iu: \[\], commity: \[\], testy: 'brak', odchylenia: \[\], problem: null, baza: null \}/)
   assert.match(zrodloExecute, /const bazaWyniku = bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)\n/)
-  assert.match(zrodloExecute, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
+  assert.match(zrodloExecute, /return wynikDomkniecia\(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota\)/)
   // To samo przypisanie co w zrodle: po nim bazaFazy(plan) daje baze ze stanu, nie HEAD plannera.
   const plan = { baza: 'fedcba9' }
   plan.baza = 'abc1234'

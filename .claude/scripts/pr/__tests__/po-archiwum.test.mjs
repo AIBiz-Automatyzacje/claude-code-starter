@@ -167,4 +167,6 @@ test('shaSprawdzone: linie z wcieciem spacja albo tabulatorem i spacja na koncu 
   const a = 'a'.repeat(40), b = 'b'.repeat(40), c = 'c'.repeat(40)
   assert.deepEqual(shaSprawdzone(`Sprawdzone: ${a}\n  Sprawdzone: ${b}\n\tSprawdzone: ${c} \n  Sprawdzone: abc`), [a, b, c])
   assert.deepEqual(shaSprawdzone(`tekst Sprawdzone: ${a}`), [], 'tylko na poczatku linii')
+  // Walidacja 51–55, punkt 60: po SHA linia sie konczy — dluzszy ciag szesnastkowy i dopisek to nie znacznik.
+  assert.deepEqual(shaSprawdzone(`Sprawdzone: ${a}ff\nSprawdzone: ${b} (po rebase)\nSprawdzone: ${c}`), [c])
 })

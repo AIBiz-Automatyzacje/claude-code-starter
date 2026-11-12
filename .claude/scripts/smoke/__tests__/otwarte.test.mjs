@@ -127,6 +127,23 @@ test('/dev-smoke: odłożona pozycja listy i usterka (U<n>) mają wzory, które 
   assert.match(plaski, /a w pliku smoke'u pozycja `- \[x\] … → odłożone do <etykieta>`/)
 })
 
+// Walidacja 51–55, punkt 60: kilka zadan (kolejnosc alfabetyczna), plik obok katalogow archiwum i sekcja o podobnej nazwie.
+test('decyzjeNierozstrzygniete: zadania alfabetycznie, plik w docs/completed pominiety, sekcja o podobnej nazwie nie liczy sie', () => {
+  const k = projekt({
+    'docs/completed/zeta/known-issues.md': '## Decyzje operatora\n\n- [DECYZJA · faza 1 · fix] z.ts:1 — z\n',
+    'docs/completed/alfa/known-issues.md': '## Decyzje operatora — archiwum\n\n- [DECYZJA · faza 1 · fix] stara\n\n## Decyzje operatora \n\n- [DECYZJA · faza 2 · review] a.ts:2 — a\n',
+    'docs/completed/known-issues.md': '## Decyzje operatora\n\n- [DECYZJA · faza 9 · fix] plik obok katalogow\n',
+  })
+  try {
+    assert.deepEqual(decyzjeNierozstrzygniete(k), [
+      { zadanie: 'alfa', wiersz: '[DECYZJA · faza 2 · review] a.ts:2 — a' },
+      { zadanie: 'zeta', wiersz: '[DECYZJA · faza 1 · fix] z.ts:1 — z' },
+    ])
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+})
+
 // Punkt 52: decyzji nierozstrzygnietych (smoke pominiety albo przerwany) nie widzial ani /dev-prep, ani bramka gotowosci.
 test('decyzjeNierozstrzygniete: wiersze [DECYZJA bez ROZSTRZYGNIĘTA z sekcji „Decyzje operatora” archiwum; tylko bez --zadanie', () => {
   const KI = '# Known issues — sklep\n\n## Decyzje operatora\n\n- [DECYZJA · faza 1 · fix] src/a.ts:5 — limit\n- [DECYZJA · faza 2 · autopilot] IU-4: mail bez imienia → ROZSTRZYGNIĘTA (smoke 2026-11-11): zostaw jak jest\n  - podpunkt\n\n## Faza 1\n\n- [DECYZJA · faza 1 · fix] poza sekcja\n'

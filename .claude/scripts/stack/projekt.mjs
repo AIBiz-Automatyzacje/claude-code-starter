@@ -90,7 +90,10 @@ export function stanSupabase(projekt) {
   const python = dirs.filter((d) => !d.includes('/')).flatMap((d) => ['requirements.txt', 'pyproject.toml'].map((p) => (d ? `${d}/${p}` : p)))
   for (const p of python) {
     if (!existsSync(join(projekt, p))) continue
-    if (readFileSync(join(projekt, p), 'utf8').split('\n').some((l) => /^\s*["']?supabase(?![\w-])/i.test(l))) return { sygnal: 'tak', nieczytelne: [] }
+    // Walidacja 51–55, punkt 58: w pyproject.toml lista zaleznosci bywa w jednej linii (`dependencies = ["fastapi", "supabase>=2"]`),
+    // wiec nazwa w cudzyslowie liczy sie takze w srodku linii; linia komentarza nie.
+    const wzor = p.endsWith('pyproject.toml') ? /^\s*supabase(?![\w-])|^[^#]*["']supabase(?![\w-])/i : /^\s*["']?supabase(?![\w-])/i
+    if (readFileSync(join(projekt, p), 'utf8').split('\n').some((l) => wzor.test(l))) return { sygnal: 'tak', nieczytelne: [] }
   }
   return { sygnal: nieczytelne.length ? 'nieznane' : 'nie', nieczytelne }
 }

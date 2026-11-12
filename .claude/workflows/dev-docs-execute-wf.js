@@ -339,10 +339,41 @@ ${BLOK_DLUGIE_KOMENDY}
 5a. Commit odrzucony mimo zielonej walidacji (np. hook): niczego nie poprawiasz; \`git stash pop\` (gdy schowek powstal) i
    zakoncz: zacommitowano=false, schowek=null, w powod tresc bledu commita.
    Nieudany \`git stash pop\` (tu albo w punkcie 3): nie probuj dalej (bez reset, checkout ani drop); zakoncz z zacommitowano=false,
-   schowek = nazwa (wpis zostaje w git stash list), w powod "schowek <nazwa> nie wrocil do drzewa: git stash list" i blad gita.6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
+   schowek = nazwa (wpis zostaje w git stash list), w powod "schowek <nazwa> nie wrocil do drzewa: git stash list" i blad gita.
+6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
 
 Zwroc obiekt zgodny ze schematem: zacommitowano, commit (SHA), schowek (faktyczna nazwa schowka albo null), plikiOdlozone (pliki (c)),
 walidacja, powod (null przy zacommitowano=true).`
+}
+
+// Decyzje builderow (HIERARCHIA ZRODEL) z prefiksem jednostki. Builder zablokowany nie daje decyzji (jego pliki ida do schowka
+// gita). `tylkoUkonczone` (weryfikacja partii, punkt 48): przy przerwaniu pliki buildera `partial` ida do schowka razem z jednostka
+// przerwana, wiec jego decyzje opisywalyby kod spoza repo — do zapisu po przerwaniu ida tylko decyzje jednostek ukonczonych.
+// Funkcje czyste (walidacja 51–55, punkt 60): testy wykonuja je na danych, nie dopasowuja tekstu orkiestracji.
+function decyzjeBuilderow(buildResults, tylkoUkonczone) {
+  return buildResults.filter((b) => (tylkoUkonczone ? b.status === 'completed' : b.status !== 'blocked'))
+    .flatMap((b) => (Array.isArray(b.decyzje) ? b.decyzje : []).map((d) => String(d).trim()).filter(Boolean).map((d) => `${b.id}: ${d}`))
+}
+
+// Wynik execute po domknieciu. Weryfikacja partii 26–45, punkt 54: domkniecie bez wyniku (agent padl albo zostal przerwany)
+// zwracalo null — autopilot zostawial stan z baza: null (swiezy run liczylby review od galezi glownej), a decyzje autopilota
+// przepadaly. Bez wyniku: obiekt zgodny z EXECUTE_RESULT, status partial — autopilot zapisuje baze i robi STOP jak przy kazdym
+// execute bez „completed”.
+function wynikDomkniecia(wynik, faza, buildResults, baza, decyzjeAutopilota) {
+  if (!wynik) {
+    return {
+      fazaNumer: faza,
+      status: 'partial',
+      iu: buildResults.map((b) => ({ id: b.id, status: b.status })),
+      commity: [],
+      testy: 'n/a',
+      odchylenia: [],
+      problem: 'domkniecie fazy nie zwrocilo wyniku (agent padl albo zostal przerwany) — commit fazy mogl juz powstac: sprawdz git log i git status',
+      baza,
+      decyzjeAutopilota,
+    }
+  }
+  return { ...wynik, baza, decyzjeAutopilota }
 }
 
 // Wynik execute przerwanego przed domknieciem: baza fazy zawsze (bez niej commit resztek z drzewa gubi poczatek fazy),
@@ -639,12 +670,8 @@ async function zapiszUkonczone() {
 // Decyzje autopilota z builderow (HIERARCHIA ZRODEL) liczone w JS; autopilot zapisuje je w known-issues jak decyzje fixa. Takze
 // przy zatrzymaniu: jednostki ukonczone przed blokerem zapisuje domkniecie czesciowe. Builder zablokowany nie daje decyzji
 // (jego pliki ida do schowka gita).
-const decyzjeAutopilota = buildResults.filter((b) => b.status !== 'blocked').flatMap((b) => (Array.isArray(b.decyzje) ? b.decyzje : [])
-  .map((d) => String(d).trim()).filter(Boolean).map((d) => `${b.id}: ${d}`))
-// Weryfikacja partii, punkt 48 (pokrewne): przy przerwaniu pliki buildera `partial` ida do schowka gita razem z jednostka
-// przerwana, wiec jego decyzje opisywalyby kod spoza repo. Do zapisu po przerwaniu ida tylko decyzje jednostek ukonczonych.
-const decyzjeUkonczonych = buildResults.filter((b) => b.status === 'completed').flatMap((b) => (Array.isArray(b.decyzje) ? b.decyzje : [])
-  .map((d) => String(d).trim()).filter(Boolean).map((d) => `${b.id}: ${d}`))
+const decyzjeAutopilota = decyzjeBuilderow(buildResults, false)
+const decyzjeUkonczonych = decyzjeBuilderow(buildResults, true)
 
 if (zablokowany) {
   const { czesc, czesciowe } = await zapiszUkonczone()
@@ -674,20 +701,4 @@ phase('Domkniecie')
 const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza), ukonczoneWczesniej, decyzjeAutopilota) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 // Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.
 const bazaWyniku = bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan)
-// Weryfikacja partii 26–45, punkt 54: domkniecie bez wyniku (agent padl albo zostal przerwany) zwracalo null — autopilot
-// zostawial stan z baza: null (swiezy run liczylby review od galezi glownej), a decyzje autopilota przepadaly. Wynik zgodny
-// z EXECUTE_RESULT, status partial: autopilot zapisuje baze i robi STOP jak przy kazdym execute bez „completed”.
-if (!wynik) {
-  return {
-    fazaNumer: faza,
-    status: 'partial',
-    iu: buildResults.map((b) => ({ id: b.id, status: b.status })),
-    commity: [],
-    testy: 'n/a',
-    odchylenia: [],
-    problem: 'domkniecie fazy nie zwrocilo wyniku (agent padl albo zostal przerwany) — commit fazy mogl juz powstac: sprawdz git log i git status',
-    baza: bazaWyniku,
-    decyzjeAutopilota,
-  }
-}
-return { ...wynik, baza: bazaWyniku, decyzjeAutopilota }
+return wynikDomkniecia(wynik, faza, buildResults, bazaWyniku, decyzjeAutopilota)

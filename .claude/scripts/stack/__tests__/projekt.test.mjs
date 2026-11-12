@@ -63,6 +63,15 @@ test('sygnalSupabase: katalog, config.toml do 3 poziomow, dowolna paczka @supaba
   zProjektem({ 'requirements.txt': 'fastapi==0.115\nsupabase>=2.0\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'tak'))
   zProjektem({ 'backend/pyproject.toml': '[project]\ndependencies = [\n  "supabase>=2.0",\n]\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'tak'))
   zProjektem({ 'requirements.txt': 'supabase-auth-helpers-niezwiazane\n# supabase w komentarzu\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'nie'))
+  // Walidacja 51–55, punkty 58 i 60: lista zaleznosci w jednej linii; negatywy, ktorych dotad nie bylo.
+  zProjektem({ 'backend/pyproject.toml': '[project]\ndependencies = ["fastapi>=0.110", "supabase>=2.4"]\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'tak', 'lista w jednej linii'))
+  zProjektem({ 'pyproject.toml': '[tool.poetry.dependencies]\nsupabase = "^2.4"\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'tak', 'klucz tabeli poetry'))
+  zProjektem({ 'pyproject.toml': '# dependencies = ["supabase"]\ndependencies = ["supabase-niezwiazane", "fastapi"]\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'nie', 'komentarz i inna paczka'))
+  zProjektem({ 'a/b/requirements.txt': 'supabase>=2.0\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'nie', 'Python tylko w korzeniu i na pierwszym poziomie'))
+  zProjektem({ 'apps/web/config.toml': '' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'nie', 'config.toml poza katalogiem supabase'))
+  zProjektem({ 'dist/supabase/config.toml': '', 'apps/build/supabase/config.toml': '' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'nie', 'dist i build pominiete'))
+  zProjektem({ 'supabase/migrations/1.sql': '' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'tak', 'sam katalog supabase/ w korzeniu'))
+  zProjektem({ 'package.json': '{', 'requirements.txt': 'supabase\n' }, (projekt) => assert.equal(sygnalSupabase(projekt), 'tak', 'Python wygrywa z nieczytelnym manifestem'))
   zProjektem({ 'package.json': '{ "dependencies": ', 'frontend/package.json': pakiet({ dependencies: { react: '19.2.0' } }) }, (projekt) => {
     assert.deepEqual(stanSupabase(projekt), { sygnal: 'nieznane', nieczytelne: ['package.json'] })
     assert.equal(uzywaSupabase(projekt), true, 'nieznane to nie „nie”')

@@ -1327,7 +1327,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     return { status: 'GOTOWY-DO-DECYZJI', etap, rekomendacja: rek, stan: faktyBramki, niespelnione, warunki, informacje, krotkieReview }
   }
   if (!auto) {
-    log("/dev-pr: wszystkie warunki merge'a spelnione — merge zostaje decyzja operatora (tryb interaktywny)")
+    log("/dev-pr: wszystkie warunki merge'a spelnione — merge zostaje decyzja operatora (tryb interaktywny albo --bez-merge)")
     return { status: 'GOTOWY-DO-MERGE', etap, rekomendacja: rek, stan: faktyBramki, warunki, informacje }
   }
   const merge = await agent(
