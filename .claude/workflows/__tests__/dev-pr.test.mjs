@@ -667,7 +667,7 @@ test('punkt 38: gotowe komendy /dev-pr w raportach i handoffach to `3 --bez-merg
   }
   // Miejsca bez slowa „potem”.
   assert.doesNotMatch(zrodlo, /\/dev-pr --czesc/, 'dev-pr-wf.js: kazda komenda czesci z liczba tur i --bez-merge')
-  assert.match(zrodlo, /niezmergowana — najpierw \/dev-pr 3 --bez-merge --czesc \$\{cz\.czesc - 1\}”/)
+  assert.match(zrodlo, /niezmergowana — najpierw \/dev-pr 3 --bez-merge --czesc \$\{cz\.czesc - 1\} \(dokonczy ture i zapyta o merge\)”/)
   assert.match(skillPr, /poleceniem dla nowej sesji \(`\/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `\/dev-pr 3 --bez-merge`; stan: `etap stan`\)/)
   assert.match(skillPr, /znów krok 1 \(`\/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `--czesc 1`\)/)
   assert.match(skillPr, /„Rozwiążę sam” \(koniec; operator wraca `\/dev-pr 3 --bez-merge --czesc N`\)/)

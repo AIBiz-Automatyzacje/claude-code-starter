@@ -862,7 +862,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (cz) {
     cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
-   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr 3 --bez-merge --czesc ${cz.czesc - 1}”`
+   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr 3 --bez-merge --czesc ${cz.czesc - 1} (dokonczy ture i zapyta o merge)”`
     // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po
     // rebase na starszy main (operator rozwiazal konflikt i wrocil pozniej) — zwykly rebase na nowy main.
     const rebase = `REBASE: (a) \`git merge-base --is-ancestor origin/main HEAD\` kod 0 — rebase=juz-wykonany, bez rebase'u;
