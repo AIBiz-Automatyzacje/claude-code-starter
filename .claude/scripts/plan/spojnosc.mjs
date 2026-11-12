@@ -19,6 +19,7 @@ import { join } from 'node:path'
 
 /** Sekcja planu, do ktorej domkniecie fazy pisze decyzje korygujace plan; odcisk jej nie liczy. */
 export const SEKCJA_REALIZACJI = '## Decyzje z realizacji'
+const NAZWA_SEKCJI_REALIZACJI = /^decyzje z realizacji:?$/i
 
 /**
  * @param {string} tresc plan techniczny
@@ -26,12 +27,21 @@ export const SEKCJA_REALIZACJI = '## Decyzje z realizacji'
  */
 export function odciskPlanu(tresc) {
   const linie = tresc.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').split('\n')
-  let wSekcji = false
+  // Walidacja 51–55, punkt 61: sekcje pisze agent domkniecia, wiec naglowek bywa o poziom nizej (`###`), z dwukropkiem albo
+  // inna wielkoscia liter — taka sekcja tez nie wchodzi do odcisku. Konczy ja naglowek tego samego albo wyzszego poziomu.
+  let poziomSekcji = 0
   const bezSekcji = linie.filter((l) => {
-    if (l.startsWith('## ')) wSekcji = l.trimEnd() === SEKCJA_REALIZACJI
-    return !wSekcji
+    const naglowek = /^(#{1,6})[ \t]+(.*?)[ \t]*$/.exec(l)
+    if (naglowek) {
+      const poziom = (naglowek[1] ?? '').length
+      if ((poziom === 2 || poziom === 3) && NAZWA_SEKCJI_REALIZACJI.test(naglowek[2] ?? '')) poziomSekcji = poziom
+      else if (poziomSekcji && poziom <= poziomSekcji) poziomSekcji = 0
+    }
+    return !poziomSekcji
   })
   const znormalizowany = bezSekcji.join('\n')
+    // Checkbox w komorce tabeli (znalezisko 53 go wymienialo): odhaczenie nie zmienia odcisku, jak w listach.
+    .replace(/(\|[ \t]*)\[[xX]\](?=[ \t]*\|)/g, '$1[ ]')
     .replace(/^([ \t]*(?:>[ \t]*)*(?:[-*+]|\d+[.)])[ \t]+)\[[xX]\]/gm, '$1[ ]')
     .replace(/[ \t]+$/gm, '')
     .replace(/\n+$/, '')

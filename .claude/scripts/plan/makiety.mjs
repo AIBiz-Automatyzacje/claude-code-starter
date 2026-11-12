@@ -54,8 +54,16 @@ export function przebudowujeBezDecyzji(iu) {
 export function elementyBezDecyzji(znika) {
   if (!znika || znika === '—') return []
   const linie = znika.split('\n').map((l) => l.trim()).filter(Boolean)
-  const lista = linie.filter((l) => /^(?:[-*+]|\d+[.)])\s+/.test(l))
-  return (lista.length ? lista : [linie.join(' ')]).filter((l) => !/\b(?:znika|zostaje)\b/i.test(l))
+  // Walidacja 51–55, punkt 61: decyzja bywa w linii kontynuacji pod elementem i w liczbie mnogiej („znikają”, „zostają”) —
+  // linia bez znaku listy nalezy do elementu nad nia. Znak po slowie sprawdzany jawnie: `\b` nie zna polskich liter.
+  /** @type {string[]} */
+  const elementy = []
+  for (const l of linie) {
+    if (/^(?:[-*+]|\d+[.)])\s+/.test(l) || !elementy.length) elementy.push(l)
+    else elementy[elementy.length - 1] += ` ${l}`
+  }
+  const lista = linie.some((l) => /^(?:[-*+]|\d+[.)])\s+/.test(l)) ? elementy : [linie.join(' ')]
+  return lista.filter((l) => !/(?<![\p{L}\d])(?:znika(?:ją)?|zostaj[eą])(?![\p{L}\d])/iu.test(l))
 }
 
 /**
