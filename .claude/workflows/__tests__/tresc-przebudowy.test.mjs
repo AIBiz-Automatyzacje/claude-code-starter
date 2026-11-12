@@ -137,7 +137,12 @@ test('builder: hierarchia zrodel z warunkami samodzielnego wyboru, polem decyzje
 test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis zaraz po execute, review ich nie zglasza', () => {
   assert.match(EXECUTE, /const decyzjeAutopilota = buildResults\.filter\(\(b\) => b\.status !== 'blocked'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
   assert.match(EXECUTE, /\.map\(\(d\) => `\$\{b\.id\}: \$\{d\}`\)\)/)
-  assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
+  assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota: decyzjeUkonczonych,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
+  // Punkt 48 (pokrewne): builder `partial` przy przerwaniu oddaje pliki do schowka — jego decyzje nie ida do zapisu.
+  assert.match(EXECUTE, /const decyzjeUkonczonych = buildResults\.filter\(\(b\) => b\.status === 'completed'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
+  assert.doesNotMatch(EXECUTE, /return wynikPrzerwanego\(\{\n {4}fazaNumer: faza,\n {4}decyzjeAutopilota,/)
+  // Pelne domkniecie dostaje dotychczasowa liste (wszyscy poza blocked).
+  assert.match(EXECUTE, /ukonczoneWczesniej, decyzjeAutopilota\) \+ punktZapisuStanu/)
   assert.match(EXECUTE, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
   const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
   const poExecute = autopilot.slice(autopilot.indexOf("const exec = await workflow('dev-docs-execute-wf'"))

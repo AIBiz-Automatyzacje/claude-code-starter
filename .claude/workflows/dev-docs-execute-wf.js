@@ -641,12 +641,16 @@ async function zapiszUkonczone() {
 // (jego pliki ida do schowka gita).
 const decyzjeAutopilota = buildResults.filter((b) => b.status !== 'blocked').flatMap((b) => (Array.isArray(b.decyzje) ? b.decyzje : [])
   .map((d) => String(d).trim()).filter(Boolean).map((d) => `${b.id}: ${d}`))
+// Weryfikacja partii, punkt 48 (pokrewne): przy przerwaniu pliki buildera `partial` ida do schowka gita razem z jednostka
+// przerwana, wiec jego decyzje opisywalyby kod spoza repo. Do zapisu po przerwaniu ida tylko decyzje jednostek ukonczonych.
+const decyzjeUkonczonych = buildResults.filter((b) => b.status === 'completed').flatMap((b) => (Array.isArray(b.decyzje) ? b.decyzje : [])
+  .map((d) => String(d).trim()).filter(Boolean).map((d) => `${b.id}: ${d}`))
 
 if (zablokowany) {
   const { czesc, czesciowe } = await zapiszUkonczone()
   return wynikPrzerwanego({
     fazaNumer: faza,
-    decyzjeAutopilota,
+    decyzjeAutopilota: decyzjeUkonczonych,
     status: 'blocked',
     iu: buildResults.map((b) => ({ id: b.id, status: b.status })),
     problem: zablokowany.pytanie || `IU ${zablokowany.id} zablokowany`,
@@ -659,7 +663,7 @@ if (buildResults.length !== plan.iu.length) {
   const { czesc, czesciowe } = await zapiszUkonczone()
   return wynikPrzerwanego({
     fazaNumer: faza,
-    decyzjeAutopilota,
+    decyzjeAutopilota: decyzjeUkonczonych,
     status: 'partial',
     iu: plan.iu.map((iu) => ({ id: iu.id, nazwa: iu.nazwa, status: zwrocone.has(iu.id) ? 'completed' : 'brak wyniku (kill/blad)' })),
     problem: `builder(y) bez wyniku: ${brakujace.join(', ')} — IU niewykonane lub niezweryfikowane`,
