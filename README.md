@@ -29,9 +29,9 @@ Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + 
 ## Jak to działa
 
 ```
-/dev-brainstorm → /dev-prep → /dev-plan → dev-autopilot-wf → /dev-pr → merge
-  co budować     co dostarcza   jak budować   fazy: kod, review,   PR, recenzja bota,
-                 człowiek       + zadanie     naprawy, wnioski     tury poprawek
+/dev-brainstorm → /dev-prep → /dev-plan → dev-autopilot-wf → /dev-smoke → /dev-pr → merge
+  co budować     co dostarcza   jak budować   fazy: kod, review,   decyzje i    PR, recenzja bota,
+                 człowiek       + zadanie     naprawy, wnioski     lista smoke  tury poprawek
 ```
 
 1. **`/dev-brainstorm`** *(opcjonalny)* - przepytuje Cię pytanie po pytaniu, aż będzie jasne, co ma powstać. Efekt: dokument wymagań.
@@ -43,6 +43,8 @@ Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + 
 5. **`/dev-smoke`** - w nowej sesji przechodzi tę listę: najpierw pyta Cię o decyzje (popraw, zostaw jak jest, odłóż),
    potem sam klika aplikację i naprawia usterki; zatrzymuje się tylko przy tym, co musisz zrobić Ty (produkcja, hasło, telefon).
 6. **`/dev-pr`** - tworzy PR, czeka na recenzję bota, prowadzi tury poprawek i zapisuje, czego nasze review nie złapało.
+   Raporty podają gotową komendę `/dev-pr 3 --bez-merge`: tury idą same, a gdy wszystkie warunki merge'a są spełnione,
+   komenda kończy się jednym pytaniem, czy mergować.
    Bot recenzji (CodeRabbit, konfiguruje go `/coderabbit-setup`) jest opcjonalny: `/dev-pr --bez-bota` prowadzi PR do merge'a bez niego
    (PR, CI, krótkie review zmian po archiwizacji, merge).
 
