@@ -4,7 +4,7 @@
 // import zlozony z fragmentow), wiec wynik to uwaga, nie blad: blad zatrzymalby `generuj` na falszywym trafieniu.
 
 import { execFileSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join, posix } from 'node:path'
 
 import { akcja } from './budzet-pliku.mjs'
@@ -13,6 +13,9 @@ import { akcja } from './budzet-pliku.mjs'
 
 const PLIK_KODU = /\.[cm]?[jt]sx?$/
 const LINIA_IMPORTU = /(?:^|[^\w$.])(?:import|from|require)\b/
+// Weryfikacja partii, punkt 55 (33): `import(` albo `require(` na koncu linii, specyfikator w nastepnej (formatowanie Prettiera
+// przy dlugiej sciezce). Skan idzie po liniach grepa, wiec linie samego specyfikatora sprawdza drugie przejscie po pliku.
+const OTWARTY_IMPORT = /(?:^|[^\w$.])(?:import|require)\s*\(\s*$/
 const SPECYFIKATOR = /(['"`])([^'"`\s]+)\1/g
 // Pierwszy segment, ktory na pewno jest aliasem sciezki, nie paczka (`@/x`, `~/x`, `#x/y`).
 const ALIAS = /^(?:@|~|#.*)$/
@@ -45,6 +48,24 @@ function testPliku(plik, usuwany) {
 }
 
 /**
+ * @param {string} projekt @param {string} plik @param {string} linia linia ze specyfikatorem (wynik grepa)
+ * @returns {boolean} poprzednia niepusta linia pliku konczy sie na `import(` albo `require(`
+ */
+function poOtwartymImporcie(projekt, plik, linia) {
+  let linie
+  try {
+    linie = readFileSync(join(projekt, plik), 'utf8').split('\n')
+  } catch {
+    return false
+  }
+  return linie.some((l, i) => {
+    if (l !== linia) return false
+    for (let j = i - 1; j >= 0; j--) if ((linie[j] ?? '').trim()) return OTWARTY_IMPORT.test(linie[j] ?? '')
+    return false
+  })
+}
+
+/**
  * Sledzone pliki kodu z linia importu (`import`, `from`, `require`) wskazujaca usuwany plik: sciezka wzgledna rozwiazana od
  * importera albo koncowka sciezki po aliasie. Sam plik i jego test sa pominiete.
  * @param {string} projekt
@@ -68,8 +89,9 @@ export function importerzyPliku(projekt, usuwany) {
     const koniec = rekord.indexOf('\0')
     const plik = rekord.slice(0, Math.max(koniec, 0))
     const linia = rekord.slice(koniec + 1)
-    if (!PLIK_KODU.test(plik) || plik === usuwany || testPliku(plik, usuwany) || !LINIA_IMPORTU.test(linia)) continue
-    if ([...linia.matchAll(SPECYFIKATOR)].some((m) => wskazuje(m[2], plik, cel))) importerzy.add(plik)
+    if (!PLIK_KODU.test(plik) || plik === usuwany || testPliku(plik, usuwany)) continue
+    if (![...linia.matchAll(SPECYFIKATOR)].some((m) => wskazuje(m[2], plik, cel))) continue
+    if (LINIA_IMPORTU.test(linia) || poOtwartymImporcie(projekt, plik, linia)) importerzy.add(plik)
   }
   return [...importerzy].sort()
 }
