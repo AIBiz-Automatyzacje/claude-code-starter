@@ -37,7 +37,7 @@ function wytnij(zrodlo, kotwica, koniec) {
  *   pozycjeOperatora: (nienaprawione: unknown) => string[],
  *   wierszDecyzji: (faza: number, zrodlo: string, pozycja: string) => string,
  *   decyzjeKnownIssuesPrompt: (sciezka: string, faza: number, wiersze: string[]) => string,
- *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null, otwarte?: string | null, smokeStatus?: string | null }) => string[],
+ *   nastepneKroki: (w: { smoke: string, raporty: unknown[], propozycjeBramek: unknown[], czesci: boolean, zadanie: string, decyzjeZPliku?: string[] | null, otwarte?: string | null, smokeStatus?: string | null, niezapisane?: string[] }) => string[],
  *   SEKCJA_DECYZJI: string,
  * }}
  */
@@ -175,6 +175,27 @@ test('autopilot: raport bierze decyzje z pliku, takze z faz sprzed tego runu', (
   assert.match(autopilot, /decyzjeZPliku: stan\.walidacjaWynik \? \(stan\.walidacjaWynik\.decyzjeOtwarte \|\| \[\]\) : null/)
 })
 
+// Weryfikacja partii, punkt 48 (pokrewne): przy nieudanym zapisie do known-issues decyzje ginely — log mowil „zostaja w raporcie”,
+// a nie wchodzily ani do `raporty`, ani do krokow. Teraz pozycja „Akcji operatora” (takze przy smoke'u, bo smoke ich nie pokaze).
+test('autopilot: decyzje niezapisane w known-issues ida do Akcji operatora, wyniku runu i STOP-u', () => {
+  const niezapisane = ['[DECYZJA · faza 2 · autopilot] IU-4: src/mail.ts:12 — mail bez imienia']
+  for (const smoke of ['', 'docs/operator/x-smoke.md']) {
+    const kroki = a.nastepneKroki({ smoke, propozycjeBramek: [], czesci: false, zadanie: 'x', raporty: [], decyzjeZPliku: [], niezapisane })
+    const akcje = kroki.find((k) => k.startsWith('Akcje operatora: '))
+    assert.ok(akcje, `akcje przy smoke=${JSON.stringify(smoke)}`)
+    assert.match(akcje, /decyzje niezapisane w known-issues \(1\): \[DECYZJA · faza 2 · autopilot\] IU-4: src\/mail\.ts:12 — mail bez imienia\.$/)
+  }
+  assert.equal(a.nastepneKroki({ smoke: '', propozycjeBramek: [], czesci: false, zadanie: 'x', raporty: [], decyzjeZPliku: [], niezapisane: [] }).length, 1, 'pusta lista = bez pozycji')
+  const zapis = wytnij(autopilot, 'async function zapiszDecyzje(', '\n}\n')
+  assert.match(zapis, /if \(!pozycje\.length\) return true/)
+  assert.match(zapis, /decyzjeNiezapisane\.push\(\.\.\.wiersze\.map\(\(w\) => w\.replace\(\/\^- \/, ''\)\)\)/)
+  assert.match(zapis, /return false\n {2}\}/)
+  assert.match(autopilot, /niezapisane: decyzjeNiezapisane \}\),\n {2}decyzjeNiezapisane,/)
+  assert.match(wytnij(autopilot, 'async function stopRun(', '\n}\n'), /\.\.\.\(decyzjeNiezapisane\.length \? \{ decyzjeNiezapisane: \[\.\.\.decyzjeNiezapisane\] \} : \{\}\)/)
+  // Lista runu stoi przed stopRun i zapisem decyzji (zapis jest przed STOP-em execute).
+  assert.ok(autopilot.indexOf('const decyzjeNiezapisane = []') < autopilot.indexOf('async function stopRun('))
+})
+
 // Krok 3: przy smoke'u jedna droga — raport podaje liczbe decyzji i odsyla do smoke'u, bez listy decyzji i bez komendy PR.
 test('autopilot: raport przy smoke\'u podaje liczbe decyzji zamiast listy i nie podaje komendy PR', () => {
   const wejscie = { propozycjeBramek: [], czesci: true, zadanie: 'x', raporty: [], decyzjeZPliku: ['[DECYZJA · faza 1 · fix] src/a.ts:5 — limit', '[DECYZJA · faza 2 · review] src/b.ts:9 — zaleznosc'] }
@@ -242,7 +263,7 @@ test('autopilot: po padzie autora smoke\'u albo archiwizacji raport nie podaje k
   assert.ok(bezArchiwum.every((k) => !/\/dev-pr/.test(k)))
   // Zadanie bez pozycji smoke'u: jak dotad komenda PR.
   assert.match(a.nastepneKroki({ ...wejscie, smokeStatus: 'brak-pozycji' }).at(-1) ?? '', /^Po smoke'u: `\/clear`, potem `\/dev-pr 3 --bez-merge --czesc 1`/)
-  assert.match(autopilot, /smokeStatus: complete \? complete\.smokeStatus : \(stan\.zakonczenie\.complete === 'done' \? null : 'complete-null'\) \}\),/)
+  assert.match(autopilot, /smokeStatus: complete \? complete\.smokeStatus : \(stan\.zakonczenie\.complete === 'done' \? null : 'complete-null'\), niezapisane: decyzjeNiezapisane \}\),/)
 })
 
 // Krok 6 (punkt 45): raport autopilota zaczyna sie od zdania o otwartych sprawach z archiwizacji (otwarte.mjs); bez zdania uklad bez zmian.

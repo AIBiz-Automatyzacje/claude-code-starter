@@ -1485,6 +1485,9 @@ if (!sciezka) {
 // harnessu i transkryptow — workflow nie wola agenta telemetrii i nie liczy tokenow z budzetu runu (tylko output, ~11% kosztu).
 const historia = {}
 const raporty = []
+// Weryfikacja partii, punkt 48 (pokrewne): decyzje, ktorych zapis do known-issues sie nie udal. Log mowil „zostaja w raporcie”,
+// a nie wchodzily nigdzie; teraz ida do nastepneKroki i do wyniku runu, takze przy STOP-ie.
+const decyzjeNiezapisane = []
 let kolejka
 let stan = null
 // Stan fazy do zapisu (P7): tresc czekajaca na nastepnego agenta i tresc doklejona do jego polecenia.
@@ -1555,7 +1558,7 @@ function fazyNieOdegrane(raporty) {
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
-function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus }) {
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus, niezapisane }) {
   const kroki = []
   // Pad autora smoke'u albo calej archiwizacji (weryfikacja partii 2026-11-11, punkt 49): brak pliku nie znaczy „brak pozycji”.
   // Raport konczyl sie wtedy komenda PR, a ostrzezenie bylo tylko w logu; pozycje „Operator checklist” i [Manual] nie trafily nigdzie.
@@ -1576,6 +1579,8 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
   // Bez pliku smoke'u (brak pozycji albo pad autora) lista decyzji w raporcie jest jedynym miejscem, w ktorym operator je zobaczy.
   if (decyzje.length && !smoke) akcje.push(`zmiany spoza planu do decyzji (${decyzje.length}, sekcja „Decyzje operatora” w known-issues): ${decyzje.join('; ')}`)
+  // Decyzje bez zapisu w known-issues (punkt 48, pokrewne): smoke ich nie pokaze, wiec raport jest jedynym ich miejscem.
+  if (Array.isArray(niezapisane) && niezapisane.length) akcje.push(`decyzje niezapisane w known-issues (${niezapisane.length}): ${niezapisane.join('; ')}`)
   // Pozycja kontroli fixa zostawiona bez prefiksu OPERATOR: nie trafia do doDecyzjiOperatora i bez tej linii ginela w JSON-ie (pilot Nawykometr, run 3).
   const kontrola = raporty.map((r) => ({ faza: r?.faza, ile: (r?.kontrolaFixa?.pominiete || []).filter((x) => !/^OPERATOR:/i.test(String(x).trim())).length + (r?.kontrolaFixa?.bezSladu || 0) })).filter((k) => k.ile > 0)
   if (kontrola.length) akcje.push(`pozycje kontroli fixa bez naprawy: ${kontrola.map((k) => `faza ${k.faza} (${k.ile})`).join(', ')} — uzasadnienia w kontrolaFixa.pominiete wyniku runu`)
@@ -1754,7 +1759,7 @@ async function stopRun(obj) {
   }
   // Fazy domkniete w zadaniu (nie w tym runie): STOP na fazie 3 z 3 po dwoch zielonych to nie porazka calego zadania.
   const ukonczone = stan && Array.isArray(stan.fazy) ? fazyUkonczone(stan.fazy) : null
-  return { status: 'STOP', ...obj, powod, fazyUkonczone: ukonczone, artefaktyStop: artefakty }
+  return { status: 'STOP', ...obj, powod, fazyUkonczone: ukonczone, artefaktyStop: artefakty, ...(decyzjeNiezapisane.length ? { decyzjeNiezapisane: [...decyzjeNiezapisane] } : {}) }
 }
 
 phase('Bootstrap')
@@ -1861,12 +1866,18 @@ function oznaczStan() {
 
 // Punkt 40: decyzje operatora ida na dysk w chwili powstania. Nieudany zapis nie zatrzymuje runu (pozycja zostaje w raporcie
 // runu), ale wychodzi w logu, bo smoke i swiezy run czytaja decyzje z pliku.
+// Zwraca true, gdy wiersze sa w pliku (albo nie bylo czego zapisac). Nieudany zapis dopisuje wiersze do decyzjeNiezapisane.
 async function zapiszDecyzje(numerFazy, zrodlo, pozycje) {
-  if (!pozycje.length) return
+  if (!pozycje.length) return true
   const wiersze = pozycje.map((p) => wierszDecyzji(numerFazy, zrodlo, p))
   const zapis = await agent(decyzjeKnownIssuesPrompt(sciezka, numerFazy, wiersze), { schema: P3_KNOWN_ISSUES, agentType: 'klasa-mechaniczny', label: `decyzje:zapis:faza-${numerFazy}` })
-  if (!zapis || !zapis.zapisano) log(`Faza ${numerFazy}: UWAGA — ${pozycje.length} decyzji operatora (${zrodlo}) nie zapisano w ${sciezka}/known-issues.md; zostaja tylko w raporcie tego runu`)
-  else log(`Faza ${numerFazy}: ${pozycje.length} decyzji operatora (${zrodlo}) w sekcji „Decyzje operatora” known-issues${zapis.commit ? ` (${zapis.commit})` : ''}`)
+  if (!zapis || !zapis.zapisano) {
+    decyzjeNiezapisane.push(...wiersze.map((w) => w.replace(/^- /, '')))
+    log(`Faza ${numerFazy}: UWAGA — ${pozycje.length} decyzji operatora (${zrodlo}) nie zapisano w ${sciezka}/known-issues.md; zostaja tylko w raporcie tego runu (nastepneKroki, decyzjeNiezapisane)`)
+    return false
+  }
+  log(`Faza ${numerFazy}: ${pozycje.length} decyzji operatora (${zrodlo}) w sekcji „Decyzje operatora” known-issues${zapis.commit ? ` (${zapis.commit})` : ''}`)
+  return true
 }
 
 function zeStanem(polecenie) {
@@ -2602,7 +2613,8 @@ return {
   uwagiArchiwum: (complete && complete.uwagi) || [],
   // Punkt 53: zadanie w toku z nieaktualnym przegladem spojnosci planu — run poszedl, operator widzi uwage w wyniku.
   uwagaSpojnosci: bramkaSpojnosci.uwaga,
-  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null') }),
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null'), niezapisane: decyzjeNiezapisane }),
+  decyzjeNiezapisane,
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
