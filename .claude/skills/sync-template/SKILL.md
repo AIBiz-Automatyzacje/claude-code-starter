@@ -21,7 +21,8 @@ szablonie coś się zmieniło, i automatycznie to aplikuje.
   `settings.local.json` (lokalny), rootowego `README.md`/`CLAUDE.md` ani `docs/` projektu.
 - **Bez testów maszynerii:** katalogi `__tests__/` są testami repo szablonu (zależą od jego `node_modules` i katalogu
   `stacks/`), więc do projektów nie jadą i nie są kontrolą projektu. Testy z wcześniejszych synców następny sync zdejmuje
-  jako `USUNIETE`, z kopią w backupie.
+  jako `USUNIETE`, z kopią w backupie. Po pierwszym syncu na tę wersję uruchom sync drugi raz: pierwszy idzie jeszcze starym
+  skryptem z projektu i testy kopiuje, drugi (już nowym skryptem) je zdejmuje, także gdy szablon się nie zmienił.
 - **Szablon zawsze wygrywa:** pliki wspólne są nadpisywane wersją z szablonu, także
   gdy były lokalnie modyfikowane. Nadpisywane i usuwane pliki najpierw trafiają do
   backupu (ścieżka odwrotu) — user nie musi tego zatwierdzać.

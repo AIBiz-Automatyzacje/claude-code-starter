@@ -175,6 +175,42 @@ test('testy maszynerii z wczesniejszego syncu znikaja z projektu z kopia w backu
   }
 })
 
+// Weryfikacja partii 26–45, punkt 55 (27): pierwszy sync starym skryptem kopiowal testy i zapisywal nowy SHA, a nastepny konczyl sie
+// UP_TO_DATE — testy zostawaly do kolejnego commitu szablonu. Manifest z __tests__/ wymusza pelna sciezke bez zmiany w szablonie.
+test('sync przy aktualnym SHA, ale z testami w manifescie: zdejmuje je zamiast UP_TO_DATE; wlasny test projektu zostaje', () => {
+  const zrodlo = zrodloSzablonu()
+  const projekt = mkdtempSync(join(tmpdir(), 'sync-projekt-'))
+  try {
+    skillZTestami(zrodlo)
+    sync(zrodlo, projekt)
+    // Stan po pierwszym syncu starym skryptem: testy na dysku i w manifescie, VERSION = SHA szablonu.
+    const stare = ['.claude/skills/x/__tests__/fixtures/f.json', '.claude/skills/x/__tests__/x.test.mjs']
+    for (const rel of stare) {
+      mkdirSync(dirname(join(projekt, rel)), { recursive: true })
+      writeFileSync(join(projekt, rel), readFileSync(join(zrodlo, rel)))
+    }
+    const manifest = join(projekt, '.claude', '.template-manifest')
+    writeFileSync(manifest, `${readFileSync(manifest, 'utf8')}${stare.join('\n')}\n`)
+    const wlasny = join(projekt, '.claude', 'skills', 'wlasny', '__tests__', 'w.test.mjs')
+    mkdirSync(dirname(wlasny), { recursive: true })
+    writeFileSync(wlasny, '// test projektu\n')
+
+    const wyjscie = sync(zrodlo, projekt)
+    assert.doesNotMatch(wyjscie, /UP_TO_DATE/)
+    assert.match(wyjscie, /COUNTS: nowe=0 zmienione=0 usuniete=2 /)
+    assert.throws(() => statSync(join(projekt, '.claude', 'skills', 'x', '__tests__')), { code: 'ENOENT' })
+    assert.equal(readFileSync(wlasny, 'utf8'), '// test projektu\n')
+    assert.doesNotMatch(readFileSync(manifest, 'utf8'), /__tests__/)
+    // Kolejny sync: manifest czysty, szablon bez zmian — znow szybkie wyjscie.
+    assert.match(sync(zrodlo, projekt), /STATUS: UP_TO_DATE/)
+  } finally {
+    rmSync(zrodlo, { recursive: true, force: true })
+    rmSync(projekt, { recursive: true, force: true })
+  }
+  const skill = readFileSync(resolve(dirname(SKRYPT), '..', 'SKILL.md'), 'utf8').replace(/\n\s*/g, ' ')
+  assert.match(skill, /Po pierwszym syncu na tę wersję uruchom sync drugi raz: pierwszy idzie jeszcze starym skryptem z projektu i testy kopiuje/)
+})
+
 // P2 (PLAN-POPRAWY): N2 — instrukcje i skille sa buforowane w sesji, wiec po zmianie .claude/ autopilot w starej sesji
 // dzialalby na starej maszynerii. Komunikat ma wyjsc po kazdym syncu, ktory cos zmienil, i tylko wtedy.
 test('sync, ktory zmienil .claude/, konczy sie komunikatem o nowej sesji; UP_TO_DATE — bez komunikatu', () => {
