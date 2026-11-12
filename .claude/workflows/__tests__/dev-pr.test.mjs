@@ -1111,7 +1111,10 @@ test('punkt 51: --bez-merge przy zielonej bramce konczy sie jednym pytaniem o me
 
 // Punkt 51 (drobne): README nie wspominal komendy z raportow ani /dev-smoke w schemacie pipeline'u.
 test('punkt 51: README — schemat z /dev-smoke miedzy autopilotem a /dev-pr; krok 6 mowi o /dev-pr 3 --bez-merge i pytaniu o merge', () => {
-  const readme = readFileSync(resolve(KATALOG, '../../../README.md'), 'utf8')
+  // README szablonu nie jedzie do zbudowanego wariantu (stacks/testuj-wariant.mjs) — tam test nie ma czego czytac.
+  const plik = resolve(KATALOG, '../../../README.md')
+  if (!existsSync(plik)) return
+  const readme = readFileSync(plik, 'utf8')
   assert.match(readme, /dev-autopilot-wf → \/dev-smoke → \/dev-pr → merge/)
   const krok6 = readme.slice(readme.indexOf('6. **`/dev-pr`**'), readme.indexOf('Szczegóły każdego kroku')).replace(/\n\s*/g, ' ')
   assert.match(krok6, /Raporty podają gotową komendę `\/dev-pr 3 --bez-merge`: tury idą same, a gdy wszystkie warunki merge'a są spełnione, komenda kończy się jednym pytaniem, czy mergować\./)
