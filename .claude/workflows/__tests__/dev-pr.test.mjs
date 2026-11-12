@@ -299,9 +299,12 @@ test('claude-md: brak pliku decyzji przy zmergowanym PR = krok pominiety; niezme
   assert.match(bezGh.wynik.powod, /albo nie dalo sie tego sprawdzic \(gh\)$/)
 })
 
+// Stan PR ze stan-pr.mjs z recenzja czubka: bez niego zbierz nie daje MERGUJ (punkt 55, nieczytelny stan = recenzja niepotwierdzona).
+const STAN_CZUBEK_OK = JSON.stringify({ pr: 4, watki: [], liczniki: { otwarty: 0 }, recenzjaCzubka: { ok: true, powod: 'recenzja bota dotyczy czubka' } })
+
 // Dashboard PR #104: bot potwierdzil poprawke parsera, ale watku nie rozwiazal — tura 2 zweryfikowala go bez zmiany kodu.
 test('zbierz: watki potwierdzone przez bota rozwiazane mutacja, poza watki[]; bez potwierdzonych — bez drugiego agenta', async () => {
-  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10 }
+  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10, stanPr: STAN_CZUBEK_OK }
   const z = await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, potwierdzone: [{ id: 'T1', plik: 'a.ts:3' }] }, { rozwiazane: ['T1'], bledy: [] }])
   assert.equal(z.prompty.length, 2)
   assert.match(z.prompty[0], /POTWIERDZONE: watek z nasza odpowiedzia o poprawce/)
@@ -406,7 +409,9 @@ async function uruchom(args, odpowiedzi) {
 const TABELA_ETAPU_3 = tabela([['1–3', A, B, 93], ['4–6', B, E, 121]])
 const PRZYG_OK = { status: 'OK', galaz: 'feature/etap-3', konflikty: [], rebase: 'wykonany', walidacja: 'PASS', walidacjaDetal: 'tsc, vitest', push: true, pushDetal: 'OK' }
 // Pomiar rozmiaru czesci (E5-6) — drugi agent etapu start z --czesc.
-const POMIAR = (/** @type {number} */ n) => ({ wynik: JSON.stringify({ baza: 'x', czubek: 'y', doRecenzji: n }) })
+// Pomiar startu niesie wynik kontrakt-bota.mjs: bez niego bramka startu zatrzymuje PR (punkt 55, nieczytelny kontrakt = STOP).
+const KONTRAKT_OK = JSON.stringify({ plik: true, odstepstwa: [], ostrzezenia: [] })
+const POMIAR = (/** @type {number} */ n) => ({ wynik: JSON.stringify({ baza: 'x', czubek: 'y', doRecenzji: n }), kontraktBota: KONTRAKT_OK })
 const START_OK = { bramka: 'OK', branch: 'feature/etap-3', prUtworzony: true, prNumer: 4, prUrl: 'u', headRefOid: 'abc' }
 
 test('start --czesc 2 z 2: odczyt tabeli, rebase galezi zadania od 909f669 na origin/main, push z lease, tytul czesci; wynik niesie czesc', async () => {
@@ -451,7 +456,7 @@ test('claude-md czesci 1 z 2 bez agenta; zbierz oddaje czesc do telemetrii', asy
   const cm = await uruchom({ etap: 'claude-md', zadanie: 'etap-3', czesc: 1, czesci: 2 }, [])
   assert.deepEqual([cm.wynik.status, cm.wynik.pominiety, cm.prompty.length], ['OK', true, 0])
   const zb = await uruchom({ etap: 'zbierz', zadanie: 'etap-3', tura: 1, czesc: 2, czesci: 2 }, [{
-    watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'brak CI', recenzjaAktualna: true, plikiPr: 194,
+    watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'brak CI', recenzjaAktualna: true, plikiPr: 194, stanPr: STAN_CZUBEK_OK,
   }])
   assert.deepEqual([zb.wynik.czesc, zb.wynik.prNumer, zb.wynik.rekomendacja, zb.wynik.headRefOid], [2, 4, 'MERGUJ', 'abc'], 'czubek PR do telemetrii (ucieczki, E5-20)')
 })
@@ -733,15 +738,15 @@ test('start --czesc: rozmiar czubka czesci przeliczany rozmiar.mjs przed przygot
   assert.deepEqual([ok.wynik.status, ok.prompty.length], ['OK', 4])
   const granica = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(150)])
   assert.deepEqual([granica.wynik.status, granica.prompty.length], ['STOP', 2], 'próg ≥ 150')
-  const zLogiem = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: `ostrzezenie\n${POMIAR(152).wynik}` }])
+  const zLogiem = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: `ostrzezenie\n${POMIAR(152).wynik}`, kontraktBota: KONTRAKT_OK }])
   assert.equal(zLogiem.wynik.rozmiar.pliki, 152, 'ostatnia linia stdout')
   assert.match(duza.prompty[1], /inaczej BAZA = stdout `git merge-base origin\/main feature\/etap-5`\./)
-  for (const zly of [{ wynik: '{"wyjatek":"nie ma commita feature/etap-5"}' }, { wynik: '' }]) {
+  for (const zly of [{ wynik: '{"wyjatek":"nie ma commita feature/etap-5"}', kontraktBota: KONTRAKT_OK }, { wynik: '', kontraktBota: KONTRAKT_OK }]) {
     const r = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, zly])
     assert.deepEqual([r.wynik.status, r.prompty.length], ['STOP', 2])
     assert.match(r.wynik.powod, /pomiar rozmiaru części 2 nieczytelny/)
   }
-  const tekst = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: '{"doRecenzji":"152"}' }])
+  const tekst = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: '{"doRecenzji":"152"}', kontraktBota: KONTRAKT_OK }])
   assert.match(tekst.wynik.powod, /brak liczbowego pola doRecenzji/)
   // Czesc srodkowa (N > 1, nieostatnia): czubek = commit ciecia, nie galaz zadania.
   const trzy = { tabela: tabela([['1–3', A, B, 93], ['4', B, D, 40], ['5–6', D, E, 70]]), galazZadania: true }
@@ -1133,4 +1138,24 @@ test('punkt 52: rozstrzygnieta decyzja nie jest otwartym wpisem — ten sam znac
   assert.match(zrodlo, /otwarte wpisy z \\`\$\{zrodloOpisu\}\/known-issues\.md'\\` \(\$\{otwartyWpis\}; brak pliku = brak wpisow\)/)
   assert.match(zrodlo, /z \\`<katalog zadania>\/known-issues\.md\\` \(\$\{otwartyWpis\}\)\. Gdy oba zrodla puste/)
   assert.doesNotMatch(zrodlo, /\(otwarte = poza sekcja "## Zamkniete"\)/)
+})
+
+// Weryfikacja partii 26–45, punkt 55 (stare dziury bramek /dev-pr): nieczytelny wynik kontrakt-bota.mjs dawal start bez sprawdzenia
+// configu, a nieczytelny stan-pr w etapie zbierz — recenzjaCzubka: undefined, ktore `ok !== false` przepuszczalo do MERGUJ.
+test('punkt 55: nieczytelny kontrakt bota = STOP z droga konfigBota (bez przy bezKonfigu i bezBota); nieczytelny stan PR w zbierz nie daje MERGUJ', async () => {
+  for (const zly of ['Error: Cannot find module kontrakt-bota.mjs', '', '{}', undefined, 'null']) {
+    const b = P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, {})
+    assert.match(String(b.powod), /^nie udało się sprawdzić configu bota \(kontrakt-bota\.mjs: /, String(zly))
+    assert.deepEqual(b.pola.konfigBota?.odstepstwa, [b.powod], 'skill pokazuje odstepstwa i trzy drogi decyzji')
+    assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, { bezKonfigu: true }).powod, null)
+    assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, { bezBota: true }).powod, null)
+  }
+  assert.match(String(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: '' }, {}).powod), /pusty wynik\)$/)
+  assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: KONTRAKT_OK }, {}).powod, null)
+  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10, potwierdzone: [] }
+  for (const stanPr of [undefined, 'blad gh', '{"pr":"x"}']) {
+    const z = await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, stanPr }])
+    assert.match(z.wynik.rekomendacja, /^NIE MERGUJ — .*stan PR nieczytelny/, String(stanPr))
+  }
+  assert.equal((await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, stanPr: STAN_CZUBEK_OK }])).wynik.rekomendacja, 'MERGUJ')
 })

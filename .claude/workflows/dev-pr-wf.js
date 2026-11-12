@@ -699,6 +699,16 @@ function bramkaStartu(pomiar, opcje) {
       naprawa: "Wypchnij główną (push może oznaczać deploy, więc to decyzja operatora) albo potwierdź, że jadą w tym PR: etap start z zGlowna: true.",
     }
   }
+  // Weryfikacja partii, punkt 55 (stara dziura): nieczytelny wynik kontrakt-bota.mjs (pusty tekst, blad, JSON bez odstepstwa)
+  // dawal powod: null — start szedl bez sprawdzenia configu, jak przy nieczytelnym rozmiar.mjs nie idzie. Teraz STOP z ta sama
+  // droga decyzji co przy odstepstwach (pole konfigBota: /coderabbit-setup, bezKonfigu albo bezBota).
+  if (!Array.isArray(kontrakt?.odstepstwa) && !opcje.bezKonfigu && !opcje.bezBota) {
+    const powod = `nie udało się sprawdzić configu bota (kontrakt-bota.mjs: ${String(pomiar.kontraktBota ?? '').trim().slice(0, 200) || 'pusty wynik'})`
+    return {
+      ostrzezenia, pola: { konfigBota: { plik: null, odstepstwa: [powod], ostrzezenia: [] } }, powod,
+      naprawa: 'Uruchom `node .claude/scripts/pr/kontrakt-bota.mjs` i usuń przyczynę błędu, albo decyzja operatora: etap start z bezKonfigu: true albo z bezBota: true.',
+    }
+  }
   if (kontrakt?.odstepstwa?.length && !opcje.bezKonfigu && !opcje.bezBota) {
     return {
       ostrzezenia, pola: { konfigBota: kontrakt },
@@ -1167,7 +1177,8 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     mergeable: wynik.mergeable, mergeStateStatus: wynik.mergeStateStatus, ciZielone: wynik.ciZielone, ciDetal: wynik.ciDetal,
     watkiNapraw: licznik['napraw'] + licznik['napraw-szerzej'], watkiDoOperatora: licznik['do-operatora'],
     watkiOdrzucBezOdpowiedzi: watki.filter((w) => w.klasa === 'odrzuc' && w.naszaOdpowiedz !== true).length,
-    recenzjaCzubka: stanPr?.recenzjaCzubka,
+    // Punkt 55 (stara dziura): nieczytelny stan-pr dawal recenzjaCzubka: undefined, a `ok !== false` przepuszczal MERGUJ.
+    recenzjaCzubka: stanPr ? stanPr.recenzjaCzubka : { ok: false, powod: 'stan PR nieczytelny' },
   }, turaBiezaca - 1)
   log(`/dev-pr tura ${turaBiezaca}: rekomendacja ${rek}`)
   log(`/dev-pr tura ${turaBiezaca}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
