@@ -7,15 +7,17 @@
 // z generatorem (inne naglowki IU i checkboxy), wiec smoke sprawdzal format, ktorego zaden projekt juz nie dostaje.
 // Regeneracja po zmianie planu albo generatora: node .claude/templates/smoke-autopilot/generuj-fixture.mjs --zapisz
 
+import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
+import { blokeryZadania } from '../../../scripts/plan/gotowosc.mjs'
 import { parsujPlan } from '../../../scripts/plan/plan-techniczny.mjs'
 import { sprawdzPlan } from '../../../scripts/plan/walidacja-planu.mjs'
-import { KATALOG, PLAN_TECHNICZNY, SCIEZKA_PLANU, plikiFixture } from '../generuj-fixture.mjs'
+import { KATALOG, NAZWA, PLAN_TECHNICZNY, SCIEZKA_PLANU, plikiFixture } from '../generuj-fixture.mjs'
 
 const MIGRACJA = 'supabase/migrations/20260101000000_start.sql'
 const KATALOG_KODU = 'packages/smoke-autopilot/src'
@@ -67,4 +69,28 @@ test('zadania fixture\'u: dwie fazy, cztery testy [Unit], [Manual] w sekcji oper
   assert.deepEqual([...faza(2).matchAll(/^- \[ \] Test: \[E2E\] `([^`]+)`/gm)].map((m) => m[1]), ['smoke-strona-faza-2'])
   assert.match(zadania, /^- \[ \] Stwórz: `\{\{KATALOG_STRONY\}\}\/smoke-autopilot\.html`$/m)
   assert.match(readFileSync(join(KATALOG, 'smoke-autopilot-plan.md'), 'utf8'), /^Branch: `feature\/smoke-autopilot`$/m)
+})
+
+// Walidacja 51–55, punkt 56: start autopilota zatrzymuje swieze zadanie bez waznego przegladu spojnosci (`plan.mjs blokery`,
+// pole spojnosc), a fixture go nie mial — smoke stawal przed faza 1. Zapis robi przygotuj-kopie.sh po podstawieniu placeholderow.
+test('fixture po kroku przegladu z przygotuj-kopie.sh przechodzi kontrole spojnosci startu autopilota; bez kroku nie', () => {
+  const korzen = mkdtempSync(join(tmpdir(), 'fixture-smoke-spojnosc-'))
+  try {
+    const pliki = { [SCIEZKA_PLANU]: podstaw(readFileSync(join(KATALOG, PLAN_TECHNICZNY), 'utf8'), false) }
+    for (const [plik, tresc] of Object.entries(plikiFixture())) pliki[`docs/active/${NAZWA}/${plik}`] = podstaw(tresc, false)
+    for (const [sciezka, tresc] of Object.entries(pliki)) {
+      mkdirSync(dirname(join(korzen, sciezka)), { recursive: true })
+      writeFileSync(join(korzen, sciezka), tresc)
+    }
+    assert.equal(blokeryZadania(korzen, `docs/active/${NAZWA}`).spojnosc.ok, false)
+    const skrypt = readFileSync(join(KATALOG, 'przygotuj-kopie.sh'), 'utf8')
+    const krok = /^krok node "\$KOPIA\/(\.claude\/scripts\/plan\/plan\.mjs)" (spojnosc .+) --projekt "\$KOPIA"$/m.exec(skrypt)
+    assert.ok(krok, 'przygotuj-kopie.sh nie zapisuje przegladu spojnosci')
+    assert.ok(skrypt.indexOf('wstaw_fixture_zadania\n') < skrypt.indexOf(krok[0]) && skrypt.indexOf(krok[0]) < skrypt.indexOf('test(smoke): fixture'), 'zapis przegladu ma stac po wstawieniu fixture\'u i przed jego commitem')
+    const wynik = spawnSync('node', [join(KATALOG, '..', '..', 'scripts', 'plan', 'plan.mjs'), ...(krok[2] ?? '').split(' '), '--projekt', korzen], { encoding: 'utf8' })
+    assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
+    assert.deepEqual(blokeryZadania(korzen, `docs/active/${NAZWA}`).spojnosc, { ok: true, powod: '' })
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
 })

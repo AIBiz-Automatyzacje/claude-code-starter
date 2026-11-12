@@ -113,6 +113,8 @@ test('przygotuj-kopie: składnia bash; kod w src/lib, ekran główny, menedżer 
   const kroki = w.stdout.split('\n')
   const miejsce = (/** @type {string} */ f) => kroki.findIndex((l) => l.includes(f))
   assert.ok(miejsce('test(smoke): fixture') < miejsce('doctor.sh') && miejsce('doctor.sh') < miejsce('bazowe bramki'), w.stdout)
+  // Walidacja 51–55, punkt 56: zapis przegladu spojnosci planu przed commitem fixture'u — bez niego autopilot staje na starcie.
+  assert.ok(miejsce('plan.mjs spojnosc') > 0 && miejsce('plan.mjs spojnosc') < miejsce('test(smoke): fixture'), w.stdout)
   assert.match(w.stdout, /npx expo customize tsconfig\.json/)
 })
 
