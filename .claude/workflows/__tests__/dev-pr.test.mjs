@@ -1076,3 +1076,16 @@ test('skill /dev-pr: tryb bez bota wlacza operator; kroki 2–5 odpadaja, merge 
   assert.match(tryb, /\*\*Compound PR pomijasz\*\*/)
   assert.match(skill, /albo „Projekt bez bota recenzji”\n\(zapis wyboru i krok 1 z `bezBota: true` wg sekcji „Tryb bez bota”/)
 })
+
+// Weryfikacja partii 26–45, punkt 51: po `--bez-merge` nie bylo opisanej drogi do merge'a — status GOTOWY-DO-MERGE mial
+// dopisek „(tryb interaktywny)”, a powrot ta sama komenda znow konczyl sie raportem. Teraz zielona bramka = jedno pytanie.
+test('punkt 51: --bez-merge przy zielonej bramce konczy sie jednym pytaniem o merge; „Merguj” = drugie wywolanie z auto: true', () => {
+  const tryby = skillPr.slice(skillPr.indexOf('## Tryby'), skillPr.indexOf('## Przebieg'))
+  assert.match(tryby, /\| `\/dev-pr 3 --bez-merge` \| Jak wyżej, ale merge'a nie robisz sam: przy zielonej bramce merge'a kończysz \*\*jednym pytaniem o merge\*\*, bez zielonej bramki raportem\./)
+  assert.doesNotMatch(skillPr, /kończysz raportem zamiast merge'em/)
+  const krok6 = skillPr.slice(skillPr.indexOf('### 6. Domknięcie'), skillPr.indexOf('**Compound**'))
+  assert.match(krok6, /Pierwsze wywołanie etapu: `auto: true` tylko w trybie autonomicznym \*\*i\*\* bez `--bez-merge`; po odpowiedzi „Merguj” na pytanie\nprzy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`\./)
+  assert.match(krok6, /- `GOTOWY-DO-MERGE` \(tryb interaktywny i `--bez-merge`\) → pokaż warunki i zapytaj przez `AskUserQuestion`: „Wszystkie warunki\n {2}merge'a spełnione\. Mergować teraz\?” z opcjami „Merguj” \(ten sam etap z `auto: true`\) i „Jeszcze nie” \(raport końcowy/)
+  // Powrot ta sama komenda dochodzi do tego samego pytania.
+  assert.match(skillPr, /Powrót tą komendą do PR bez otwartych wątków \(np\. po odpowiedzi „Jeszcze nie” albo po zielonym CI\) przechodzi kroki 2–3 bez\ntury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge\./)
+})

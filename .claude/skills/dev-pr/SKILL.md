@@ -36,7 +36,7 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 |---|---|
 | `/dev-pr` | **Interaktywny.** Po każdej klasyfikacji operator wybiera przez `AskUserQuestion` (multiSelect), co naprawiamy w tej turze. Merge zawsze zostaje jego decyzją. |
 | `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. Krótkie review zmian po archiwizacji (krok 1) uruchamiasz sam, bez pytania, gdy po archiwizacji są pliki kodu w tej części. |
-| `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. Tę komendę podają raporty i handoffy pipeline'u: tury idą same, a merge, czyli często deploy, zostaje decyzją operatora. |
+| `/dev-pr 3 --bez-merge` | Jak wyżej, ale merge'a nie robisz sam: przy zielonej bramce merge'a kończysz **jednym pytaniem o merge**, bez zielonej bramki raportem. Tę komendę podają raporty i handoffy pipeline'u: tury idą same, a merge, czyli często deploy, zostaje decyzją operatora. |
 | `--review` / `--bez-review` (z każdym trybem) | Odpowiedź z góry na pytanie o krótkie review zmian po archiwizacji (krok 1): `--review` = krótkie review, potem PR; `--bez-review` = PR bez review. |
 | `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `--bez-push` (z każdym trybem) | Etapy `compound` i `claude-md` commitują lokalnie i nie wypychają głównej: w projekcie, gdzie push na główną to deploy, push zostaje operatorowi. |
@@ -90,6 +90,8 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 wątki otwarte, rozstrzygnięte i czekające na bota, recenzję czubka. `tura` = `tury` + 1. `sufit: true` → od razu krok 6, bez nowej tury
 napraw. Przy tabeli części bierzesz `--czesc`, którego PR jest otwarty. Gdy kontekst sesji się kończy, kończysz raportem z gotowym
 poleceniem dla nowej sesji (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `/dev-pr 3 --bez-merge`; stan: `etap stan`), zamiast prowadzić merge ręcznie.
+Powrót tą komendą do PR bez otwartych wątków (np. po odpowiedzi „Jeszcze nie” albo po zielonym CI) przechodzi kroki 2–3 bez
+tury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge.
 
 **Smoke przed PR.** Gdy `docs/operator/*-<zadanie>-smoke.md` ma nieodhaczone pozycje bez dopisku „po deployu”, przed pytaniem o zgodę podajesz ich liczbę i pytasz, czy
 wysyłać mimo to. To miękka bramka: decyduje operator.
@@ -303,7 +305,8 @@ kolejnej naprawy: `zbierz` i krok 6 (uwagi trafiają do raportu i `odlozone`).
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "merge", zadanie, auto, turyWykonane}})
 ```
 
-`auto: true` tylko w trybie autonomicznym **i** bez `--bez-merge`; `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze większą z tej i z commitów PR).
+Pierwsze wywołanie etapu: `auto: true` tylko w trybie autonomicznym **i** bez `--bez-merge`; po odpowiedzi „Merguj” na pytanie
+przy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`. `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze większą z tej i z commitów PR).
 Merge wykonuje się wyłącznie przy `rekomendacja: "MERGUJ"`: `mergeable = MERGEABLE`, `mergeStateStatus = CLEAN`, zero otwartych wątków bez naszej decyzji,
 CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury za nami. Liczy to JS ze stanu PR. `informacje` (wątki rozstrzygnięte, `reviewDecision`) pokaż w raporcie: nie blokują.
 
@@ -312,7 +315,9 @@ CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury
   P1/P2 → `AskUserQuestion`: naprawa poza turami bota albo decyzja o merge'u mimo to. Potem etap `merge` z `reviewOstatniejTury: true`. Zmiany, których nie dało się sprawdzić testem (współbieżność na prawdziwej bazie, przeglądarka),
   podajesz w raporcie jako gotowe polecenie dla sesji: przejście lokalnie przed merge'em, a nie samą uwagę.
 - `MERGE-NIEUDANY` → komenda merge'a zawiodła (`merge.detal`): raport z treścią błędu, bez innej strategii. Bramka przeszła, więc to nie jest pytanie o warunki.
-- `GOTOWY-DO-MERGE` (tryb interaktywny) → pokaż warunki i zapytaj operatora, czy mergujemy. Tak → ten sam etap z `auto: true`.
+- `GOTOWY-DO-MERGE` (tryb interaktywny i `--bez-merge`) → pokaż warunki i zapytaj przez `AskUserQuestion`: „Wszystkie warunki
+  merge'a spełnione. Mergować teraz?” z opcjami „Merguj” (ten sam etap z `auto: true`) i „Jeszcze nie” (raport końcowy; merge
+  zostaje operatorowi).
 - `ZMERGOWANY` → idź dalej.
 
 **Compound** — uruchom **zawsze**, także gdy merge nie doszedł do skutku. To jest część, która zamienia
