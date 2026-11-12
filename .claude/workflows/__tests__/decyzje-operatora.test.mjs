@@ -144,7 +144,13 @@ test('autopilot: fix nie dubluje decyzji jako P2 w known-issues, a faza z decyzj
   const fix = wytnij(autopilot, 'function fixPrompt(', '\n}\n')
   assert.doesNotMatch(fix, /dopisz P2 do known-issues/)
   assert.match(fix, /Do known-issues jej nie dopisujesz i nie liczysz jej w nierozwiazaneP2/)
-  assert.match(autopilot, /gateFazy = fix\.nierozwiazaneP2 > 0 \|\| doDecyzjiOperatora\.length > 0 \? 'ZASTRZEZENIA' : 'CZYSTE'/)
+  assert.match(autopilot, /gateFazy = fix\.nierozwiazaneP2 > 0 \|\| doDecyzjiOperatora\.length > 0 \|\| decyzjeAutopilotaFazy > 0 \? 'ZASTRZEZENIA' : 'CZYSTE'/)
+  // Punkt 48 (pokrewne): decyzja autopilota tez daje ZASTRZEZENIA — w fazie z fixem i w fazie bez findingow (fix: none).
+  assert.match(autopilot, /\} else if \(faza\.fix === 'none'\) \{\n {4}gateFazy = decyzjeAutopilotaFazy > 0 \? 'ZASTRZEZENIA' : 'CZYSTE'\n/)
+  const petla = autopilot.slice(autopilot.indexOf('for (const numerFazy of kolejka) {'))
+  assert.match(petla, /let decyzjeAutopilotaFazy = 0\n/)
+  assert.match(petla, /await zapiszDecyzje\(numerFazy, 'autopilot', [^\n]+\)\n {4}decyzjeAutopilotaFazy = exec && Array\.isArray\(exec\.decyzjeAutopilota\) \? exec\.decyzjeAutopilota\.length : 0\n/)
+  assert.ok(petla.indexOf('let decyzjeAutopilotaFazy = 0') < petla.indexOf("if (faza.execute === 'pending') {"), 'licznik zerowany na fazie, przed execute')
 })
 
 test('autopilot: DECYZJA z review nie idzie do fixa, ma wlasny licznik i nie wraca po powtorce review', () => {

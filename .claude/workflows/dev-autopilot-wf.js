@@ -1973,6 +1973,9 @@ for (const numerFazy of kolejka) {
   // Wynik kontroli diffu naprawczego (plan B5) — do raportu fazy i telemetrii.
   let kontrolaFixa = null
   let doDecyzjiOperatora = []
+  // Weryfikacja partii, punkt 48 (pokrewne; decyzja 4 planu poprawek): decyzja autopilota to otwarta sprawa fazy jak decyzja fixa,
+  // a faza z nia miala gate CZYSTE. `exec` zyje tylko w galezi execute, wiec liczbe trzymamy tu; faza wznowiona od review ma 0.
+  let decyzjeAutopilotaFazy = 0
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
   // Dossier fazy z domkniecia (P7) idzie do review; faza wznowiona z execute: done go nie ma — review-wf odtwarza je
@@ -1986,6 +1989,7 @@ for (const numerFazy of kolejka) {
     // Punkt 41, krok 6: wybory builderow przy sprzecznosci zrodel (HIERARCHIA ZRODEL) ida do known-issues zaraz po execute,
     // takze przed STOP-em — swiezy run i smoke czytaja je z pliku, a review traktuje opisane odstepstwo jako decyzje, nie blad.
     await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])
+    decyzjeAutopilotaFazy = exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota.length : 0
     if (!exec || exec.status !== 'completed') {
       // Baza fazy zostaje w stanie takze przy execute bez „completed”: domkniecie moglo juz zacommitowac faze (porazka bramki po
       // commicie), a swiezy run bez bazy dalby review diff od galezi glownej (pilot Nawykometr, run 2: 585 plikow zamiast 8).
@@ -2218,7 +2222,7 @@ for (const numerFazy of kolejka) {
     }
 
     // Decyzja operatora to otwarta sprawa fazy tak samo jak P2 w known-issues (przed punktem 40 fix liczyl ja w nierozwiazaneP2).
-    gateFazy = fix.nierozwiazaneP2 > 0 || doDecyzjiOperatora.length > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
+    gateFazy = fix.nierozwiazaneP2 > 0 || doDecyzjiOperatora.length > 0 || decyzjeAutopilotaFazy > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
     if (fix.nierozwiazaneP2 > 0) {
       log(`Faza ${numerFazy}: GRACEFUL — ${fix.nierozwiazaneP2}x P2 do known-issues, kontynuuje`)
     }
@@ -2226,7 +2230,7 @@ for (const numerFazy of kolejka) {
     faza.otwarteFindingi = []
     oznaczStan()
   } else if (faza.fix === 'none') {
-    gateFazy = 'CZYSTE'
+    gateFazy = decyzjeAutopilotaFazy > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
   }
 
   historia[numerFazy] = cykle
