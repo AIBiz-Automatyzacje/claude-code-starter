@@ -316,13 +316,28 @@ test('blokery: nieodhaczone pozycje checklisty z numerem fazy (start = faza 1), 
   zadanieNaGalezi(k)
   const w = cli(k, ['blokery', ZADANIE])
   assert.equal(w.kod, 0, JSON.stringify(w.json))
-  assert.deepEqual(w.json, { ok: true, checklista: PREP, blokery: [{ faza: 2, linia: 3, tresc: 'Klucz mapy — **[blokuje: faza 2]** (IU-2)' }] })
+  assert.deepEqual(w.json, { ok: true, checklista: PREP, blokery: [{ faza: 2, linia: 3, tresc: 'Klucz mapy — **[blokuje: faza 2]** (IU-2)' }], spojnosc: { ok: true, powod: '' } })
   writeFileSync(join(k, PREP), '# P\n\n- [ ] Konto — **[blokuje: planowanie]**\n- [ ] Dostęp — **[blokuje: faza 1]**\n- [x] Klucz — **[blokuje: faza 2]**\n')
   assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.blokery.map((/** @type {{ faza: number }} */ b) => b.faza), [1, 1])
   writeFileSync(join(k, PREP), '# P\n\n- [ ] Klucz — **[blokuje: faza 2]**\n- [ ] Konto — **[blokuje: faza 1]**\n')
   assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.blokery.map((/** @type {{ linia: number }} */ b) => b.linia), [3, 4], 'kolejnosc linii checklisty')
   rmSync(join(k, PREP))
-  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json, { ok: true, checklista: PREP, blokery: [] })
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json, { ok: true, checklista: PREP, blokery: [], spojnosc: { ok: true, powod: '' } })
+}))
+
+// Punkt 53, krok B4: autopilot czyta stan przegladu spojnosci z `plan.mjs blokery` (bootstrap przepisuje wynik 1:1).
+test('blokery: pole spojnosc liczone jak w bramce gotowosci — brak przegladu i zmiana tresci planu daja ok false z powodem', () => wRepo((k) => {
+  zadanieNaGalezi(k, { przeglad: false })
+  const bez = cli(k, ['blokery', ZADANIE]).json
+  assert.equal(bez.spojnosc.ok, false)
+  assert.match(bez.spojnosc.powod, /^brak zapisu przeglądu spójności planu → \/dev-plan krok 6\.2b/)
+  assert.equal(cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', fazyPlanu(k), '--otwarte', '0']).kod, 0)
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.spojnosc, { ok: true, powod: '' })
+  writeFileSync(join(k, PLAN), readFileSync(join(k, PLAN), 'utf8').replace('## Granice zakresu', '## Granice zakresu\n\n- nowe wykluczenie'))
+  assert.match(cli(k, ['blokery', ZADANIE]).json.spojnosc.powod, /^plan zmieniony po przeglądzie spójności/)
+  // Bez checklisty przygotowania pole tez jest (blokery puste).
+  rmSync(join(k, PREP))
+  assert.equal(cli(k, ['blokery', ZADANIE]).json.spojnosc.ok, false)
 }))
 
 test('liczScenariuszeE2e: grep precheck/completion-gate — kopie Operator: i findingi [P1-3] nie sa scenariuszami', () => {

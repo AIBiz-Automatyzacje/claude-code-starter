@@ -39,7 +39,7 @@ const complete = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'u
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const A = new Function(
   `${wytnij(autopilot, '// ── Bramka wejscia (P4)', '// ── Koniec bramki wejscia')}
-   return { decyzjaWejscia, decyzjaTestowStartu, decyzjaClaudeMd, decyzjaBlokeraFazy, fazyUkonczone, instrukcjaCommita }`,
+   return { decyzjaWejscia, decyzjaTestowStartu, decyzjaClaudeMd, decyzjaBlokeraFazy, decyzjaSpojnosci, fazyUkonczone, instrukcjaCommita }`,
 )()
 
 // eslint-disable-next-line no-new-func -- jw.
@@ -222,6 +222,45 @@ test('bloker fazy: autopilot sprawdza pierwsza faze przed testami startu, a kazd
   assert.ok(start > 0 && start < autopilot.indexOf('if (wejscie.testyStartu) {'), 'bloker pierwszej fazy przed testami startu')
   const petla = wytnij(autopilot, 'for (const numerFazy of kolejka) {', "if (faza.execute === 'pending') {")
   assert.match(petla, /const bloker = decyzjaBlokeraFazy\(numerFazy, stan\.wejscie\.blokery, sciezka\)\s*\n\s*if \(bloker\) \{\s*\n\s*return await stopRun\(\{ \.\.\.bloker, faza: numerFazy/)
+})
+
+// Weryfikacja partii 26–45, punkt 53: autopilot nie sprawdzal przegladu spojnosci planu — plan bez przegladu szedl do runu.
+// Swieze zadanie = STOP na starcie; zadanie w toku (aa-exam E3, planowane przed bramka) = uwaga; brak pola = brak kontroli.
+const CZERWONA = { ok: false, powod: 'plan zmieniony po przeglądzie spójności (odcisk inny niż w docs/plans/p.spojnosc.json) → /dev-plan krok 6.2b' }
+const SWIEZE = [{ numer: 1, execute: 'pending', review: 'pending', fix: 'none' }, { numer: 2, execute: 'pending', review: 'pending', fix: 'none' }]
+
+test('punkt 53: swieze zadanie bez waznego przegladu spojnosci = STOP z powodem ze skryptu i naprawa 6.2b + swiezy run', () => {
+  const d = A.decyzjaSpojnosci(SWIEZE, CZERWONA, ZADANIE)
+  assert.equal(d.uwaga, null)
+  assert.ok(d.stop)
+  assert.equal(d.stop.powod, `start: przeglad spojnosci planu — ${CZERWONA.powod}`)
+  assert.equal(d.stop.naprawa, '/dev-plan krok 6.2b (przeglad spojnosci), potem swiezy run: /dev-autopilot-wf docs/active/zadanie-x')
+})
+
+test('punkt 53: zadanie w toku (faza zbudowana albo jednostki zapisane) = tylko uwaga; przeglad ok albo brak pola = nic', () => {
+  const zbudowana = [{ ...SWIEZE[0], execute: 'done' }, SWIEZE[1]]
+  const przerwana = [{ ...SWIEZE[0], iuUkonczone: ['IU-1'] }, SWIEZE[1]]
+  for (const fazy of [zbudowana, przerwana]) {
+    const d = A.decyzjaSpojnosci(fazy, CZERWONA, ZADANIE)
+    assert.equal(d.stop, null)
+    assert.equal(d.uwaga, `przeglad spojnosci planu nieaktualny, zadanie w toku — run idzie dalej: ${CZERWONA.powod}`)
+  }
+  assert.deepEqual(A.decyzjaSpojnosci([{ ...SWIEZE[0], iuUkonczone: [] }], CZERWONA, ZADANIE).stop?.naprawa.startsWith('/dev-plan'), true, 'pusta lista iuUkonczone to swieze zadanie')
+  assert.deepEqual(A.decyzjaSpojnosci(SWIEZE, { ok: true, powod: '' }, ZADANIE), { stop: null, uwaga: null })
+  assert.deepEqual(A.decyzjaSpojnosci(SWIEZE, undefined, ZADANIE), { stop: null, uwaga: null }, 'starszy plan.mjs bez pola')
+})
+
+test('punkt 53: bootstrap przepisuje spojnosc z plan.mjs blokery; schemat ja dopuszcza; decyzja przed blokerem i testami startu', () => {
+  const schemat = wytnij(autopilot, '        blokery: {\n', "      required: ['zmiany', 'doctorKod'")
+  assert.match(schemat, /spojnosc: \{\n\s+type: 'object',\n\s+additionalProperties: false,\n\s+properties: \{ ok: \{ type: 'boolean' \}, powod: \{ type: 'string' \} \},\n\s+required: \['ok', 'powod'\],/)
+  // Pole w `properties` obiektu blokery (additionalProperties: false), opcjonalne: starszy skrypt go nie zwraca.
+  assert.match(schemat, /required: \['ok', 'powod'\],\n {12}\},\n {10}\},\n {10}required: \['checklista', 'blokery'\],/)
+  assert.match(schemat, /required: \['faza', 'linia', 'tresc'\],\n {14}\},\n {12}\},\n {12}\/\/ Punkt 53: stan przegladu/, 'spojnosc obok checklista i blokery, nie za properties')
+  assert.match(autopilot, /przepisz pola\n {3}checklista, blokery i spojnosc \(gdy wynik je ma\) 1:1 do wejscie\.blokery/)
+  const decyzja = autopilot.indexOf('const bramkaSpojnosci = decyzjaSpojnosci(stan.fazy, stan.wejscie.blokery && stan.wejscie.blokery.spojnosc, sciezka)')
+  assert.ok(decyzja > 0 && decyzja < autopilot.indexOf('const blokerStartu = ') && decyzja < autopilot.indexOf('if (wejscie.testyStartu) {'))
+  assert.match(autopilot, /if \(bramkaSpojnosci\.stop\) \{\n {2}return await stopRun\(\{ \.\.\.bramkaSpojnosci\.stop, stan \}\)/)
+  assert.match(autopilot, /uwagaSpojnosci: bramkaSpojnosci\.uwaga,/)
 })
 
 test('fazyUkonczone liczy fazy domkniete w zadaniu, nie tylko w tym runie', () => {

@@ -116,17 +116,21 @@ function planTechnicznyZadania(projekt, katalogZadania) {
 /**
  * Nieodhaczone blokery checklisty zadania z faza, ktora wstrzymuja (P25 A1): bootstrap autopilota przepisuje je 1:1, a STOP
  * przed faza liczy orkiestrator. Pozycje startu (`planowanie`, `faza 1`, marker bez numeru) wstrzymuja faze 1.
+ * `spojnosc` (weryfikacja partii, punkt 53): autopilot nie wolal ani `spojnosc`, ani `gotowosc`, wiec plan bez aktualnego
+ * przegladu spojnosci szedl do runu; stan przegladu liczony jak w bramce gotowosci, decyzje (STOP albo uwaga) liczy orkiestrator.
  * @param {string} projekt @param {string} katalogZadania
- * @returns {{ checklista: string | null, blokery: { faza: number, linia: number, tresc: string }[] }}
+ * @returns {{ checklista: string | null, blokery: { faza: number, linia: number, tresc: string }[], spojnosc: { ok: boolean, powod: string } }}
  */
 export function blokeryZadania(projekt, katalogZadania) {
-  const { plan } = planTechnicznyZadania(projekt, katalogZadania)
+  const { wskaznik, plan } = planTechnicznyZadania(projekt, katalogZadania)
+  const przeglad = stanPrzegladu(projekt, wskaznik, plan ? plan.fazy.map((f) => f.oznaczenie) : [])
+  const spojnosc = { ok: przeglad.ok, powod: przeglad.powod }
   const prep = plan ? przygotowanie(projekt, poleTekstowe(plan, 'operator_prep')) : null
-  if (!prep) return { checklista: null, blokery: [] }
+  if (!prep) return { checklista: null, blokery: [], spojnosc }
   const blokery = [...prep.blokujace, ...prep.odroczone]
     .map(({ faza, linia, tresc }) => ({ faza: faza ?? 1, linia, tresc }))
     .sort((a, b) => a.linia - b.linia)
-  return { checklista: prep.sciezka, blokery }
+  return { checklista: prep.sciezka, blokery, spojnosc }
 }
 
 /** @param {string} projekt @returns {Gotowosc['testy']} */

@@ -189,6 +189,13 @@ const PLAN_STATE = {
                 required: ['faza', 'linia', 'tresc'],
               },
             },
+            // Punkt 53: stan przegladu spojnosci planu z tego samego skryptu; brak pola (starszy skrypt) = brak kontroli.
+            spojnosc: {
+              type: 'object',
+              additionalProperties: false,
+              properties: { ok: { type: 'boolean' }, powod: { type: 'string' } },
+              required: ['ok', 'powod'],
+            },
           },
           required: ['checklista', 'blokery'],
         },
@@ -450,7 +457,8 @@ Folder zadania: ${sciezka}
    linie: \`git grep -e '^claude_md:' <glowna> -- 'docs/decisions/*.md'\` — kazda linia wyjscia 1:1 (brak trafien = []).
 
 1c. BLOKERY OPERATORA: \`node .claude/scripts/plan/plan.mjs blokery ${sciezka}\` — z JSON-u na stdout przepisz pola
-   checklista i blokery 1:1 do wejscie.blokery (bez oceny, czy pozycja jest juz zrobiona — liczy orkiestrator).
+   checklista, blokery i spojnosc (gdy wynik je ma) 1:1 do wejscie.blokery (bez oceny, czy pozycja jest juz zrobiona
+   ani czy przeglad jest aktualny — liczy orkiestrator). Wynik bez pola spojnosc -> pomin je w wejscie.blokery.
    Brak skryptu albo kod wyjscia inny niz 0 -> wejscie.blokery = { checklista: null, blokery: [] }.
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
@@ -1297,6 +1305,23 @@ function decyzjaBlokeraFazy(numerFazy, blokery, sciezka) {
   }
 }
 
+// Przeglad spojnosci planu (weryfikacja partii 26–45, punkt 53, decyzja 3 planu poprawek): bootstrap bral tylko blokery, wiec
+// plan bez aktualnego przegladu szedl do runu. Swieze zadanie (zadna faza nie zbudowana ani zaczeta) bez waznego przegladu = STOP
+// na starcie; zadanie w toku (np. zaplanowane przed ta bramka) dostaje tylko uwage — STOP zatrzymalby je bez potrzeby.
+// Brak pola (starszy plan.mjs w projekcie) = brak kontroli.
+function decyzjaSpojnosci(fazy, spojnosc, sciezka) {
+  if (!spojnosc || spojnosc.ok !== false) return { stop: null, uwaga: null }
+  const wToku = fazy.some((f) => f.execute === 'done' || (Array.isArray(f.iuUkonczone) && f.iuUkonczone.length > 0))
+  if (wToku) return { stop: null, uwaga: `przeglad spojnosci planu nieaktualny, zadanie w toku — run idzie dalej: ${spojnosc.powod}` }
+  return {
+    stop: {
+      powod: `start: przeglad spojnosci planu — ${spojnosc.powod}`,
+      naprawa: `/dev-plan krok 6.2b (przeglad spojnosci), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+    },
+    uwaga: null,
+  }
+}
+
 function fazyUkonczone(fazy) {
   return fazy.filter((f) => f.execute === 'done' && f.review === 'done' && (f.fix === 'done' || f.fix === 'none')).length
 }
@@ -1745,6 +1770,11 @@ const claudeMd = decyzjaClaudeMd(stan.wejscie.decyzje, sciezka)
 if (claudeMd.uwaga) log(`Bramka wejscia: ${claudeMd.uwaga}`)
 if (claudeMd.stop) {
   return await stopRun({ ...claudeMd.stop, stan })
+}
+const bramkaSpojnosci = decyzjaSpojnosci(stan.fazy, stan.wejscie.blokery && stan.wejscie.blokery.spojnosc, sciezka)
+if (bramkaSpojnosci.uwaga) log(`Bramka wejscia: UWAGA — ${bramkaSpojnosci.uwaga}`)
+if (bramkaSpojnosci.stop) {
+  return await stopRun({ ...bramkaSpojnosci.stop, stan })
 }
 if (wejscie.commitZadania) {
   const commitZadania = await zacommitujKatalogZadania(`docs(${stan.nazwaZadania}): zmiany w katalogu zadania przed runem`, 'start:commit-zadania')
@@ -2561,6 +2591,8 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
+  // Punkt 53: zadanie w toku z nieaktualnym przegladem spojnosci planu — run poszedl, operator widzi uwage w wyniku.
+  uwagaSpojnosci: bramkaSpojnosci.uwaga,
   nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null') }),
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
