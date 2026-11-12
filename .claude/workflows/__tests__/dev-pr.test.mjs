@@ -594,6 +594,12 @@ test('skill /dev-pr: krok 1 zaczyna `git status --porcelain`; brudne drzewo = na
   assert.ok(drzewo >= 0, 'akapit o drzewie w kroku 1')
   assert.ok(drzewo < krok1.indexOf('**Zmiany po archiwizacji.**'), 'przed po-archiwum.mjs: commit sprzed startu skrypt policzy')
   assert.ok(drzewo < krok1.indexOf('**Zgoda na wysłanie.**'), 'przed pytaniem o wyslanie')
+  // Weryfikacja partii, punkt 51 (drobne z punktu 37): smoke przed PR liczony dopiero na czystym drzewie, ze skryptu.
+  const smoke = krok1.indexOf('**Smoke przed PR.**')
+  assert.ok(drzewo < smoke && smoke < krok1.indexOf('**Zgoda na wysłanie.**'), 'Czyste drzewo < Smoke przed PR < Zgoda')
+  assert.equal(skillPr.indexOf('**Smoke przed PR.**'), skillPr.indexOf('### 1. Start') + krok1.indexOf('**Smoke przed PR.**'), 'akapit tylko w kroku 1')
+  const akapitSmoke = krok1.slice(smoke, krok1.indexOf('**Zmiany po archiwizacji.**')).replace(/\n/g, ' ')
+  assert.match(akapitSmoke, /`node \.claude\/scripts\/smoke\/otwarte\.mjs --zadanie <zadanie>`\. Otwarte pozycje smoke'u to `smoke\.otwarte − smoke\.poDeployu`/)
   const akapit = krok1.slice(drzewo, krok1.indexOf('**Zmiany po archiwizacji.**')).replace(/\n/g, ' ')
   assert.match(akapit, /Krok 1 zaczynasz od `git status --porcelain`, w każdym trybie i także wtedy, gdy pytanie o wysłanie pomijasz/)
   assert.match(akapit, /Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit wskazanych plików” \(pierwsza opcja, z listą ścieżek\) albo „Jeszcze nie” \(koniec bez etapu `start`\)/)

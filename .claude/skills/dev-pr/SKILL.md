@@ -93,9 +93,6 @@ poleceniem dla nowej sesji (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `/
 Powrót tą komendą do PR bez otwartych wątków (np. po odpowiedzi „Jeszcze nie” albo po zielonym CI) przechodzi kroki 2–3 bez
 tury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge.
 
-**Smoke przed PR.** Gdy `docs/operator/*-<zadanie>-smoke.md` ma nieodhaczone pozycje bez dopisku „po deployu”, przed pytaniem o zgodę podajesz ich liczbę i pytasz, czy
-wysyłać mimo to. To miękka bramka: decyduje operator.
-
 ### 1. Start — bramka wejścia i pull request
 
 **Czyste drzewo.** Krok 1 zaczynasz od `git status --porcelain`, w każdym trybie i także wtedy, gdy pytanie o wysłanie
@@ -105,6 +102,11 @@ Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit 
 smoke'u i dokumenty zadania commitujesz na `feature/<zadanie>`, nie na `feature/<zadanie>-czN`: plik smoke'u leży na gałęzi
 zadania, a jej commity po cięciu jadą z ostatnią częścią. Stasha nie używasz: `start` przełącza gałęzie i nikt go potem
 nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza część kroku 1, do pytania o wysłanie.
+
+**Smoke przed PR.** Na czystym drzewie: `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>`. Otwarte pozycje smoke'u
+to `smoke.otwarte − smoke.poDeployu` (pozycje z dopiskiem „po deployu” czekają z definicji na wdrożenie). Liczba większa od
+zera → przed pytaniem o zgodę podajesz ją i pytasz, czy wysyłać mimo to. To miękka bramka: decyduje operator. `smoke: null`
+(zadanie bez pliku smoke'u) → bez pytania; `ok: false` albo nieczytelny wynik → podajesz błąd i pytasz jak przy otwartych pozycjach.
 
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
