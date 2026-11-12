@@ -50,6 +50,7 @@ w `.claude/`. Etap `/dev-pr` sprawdzamy na kopii z prywatnym repo testowym na Gi
 | W33 | Run 3: reviewer zgodności ze specyfikacją zgłosił jako P2 „scenariusz `[E2E]` nie był uruchomiony w chwili review” (sceptyk obniżył do P3). To stan z konstrukcji pipeline'u: tester odgrywa scenariusze w tym samym review. | Zdanie w procedurze reviewera: niezaznaczony `[E2E]` przed przebiegiem testera nie jest findingiem. | niski | otwarty |
 | W35 | Run 4 (przygotowanie): `/dev-pr --claude-md opinia-z-ustawien --bez-push` wypchnął commit `8ebb1ec` na `origin` (repo testowe) i zwrócił `push: true`, `pushDetal: "OK"`, `ciGlownej: "brak-ci"`. Zakaz „NIE pushuj” był doklejony do polecenia agenta (`klasa-mechaniczny`) zaraz za krokiem `git push origin …`, a JS workflowu nie sprawdzał wyniku. W projekcie, w którym push na główną to deploy, tryb bez pushu nie chronił. | Rdzeń (`dev-pr-wf.js`, etapy `claude-md` i `compound`): w trybie bez pushu kroków CI głównej i PUSH nie ma w poleceniu (`krokiPoCommicie`, `KROK_BEZ_PUSHA`); `push: true` mimo trybu → `pushMimoBezPusha: true` i UWAGA w logu; skill każe podać to w raporcie jako pierwszą uwagę. | wysoki | poprawione (`popr/pilot-run4-kopie-repo-testowe`); niesprawdzone na żywym runie (kopia ma maszynerię `2ef6b6e`) |
 | W36 | Run 4: start autopilota stanął na STOP-ie bramki E2E „canary na Nawykometr-kopia: kod SIGKILL” ze stosem Maestro (`FileUtils.zipDir` ← `DebugLogStore.finalizeRun`). To własny limit skryptu (`LIMIT_CANARY_MS` 240 s w `expo-canary.mjs`: canary ruszył 22:34:45, zatrzymany ok. 22:38:45), a sesja kopii opisała to jako zabicie przez system. Ręczny canary chwilę później: 34 s, kod 0 (dwa razy). Prawdopodobna przyczyna spowolnienia: bramki szablonu (ok. 3,4 tys. testów) uruchomione przeze mnie równolegle na tym samym Macu. | Nakładka (`expo-canary.mjs`): `uruchomMaestro` zwraca `przekroczonyLimitMs`, gdy SIGKILL dał limit skryptu; STOP mówi „przekroczony limit 240 s — skrypt zatrzymał Maestro”, a naprawa każe zmierzyć czas ręcznie i odróżnia obciążenie maszyny od wiszącego flow. Lekcja pilota: bramek szablonu nie puszczam w trakcie startu E2E kopii. | średni | poprawione (`popr/pilot-run4-kopie-repo-testowe`); niesprawdzone na żywym runie |
+| W37 | Run 4: canary bramki E2E jest niestabilny. Drugi świeży run (Mac bez innego obciążenia) znów STOP „kod SIGKILL” po 240 s; log Maestro: `viewHierarchy` 500 `kAXErrorInvalidUIElement` zaraz po `openLink`, `CommandFailed`, potem zawieszenie do limitu. Ręczne `e2e.mjs start`: raz kod 1 po 32 s (sterownik XCTest: „Failed to connect to /127.0.0.1:7001”, Maestro reinstaluje aplikację przy `clearState`), potem dwa razy „gotowe” po 244 s i 112 s. Sam `maestro test .maestro/_canary.yaml` (także z argumentami skryptu): 3 × kod 0, ok. 34 s. Reload Metro (`wyslijReload`) tuż przed Maestro: 2 × kod 0, ale 133 s i 154 s. Limit 240 s jest więc blisko zwykłego czasu canary po reloadzie. | Do decyzji: po reloadzie czekać na koniec przeładowania aplikacji (albo pomijać reload przy świeżo uruchomionym Metro), wyższy limit canary albo jedno ponowienie canary przed STOP-em. Przyczyna utraty sterownika XCTest niepotwierdzona (log sterownika nadpisany). | średni | otwarty |
 | W34 | Run 3: etykieta agenta rozgrzewki `warmup:vitest` w projekcie na Jest. | Brak: etykieta to klucz telemetrii (`stacks/straznik.json`, świadomy wyjątek). | niski | zamknięty bez zmiany |
 
 ## Ustalenia dla projektu Nawykometr (nie dla szablonu)
@@ -192,6 +193,25 @@ bez migracji i nowych paczek.
   rundzie: **W12 potwierdzony** (grep po `run-all.sh` w polu Weryfikacja uznany za uruchomienie runnera E2E; sesja usunęła linię).
   W11 nie wystąpił (plan bez `[Manual]`). `gotowosc` zielona, jedna uwaga (brak skilla weryfikacji); W15 nie wystąpił (zadanie bez
   migracji), W21 zielony po uzgodnieniu CLAUDE.md.
+- Trzy starty autopilota: dwa STOP-y bramki E2E na canary (W36, W37; stan `27dbb4e`), trzeci run do końca bez STOP-u.
+- Wynik runu: `17f5fe1` (faza), `6b3ae9c` (fix), `1f8403f` i `85b7efe` (wiedza), `7c6bf65` (archiwum). Review: P1 0, P2 1
+  (potwierdzony, naprawiony), P3 0, OPERATOR 0; `[E2E]` `e10-wersja-w-ustawieniach` PASS przez tester; walidacja: typecheck, lint,
+  `expo export`, Jest 1235/1235 (97 zestawów). Smoke operatora bez pozycji.
+- **Sprawdzone na żywo:** W18 (nagłówek raportu „Gate review (przed fixem): ZASTRZEZENIA”), W28 (adapter `lib/app-version.ts`
+  w IU z UI i IU z samymi plikami E2E → `feature-builder-ui`). Nie wystąpiły: W11 (brak `[Manual]`), W19 (smoke bez pozycji, bez
+  sekcji adresu bazy), W32 (kontrola fixa bez pominiętych), W23, W25 po `partial`, W17, D4, W26 po STOP-ie (STOP był w bootstrapie,
+  przed execute; Metro z pierwszego STOP-u zostało uruchomione i kolejny start je przejął).
+- **`/dev-pr --bez-bota` na repo testowym — pierwszy żywy przebieg etapu PR w pilocie.** Start: PR #1 z czubka `7c6bf65`,
+  bramka wejścia czysta. `zbierz` pominięty (bez bota). `merge`: najpierw `GOTOWY-DO-DECYZJI` z jedynym warunkiem „CI istnieje
+  albo zgoda operatora (tryb bez bota)” (repo testowe bez CI), po `zgodaBezCi` squash `132224a`, gałąź usunięta. `compound`:
+  `POMINIETY` (tryb bez bota, zgodnie z kodem). `claude-md`: `d5debba` (+2 fakty, 0 rozjazdów), wypchnięty, `ciGlownej`
+  `brak-ci`. Sprawdzone na GitHubie: PR `MERGED`, `origin/main` = `d5debba`, `nawykometr-lokalny` bez zmian.
+- Odstępstwa sesji kopii od skilla wynikają z prowadzenia przez sesję nadrzędną (zgoda na merge bez CI i komenda `/dev-pr`
+  przekazane wiadomością, nie wpisane przez operatora), nie z szablonu. `tryb-recenzji.mjs` zwraca `recenzjaPr: "bot"`, bo projekt
+  ma `.coderabbit.yaml`; tryb wzięty z flagi, bez zapisu w `.claude/projekt.json`.
+- **Niesprawdzone:** recenzja z botem (CodeRabbit) — podpięcie do prywatnego repo w organizacji wymaga instalacji aplikacji GitHub przez
+  admina organizacji i konta CodeRabbit (warunki cenowe dla repo prywatnych niesprawdzone), czyli poza zakresem pilota; etapy `zbierz`,
+  `napraw`, tury i compound PR na żywo; merge z działającym CI.
 
 ## Niesprawdzone
 
