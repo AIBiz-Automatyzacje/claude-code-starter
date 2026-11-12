@@ -134,7 +134,7 @@ test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis 
   assert.match(EXECUTE, /const decyzjeAutopilota = buildResults\.filter\(\(b\) => b\.status !== 'blocked'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
   assert.match(EXECUTE, /\.map\(\(d\) => `\$\{b\.id\}: \$\{d\}`\)\)/)
   assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
-  assert.match(EXECUTE, /baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\), decyzjeAutopilota \}/)
+  assert.match(EXECUTE, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
   const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
   const poExecute = autopilot.slice(autopilot.indexOf("const exec = await workflow('dev-docs-execute-wf'"))
   const zapis = poExecute.indexOf("await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])")

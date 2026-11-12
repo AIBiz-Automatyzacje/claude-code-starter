@@ -659,4 +659,21 @@ if (buildResults.length !== plan.iu.length) {
 phase('Domkniecie')
 const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza), ukonczoneWczesniej, decyzjeAutopilota) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 // Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.
-return wynik && { ...wynik, baza: bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan), decyzjeAutopilota }
+const bazaWyniku = bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan)
+// Weryfikacja partii 26–45, punkt 54: domkniecie bez wyniku (agent padl albo zostal przerwany) zwracalo null — autopilot
+// zostawial stan z baza: null (swiezy run liczylby review od galezi glownej), a decyzje autopilota przepadaly. Wynik zgodny
+// z EXECUTE_RESULT, status partial: autopilot zapisuje baze i robi STOP jak przy kazdym execute bez „completed”.
+if (!wynik) {
+  return {
+    fazaNumer: faza,
+    status: 'partial',
+    iu: buildResults.map((b) => ({ id: b.id, status: b.status })),
+    commity: [],
+    testy: 'n/a',
+    odchylenia: [],
+    problem: 'domkniecie fazy nie zwrocilo wyniku (agent padl albo zostal przerwany) — commit fazy mogl juz powstac: sprawdz git log i git status',
+    baza: bazaWyniku,
+    decyzjeAutopilota,
+  }
+}
+return { ...wynik, baza: bazaWyniku, decyzjeAutopilota }
