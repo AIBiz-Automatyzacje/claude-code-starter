@@ -442,7 +442,7 @@ test('stack: Supabase — bez katalogu supabase/ i zaleznosci → nie dotyczy z 
   const bez = doctor(s)
   const w = wiersz(bez.stdout, 'stack: Supabase')
   assert.equal(w[1], 'nie dotyczy')
-  assert.match(w[2], /brak katalogu supabase\/ i zależności @supabase\/supabase-js/)
+  assert.match(w[2], /brak katalogu supabase\/, supabase\/config\.toml, zależności @supabase\/\* i wpisu supabase w requirements\.txt\/pyproject\.toml/)
   for (const element of ['skilla supabase-dev-guidelines', 'komend supabase z roli buildera danych', 'reguł RLS', 'narzędziami projektu (plan, CLAUDE.md)']) {
     assert.ok(w[3].includes(element), `${element} w: ${w[3]}`)
   }

@@ -217,11 +217,13 @@ test('uwaga o migracji tylko w projekcie z Supabase: bez sygnalu jej nie ma; kat
   const md = zmien('`supabase/migrations/20261007120000_status_oferty.sql`', '`backend/migrations/0007_status_oferty.sql`', Z_MIGRACJA_W_OPISIE)
   const zaleznosc = JSON.stringify({ dependencies: { '@supabase/supabase-js': '2.50.0' } })
   assert.deepEqual(sprawdz(md), { bledy: [], uwagi: [] }, 'bez sygnalu')
-  assert.deepEqual(sprawdz(md, { 'frontend/package.json': JSON.stringify({ dependencies: { '@supabase/ssr': '0.6.1' } }) }).uwagi, [], 'inna paczka to nie sygnal')
+  // Punkt 55 (26): kazda paczka @supabase/* i manifest do trzech poziomow to sygnal (wczesniej: tylko supabase-js, pierwszy poziom).
+  assert.deepEqual(sprawdz(md, { 'frontend/package.json': JSON.stringify({ dependencies: { '@supabase/ssr': '0.6.1' } }) }).uwagi, [UWAGA_MIGRACJI], 'inna paczka @supabase/* tez')
   assert.deepEqual(sprawdz(md, { 'supabase/config.toml': 'project_id = "x"\n' }).uwagi, [UWAGA_MIGRACJI], 'katalog supabase/')
   assert.deepEqual(sprawdz(md, { 'package.json': zaleznosc }).uwagi, [UWAGA_MIGRACJI], 'package.json w korzeniu')
   assert.deepEqual(sprawdz(md, { 'frontend/package.json': zaleznosc }).uwagi, [UWAGA_MIGRACJI], 'pakiet pierwszego poziomu')
-  assert.deepEqual(sprawdz(md, { 'apps/web/package.json': zaleznosc }).uwagi, [], 'pakiet glebiej niz pierwszy poziom')
+  assert.deepEqual(sprawdz(md, { 'apps/web/package.json': zaleznosc }).uwagi, [UWAGA_MIGRACJI], 'pakiet glebiej niz pierwszy poziom')
+  assert.deepEqual(sprawdz(md, { 'a/b/c/d/package.json': zaleznosc }).uwagi, [], 'ponad trzy poziomy — bez sygnalu')
 })
 
 // vibersi etap 6a IU-3: „test pilnuje zgodności kodów z migracją” przy CHECK-ach w migracji IU-1 dawało uwagę — linia z numerem

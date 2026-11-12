@@ -42,6 +42,16 @@ test('projekt bez Supabase: wiersz „nie dotyczy” wymienia skill, komendy bui
   assert.equal(wiersz?.[3], 'projekt bez Supabase: nie stosuj skilla supabase-dev-guidelines, komend supabase z roli buildera danych ani reguł RLS i GRANT; migracje i dostęp do danych narzędziami projektu (plan, CLAUDE.md)')
 }))
 
+// Punkt 55 (26): zepsuty package.json bez innego trafienia = UWAGA „nie udało się ustalić”, a nie „nie dotyczy”.
+test('Supabase nieustalony przez nieczytelny package.json: UWAGA ze sciezka; Supabase glebiej — bez wiersza', () => {
+  zProjektem({ 'frontend/package.json': '{ "dependencies": ' }, (projekt) => {
+    assert.deepEqual(wierszeDopasowania(projekt, BEZ_PACZKI), [['stack: Supabase', 'UWAGA', 'nie udało się ustalić (nieczytelny package.json: frontend/package.json)',
+      'popraw JSON w tym pliku; do tego czasu stosuj elementy Supabase z profilu tylko tam, gdzie projekt ich używa']])
+  })
+  zProjektem({ 'apps/web/supabase/config.toml': '' }, (projekt) => assert.deepEqual(wierszeDopasowania(projekt, BEZ_PACZKI), []))
+  zProjektem({ 'api/requirements.txt': 'supabase==2.3\n' }, (projekt) => assert.deepEqual(wierszeDopasowania(projekt, BEZ_PACZKI), []))
+})
+
 test('klient Supabase w pakiecie pierwszego poziomu: bez wiersza, takze gdy korzen nie ma package.json', () => zProjektem({ 'frontend/package.json': KLIENT }, (projekt) => {
   assert.deepEqual(wierszeDopasowania(projekt, BEZ_PACZKI), [])
 }))
