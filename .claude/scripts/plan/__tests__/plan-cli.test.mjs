@@ -14,6 +14,7 @@ import assert from 'node:assert/strict'
 import { liczE2e as liczScenariuszeE2e } from '../../dossier/dokumenty.mjs'
 import { NARZEDZIE_JAZDY } from '../../e2e/adapter.mjs'
 import { gotowosc } from '../gotowosc.mjs'
+import { odciskPlanu, SEKCJA_REALIZACJI } from '../spojnosc.mjs'
 import { PROFIL } from '../../stack/profil.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
@@ -373,3 +374,37 @@ test('gotowosc: przeglad spojnosci — brak, otwarte, faza bez przegladu i zmian
   writeFileSync(join(k, PLAN), plan.replace('## Granice zakresu', '## Granice zakresu\n\n- nowe wykluczenie'))
   assert.match(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.powod, /^plan zmieniony po przeglądzie spójności/)
 }))
+
+// Weryfikacja partii 26–45, punkt 53: domkniecie fazy dopisywalo decyzje do planu, a odcisk liczyl kazda zmiane poza `- [x]`/`* [x]`
+// — bramka po wznowieniu byla czerwona bez winy operatora. Mutacja odcisku wycinajaca cale linie z checkboxem przechodzila testy.
+test('odciskPlanu: odhaczenia w kazdej postaci listy, biale znaki, CRLF, BOM i sekcja realizacji nie zmieniaja odcisku; tresc tak', () => {
+  const plan = [
+    '# Plan', '', '## Podejście', '', 'Lista ofert z filtrem.', '', '## Faza 1', '',
+    '- [ ] Test: [E2E] `a` — lista', '* [ ] Weryfikacja: lint', '1. [ ] krok numerowany', '2) [ ] krok z nawiasem',
+    '+ [ ] krok z plusem', '> - [ ] w cytacie', '  - [ ] wciety', '', '## Granice zakresu', '', '- bez płatności', '',
+  ].join('\n')
+  const bazowy = odciskPlanu(plan)
+  const odhaczony = plan.replace(/\[ \]/g, '[x]')
+  assert.equal(odhaczony.split('[x]').length, 8, 'siedem postaci listy odhaczonych')
+  for (const [opis, wariant] of /** @type {[string, string][]} */ ([
+    ['odhaczenie - * 1. 2) + > i wciecie', odhaczony],
+    ['duze X', plan.replace(/\[ \]/g, '[X]')],
+    ['spacja i tabulator na koncu linii', plan.replace('Lista ofert z filtrem.', 'Lista ofert z filtrem. \t')],
+    ['dodatkowe \\n na koncu', `${plan}\n\n`],
+    ['brak \\n na koncu', plan.replace(/\n+$/, '')],
+    ['CRLF', plan.replace(/\n/g, '\r\n')],
+    ['BOM', `\uFEFF${plan}`],
+    ['sekcja realizacji na koncu', `${plan}\n${SEKCJA_REALIZACJI}\n\n- faza 1, IU-1: mail bez imienia (Granice)\n`],
+    ['sekcja realizacji z podsekcja', `${plan}\n${SEKCJA_REALIZACJI}\n\n### Faza 1\n\n- faza 1, IU-2: x\n`],
+  ])) assert.equal(odciskPlanu(wariant), bazowy, opis)
+
+  for (const [opis, wariant] of /** @type {[string, string][]} */ ([
+    ['zmiana tekstu pozycji z checkboxem', plan.replace('`a` — lista', '`a` — lista z filtrem')],
+    ['zmiana tekstu pozycji numerowanej', plan.replace('krok numerowany', 'krok inny')],
+    ['usuniecie pozycji z checkboxem', plan.replace('+ [ ] krok z plusem\n', '')],
+    ['nowa pozycja', plan.replace('  - [ ] wciety', '  - [ ] wciety\n- [ ] Test: nowy')],
+    ['zmiana w Podejsciu', plan.replace('Lista ofert z filtrem.', 'Lista ofert bez filtra.')],
+    ['linia w nowej sekcji po sekcji realizacji', `${plan}\n${SEKCJA_REALIZACJI}\n\n- faza 1: x\n\n## Inna\n\n- nowe\n`],
+    ['sekcja o innej nazwie', `${plan}\n## Decyzje z realizacji fazy 2\n\n- x\n`],
+  ])) assert.notEqual(odciskPlanu(wariant), bazowy, opis)
+})
