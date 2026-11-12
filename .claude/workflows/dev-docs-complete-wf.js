@@ -172,7 +172,11 @@ function czesciPr(czesci, nazwaZadania) {
 }
 // Punkt 40, krok 6 (punkt 45): raport konczyl sie zdaniem modelu „zamkniete w calosci”, choc smoke mial otwarte pozycje.
 // Zdanie o otwartych sprawach bierzemy 1:1 z otwarte.mjs (liczy pliki); brak wyniku = null i uwaga, nie zgadywanie.
-function zdanieOtwartych(tekst) {
+// Pad autora smoke'u (weryfikacja partii 2026-11-11, punkt 49): otwarte.mjs widzi brak pliku i mowi „brak (bez smoke'u…”, tak samo
+// jak przy zadaniu bez pozycji — raport autopilota oglaszal wtedy „Otwarte: brak” i podawal komende PR, choc pozycje
+// „Operator checklist” i [Manual] nigdzie nie trafily. `bezListy` = nazwa zadania, gdy autor padl: zdanie mowi to wprost.
+function zdanieOtwartych(tekst, bezListy = null) {
+  if (bezListy) return `Otwarte: nieznane — lista smoke'u nie powstala (autor smoke'u padl), pozycje do sprawdzenia nie sa policzone; wygeneruj ja: /dev-docs-complete ${bezListy}.`
   const linia = String(tekst || '').trim().split('\n').pop() || ''
   let w = null
   try {
@@ -395,7 +399,7 @@ if (!wynik) {
 
 // Uwagi archiwizacji liczone w JS: brak pliku decyzji psuje krok CLAUDE.md po merge'u, a czesc PR ponad progiem omija bot.
 const pr = czesciPr(czesciZWyniku(wynik.rozmiarPr), nazwaZadania)
-const otwarte = zdanieOtwartych(wynik.otwarte)
+const otwarte = zdanieOtwartych(wynik.otwarte, smokeStatus === 'agent-null' ? nazwaZadania : null)
 const uwagi = [sprawdzDecyzje(wynik.decyzje, nazwaZadania), pr.uwaga, uwagaZmiennych(smoke),
   otwarte ? null : `UWAGA: liczba otwartych spraw nieznana — sprawdz: node .claude/scripts/smoke/otwarte.mjs --zadanie ${nazwaZadania}`].filter(Boolean)
 if (otwarte) log(otwarte)

@@ -32,6 +32,7 @@ const wf = new Function(
    ${wytnij('const NAZWY_BRAMEK', "required: ['fazaNumer', 'status', 'iu', 'stanZapisany'],\n}")}
    ${wytnij('function bazaFazy(', '\n}')}
    ${wytnij('function plikBramek(', '\n}')}
+   ${wytnij('function decyzjeBlok(', '\n}')}
    ${wytnij('function domknieciePrompt(', '\n}')}
    return { IU_PLAN, EXECUTE_RESULT, bazaFazy, plikBramek, domknieciePrompt }`,
 )()
@@ -51,7 +52,7 @@ test('planner zwraca baze fazy (HEAD przed builderami); JS bierze ja tylko jako 
   assert.equal(wf.bazaFazy({ baza: 'abc1234' }), 'abc1234')
   assert.equal(wf.bazaFazy({ baza: 'HEAD; rm -rf /' }), 'HEAD')
   assert.equal(wf.bazaFazy({}), 'HEAD')
-  assert.match(zrodlo, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej\)/)
+  assert.match(zrodlo, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej, decyzjeAutopilota\)/)
 })
 
 test('domkniecie uruchamia bramki z baza fazy, naprawia porazki bez wlasnego lintu, po naprawie dopisuje sume migracji', () => {
@@ -115,6 +116,20 @@ test('domkniecie: odchylenia i nastepne kroki builderow w prompcie i w dzienniku
   assert.ok(p.includes('- IU-1: partial (odchylenia: polityka bez testu na bazie) (nastepne kroki: indeks na posts.user_id)'))
   assert.ok(p.includes('- IU-2: completed\n'))
   assert.match(p, /Odchylenia i nastepne kroki builderow z listy raportow dopisz do `## Dziennik`/)
+})
+
+// Weryfikacja partii 2026-11-11, punkt 48: builder dopasowal test do wybranej opcji (hierarchia zrodel, punkt 41), a domkniecie
+// nie znalo jego decyzji i mialo polecenie dopisac test pierwotnego scenariusza — przywrociloby zrodlo, ktore przegralo.
+test('domkniecie: decyzje autopilota builderow ida do polecenia i wylaczaja dopisywanie testu pierwotnego scenariusza', () => {
+  const decyzja = 'IU-12: src/mail.ts:58 — scenariusz mowi „imię w mailu”, makieta go nie ma → wybrano mail bez imienia; cofniecie: przywrocic powitanie'
+  const p = wf.domknieciePrompt('docs/active/x', 3, [{ id: 'IU-12', status: 'completed' }], SHA, PLIK_BRAMEK, [], [decyzja])
+  assert.ok(p.includes(`DECYZJE AUTOPILOTA tej fazy`))
+  assert.ok(p.includes(`- ${decyzja}\n`))
+  assert.match(p, /nie dopisujesz testu pierwotnego scenariusza i nie przywracasz w kodzie tego, z czego builder zrezygnowal/)
+  assert.match(p, /nie jest powodem statusu partial/)
+  assert.ok(p.indexOf('DECYZJE AUTOPILOTA') < p.indexOf('1. System-Wide Test Check'), 'przed punktem, ktory kaze dopisac brakujacy test')
+  assert.doesNotMatch(prompt, /DECYZJE AUTOPILOTA/, 'faza bez decyzji nie dostaje bloku')
+  assert.match(zrodlo, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej, decyzjeAutopilota\)/)
 })
 
 test('domkniecie: catch bez sladu naprawiany wg rodzaju bledu — Sentry tylko dla nieoczekiwanego (sentry-integration, zasada 1)', () => {

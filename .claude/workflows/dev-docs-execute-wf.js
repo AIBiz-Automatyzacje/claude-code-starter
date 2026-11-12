@@ -477,7 +477,21 @@ function plikBramek(sciezka, faza) {
   return `/tmp/bramki-${String(sciezka).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-faza-${faza}.json`
 }
 
-function domknieciePrompt(sciezka, faza, buildResults, baza, plikBramek, wczesniej = []) {
+// Decyzje autopilota w domknieciu (weryfikacja partii 2026-11-11, punkt 48): builder dopasowal test do wybranej opcji, a domkniecie
+// znalo tylko status, odchylenia i nastepne kroki — przy checkboxie "Test:" z pierwotnym scenariuszem mialo polecenie dopisac
+// brakujacy test, czyli przywrocic zrodlo, ktore przegralo (sprzecznosc zapisana przy punkcie 41: „domkniecie dopisujace testy”).
+function decyzjeBlok(decyzje) {
+  if (!decyzje.length) return ''
+  return `DECYZJE AUTOPILOTA tej fazy (builder rozstrzygnal sprzecznosc zrodel planu wg hierarchii zrodel; operator potwierdzi wybor
+albo go zmieni w smoke'u):
+${decyzje.map((d) => `- ${d}`).join('\n')}
+Wybor obowiazuje takze Ciebie. Checkbox "Test:", ktorego scenariusz builder dopasowal do wybranej opcji, zalicza test tej opcji:
+nie dopisujesz testu pierwotnego scenariusza i nie przywracasz w kodzie tego, z czego builder zrezygnowal. Brak takiego testu
+albo zachowania nie jest powodem statusu partial. Tresci pozycji w pliku zadan i w planie nie zmieniasz.
+`
+}
+
+function domknieciePrompt(sciezka, faza, buildResults, baza, plikBramek, wczesniej = [], decyzje = []) {
   const podsumowanieIU = buildResults
     .map((b) => `- ${b.id}: ${b.status}${b.odchylenia && b.odchylenia.length ? ` (odchylenia: ${b.odchylenia.join('; ')})` : ''}${b.nastepneKroki ? ` (nastepne kroki: ${b.nastepneKroki})` : ''}`)
     .join('\n')
@@ -488,7 +502,7 @@ Faza: ${faza}
 
 Raporty builderow:
 ${podsumowanieIU || '(brak — w tym podejsciu zaden builder nie pracowal; walidujesz i domykasz stan repo od bazy fazy)'}
-${wczesniej.length ? `Jednostki zapisane commitem w poprzednim, przerwanym podejsciu (kod jest juz w repo, checkboxy odhaczone): ${wczesniej.join(', ')}.\nWalidacja, bramki i dossier obejmuja cala faze od bazy.\n` : ''}
+${wczesniej.length ? `Jednostki zapisane commitem w poprzednim, przerwanym podejsciu (kod jest juz w repo, checkboxy odhaczone): ${wczesniej.join(', ')}.\nWalidacja, bramki i dossier obejmuja cala faze od bazy.\n` : ''}${decyzjeBlok(decyzje)}
 1. System-Wide Test Check: typecheck bez nowych bledow,
    istniejace testy przechodza, nowe testy pokrywaja happy path + error case, checkboxy "Test:" napisane i przechodza,
    importy nie lamia modulow, build (krok build wg .claude/stack/walidacja.md) przechodzi. Komendy z package.json.
@@ -640,6 +654,6 @@ if (buildResults.length !== plan.iu.length) {
 }
 
 phase('Domkniecie')
-const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza), ukonczoneWczesniej) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
+const wynik = await agent(domknieciePrompt(sciezka, faza, buildResults, bazaFazy(plan), plikBramek(sciezka, faza), ukonczoneWczesniej, decyzjeAutopilota) + punktZapisuStanu(sciezka, faza, bazaFazy(plan), args.stanPoExecute), { schema: EXECUTE_RESULT, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `domkniecie:faza-${faza}` })
 // Baza fazy z JS (P7): autopilot utrwala ja w stanie i podaje review-wf jako args.baza.
 return wynik && { ...wynik, baza: bazaFazy(plan) === 'HEAD' ? null : bazaFazy(plan), decyzjeAutopilota }

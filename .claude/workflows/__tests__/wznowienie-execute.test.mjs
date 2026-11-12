@@ -35,6 +35,7 @@ const ex = new Function(
    ${wytnij(EXECUTE, 'function bazaFazy(', '\n}')}
    ${wytnij(EXECUTE, '// ── Wznowienie po przerwanym execute', '// ── Koniec wznowienia po przerwanym execute')}
    ${wytnij(EXECUTE, 'function plannerPrompt(', '\n}')}
+   ${wytnij(EXECUTE, 'function decyzjeBlok(', '\n}')}
    ${wytnij(EXECUTE, 'function domknieciePrompt(', '\n}')}
    return { CZESCIOWE_RESULT, kluczIu, bezUkonczonych, planCzesciowegoDomkniecia, nazwaSchowka, domkniecieCzesciowePrompt, wynikPrzerwanego, plannerPrompt, domknieciePrompt }`,
 )()
@@ -148,7 +149,7 @@ test('wiring execute-wf: lista ze stanu filtruje jednostki w JS, a planner bez p
   assert.match(orkiestracja, /plan\.iu = plan\.poza \? \[\] : bezUkonczonych\(plan\.iu, ukonczoneWczesniej\)\n/)
   assert.match(orkiestracja, /if \(plan\.iu\.length === 0 && !bazaZeStanu\) \{\n {2}return \{ fazaNumer: faza, status: 'completed'/)
   assert.match(orkiestracja, /if \(plan\.iu\.length === 0\) \{\n {2}builds = \[\]\n\} else if \(plan\.strategia === 'parallel'\) \{/)
-  assert.match(orkiestracja, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej\)/)
+  assert.match(orkiestracja, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej, decyzjeAutopilota\)/)
   // Planner dostaje liste (oszczednosc promptow), ale filtr w JS obowiazuje niezaleznie od niego.
   assert.match(ex.plannerPrompt('docs/active/x', 3, ['IU-10', 'IU-11']), /Jednostki zapisane commitem w poprzednim, przerwanym podejsciu do tej fazy: IU-10, IU-11\. Pomijasz je/)
   assert.doesNotMatch(ex.plannerPrompt('docs/active/x', 3), /w poprzednim, przerwanym podejsciu/)

@@ -7,6 +7,13 @@
 // review”, zmienione linie testera), zostaja. Pozycja o tej samej tresci przeniesiona do innej jednostki zabiera
 // swoje odhaczenie. Linii zmienionej przez run nie zgadujemy: brak dokladnego dopasowania to konflikt i nic nie zapisujemy.
 // Pliku stanu skrypt nie zmienia.
+//
+// Roznica liczy sie miedzy dwiema wersjami planu, a nie wzgledem pliku zadan, wiec skrypt musi sam rozpoznac zmiane, ktora
+// w pliku juz jest (weryfikacja partii 2026-11-11, punkty 46 i 47): drugie `--zapisz` przed commitem planu dopisywalo te same
+// pozycje jeszcze raz, a po recznym usunieciu linii z konfliktu skrypt dalej jej szukal i zwracal ten sam konflikt.
+// Pozycja, ktora sekcja juz ma, nie jest dopisywana. Brak linii do usuniecia jest konfliktem tylko wtedy, gdy w sekcji stoi
+// linia spoza obu wersji planu (mozliwa zmieniona wersja tej pozycji); `pominBrakujace` zamyka przypadek, w ktorym taka linia
+// jest czyms innym (np. finding review w „Operator checklist”).
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -21,7 +28,7 @@ import { checkboxyIu, naglowekFazy, wierszFazy } from './zadanie.mjs'
  * @typedef {{ id: string, naglowek: string, linie: string[], operator: string[] }} IuZadan
  * @typedef {{ numer: number, naglowek: string[], wiersz: string, iu: IuZadan[] }} FazaZadan
  * @typedef {{ ok: boolean, odmowa: string | null, plan: string | null, od: string, konflikty: string[], bledy: string[],
- *   zmiany: { dodane: string[], usuniete: string[], przeniesione: string[], naglowki: string[], noweIu: string[], usunieteIu: string[], tabelaFaz: number[] },
+ *   zmiany: { dodane: string[], usuniete: string[], przeniesione: string[], naglowki: string[], noweIu: string[], usunieteIu: string[], tabelaFaz: number[], juzNaniesione: string[] },
  *   pliki: Record<string, string> }} Odswiezenie
  */
 
@@ -93,6 +100,12 @@ function znajdz(linie, [od, po], t) {
   return -1
 }
 
+/** @param {string[]} linie @param {[number, number]} zakres @returns {string[]} tresci checkboxow sekcji */
+const pozycje = (linie, [od, po]) => linie.slice(od, po).flatMap((l) => CHECKBOX.exec(l)?.[2] ?? [])
+
+/** @param {string[]} z @param {string} t @returns {number} */
+const ile = (z, t) => z.filter((x) => x === t).length
+
 /** @param {string[]} linie @param {[number, number]} zakres @returns {boolean} sekcja bez tresci poza naglowkiem */
 const pusta = (linie, [od, po]) => linie.slice(od + 1, po).every((l) => !l.trim())
 
@@ -127,12 +140,19 @@ const odmow = (w, powod) => ({ ...w, ok: false, odmowa: powod })
 /**
  * Usuniecia: pozycje, ktorych nowy plan nie ma w danej jednostce (albo cala jednostka). Stan usunietej linii idzie do puli,
  * z ktorej wezmie go ta sama pozycja dodana w innym miejscu.
+ * Linii, ktorej plik juz nie ma, nie da sie odroznic od linii zmienionej przez przebieg inaczej niz po reszcie sekcji: gdy sekcja
+ * ma wylacznie pozycje z planu (starego albo nowego), usuniecie jest juz naniesione; linia spoza planu moze byc zmieniona wersja.
  * @param {string[]} linie @param {FazaZadan[]} stare @param {FazaZadan[]} nowe @param {Odswiezenie} w @param {Map<string, string[]>} pula
+ * @param {boolean} pominBrakujace
  */
-function usun(linie, stare, nowe, w, pula) {
-  const zdejmij = (/** @type {[number, number] | null} */ zakres, /** @type {string} */ t, /** @type {string} */ gdzie) => {
+function usun(linie, stare, nowe, w, pula, pominBrakujace) {
+  const zdejmij = (/** @type {[number, number] | null} */ zakres, /** @type {string} */ t, /** @type {string} */ gdzie, /** @type {string[]} */ zPlanu) => {
     const i = zakres ? znajdz(linie, zakres, t) : -1
-    if (i === -1) return void w.konflikty.push(`${gdzie}: nie ma w pliku zadań linii „${t}” (zmienił ją przebieg albo ręczna edycja) — usuń ją ręcznie i uruchom odświeżenie ponownie`)
+    if (i === -1) {
+      const obce = zakres ? roznica(pozycje(linie, zakres), zPlanu).usuniete : []
+      if (!obce.length || pominBrakujace) return void w.zmiany.juzNaniesione.push(`${gdzie}: ${t} (linii już nie ma)`)
+      return void w.konflikty.push(`${gdzie}: nie ma w pliku zadań linii „${t}” (zmienił ją przebieg albo ręczna edycja). Linie sekcji spoza planu: ${obce.map((o) => `„${o}”`).join(', ')} — tę, która jest zmienioną wersją tej pozycji, usuń ręcznie i uruchom odświeżenie ponownie; gdy żadna nią nie jest, uruchom z --pomin-brakujace`)
+    }
     const stan = CHECKBOX.exec(linie[i])?.[1] ?? ' '
     pula.set(kluczPrzeniesienia(t), [...(pula.get(kluczPrzeniesienia(t)) ?? []), stan])
     linie.splice(i, 1)
@@ -142,7 +162,7 @@ function usun(linie, stare, nowe, w, pula) {
     const nowaFaza = nowe.find((n) => n.numer === f.numer)
     for (const iu of f.iu) {
       const nowa = nowaFaza?.iu.find((n) => n.id === iu.id) ?? nowe.flatMap((n) => n.iu).find((n) => n.id === iu.id)
-      for (const t of roznica(iu.linie, nowa ? nowa.linie : []).usuniete) zdejmij(sekcjaIu(linie, iu.id), t, iu.id)
+      for (const t of roznica(iu.linie, nowa ? nowa.linie : []).usuniete) zdejmij(sekcjaIu(linie, iu.id), t, iu.id, [...iu.linie, ...(nowa ? nowa.linie : [])])
       if (nowa) continue
       const zakres = sekcjaIu(linie, iu.id)
       if (zakres && pusta(linie, zakres)) {
@@ -153,7 +173,7 @@ function usun(linie, stare, nowe, w, pula) {
     const operatorStary = f.iu.flatMap((j) => j.operator)
     const operatorNowy = (nowaFaza?.iu ?? []).flatMap((j) => j.operator)
     const naglowek = `## Operator checklist faza ${f.numer}`
-    for (const t of roznica(operatorStary, operatorNowy).usuniete) zdejmij(sekcja2(linie, naglowek), t, `operator faza ${f.numer}`)
+    for (const t of roznica(operatorStary, operatorNowy).usuniete) zdejmij(sekcja2(linie, naglowek), t, `operator faza ${f.numer}`, [...operatorStary, ...operatorNowy])
     const zakres = sekcja2(linie, naglowek)
     if (zakres && !operatorNowy.length && pusta(linie, zakres)) linie.splice(zakres[0], zakres[1] - zakres[0])
   }
@@ -172,7 +192,8 @@ function miejsce(linie, zakres, wzor, t) {
 }
 
 /**
- * Dodania: nowe pozycje, nowe jednostki i zmienione naglowki jednostek.
+ * Dodania: nowe pozycje, nowe jednostki i zmienione naglowki jednostek. Pozycji, ktora sekcja juz ma w liczbie z nowego planu,
+ * nie dopisuje (powtorne odswiezenie tej samej zmiany).
  * @param {string[]} linie @param {FazaZadan[]} stare @param {FazaZadan[]} nowe @param {Odswiezenie} w @param {Map<string, string[]>} pula
  */
 function dodaj(linie, stare, nowe, w, pula) {
@@ -188,13 +209,17 @@ function dodaj(linie, stare, nowe, w, pula) {
       const stara = stareIu.get(iu.id)
       const zakres = sekcjaIu(linie, iu.id)
       if (stara && !zakres) return void w.konflikty.push(`${iu.id}: brak sekcji jednostki w pliku zadań`)
-      if (stara && zakres) {
-        if (stara.naglowek !== iu.naglowek) {
+      if (zakres) {
+        if (stara && stara.naglowek !== iu.naglowek && linie[zakres[0]] !== iu.naglowek) {
           linie[zakres[0]] = iu.naglowek
           w.zmiany.naglowki.push(iu.naglowek)
         }
-        for (const t of roznica(stara.linie, iu.linie).dodane) {
+        for (const t of roznica(stara?.linie ?? [], iu.linie).dodane) {
           const teraz = sekcjaIu(linie, iu.id) ?? zakres
+          if (ile(pozycje(linie, teraz), t) >= ile(iu.linie, t)) {
+            w.zmiany.juzNaniesione.push(`${iu.id}: ${t}`)
+            continue
+          }
           linie.splice(miejsce(linie, teraz, iu.linie, t), 0, zeStanem(t, iu.id))
         }
         return
@@ -212,7 +237,8 @@ function dodaj(linie, stare, nowe, w, pula) {
     const naglowek = `## Operator checklist faza ${f.numer}`
     for (const t of roznica(operatorStary, operatorNowy).dodane) {
       const zakres = sekcja2(linie, naglowek)
-      if (zakres) linie.splice(miejsce(linie, zakres, operatorNowy, t), 0, zeStanem(t, `operator faza ${f.numer}`))
+      if (zakres && ile(pozycje(linie, zakres), t) >= ile(operatorNowy, t)) w.zmiany.juzNaniesione.push(`operator faza ${f.numer}: ${t}`)
+      else if (zakres) linie.splice(miejsce(linie, zakres, operatorNowy, t), 0, zeStanem(t, `operator faza ${f.numer}`))
       else {
         const faza = sekcjaFazy(linie, f.numer)
         if (!faza) return void w.konflikty.push(`operator faza ${f.numer}: brak sekcji fazy w pliku zadań`)
@@ -225,14 +251,15 @@ function dodaj(linie, stare, nowe, w, pula) {
 /**
  * @param {string} projekt katalog projektu
  * @param {string} zadanie katalog zadania wzgledem projektu (docs/active/<zadanie>)
- * @param {{ od?: string }} [opcje] rewizja gita z planem sprzed zmiany (domyslnie HEAD)
+ * @param {{ od?: string, pominBrakujace?: boolean }} [opcje] od = rewizja gita z planem sprzed zmiany (domyslnie HEAD);
+ *   pominBrakujace = linia do usuniecia, ktorej plik nie ma, jest juz usunieta (operator sprawdzil linie spoza planu z konfliktu)
  * @returns {Odswiezenie} pliki = nowa tresc plikow zadania do zapisu (pusta przy odmowie i konfliktach)
  */
 export function odswiezZadanie(projekt, zadanie, opcje = {}) {
   const od = opcje.od ?? 'HEAD'
   /** @type {Odswiezenie} */
   const w = { ok: true, odmowa: null, plan: null, od, konflikty: [], bledy: [],
-    zmiany: { dodane: [], usuniete: [], przeniesione: [], naglowki: [], noweIu: [], usunieteIu: [], tabelaFaz: [] }, pliki: {} }
+    zmiany: { dodane: [], usuniete: [], przeniesione: [], naglowki: [], noweIu: [], usunieteIu: [], tabelaFaz: [], juzNaniesione: [] }, pliki: {} }
   const katalog = join(projekt, zadanie)
   const nazwy = existsSync(katalog) ? readdirSync(katalog) : []
   const plikZadan = nazwy.find((n) => n.endsWith('-zadania.md'))
@@ -272,20 +299,24 @@ export function odswiezZadanie(projekt, zadanie, opcje = {}) {
   const linie = zadania.split('\n')
   /** @type {Map<string, string[]>} */
   const pula = new Map()
-  usun(linie, stare, nowe, w, pula)
+  usun(linie, stare, nowe, w, pula, opcje.pominBrakujace === true)
   dodaj(linie, stare, nowe, w, pula)
   const liniePlanu = readFileSync(join(katalog, plikPlanu), 'utf8').split('\n')
   for (const f of nowe) {
     const stary = stare.find((s) => s.numer === f.numer)?.wiersz
     if (!stary || stary === f.wiersz) continue
     const i = liniePlanu.indexOf(stary)
-    if (i === -1) w.konflikty.push(`faza ${f.numer}: w ${plikPlanu} nie ma wiersza tabeli „Fazy” w zapisie generatora — popraw listę jednostek i delegatów ręcznie`)
+    if (i === -1 && liniePlanu.includes(f.wiersz)) w.zmiany.juzNaniesione.push(`faza ${f.numer}: wiersz tabeli „Fazy”`)
+    else if (i === -1) w.konflikty.push(`faza ${f.numer}: w ${plikPlanu} nie ma wiersza tabeli „Fazy” w zapisie generatora — popraw listę jednostek i delegatów ręcznie`)
     else {
       liniePlanu[i] = f.wiersz
       w.zmiany.tabelaFaz.push(f.numer)
     }
   }
   if (w.konflikty.length) return odmow(w, 'plik zadań różni się od tego, co zapisał generator — rozwiąż konflikty i uruchom ponownie; nic nie zapisano')
+  if (linie.join('\n') === zadania && !w.zmiany.tabelaFaz.length) {
+    return odmow(w, 'plik zadań ma już tę zmianę planu (odświeżenie zapisane wcześniej) — nic do zapisania')
+  }
   w.pliki = { [`${zadanie}/${plikZadan}`]: linie.join('\n'), ...(w.zmiany.tabelaFaz.length ? { [`${zadanie}/${plikPlanu}`]: liniePlanu.join('\n') } : {}) }
   return w
 }

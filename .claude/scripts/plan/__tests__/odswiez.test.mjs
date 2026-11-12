@@ -178,6 +178,68 @@ test('odswiez: linia zmieniona przez przebieg, ktora plan usuwa = konflikt i zad
   assert.equal(czytaj(korzen, ZADANIA), przed)
 })
 
+// Weryfikacja partii 2026-11-11, punkt 47: komunikat konfliktu kazal usunac linie recznie, a po usunieciu skrypt dalej jej szukal
+// i zwracal ten sam konflikt — pozycja przestawiona przez testera na [Manual] blokowala kazda zmiane planu, ktora ja usuwa.
+test('odswiez: po recznym usunieciu zmienionej linii konflikt znika; linia spoza planu, ktora nia nie jest, wymaga --pomin-brakujace', (t) => {
+  const korzen = repoZPrzebiegiem(t)
+  zmien(korzen, PLAN, (p) => p.replace(/^- \[E2E\] `oferta-publiczna`.*\n/m, ''))
+  const konflikt = cli(korzen, ['odswiez', ZADANIE, '--zapisz'])
+  assert.equal(konflikt.kod, 1)
+  assert.match(konflikt.wynik.konflikty[0], /Linie sekcji spoza planu: „\[Manual\] `oferta-publiczna` — tester: środowisko bez przeglądarki” — tę, która jest zmienioną wersją tej pozycji, usuń ręcznie/)
+
+  // Linia spoza planu, ktora nie jest wersja usuwanej pozycji: flaga zamyka sprawe, linia zostaje.
+  const zFlaga = cli(korzen, ['odswiez', ZADANIE, '--pomin-brakujace'])
+  assert.equal(zFlaga.kod, 1, 'usuniecie juz naniesione, wiec nie ma czego zapisac')
+  assert.match(zFlaga.wynik.odmowa, /^plik zadań ma już tę zmianę planu/)
+  assert.deepEqual(zFlaga.wynik.konflikty, [])
+
+  // Droga z komunikatu: operator usuwa zmieniona wersje, odswiezenie przechodzi bez flagi.
+  zmien(korzen, ZADANIA, (z) => podmien(z, '- [ ] [Manual] `oferta-publiczna` — tester: środowisko bez przeglądarki\n', ''))
+  zmien(korzen, PLAN, (p) => podmien(p, KOTWICA_IU3_TESTY, `${KOTWICA_IU3_TESTY}- [Unit] hook dla usuniętej oferty zwraca brak\n`))
+  const po = cli(korzen, ['odswiez', ZADANIE, '--zapisz'])
+  assert.equal(po.kod, 0, JSON.stringify(po.wynik))
+  assert.deepEqual(po.wynik.konflikty, [])
+  assert.deepEqual(po.wynik.zmiany.dodane, ['IU-3: Test: [Unit] hook dla usuniętej oferty zwraca brak'])
+  assert.equal(po.wynik.zmiany.juzNaniesione.length, 1)
+  assert.match(po.wynik.zmiany.juzNaniesione[0], /^IU-3: Test: \[E2E\] `oferta-publiczna`.*\(linii już nie ma\)$/)
+})
+
+// Punkt 46: roznica liczy sie miedzy planem z HEAD a planem na dysku, wiec przed commitem planu kazde kolejne --zapisz
+// dopisywalo te same pozycje (trzy biegi = trzy identyczne linie).
+test('odswiez: drugie --zapisz tej samej zmiany niczego nie dopisuje (dodanie, przeniesienie, nowa jednostka)', (t) => {
+  const korzen = repoZPrzebiegiem(t)
+  const blokIu3 = FIXTURE.slice(FIXTURE.indexOf('- [ ] **IU-3:'), FIXTURE.indexOf('## Ryzyka i zależności'))
+  const blokIu4 = blokIu3.replace('IU-3: Adres publiczny oferty', 'IU-4: Licznik odsłon oferty').replaceAll('oferta-publiczna', 'licznik-odslon')
+    .replace(/^- \[E2E\].*\n/m, '').replace('feature-builder-fullstack', 'feature-builder-data').replace('**Makiety:** —\n\n', '')
+  zmien(korzen, PLAN, (p) => {
+    const zNowym = podmien(przeniesDoIu3(p), KOTWICA_IU3_TESTY, `${KOTWICA_IU3_TESTY}- [Unit] hook dla usuniętej oferty zwraca brak\n`)
+    return podmien(zNowym, '## Ryzyka i zależności', `${blokIu4}## Ryzyka i zależności`)
+  })
+  const pierwszy = cli(korzen, ['odswiez', ZADANIE, '--zapisz'])
+  assert.equal(pierwszy.kod, 0, JSON.stringify(pierwszy.wynik))
+  const poPierwszym = czytaj(korzen, ZADANIA)
+  const planPoPierwszym = czytaj(korzen, PLAN_ZADANIA)
+
+  const drugi = cli(korzen, ['odswiez', ZADANIE, '--zapisz'])
+  assert.equal(drugi.kod, 1)
+  assert.match(drugi.wynik.odmowa, /^plik zadań ma już tę zmianę planu \(odświeżenie zapisane wcześniej\)/)
+  assert.deepEqual(drugi.wynik.konflikty, [])
+  assert.deepEqual(drugi.wynik.zapisane, [])
+  assert.equal(czytaj(korzen, ZADANIA), poPierwszym)
+  assert.equal(czytaj(korzen, PLAN_ZADANIA), planPoPierwszym)
+  assert.equal(poPierwszym.split('hook dla usuniętej oferty zwraca brak').length - 1, 1)
+  assert.equal(poPierwszym.split('### IU-4:').length - 1, 1)
+
+  // Kolejna zmiana planu przed commitem: dochodzi tylko nowa pozycja, wczesniejsze sie nie dubluja, odhaczenie zostaje.
+  zmien(korzen, PLAN, (p) => podmien(p, '- [Unit] hook dla usuniętej oferty zwraca brak\n', '- [Unit] hook dla usuniętej oferty zwraca brak\n- [Unit] hook dla archiwalnej oferty zwraca brak\n'))
+  const trzeci = cli(korzen, ['odswiez', ZADANIE, '--zapisz'])
+  assert.equal(trzeci.kod, 0, JSON.stringify(trzeci.wynik))
+  assert.deepEqual(trzeci.wynik.zmiany.dodane, ['IU-3: Test: [Unit] hook dla archiwalnej oferty zwraca brak'])
+  const poTrzecim = czytaj(korzen, ZADANIA)
+  assert.equal(poTrzecim.split('\n').length, poPierwszym.split('\n').length + 1)
+  assert.match(sekcja(poTrzecim, 'IU-3'), /^- \[x\] Test: \[Unit\] publikacja cudzej oferty zwraca błąd uprawnień$/m)
+})
+
 test('odswiez: nowa jednostka w niezbudowanej fazie dostaje sekcje za poprzednia i wiersz w tabeli faz planu zadania', (t) => {
   const korzen = repoZPrzebiegiem(t)
   const blokIu3 = FIXTURE.slice(FIXTURE.indexOf('- [ ] **IU-3:'), FIXTURE.indexOf('## Ryzyka i zależności'))
