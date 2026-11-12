@@ -154,3 +154,20 @@ test('decyzjeNierozstrzygniete: wiersze [DECYZJA bez ROZSTRZYGNIĘTA z sekcji �
   assert.match(plaski('dev-prep/SKILL.md'), /\*\*Decyzje poprzednich zadań bez rozstrzygnięcia\.\*\* Każda pozycja pola `decyzje` ze skanu \(1\.2\) trafia do sekcji „Decyzje” z odsyłaczem: .*`\/dev-smoke <zadanie>`/)
   assert.match(plaski('dev-plan/SKILL.md'), /Pole `decyzje` \(zadanie, wiersz\) to decyzje poprzednich zadań, których nikt nie rozstrzygnął \(smoke pominięty albo przerwany\): wypisz każdą z odsyłaczem do `\/dev-smoke <zadanie>`; nie blokują\./)
 })
+
+// Punkt 52: opcje decyzji z autora smoke'u (2–3 warianty) nie pasowaly do trzech wyjsc, znacznik autopilot nie byl opisany,
+// a skill obiecywal, ze plik decyzji czyta autopilot (czyta tylko `claude_md:`).
+test('/dev-smoke sekcja 1: warianty jako „Popraw: <wariant>”, „Odłóż” przez Other przy trzech, znacznik autopilot, czytelnicy pliku decyzji', () => {
+  const sekcja1 = SKILL_SMOKE.slice(SKILL_SMOKE.indexOf('## 1. Decyzje przed PR'), SKILL_SMOKE.indexOf('## 2. Kontrola poprawek')).replace(/\n\s*/g, ' ')
+  assert.match(sekcja1, /Każdy wariant zmiany pokazujesz jako osobną odpowiedź „Popraw: <wariant>”, do tego „Zostaw jak jest” i „Odłóż”\./)
+  assert.match(sekcja1, /`AskUserQuestion` ma najwyżej 4 opcje: przy trzech wariantach zmiany „Odłóż” się nie mieści — napisz w pytaniu, że operator wybiera je przez „Other”\./)
+  assert.match(sekcja1, /\*\*Decyzja autopilota\*\* \(wiersz ze znacznikiem `\[DECYZJA · faza N · autopilot\]`\): wybór jest już w kodzie/)
+  assert.match(sekcja1, /„Zostaw jak jest” = potwierdzenie wyboru autopilota \(zapis jak wyżej\); „Popraw” = przywrócenie źródła, które przegrało/)
+  assert.match(sekcja1, /Ten plik czyta klasyfikator odrzuceń bota w `\/dev-pr` i etap uzgodnienia `CLAUDE\.md`/)
+  assert.match(sekcja1, /Autopilot treści decyzji nie czyta \(z tego pliku bierze tylko pole `claude_md:`\)\./)
+  assert.doesNotMatch(sekcja1, /czytają autopilot i klasyfikator/)
+  // Znacznik w skillu ten sam co w wierszu decyzji autopilota (wierszDecyzji: `[DECYZJA · faza N · <zrodlo>]`).
+  const autopilot = readFileSync(resolve(KATALOG, '../../../workflows/dev-autopilot-wf.js'), 'utf8')
+  assert.match(autopilot, /return `- \[DECYZJA · faza \$\{faza\} · \$\{zrodlo\}\] \$\{tresc\}`/)
+  assert.match(autopilot, /await zapiszDecyzje\(numerFazy, 'autopilot', /)
+})

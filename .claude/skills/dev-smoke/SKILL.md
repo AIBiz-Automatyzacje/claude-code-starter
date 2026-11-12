@@ -35,12 +35,22 @@ rekomendacja i dlaczego. Pytanie ma trzy wyjścia (pierwsze to rekomendacja z do
   `fix(<zadanie>): decyzja D<n> — <co zmienione>`. Przy zmianie widocznej na ekranie sprawdź ją narzędziem sesji.
 - **Zostaw jak jest** — w pliku decyzji zadania `docs/decisions/*-<zadanie>.md`, sekcja `## Decyzje`, dopisz linię
   `- Zostaw jak jest (smoke, D<n>): <pytanie> — <powód operatora albo „decyzja operatora”> (<plik:linia>)`.
-  Ten plik czytają autopilot i klasyfikator odrzuceń bota w `/dev-pr`, więc sprawa nie wróci jako błąd.
+  Ten plik czyta klasyfikator odrzuceń bota w `/dev-pr` i etap uzgodnienia `CLAUDE.md`, więc sprawa nie wróci jako błąd
+  bota. Autopilot treści decyzji nie czyta (z tego pliku bierze tylko pole `claude_md:`).
 - **Odłóż** — dopisz pozycję do `docs/operator/odlozone.md` (brak pliku = utwórz z nagłówkiem `# Sprawy odłożone` i zdaniem
   „Pozycje odłożone w smoke'u do późniejszego etapu; czyta je `/dev-prep` i bramka gotowości planu.”):
   `- [ ] [etap: <etykieta>] <zadanie> D<n>: <pytanie> — \`<plik:linia>\` (smoke <YYYY-MM-DD>)`. Etykieta to etap, do którego
   operator odkłada sprawę; nie podał go → „następny etap”. Pozycję odhacza (`[x]` z numerem commitu) sesja, która sprawę
   później wykona; plik czytają `/dev-prep` i bramka gotowości planu.
+
+**Opcje z pozycji.** Pozycja smoke'u ma 2–3 opcje ze skutkiem dla użytkownika (pisze je archiwizacja; jedna to zawsze „zostaw
+jak jest”). Każdy wariant zmiany pokazujesz jako osobną odpowiedź „Popraw: <wariant>”, do tego „Zostaw jak jest” i „Odłóż”.
+`AskUserQuestion` ma najwyżej 4 opcje: przy trzech wariantach zmiany „Odłóż” się nie mieści — napisz w pytaniu, że operator
+wybiera je przez „Other”.
+
+**Decyzja autopilota** (wiersz ze znacznikiem `[DECYZJA · faza N · autopilot]`): wybór jest już w kodzie, bo builder rozstrzygnął
+sprzeczność źródeł planu. „Zostaw jak jest” = potwierdzenie wyboru autopilota (zapis jak wyżej); „Popraw” = przywrócenie źródła,
+które przegrało (opisane w pozycji, np. tekst ze scenariusza), z testem, który bez zmiany pada.
 
 Po każdej decyzji zapisz ślad w dwóch miejscach:
 - plik smoke'u: linia `- [ ] D<n> …` → `- [x] D<n> … → <poprawione w <sha 12 znaków> | zostaw jak jest | odłożone>`;
