@@ -33,7 +33,8 @@ bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-zrodlowy> <ka
   (smoke P0, `wf_75b15ba0-837`: testy z data, ktora minela). Napraw w kopii osobnym commitem, sprawdz ponownie.
 
 Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania kosztu zaleza od efortu) i uruchom
-`/dev-autopilot-wf docs/active/smoke-autopilot`. Odczyt: `docs/reviews/2026-09-19-analiza-pipeline/skrypty/smoke_odczyt.py <wf_id>`
+`/dev-autopilot-wf docs/active/smoke-autopilot` osobna wiadomoscia z samym tym poleceniem (wiadomosc startowa dostaje kazdy agent
+runu; warunki i prosby wysylasz wczesniej). Odczyt: `docs/reviews/2026-09-19-analiza-pipeline/skrypty/smoke_odczyt.py <wf_id>`
 (porownanie z referencja). Po odczycie kopie usun (tylko za zgoda operatora na dokladna sciezke).
 
 ## Co fixture celowo cwiczy
@@ -47,8 +48,8 @@ Potem: otworz kopie w OSOBNEJ sesji desktop (efort sesji `medium` — porownania
 - **Format zadania z `/dev-plan`.** Plan techniczny `plan-techniczny-smoke-autopilot.md` ma format scalonego `/dev-plan` (fazy, IU
   z tabela plikow), a pliki `smoke-autopilot-{plan,kontekst,zadania}.md` sa wynikiem generatora planowania
   (`.claude/scripts/plan/`), nie recznym zapisem. Po zmianie planu albo generatora:
-  `node .claude/templates/smoke-autopilot/generuj-fixture.mjs --zapisz`; test `__tests__/fixture-zadania.test.mjs` pilnuje
-  zgodnosci i walidacji planu po podstawieniu placeholderow.
+  `node .claude/templates/smoke-autopilot/generuj-fixture.mjs --zapisz`; test w repo szablonu pilnuje zgodnosci i walidacji
+  planu po podstawieniu placeholderow.
 - **Pozycja `[Manual]`** (scenariusz planu → `## Operator checklist faza 1` w zadaniach) — dodatnia galaz fazy "Smoke operatora" (complete-wf).
 - **E2E w dwoch fazach (P14).** IU-2 tworzy statyczna strone `{{KATALOG_STRONY}}/smoke-autopilot.html` (katalog `public`
   aplikacji Vite z najplytszego `vite.config.*`, bez Vite — `public/` w korzeniu), IU-3 w fazie 2 dopisuje jej linie. Scenariusz
@@ -116,9 +117,9 @@ Po jednym pelnym przebiegu mozna przetestowac wznowienie od fixa:
 
 ## Pliki
 
-- `przygotuj-kopie.sh` + `__tests__/przygotuj-kopie.test.mjs` (skladnia, `--dry-run`);
+- `przygotuj-kopie.sh` (skladnie i `--dry-run` sprawdza test w repo szablonu);
 - `pakiet/` — `package.json`, `tsconfig.json`, `vitest.config.ts` pakietu fixture (`passWithNoTests`: przed build pakiet nie ma testow);
-- `wstaw-pakiet.mjs` + `__tests__/wstaw-pakiet.test.mjs` — pakiet z konfiguracjami i devDependencies bramek (P6);
+- `wstaw-pakiet.mjs` — pakiet z konfiguracjami i devDependencies bramek (P6);
 - `plan-techniczny-smoke-autopilot.md` — plan techniczny fixture'u w formacie `/dev-plan`;
-- `smoke-autopilot-{plan,zadania,kontekst}.md` — pliki zadania z generatora (`generuj-fixture.mjs` + `__tests__/fixture-zadania.test.mjs`);
+- `smoke-autopilot-{plan,zadania,kontekst}.md` — pliki zadania z generatora (`generuj-fixture.mjs`);
   `{{KATALOG_KODU}}`, `{{KATALOG_STRONY}}` i `{{MIGRACJA}}` wstawia skrypt kopii.

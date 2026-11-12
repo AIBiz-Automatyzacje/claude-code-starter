@@ -29,7 +29,7 @@ bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-źródłowy> 
 - doctor kopii: brak obowiązkowego narzędzia = kod 8, runu nie odpalaj;
 - bazowe bramki (typecheck, testy) z logiem `.git/smoke-bramki.log`: czerwone = kod 7, runu nie odpalaj. Napraw w kopii osobnym commitem.
 
-Potem otwórz kopię w osobnej sesji desktop (efort `medium`) i uruchom `/dev-autopilot-wf docs/active/smoke-autopilot`. Po odczycie kopię usuń, tylko za zgodą operatora na dokładną ścieżkę.
+Potem otwórz kopię w osobnej sesji desktop (efort `medium`) i uruchom `/dev-autopilot-wf docs/active/smoke-autopilot` osobną wiadomością z samym tym poleceniem (wiadomość startową dostaje każdy agent runu; warunki i prośby wysyłasz wcześniej). Po odczycie kopię usuń, tylko za zgodą operatora na dokładną ścieżkę.
 
 ## Co fixture celowo ćwiczy
 

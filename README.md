@@ -38,7 +38,9 @@ Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + 
 2. **`/dev-prep`** *(opcjonalny)* - lista tego, co musisz dostarczyć Ty: decyzje, konta i sekrety, treści, makiety.
 3. **`/dev-plan`** - plan techniczny w fazach, branch `feature/<nazwa>`, zadanie w `docs/active/` i bramka gotowości.
    Na końcu dostajesz gotowe polecenie autopilota.
-4. **`dev-autopilot-wf`** - wykonuje fazy jedna po drugiej: implementacja, review, naprawa. Na koniec zapisuje wnioski,
+4. **`dev-autopilot-wf`** - wykonuje fazy jedna po drugiej: implementacja, review, naprawa. Start to osobna wiadomość
+   z samym poleceniem (np. `/dev-autopilot-wf docs/active/<zadanie>`): wiadomość startową dostaje każdy agent runu, więc
+   warunki i prośby wysyłasz wcześniejszą wiadomością. Na koniec zapisuje wnioski,
    archiwizuje zadanie i zostawia Ci listę rzeczy do ręcznego sprawdzenia (`docs/operator/<data>-<zadanie>-smoke.md`).
 5. **`/dev-smoke`** - w nowej sesji przechodzi tę listę: najpierw pyta Cię o decyzje (popraw, zostaw jak jest, odłóż),
    potem sam klika aplikację i naprawia usterki; zatrzymuje się tylko przy tym, co musisz zrobić Ty (produkcja, hasło, telefon).

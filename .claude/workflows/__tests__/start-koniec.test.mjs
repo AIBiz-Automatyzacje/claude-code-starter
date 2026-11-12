@@ -234,7 +234,7 @@ test('punkt 53: swieze zadanie bez waznego przegladu spojnosci = STOP z powodem 
   assert.equal(d.uwaga, null)
   assert.ok(d.stop)
   assert.equal(d.stop.powod, `start: przeglad spojnosci planu — ${CZERWONA.powod}`)
-  assert.equal(d.stop.naprawa, '/dev-plan krok 6.2b (przeglad spojnosci), potem swiezy run: /dev-autopilot-wf docs/active/zadanie-x')
+  assert.equal(d.stop.naprawa, '/dev-plan krok 6.2b (przeglad spojnosci), potem swiezy run: /dev-autopilot-wf docs/active/zadanie-x (osobna wiadomosc z samym tym poleceniem, bez warunkow i prosb)')
 })
 
 test('punkt 53: zadanie w toku (faza zbudowana albo jednostki zapisane) = tylko uwaga; przeglad ok albo brak pola = nic', () => {

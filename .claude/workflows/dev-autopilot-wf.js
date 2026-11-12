@@ -1224,8 +1224,9 @@ function sciezkiZmian(linie) {
   return linie.flatMap((l) => l.slice(3).split(' -> ')).map((s) => s.replace(/^"(.*)"$/, '$1'))
 }
 
+// Punkt 55 (36): komenda dla operatora niesie zasade osobnej wiadomosci — wiadomosc startowa dostaje kazdy agent runu.
 function komendaSwiezegoRunu(sciezka) {
-  return `/dev-autopilot-wf ${sciezka}`
+  return `/dev-autopilot-wf ${sciezka} (osobna wiadomosc z samym tym poleceniem, bez warunkow i prosb)`
 }
 
 // Zielony start sprawdzamy przed pierwsza faza. Gdy faza ma execute=done, kod faz testuje juz domkniecie execute.
