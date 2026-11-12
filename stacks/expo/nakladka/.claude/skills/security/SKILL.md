@@ -34,6 +34,7 @@ Reguły dla kodu, który piszesz w projekcie Expo + React Native + Supabase + Ed
 - Zapytanie wybiera kolumny potrzebne odbiorcy (`.select('id, title')`), bo `select('*')` wysyła klientowi każdą kolumnę, także dodaną później.
 - Klient dostaje kod i komunikat z koperty błędu, a szczegóły błędu bazy (tabela, ograniczenie, treść SQL) idą do logu, bo ujawniają schemat.
 - W logu i w Sentry użytkownika identyfikuje jego identyfikator, nie email ani imię; maskowanie i redakcję zdarzeń opisuje skill sentry-integration.
+- Sekret w obiekcie konfiguracji ma typ, który nie wypisuje wartości w reprezentacji tekstowej, logu ani komunikacie błędu walidacji (`SecretStr` w Pydantic, opakowanie z maską w `toString` i `toJSON`), bo błąd walidacji wypisuje cały obiekt do wyjścia testu, a stamtąd do transkryptu agenta (reguła w `.claude/rules/coding-rules.md`, sekcja Bezpieczeństwo).
 
 ## Interfejs
 

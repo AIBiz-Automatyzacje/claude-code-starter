@@ -36,6 +36,14 @@ const KLUCZE = {
   'openai-proj': [['sk', '-proj-'], tresc(48)],
   'aws-akia': [['AK', 'IA'], tresc(16, WIELKIE)],
   'supabase-secret': [['sb', '_secret_'], `${tresc(22)}_${tresc(8)}`],
+  // Punkt 55 (32): nowe wzorce skanera.
+  'github-token': [['gh', 'o_'], tresc(36)],
+  'openai-svcacct': [['sk', '-svcacct-'], tresc(48)],
+  'aws-asia': [['AS', 'IA'], tresc(16, WIELKIE)],
+  slack: [['xo', 'xb-'], `${tresc(12)}-${tresc(13)}-${tresc(24)}`],
+  'google-aiza': [['AI', 'za'], tresc(35)],
+  resend: [['r', 'e_'], `${tresc(8)}_${tresc(24)}`],
+  'postgres-haslo': [['postgres', 'ql://app:'], `${tresc(20)}@db.wewnetrzny`],
 }
 /** @param {string} nazwa @returns {string} pelny klucz fixture'u */
 const klucz = (nazwa) => `${KLUCZE[nazwa]?.[0].join('')}${KLUCZE[nazwa]?.[1]}`
@@ -70,6 +78,19 @@ test('literal z dokumentacji nie jest trafieniem: sam prefiks, wielokropek, za k
     `${prefiks('supabase-secret')}placeholder-wklej-tutaj-klucz`, `${prefiks('anthropic')}${'twoj-klucz-z-konsoli-'.repeat(2)}`,
   ]
   for (const l of literaly) assert.deepEqual(wzorceWTekscie(`Ustaw \`${l}\` w zmiennych srodowiska.`), [], l)
+  // Punkt 55 (32): wypelniacze nowych wzorcow z dokumentacji dostawcow i lokalny adres bazy z domyslnym haslem.
+  const noweLiteraly = [
+    `${prefiks('github-token')}${'x'.repeat(36)}`, `${prefiks('openai-svcacct')}...`, `${prefiks('aws-asia')}IOSFODNN7EXAMPLE`,
+    `xo${'xp-'}${'0'.repeat(30)}`, `${prefiks('google-aiza')}${'x'.repeat(35)}`, `${prefiks('resend')}123456789`,
+    `${prefiks('resend')}xxxxxxxx_xxxxxxxxxxxxxxxx`, `${prefiks('stripe-whsec')}${'a'.repeat(30)}`,
+    ['postgres', '://postgres:postgres@localhost:54322/postgres'].join(''), ['postgresql', '://user:password@localhost/db'].join(''),
+    ['postgresql', '://app:<haslo>@db'].join(''), `${['po', 'stgres'].join('')}://app:\${DB_PASSWORD}@db`,
+  ]
+  for (const l of noweLiteraly) assert.deepEqual(wzorceWTekscie(`Ustaw \`${l}\` w zmiennych srodowiska.`), [], l)
+  // Granica `re_`: slowo konczace sie na „re_” (np. „before_”) nie zaczyna klucza.
+  assert.deepEqual(wzorceWTekscie(`before_${tresc(8)}_${tresc(24)}`), [])
+  // whsec_ dopuszcza znaki base64 (+ i /).
+  assert.deepEqual(wzorceWTekscie(`${prefiks('stripe-whsec')}${tresc(20)}+/${tresc(10)}`), [{ wzorzec: 'stripe-whsec', trafien: 1 }])
 })
 
 // `supabase status` wypisuje klucz serwisowy lokalnego stosu: jawny i taki sam na kazdej maszynie. Builder danych wola te
@@ -231,3 +252,16 @@ test('raport telemetrii: sekcja z niepotwierdzonymi trafieniami, bez wartosci kl
   spawnSync(process.execPath, [join(KATALOG, 'raport.mjs'), '--od', '2026-11-01', '--do', '2026-11-30', '--bez-skanu', '--plik', plik, '--wyj', k], { encoding: 'utf8' })
   assert.match(readFileSync(join(k, 'raport-2026-11-01_2026-11-30.txt'), 'utf8'), /8\. Wzorce kluczy[^\n]*\n {3}brak\n/)
 }))
+
+// Punkt 55 (32): regula o typie sekretu byla tylko w coding-rules; skill security (rdzen i Expo) mowi to samo.
+test('skill security (rdzen i Expo): sekret w obiekcie konfiguracji ma typ maskujacy wartosc, zgodnie z coding-rules', () => {
+  const korzen = resolve(KATALOG, '../../..')
+  const regula = readFileSync(join(korzen, '.claude/rules/coding-rules.md'), 'utf8')
+  assert.match(regula, /Sekret w obiekcie konfiguracji ma typ, który nie wypisuje wartości w reprezentacji tekstowej, logu ani komunikacie błędu walidacji \(`SecretStr` w Pydantic, opakowanie z maską w `toString` i `toJSON`\)/)
+  const kopie = ['.claude/skills/security/SKILL.md', 'stacks/expo/nakladka/.claude/skills/security/SKILL.md']
+  for (const k of kopie.filter((p, i) => i === 0 || existsSync(join(korzen, p)))) {
+    const skill = readFileSync(join(korzen, k), 'utf8')
+    const sekcja = skill.slice(skill.indexOf('## Dane w odpowiedziach i logach'), skill.indexOf('## Interfejs'))
+    assert.match(sekcja, /- Sekret w obiekcie konfiguracji ma typ, który nie wypisuje wartości w reprezentacji tekstowej, logu ani komunikacie błędu walidacji \(`SecretStr` w Pydantic, opakowanie z maską w `toString` i `toJSON`\), bo błąd walidacji wypisuje cały obiekt do wyjścia testu/, k)
+  }
+})

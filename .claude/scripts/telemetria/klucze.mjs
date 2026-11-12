@@ -31,13 +31,23 @@ export const PLIK_KLUCZY = plikKluczy(PLIK_DANYCH)
 const DEFINICJE = [
   { nazwa: 'stripe-sk-live', prefiks: 'sk_live_', tresc: '[A-Za-z0-9]{24,}' },
   { nazwa: 'stripe-rk-live', prefiks: 'rk_live_', tresc: '[A-Za-z0-9]{24,}' },
-  { nazwa: 'stripe-whsec', prefiks: 'whsec_', tresc: '[A-Za-z0-9]{24,}' },
+  { nazwa: 'stripe-whsec', prefiks: 'whsec_', tresc: '[A-Za-z0-9+/]{24,}' },
   { nazwa: 'github-ghp', prefiks: 'ghp_', tresc: '[A-Za-z0-9]{36}' },
+  // Weryfikacja partii 26–45, punkt 55 (32): tokeny OAuth, serwera, uzytkownika i odswiezania GitHuba.
+  { nazwa: 'github-token', prefiks: 'gh[osur]_', tresc: '[A-Za-z0-9]{36}' },
   { nazwa: 'github-pat', prefiks: 'github_pat_', tresc: '[A-Za-z0-9]{22}_[A-Za-z0-9]{59}' },
   { nazwa: 'anthropic', prefiks: 'sk-ant-', tresc: '[A-Za-z0-9_-]{32,}' },
   { nazwa: 'openai-proj', prefiks: 'sk-proj-', tresc: '[A-Za-z0-9_-]{32,}' },
+  { nazwa: 'openai-svcacct', prefiks: 'sk-svcacct-', tresc: '[A-Za-z0-9_-]{32,}' },
   // Transkrypt to JSON: przed kluczem bywa litera z sekwencji `\n`, wiec granica wyklucza tylko wielkie litery i cyfry.
   { nazwa: 'aws-akia', prefiks: 'AKIA', tresc: '[0-9A-Z]{16}', przed: '(?<![A-Z0-9])', po: '(?![A-Z0-9])' },
+  { nazwa: 'aws-asia', prefiks: 'ASIA', tresc: '[0-9A-Z]{16}', przed: '(?<![A-Z0-9])', po: '(?![A-Z0-9])' },
+  { nazwa: 'slack', prefiks: 'xox[bpa]-', tresc: '[A-Za-z0-9-]{24,}' },
+  { nazwa: 'google-aiza', prefiks: 'AIza', tresc: '[0-9A-Za-z_-]{35}', przed: '(?<![A-Z0-9])', po: '(?![A-Z0-9])' },
+  { nazwa: 'resend', prefiks: 're_', tresc: '[A-Za-z0-9]{8,}_[A-Za-z0-9]{16,}', przed: '(?<![A-Za-z0-9_])' },
+  // Haslo w adresie bazy: tresc to samo haslo (filtr wypelniacza odrzuca „postgres:postgres@localhost” z dokumentacji);
+  // wartosc zaczynajaca sie od `$`, `<` albo `{` to zmienna albo miejsce na haslo (`${DB_PASSWORD}`, `<haslo>`), nie haslo.
+  { nazwa: 'postgres-haslo', prefiks: 'postgres(?:ql)?://[^:/\\s"]+:', tresc: '(?![$<{])[^@\\s"]{8,}', po: '@' },
   { nazwa: 'supabase-secret', prefiks: 'sb_secret_', tresc: '[A-Za-z0-9_-]{20,}' },
 ]
 export const WZORCE_KLUCZY = DEFINICJE.map((d) => ({ nazwa: d.nazwa, wzor: new RegExp(`${d.przed ?? ''}${d.prefiks}(${d.tresc})${d.po ?? ''}`, 'g') }))
