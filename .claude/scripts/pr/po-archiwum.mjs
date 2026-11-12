@@ -39,9 +39,12 @@ export function tematZnacznika(zadanie) {
   return `chore(${zadanie}): krótkie review poprawek decyzji`
 }
 
-/** @param {string} tresc pelna wiadomosc commitu-znacznika @returns {string[]} sha z linii `Sprawdzone: <sha>` */
+/**
+ * Weryfikacja partii, punkt 52: blok komendy w skillu byl wciety, a linia skopiowana z wcieciem przepadala — wciecie dozwolone.
+ * @param {string} tresc pelna wiadomosc commitu-znacznika @returns {string[]} sha z linii `Sprawdzone: <sha>`
+ */
 export function shaSprawdzone(tresc) {
-  return [...tresc.matchAll(/^Sprawdzone: ([0-9a-f]{40})\s*$/gm)].map((m) => m[1])
+  return [...tresc.matchAll(/^[ \t]*Sprawdzone: ([0-9a-f]{40})[ \t]*$/gm)].map((m) => m[1])
 }
 
 /** @param {string} projekt @param {string[]} argumenty @returns {string} */

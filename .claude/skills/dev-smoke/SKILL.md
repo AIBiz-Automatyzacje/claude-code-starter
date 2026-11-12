@@ -60,12 +60,13 @@ i poprawką; bez zmian w plikach.”
 - P3 i findingi zostawione do opisu PR dopisz do `docs/completed/<zadanie>/known-issues.md`, sekcja `## P3 po archiwizacji`
   (brak = utwórz przed `## Zamkniete`), po linii: `- 🟡 [P<n>/<oś>] <plik:linia> — <opis> (krótkie review w smoke'u)`,
   oś = `correctness` albo `security`.
-- Znacznik: pusty commit, który `/dev-pr` (`po-archiwum.mjs`) czyta, żeby nie recenzować tych commitów drugi raz:
+- Znacznik: pusty commit, który `/dev-pr` (`po-archiwum.mjs`) czyta, żeby nie recenzować tych commitów drugi raz
+  (każda linia `Sprawdzone:` w osobnym wierszu wiadomości):
 
-  ```
-  git commit --allow-empty -m "chore(<zadanie>): krótkie review poprawek decyzji" -m "Sprawdzone: <pełny sha 1>
-  Sprawdzone: <pełny sha 2>"
-  ```
+```
+git commit --allow-empty -m "chore(<zadanie>): krótkie review poprawek decyzji" -m "Sprawdzone: <pełny sha 1>
+Sprawdzone: <pełny sha 2>"
+```
 
   W znaczniku są tylko commity, które reviewerzy obejrzeli. Poprawka po findingu z tego review idzie bez znacznika:
   krótkie review `/dev-pr` obejrzy ją przed PR.
