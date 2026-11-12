@@ -45,6 +45,20 @@ export function przebudowujeBezDecyzji(iu) {
 }
 
 /**
+ * Weryfikacja partii 26–45, punkt 53: pole „Znika z obecnej wersji” przechodzilo bez decyzji przy elemencie, choc decyzja
+ * „znika” albo „zostaje” to cala jego tresc — bez niej builder i tak musi zgadywac. Elementy = pozycje listy pola; pole bez
+ * listy to jeden element. „—” (nic nie znika) nie ma elementow.
+ * @param {string | null} znika wartosc pola z parsera (null = brak pola)
+ * @returns {string[]} elementy bez slowa „znika” ani „zostaje”
+ */
+export function elementyBezDecyzji(znika) {
+  if (!znika || znika === '—') return []
+  const linie = znika.split('\n').map((l) => l.trim()).filter(Boolean)
+  const lista = linie.filter((l) => /^(?:[-*+]|\d+[.)])\s+/.test(l))
+  return (lista.length ? lista : [linie.join(' ')]).filter((l) => !/\b(?:znika|zostaje)\b/i.test(l))
+}
+
+/**
  * Bledy i uwagi walidacji planu: nazwa spoza `figma_screens` = blad (builder dostalby nieistniejacy ekran), jednostka UI bez pola
  * Makiety w planie z makietami = uwaga (dostanie wszystkie ekrany), pole Makiety w planie bez makiet = blad, ekran bez jednostki
  * w planie z polem Makiety = uwaga (tester E2E porownuje ekrany z pol Makiety jednostek fazy).
@@ -67,6 +81,7 @@ export function sprawdzMakiety(plan, jednostki, projekt) {
     if (przebudowujeBezDecyzji(iu)) {
       w.uwagi.push(`${iu.id}: jednostka zmienia istniejący plik według makiety, a nie ma pola „Znika z obecnej wersji” — wypisz elementy obecnej wersji, których makieta nie ma, z decyzją przy każdym, albo „—”`)
     }
+    for (const l of elementyBezDecyzji(iu.znika)) w.uwagi.push(`${iu.id}: pole „Znika z obecnej wersji” ma element bez decyzji „znika” albo „zostaje”: ${l}`)
     if (iu.makiety === null) {
       if (ekrany.size && budujeUi(iu)) {
         w.uwagi.push(`${iu.id}: jednostka UI bez pola Makiety — builder dostanie wszystkie ${ekrany.size} ekrany i cały SPEC; wpisz ekrany, które buduje, albo „—”`)
