@@ -114,6 +114,18 @@ test('kazda alternatywa prefiksu jest trafieniem: gho/ghs/ghu/ghr, xoxb/xoxp/xox
   // Haslo krotsze niz 8 znakow i adres bez `@` po hasle nie sa trafieniem.
   assert.deepEqual(wzorceWTekscie(`${['postgres', '://app:'].join('')}${tresc(7)}@db`), [])
   assert.deepEqual(wzorceWTekscie(`${['postgres', '://app:'].join('')}${tresc(20)} db`), [])
+  // Najkrotsza tresc, ktora jest kluczem, i o jeden znak krotsza, ktora nim nie jest.
+  /** @type {[string, (n: number) => string, number][]} */
+  const progi = [
+    ['resend', (n) => `${prefiks('resend')}${tresc(8)}_${tresc(n)}`, 16],
+    ['slack', (n) => `${prefiks('slack')}${tresc(n)}`, 24],
+    ['openai-svcacct', (n) => `${prefiks('openai-svcacct')}${tresc(n)}`, 32],
+    ['postgres-haslo', (n) => `${prefiks('postgres-haslo')}${tresc(n)}@db`, 8],
+  ]
+  for (const [nazwa, zloz, min] of progi) {
+    assert.deepEqual(wzorceWTekscie(`x=${zloz(min)} `), [{ wzorzec: nazwa, trafien: 1 }], `${nazwa}: ${min} znakow`)
+    assert.deepEqual(wzorceWTekscie(`x=${zloz(min - 1)} `), [], `${nazwa}: ${min - 1} znakow`)
+  }
   // Granice: prefiks w srodku dluzszego ciagu wielkich liter i cyfr nie zaczyna klucza, a dluzsza tresc nie jest kluczem.
   for (const nazwa of ['aws-asia', 'google-aiza']) {
     assert.deepEqual(wzorceWTekscie(`X9${klucz(nazwa)}`), [], `${nazwa}: przed`)

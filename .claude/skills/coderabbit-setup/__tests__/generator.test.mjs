@@ -211,6 +211,8 @@ test('slowo synca szablonu: w ignore_title_keywords bazy, w tytule PR-a z /sync-
   assert.deepEqual(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: ["WIP", 'chore(szablon)']\n`), [], 'lista w linii')
   assert.deepEqual(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: [WIP, CHORE(SZABLON)] # komentarz\n`), [], 'inna wielkosc liter')
   assert.equal(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: [WIP]\n`).length, 1, 'lista w linii bez slowa')
+  // Walidacja 51–55, punkt 60: liczy sie cale slowo synca, nie jego poczatek.
+  assert.equal(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: [WIP, "chore(deps)", chore]\n`).length, 1, 'inne slowo zaczynajace sie od chore')
 })
 
 test('bloki stackow: Node dziala obok frontendu, Drizzle wyklucza pliki generowane', () => {

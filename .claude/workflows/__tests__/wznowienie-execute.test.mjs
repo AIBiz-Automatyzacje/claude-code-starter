@@ -206,6 +206,11 @@ test('autopilot: lista idzie do execute-wf, STOP utrwala nowa liste i mowi opera
   assert.equal(wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: null, plikiOdlozone: [], powod: null } }), ' Jednostki ukonczone zapisane commitem fedcba9: IU-10 — swiezy run zacznie od przerwanej.')
   assert.equal(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: null, plikiOdlozone: [], powod: 'typecheck: TS2304' } }),
     ' Jednostek ukonczonych nie zapisano (typecheck: TS2304): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.')
+  // Walidacja 51–55, punkt 60: prog listy plikow (10 nazw w calosci, od 11 reszta liczba) i schowek bez listy plikow.
+  const nPlikow = (/** @type {number} */ n) => wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: 's', plikiOdlozone: Array.from({ length: n }, (_, i) => `p${i}`), powod: null } })
+  assert.match(nPlikow(10), /\(git stash list\): p0, p1, p2, p3, p4, p5, p6, p7, p8, p9; nie przywracaj/)
+  assert.match(nPlikow(11), /\(git stash list\): p0, p1, p2, p3, p4, p5, p6, p7, p8, p9 i 1 innych; nie przywracaj/)
+  assert.match(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: 's#2', plikiOdlozone: [], powod: 'hook' } }), /Schowek gita "s#2" nie wrocil do drzewa \(git stash list\) — przywroc go/)
   // Execute zakonczony w domknieciu (porazka bramki) nie ma pola `czesciowe`: powod STOP-u bez dopisku.
   assert.equal(wf.opisCzesciowego({ status: 'partial', problem: 'bramka stack' }), '')
   assert.equal(wf.opisCzesciowego(null), '')
