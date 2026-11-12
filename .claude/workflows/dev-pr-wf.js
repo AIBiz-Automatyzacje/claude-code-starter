@@ -1523,7 +1523,8 @@ Zwroc obiekt zgodny ze schematem.`,
   if (odlozone.length) log(`/dev-pr compound: watki odlozone ${odlozone.length}, w known-issues.md: ${wynik.odlozoneZapisane || 0}`)
   if (wynik.commit && !wynik.push) log(`/dev-pr compound: UWAGA — commit ${wynik.commit} bez pusha (${wynik.pushDetal}); wypchnij go przed kolejnym PR i krokiem CLAUDE.md`)
   logCiGlownej('compound', wynik.ciGlownej)
-  return { status: 'OK', etap, ...wynik, pushMimoBezPusha: pushMimoBezPusha('compound', wynik),propozycjeBramek: bramki, bramkiWdrozone: wdrozone, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '' }
+  const naruszenie = pushMimoBezPusha('compound', wynik)
+  return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, bramkiWdrozone: wdrozone, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '', pushMimoBezPusha: naruszenie }
 }
 
 return { status: 'BLAD', powod: `Nieznany etap "${etap}". Dozwolone: start, stan, decyzja, zbierz, napraw, merge, claude-md, compound.` }

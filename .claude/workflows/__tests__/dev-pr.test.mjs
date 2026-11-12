@@ -1050,6 +1050,7 @@ test('tryb bez pusha: polecenia claude-md i compound bez krokow pushu i CI glown
 })
 
 test('tryb bez pusha: push zwrocony mimo trybu = pushMimoBezPusha i UWAGA w logu (W35)', async () => {
+  /** @type {string[]} */
   const logi = []
   const odp = [UZG_DO_COMMITU, { ...COMMIT_CM, push: true, pushDetal: 'OK' }]
   const agent = async () => odp.shift() ?? null
