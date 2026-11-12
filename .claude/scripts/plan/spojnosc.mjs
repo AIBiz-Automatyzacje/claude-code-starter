@@ -6,14 +6,35 @@
 // Odcisk liczymy bez stanu checkboxow: execute odhacza scenariusze i weryfikacje w planie technicznym po kazdej fazie
 // (dev-docs-execute-wf, domkniecie pkt 4), wiec odcisk calego pliku zmienialby sie po fazie 1 i bramka po wznowieniu bylaby
 // czerwona na stale. Zmiana tresci planu (Podejscie, Teksty, Granice, nowa pozycja) zmienia odcisk.
+//
+// Weryfikacja partii 26–45, punkt 53: domkniecie fazy dopisywalo do planu decyzje korygujace i bramka po wznowieniu robila sie
+// czerwona bez winy operatora; odcisk zmienialy tez odhaczenia w listach `1.`/`+`/cytacie, spacje koncowe, koncowe `\n` i BOM.
+// Decyzje z realizacji ida teraz do osobnej sekcji SEKCJA_REALIZACJI, ktorej odcisk nie liczy (do nastepnego `## ` albo konca
+// pliku). Odciski zapisane przed ta zmiana przestaja pasowac; zaden projekt nie mial jeszcze zapisow (punkt 41 nie byl
+// synchronizowany), wiec migracji nie ma.
 
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-/** @param {string} tresc plan techniczny @returns {string} sha256 tresci bez stanu checkboxow i bez roznic konca linii */
+/** Sekcja planu, do ktorej domkniecie fazy pisze decyzje korygujace plan; odcisk jej nie liczy. */
+export const SEKCJA_REALIZACJI = '## Decyzje z realizacji'
+
+/**
+ * @param {string} tresc plan techniczny
+ * @returns {string} sha256 tresci bez sekcji realizacji, stanu checkboxow, BOM, roznic konca linii i bialych znakow na koncach
+ */
 export function odciskPlanu(tresc) {
-  const znormalizowany = tresc.replace(/\r\n/g, '\n').replace(/^(\s*[-*] )\[[xX]\]/gm, '$1[ ]')
+  const linie = tresc.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').split('\n')
+  let wSekcji = false
+  const bezSekcji = linie.filter((l) => {
+    if (l.startsWith('## ')) wSekcji = l.trimEnd() === SEKCJA_REALIZACJI
+    return !wSekcji
+  })
+  const znormalizowany = bezSekcji.join('\n')
+    .replace(/^([ \t]*(?:>[ \t]*)*(?:[-*+]|\d+[.)])[ \t]+)\[[xX]\]/gm, '$1[ ]')
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n+$/, '')
   return createHash('sha256').update(znormalizowany).digest('hex')
 }
 

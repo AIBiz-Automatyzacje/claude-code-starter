@@ -205,6 +205,12 @@ test('slowo synca szablonu: w ignore_title_keywords bazy, w tytule PR-a z /sync-
   assert.equal(kontraktBota(projekt, { galaz: 'main' }).ostrzezenia.length, 1)
   writeFileSync(join(projekt, '.coderabbit.yaml'), BAZA)
   assert.deepEqual(kontraktBota(projekt, { galaz: 'main' }).ostrzezenia, [])
+
+  // Weryfikacja partii, punkt 55 (28): lista w jednej linii i inna wielkosc liter dawaly falszywe ostrzezenie.
+  const bezListy = BAZA.replace(/^ {4}ignore_title_keywords:\n(?: {6}.*\n)+/m, '')
+  assert.deepEqual(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: ["WIP", 'chore(szablon)']\n`), [], 'lista w linii')
+  assert.deepEqual(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: [WIP, CHORE(SZABLON)] # komentarz\n`), [], 'inna wielkosc liter')
+  assert.equal(ostrzezeniaSynca(`${bezListy}\n    ignore_title_keywords: [WIP]\n`).length, 1, 'lista w linii bez slowa')
 })
 
 test('bloki stackow: Node dziala obok frontendu, Drizzle wyklucza pliki generowane', () => {

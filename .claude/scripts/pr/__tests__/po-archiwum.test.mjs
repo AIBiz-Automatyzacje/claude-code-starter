@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { plikKodu, poArchiwum, tematZnacznika } from '../po-archiwum.mjs'
+import { plikKodu, poArchiwum, shaSprawdzone, tematZnacznika } from '../po-archiwum.mjs'
 
 const CLI = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'po-archiwum.mjs')
 const Z = 'etap-4'
@@ -158,4 +158,13 @@ test('znacznik /dev-smoke: commity z linii „Sprawdzone:” i sam znacznik poza
 test('znacznik: temat zgodny ze skillem /dev-smoke', () => {
   const skill = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../../../skills/dev-smoke/SKILL.md'), 'utf8')
   assert.ok(skill.includes(`git commit --allow-empty -m "${tematZnacznika('<zadanie>')}" -m "Sprawdzone: <pełny sha 1>`))
+  // Punkt 52: blok komendy bez wciecia — druga linia kopiowana z wcieciem gubila sie w parserze.
+  assert.ok(skill.includes(`\n\`\`\`\ngit commit --allow-empty -m "${tematZnacznika('<zadanie>')}" -m "Sprawdzone: <pełny sha 1>\nSprawdzone: <pełny sha 2>"\n\`\`\`\n`))
+})
+
+// Weryfikacja partii 26–45, punkt 52: linia `Sprawdzone:` z wcieciem (skopiowana z wcietego bloku skilla) przepadala.
+test('shaSprawdzone: linie z wcieciem spacja albo tabulatorem i spacja na koncu daja wszystkie SHA; krotki sha nie', () => {
+  const a = 'a'.repeat(40), b = 'b'.repeat(40), c = 'c'.repeat(40)
+  assert.deepEqual(shaSprawdzone(`Sprawdzone: ${a}\n  Sprawdzone: ${b}\n\tSprawdzone: ${c} \n  Sprawdzone: abc`), [a, b, c])
+  assert.deepEqual(shaSprawdzone(`tekst Sprawdzone: ${a}`), [], 'tylko na poczatku linii')
 })

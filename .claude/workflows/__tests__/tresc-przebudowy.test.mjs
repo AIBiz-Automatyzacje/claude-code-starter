@@ -124,17 +124,26 @@ test('builder: hierarchia zrodel z warunkami samodzielnego wyboru, polem decyzje
   assert.match(blok, /\(a\) niczego nie dodaje ponad zrodla[^\n]*\n?[^\n]*\(b\) da sie ja\s+cofnac/)
   assert.match(blok, /Scenariusz testowy dopasowujesz do wybranej opcji/)
   assert.match(blok, /Kazdy taki wybor wpisujesz do pola decyzje, po polsku/)
-  assert.match(blok, /Status blocked zostaje tylko, gdy: zadna opcja nie spelnia \(a\) i \(b\); wybor jest nieodwracalny albo dotyka danych[^;]*bezpieczenstwa[^;]*pieniedzy[^;]*; jednostka wymaga pracy wykluczonej w Granicach/)
+  assert.match(blok, /Status blocked zostaje tylko, gdy: zadna opcja nie spelnia \(a\) i \(b\); wybor jest nieodwracalny albo dotyka danych[^;]*bezpieczenstwa[^;]*pieniedzy[^;]*; bez pracy wykluczonej w Granicach jednostki nie da sie ukonczyc\./)
+  // Weryfikacja partii, punkt 48 (pokrewne): aa-exam E3 — scenariusz chcial imienia w mailu, Granice zabranialy tekstow spoza makiet.
+  // Element zadany tylko przez nizsze zrodlo = pominiecie i decyzja; blocked tylko, gdy bez wykluczonej pracy jednostka nie powstanie.
+  assert.doesNotMatch(blok, /jednostka wymaga pracy wykluczonej w Granicach/)
+  assert.match(blok.replace(/\n/g, ' '), /Gdy elementu wykluczonego w Granicach zada tylko nizsze zrodlo \(Podejscie, scenariusz, obecny kod albo wzorzec\), a reszte jednostki da sie zrobic bez niego: pomijasz element, dopasowujesz scenariusz i wpisujesz wybor do pola decyzje \(np\. scenariusz chce imienia w mailu, a Granice zabraniaja tekstow spoza makiet → mail bez imienia jako decyzja, nie blocked\)\./)
   assert.match(EXECUTE, /decyzje: \{ type: 'array', items: \{ type: 'string' \}, description: 'sprzecznosci zrodel rozstrzygniete wg blok HIERARCHIA ZRODEL/)
   // Granice zostaja zakazem: blok wykluczen dalej kaze zwrocic blocked.
-  assert.match(sekcja(EXECUTE, 'function plannerPrompt(', '\n}\n'), /Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne\. Gdy jednostka wymaga takiej pracy,\s+zwroc status blocked/)
+  assert.match(sekcja(EXECUTE, 'function plannerPrompt(', '\n}\n'), /Niczego z tej listy nie implementuj, nawet gdy wyglada na przydatne\. Gdy jednostka wymaga takiej pracy,\s+zwroc status blocked i w polu pytanie nazwij te prace \(wyjatek: element zadany tylko przez nizsze zrodlo — HIERARCHIA ZRODEL\)\."/)
 })
 
 test('execute → autopilot → review: decyzje builderow z prefiksem IU, zapis zaraz po execute, review ich nie zglasza', () => {
   assert.match(EXECUTE, /const decyzjeAutopilota = buildResults\.filter\(\(b\) => b\.status !== 'blocked'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
   assert.match(EXECUTE, /\.map\(\(d\) => `\$\{b\.id\}: \$\{d\}`\)\)/)
-  assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
-  assert.match(EXECUTE, /baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\), decyzjeAutopilota \}/)
+  assert.equal(EXECUTE.split('return wynikPrzerwanego({\n    fazaNumer: faza,\n    decyzjeAutopilota: decyzjeUkonczonych,').length - 1, 2, 'blocked i partial niosa decyzje ukonczonych jednostek')
+  // Punkt 48 (pokrewne): builder `partial` przy przerwaniu oddaje pliki do schowka — jego decyzje nie ida do zapisu.
+  assert.match(EXECUTE, /const decyzjeUkonczonych = buildResults\.filter\(\(b\) => b\.status === 'completed'\)\.flatMap\(\(b\) => \(Array\.isArray\(b\.decyzje\) \? b\.decyzje : \[\]\)/)
+  assert.doesNotMatch(EXECUTE, /return wynikPrzerwanego\(\{\n {4}fazaNumer: faza,\n {4}decyzjeAutopilota,/)
+  // Pelne domkniecie dostaje dotychczasowa liste (wszyscy poza blocked).
+  assert.match(EXECUTE, /ukonczoneWczesniej, decyzjeAutopilota\) \+ punktZapisuStanu/)
+  assert.match(EXECUTE, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
   const autopilot = readFileSync(resolve(KATALOG, '../dev-autopilot-wf.js'), 'utf8')
   const poExecute = autopilot.slice(autopilot.indexOf("const exec = await workflow('dev-docs-execute-wf'"))
   const zapis = poExecute.indexOf("await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])")

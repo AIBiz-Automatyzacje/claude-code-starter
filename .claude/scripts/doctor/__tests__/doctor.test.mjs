@@ -178,7 +178,7 @@ test('Coolify i Dockerfile → coolify i docker jako UWAGA, nie blokuja', () => 
   // Config zgodny z kontraktem /dev-pr: inaczej higiena dodaje trzecia uwage (CodeRabbit).
   plik(s.projekt, 'CLAUDE.md', '# x\n')
   plik(s.projekt, '.coderabbit.yaml', ['language: pl-PL', 'reviews:', '  request_changes_workflow: false', '  review_status: true', '  auto_review:', '    enabled: true', '    auto_incremental_review: true',
-    '  pre_merge_checks:', '    docstrings:', '      mode: "off"', '  path_filters:', '    - "!docs/**"', '    - "!.claude/**"', '    - "!**/CLAUDE.md"', 'knowledge_base:', '  code_guidelines:', '    filePatterns:', '      - "CLAUDE.md"', ''].join('\n'))
+    '    ignore_title_keywords:', '      - "chore(szablon)"', '  pre_merge_checks:', '    docstrings:', '      mode: "off"', '  path_filters:', '    - "!docs/**"', '    - "!.claude/**"', '    - "!**/CLAUDE.md"', 'knowledge_base:', '  code_guidelines:', '    filePatterns:', '      - "CLAUDE.md"', ''].join('\n'))
   const w = doctor(s)
   assert.equal(w.status, 0, w.stdout)
   assert.equal(wiersz(w.stdout, 'coolify')[1], 'UWAGA')
@@ -442,7 +442,7 @@ test('stack: Supabase — bez katalogu supabase/ i zaleznosci → nie dotyczy z 
   const bez = doctor(s)
   const w = wiersz(bez.stdout, 'stack: Supabase')
   assert.equal(w[1], 'nie dotyczy')
-  assert.match(w[2], /brak katalogu supabase\/ i zależności @supabase\/supabase-js/)
+  assert.match(w[2], /brak katalogu supabase\/, supabase\/config\.toml, zależności @supabase\/\* i wpisu supabase w requirements\.txt\/pyproject\.toml/)
   for (const element of ['skilla supabase-dev-guidelines', 'komend supabase z roli buildera danych', 'reguł RLS', 'narzędziami projektu (plan, CLAUDE.md)']) {
     assert.ok(w[3].includes(element), `${element} w: ${w[3]}`)
   }

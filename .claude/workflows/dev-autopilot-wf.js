@@ -189,6 +189,13 @@ const PLAN_STATE = {
                 required: ['faza', 'linia', 'tresc'],
               },
             },
+            // Punkt 53: stan przegladu spojnosci planu z tego samego skryptu; brak pola (starszy skrypt) = brak kontroli.
+            spojnosc: {
+              type: 'object',
+              additionalProperties: false,
+              properties: { ok: { type: 'boolean' }, powod: { type: 'string' } },
+              required: ['ok', 'powod'],
+            },
           },
           required: ['checklista', 'blokery'],
         },
@@ -290,13 +297,22 @@ function stanPoExecute(stan, numer) {
 }
 
 // Zdanie do powodu STOP-u po przerwanym execute (punkt 34): co zapisano commitem, co lezy w schowku gita, a czego nie zapisano.
+// Weryfikacja partii, punkt 54: przy nieudanym commicie powod pomijal schowek (pop mogl sie nie udac), a przy zapisanym podawal
+// sama liczbe plikow — operator nie wiedzial, czego szukac w git stash list.
 function opisCzesciowego(exec) {
   const c = exec && exec.czesciowe
   if (!c) return ''
-  if (!c.zacommitowano) return ` Jednostek ukonczonych nie zapisano (${c.powod || 'brak powodu'}): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.`
+  const pliki = Array.isArray(c.plikiOdlozone) ? c.plikiOdlozone : []
+  const nazwy = pliki.length > 10 ? `${pliki.slice(0, 10).join(', ')} i ${pliki.length - 10} innych` : pliki.join(', ')
+  if (!c.zacommitowano) {
+    const wSchowku = c.schowek
+      ? ` Schowek gita "${c.schowek}" nie wrocil do drzewa (git stash list)${nazwy ? `, sa w nim pliki jednostki nieukonczonej: ${nazwy}` : ''} — przywroc go (git stash pop) przed decyzja i swiezym runem.`
+      : ''
+    return ` Jednostek ukonczonych nie zapisano (${c.powod || 'brak powodu'}): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.${wSchowku}`
+  }
   const lista = Array.isArray(exec.iuUkonczone) && exec.iuUkonczone.length ? exec.iuUkonczone.join(', ') : 'brak listy'
   const schowek = c.schowek
-    ? ` Pliki jednostki nieukonczonej (${(c.plikiOdlozone || []).length}) sa w schowku gita "${c.schowek}" (git stash list); nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.`
+    ? ` Pliki jednostki nieukonczonej sa w schowku gita "${c.schowek}" (git stash list)${nazwy ? `: ${nazwy}` : ''}; nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.`
     : ''
   return ` Jednostki ukonczone zapisane commitem ${c.commit || '(brak SHA)'}: ${lista} — swiezy run zacznie od przerwanej.${schowek}`
 }
@@ -450,7 +466,8 @@ Folder zadania: ${sciezka}
    linie: \`git grep -e '^claude_md:' <glowna> -- 'docs/decisions/*.md'\` — kazda linia wyjscia 1:1 (brak trafien = []).
 
 1c. BLOKERY OPERATORA: \`node .claude/scripts/plan/plan.mjs blokery ${sciezka}\` — z JSON-u na stdout przepisz pola
-   checklista i blokery 1:1 do wejscie.blokery (bez oceny, czy pozycja jest juz zrobiona — liczy orkiestrator).
+   checklista, blokery i spojnosc (gdy wynik je ma) 1:1 do wejscie.blokery (bez oceny, czy pozycja jest juz zrobiona
+   ani czy przeglad jest aktualny — liczy orkiestrator). Wynik bez pola spojnosc -> pomin je w wejscie.blokery.
    Brak skryptu albo kod wyjscia inny niz 0 -> wejscie.blokery = { checklista: null, blokery: [] }.
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
@@ -1207,8 +1224,9 @@ function sciezkiZmian(linie) {
   return linie.flatMap((l) => l.slice(3).split(' -> ')).map((s) => s.replace(/^"(.*)"$/, '$1'))
 }
 
+// Punkt 55 (36): komenda dla operatora niesie zasade osobnej wiadomosci — wiadomosc startowa dostaje kazdy agent runu.
 function komendaSwiezegoRunu(sciezka) {
-  return `/dev-autopilot-wf ${sciezka}`
+  return `/dev-autopilot-wf ${sciezka} (osobna wiadomosc z samym tym poleceniem, bez warunkow i prosb)`
 }
 
 // Zielony start sprawdzamy przed pierwsza faza. Gdy faza ma execute=done, kod faz testuje juz domkniecie execute.
@@ -1294,6 +1312,23 @@ function decyzjaBlokeraFazy(numerFazy, blokery, sciezka) {
   return {
     powod: `Faza ${numerFazy}: nieodhaczony bloker operatora w checkliscie przygotowania — ${otwarte.map((b) => b.tresc).join('; ')}`,
     naprawa: `Wykonaj pozycje i odhacz je ([x]): ${lista}. Zacommituj checkliste: \`git add ${blokery.checklista} && git commit -m "docs: przygotowanie operatora przed faza ${numerFazy}"\`, potem swiezy run (te same args, BEZ resumeFromRunId): ${komendaSwiezegoRunu(sciezka)}`,
+  }
+}
+
+// Przeglad spojnosci planu (weryfikacja partii 26–45, punkt 53, decyzja 3 planu poprawek): bootstrap bral tylko blokery, wiec
+// plan bez aktualnego przegladu szedl do runu. Swieze zadanie (zadna faza nie zbudowana ani zaczeta) bez waznego przegladu = STOP
+// na starcie; zadanie w toku (np. zaplanowane przed ta bramka) dostaje tylko uwage — STOP zatrzymalby je bez potrzeby.
+// Brak pola (starszy plan.mjs w projekcie) = brak kontroli.
+function decyzjaSpojnosci(fazy, spojnosc, sciezka) {
+  if (!spojnosc || spojnosc.ok !== false) return { stop: null, uwaga: null }
+  const wToku = fazy.some((f) => f.execute === 'done' || (Array.isArray(f.iuUkonczone) && f.iuUkonczone.length > 0))
+  if (wToku) return { stop: null, uwaga: `przeglad spojnosci planu nieaktualny, zadanie w toku — run idzie dalej: ${spojnosc.powod}` }
+  return {
+    stop: {
+      powod: `start: przeglad spojnosci planu — ${spojnosc.powod}`,
+      naprawa: `/dev-plan krok 6.2b (przeglad spojnosci), potem swiezy run: ${komendaSwiezegoRunu(sciezka)}`,
+    },
+    uwaga: null,
   }
 }
 
@@ -1451,6 +1486,9 @@ if (!sciezka) {
 // harnessu i transkryptow — workflow nie wola agenta telemetrii i nie liczy tokenow z budzetu runu (tylko output, ~11% kosztu).
 const historia = {}
 const raporty = []
+// Weryfikacja partii, punkt 48 (pokrewne): decyzje, ktorych zapis do known-issues sie nie udal. Log mowil „zostaja w raporcie”,
+// a nie wchodzily nigdzie; teraz ida do nastepneKroki i do wyniku runu, takze przy STOP-ie.
+const decyzjeNiezapisane = []
 let kolejka
 let stan = null
 // Stan fazy do zapisu (P7): tresc czekajaca na nastepnego agenta i tresc doklejona do jego polecenia.
@@ -1521,7 +1559,7 @@ function fazyNieOdegrane(raporty) {
 // wyjatki (granica zewnetrznego SDK), wiec 2 pozycje nie mialy zadnego sladu. `bezSladu` to dokladnie
 // ta luka: policzona deterministycznie, zeby PASS przy 55/61 nie udawal PASS przy 61/61.
 // Kolejnosc po autopilocie w jednym polu: raport sesji konczyl sie gotowa komenda PR, a smoke byl tylko sciezka (aa-exam, 03.11).
-function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus }) {
+function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decyzjeZPliku, otwarte, smokeStatus, niezapisane, nieOdegraneZeStanu }) {
   const kroki = []
   // Pad autora smoke'u albo calej archiwizacji (weryfikacja partii 2026-11-11, punkt 49): brak pliku nie znaczy „brak pozycji”.
   // Raport konczyl sie wtedy komenda PR, a ostrzezenie bylo tylko w logu; pozycje „Operator checklist” i [Manual] nie trafily nigdzie.
@@ -1536,12 +1574,16 @@ function nastepneKroki({ smoke, raporty, propozycjeBramek, czesci, zadanie, decy
   if (bezListy) kroki.push(`Lista smoke'u NIE powstala (${smokeStatus === 'agent-null' ? 'autor smoke\'u padl' : 'archiwizacja nie zwrocila wyniku — sprawdz docs/active/ i git status'}): pozycje „Operator checklist” i [Manual] nie zostaly przeniesione. Najpierw \`/clear\` i \`/dev-docs-complete ${zadanie}\`, potem \`/dev-smoke ${zadanie}\`. Przed smoke'em PR-a nie wysylaj.`)
   if (smoke) kroki.push(`Smoke w nowej sesji: \`/clear\`, potem \`/dev-smoke ${zadanie}\` (checklista ${smoke}).${decyzje.length ? ` Smoke zaczyna sie od sekcji „Decyzje przed PR” (decyzji: ${decyzje.length}).` : ''} Komende PR podaje koniec sesji smoke'u; przed smoke'em PR-a nie wysylaj.`)
   const akcje = []
-  const nieOdegrane = fazyNieOdegrane(raporty)
+  // Punkt 55 (35): kroki liczyly „nie odegrano” z `raporty` (fazy tego runu), a log koncowy ze stanu zadania — faza z review
+  // w poprzednim runie znikala z krokow. Koniec runu podaje liste ze stanu; bez niej (wywolania sprzed tej zmiany) — z raportow.
+  const nieOdegrane = Array.isArray(nieOdegraneZeStanu) ? nieOdegraneZeStanu : fazyNieOdegrane(raporty)
   if (nieOdegrane.length) akcje.push(`E2E nie odegrano — do odegrania recznie albo ponownie: ${nieOdegrane.map((f) => `faza ${f.faza} (scenariuszy: ${f.scenariusze})`).join(', ')}`)
   const operator = raporty.reduce((s, r) => s + (r?.liczniki?.operator || 0), 0)
   if (operator) akcje.push(`${operator} findingow OPERATOR w sekcjach „Operator checklist”`)
   // Bez pliku smoke'u (brak pozycji albo pad autora) lista decyzji w raporcie jest jedynym miejscem, w ktorym operator je zobaczy.
   if (decyzje.length && !smoke) akcje.push(`zmiany spoza planu do decyzji (${decyzje.length}, sekcja „Decyzje operatora” w known-issues): ${decyzje.join('; ')}`)
+  // Decyzje bez zapisu w known-issues (punkt 48, pokrewne): smoke ich nie pokaze, wiec raport jest jedynym ich miejscem.
+  if (Array.isArray(niezapisane) && niezapisane.length) akcje.push(`decyzje niezapisane w known-issues (${niezapisane.length}): ${niezapisane.join('; ')}`)
   // Pozycja kontroli fixa zostawiona bez prefiksu OPERATOR: nie trafia do doDecyzjiOperatora i bez tej linii ginela w JSON-ie (pilot Nawykometr, run 3).
   const kontrola = raporty.map((r) => ({ faza: r?.faza, ile: (r?.kontrolaFixa?.pominiete || []).filter((x) => !/^OPERATOR:/i.test(String(x).trim())).length + (r?.kontrolaFixa?.bezSladu || 0) })).filter((k) => k.ile > 0)
   if (kontrola.length) akcje.push(`pozycje kontroli fixa bez naprawy: ${kontrola.map((k) => `faza ${k.faza} (${k.ile})`).join(', ')} — uzasadnienia w kontrolaFixa.pominiete wyniku runu`)
@@ -1720,7 +1762,7 @@ async function stopRun(obj) {
   }
   // Fazy domkniete w zadaniu (nie w tym runie): STOP na fazie 3 z 3 po dwoch zielonych to nie porazka calego zadania.
   const ukonczone = stan && Array.isArray(stan.fazy) ? fazyUkonczone(stan.fazy) : null
-  return { status: 'STOP', ...obj, powod, fazyUkonczone: ukonczone, artefaktyStop: artefakty }
+  return { status: 'STOP', ...obj, powod, fazyUkonczone: ukonczone, artefaktyStop: artefakty, ...(decyzjeNiezapisane.length ? { decyzjeNiezapisane: [...decyzjeNiezapisane] } : {}) }
 }
 
 phase('Bootstrap')
@@ -1745,6 +1787,11 @@ const claudeMd = decyzjaClaudeMd(stan.wejscie.decyzje, sciezka)
 if (claudeMd.uwaga) log(`Bramka wejscia: ${claudeMd.uwaga}`)
 if (claudeMd.stop) {
   return await stopRun({ ...claudeMd.stop, stan })
+}
+const bramkaSpojnosci = decyzjaSpojnosci(stan.fazy, stan.wejscie.blokery && stan.wejscie.blokery.spojnosc, sciezka)
+if (bramkaSpojnosci.uwaga) log(`Bramka wejscia: UWAGA — ${bramkaSpojnosci.uwaga}`)
+if (bramkaSpojnosci.stop) {
+  return await stopRun({ ...bramkaSpojnosci.stop, stan })
 }
 if (wejscie.commitZadania) {
   const commitZadania = await zacommitujKatalogZadania(`docs(${stan.nazwaZadania}): zmiany w katalogu zadania przed runem`, 'start:commit-zadania')
@@ -1822,12 +1869,18 @@ function oznaczStan() {
 
 // Punkt 40: decyzje operatora ida na dysk w chwili powstania. Nieudany zapis nie zatrzymuje runu (pozycja zostaje w raporcie
 // runu), ale wychodzi w logu, bo smoke i swiezy run czytaja decyzje z pliku.
+// Zwraca true, gdy wiersze sa w pliku (albo nie bylo czego zapisac). Nieudany zapis dopisuje wiersze do decyzjeNiezapisane.
 async function zapiszDecyzje(numerFazy, zrodlo, pozycje) {
-  if (!pozycje.length) return
+  if (!pozycje.length) return true
   const wiersze = pozycje.map((p) => wierszDecyzji(numerFazy, zrodlo, p))
   const zapis = await agent(decyzjeKnownIssuesPrompt(sciezka, numerFazy, wiersze), { schema: P3_KNOWN_ISSUES, agentType: 'klasa-mechaniczny', label: `decyzje:zapis:faza-${numerFazy}` })
-  if (!zapis || !zapis.zapisano) log(`Faza ${numerFazy}: UWAGA — ${pozycje.length} decyzji operatora (${zrodlo}) nie zapisano w ${sciezka}/known-issues.md; zostaja tylko w raporcie tego runu`)
-  else log(`Faza ${numerFazy}: ${pozycje.length} decyzji operatora (${zrodlo}) w sekcji „Decyzje operatora” known-issues${zapis.commit ? ` (${zapis.commit})` : ''}`)
+  if (!zapis || !zapis.zapisano) {
+    decyzjeNiezapisane.push(...wiersze.map((w) => w.replace(/^- /, '')))
+    log(`Faza ${numerFazy}: UWAGA — ${pozycje.length} decyzji operatora (${zrodlo}) nie zapisano w ${sciezka}/known-issues.md; zostaja tylko w raporcie tego runu (nastepneKroki, decyzjeNiezapisane)`)
+    return false
+  }
+  log(`Faza ${numerFazy}: ${pozycje.length} decyzji operatora (${zrodlo}) w sekcji „Decyzje operatora” known-issues${zapis.commit ? ` (${zapis.commit})` : ''}`)
+  return true
 }
 
 function zeStanem(polecenie) {
@@ -1923,6 +1976,9 @@ for (const numerFazy of kolejka) {
   // Wynik kontroli diffu naprawczego (plan B5) — do raportu fazy i telemetrii.
   let kontrolaFixa = null
   let doDecyzjiOperatora = []
+  // Weryfikacja partii, punkt 48 (pokrewne; decyzja 4 planu poprawek): decyzja autopilota to otwarta sprawa fazy jak decyzja fixa,
+  // a faza z nia miala gate CZYSTE. `exec` zyje tylko w galezi execute, wiec liczbe trzymamy tu; faza wznowiona od review ma 0.
+  let decyzjeAutopilotaFazy = 0
 
   // 1) EXECUTE — tylko gdy pending (resume nigdy nie powtarza ukonczonego execute, w tym migracji).
   // Dossier fazy z domkniecia (P7) idzie do review; faza wznowiona z execute: done go nie ma — review-wf odtwarza je
@@ -1936,6 +1992,7 @@ for (const numerFazy of kolejka) {
     // Punkt 41, krok 6: wybory builderow przy sprzecznosci zrodel (HIERARCHIA ZRODEL) ida do known-issues zaraz po execute,
     // takze przed STOP-em — swiezy run i smoke czytaja je z pliku, a review traktuje opisane odstepstwo jako decyzje, nie blad.
     await zapiszDecyzje(numerFazy, 'autopilot', exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota : [])
+    decyzjeAutopilotaFazy = exec && Array.isArray(exec.decyzjeAutopilota) ? exec.decyzjeAutopilota.length : 0
     if (!exec || exec.status !== 'completed') {
       // Baza fazy zostaje w stanie takze przy execute bez „completed”: domkniecie moglo juz zacommitowac faze (porazka bramki po
       // commicie), a swiezy run bez bazy dalby review diff od galezi glownej (pilot Nawykometr, run 2: 585 plikow zamiast 8).
@@ -2168,7 +2225,7 @@ for (const numerFazy of kolejka) {
     }
 
     // Decyzja operatora to otwarta sprawa fazy tak samo jak P2 w known-issues (przed punktem 40 fix liczyl ja w nierozwiazaneP2).
-    gateFazy = fix.nierozwiazaneP2 > 0 || doDecyzjiOperatora.length > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
+    gateFazy = fix.nierozwiazaneP2 > 0 || doDecyzjiOperatora.length > 0 || decyzjeAutopilotaFazy > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
     if (fix.nierozwiazaneP2 > 0) {
       log(`Faza ${numerFazy}: GRACEFUL — ${fix.nierozwiazaneP2}x P2 do known-issues, kontynuuje`)
     }
@@ -2176,7 +2233,7 @@ for (const numerFazy of kolejka) {
     faza.otwarteFindingi = []
     oznaczStan()
   } else if (faza.fix === 'none') {
-    gateFazy = 'CZYSTE'
+    gateFazy = decyzjeAutopilotaFazy > 0 ? 'ZASTRZEZENIA' : 'CZYSTE'
   }
 
   historia[numerFazy] = cykle
@@ -2561,7 +2618,10 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
-  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null') }),
+  // Punkt 53: zadanie w toku z nieaktualnym przegladem spojnosci planu — run poszedl, operator widzi uwage w wyniku.
+  uwagaSpojnosci: bramkaSpojnosci.uwaga,
+  nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null'), niezapisane: decyzjeNiezapisane, nieOdegraneZeStanu: e2eNieOdegrane }),
+  decyzjeNiezapisane,
   smokeOperatora: (complete && complete.smokeOperatora) || '',
   smokeStatus: complete ? (complete.smokeStatus || 'brak-pola') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),
   archiwizacjaStatus: complete ? (complete.archiwum && complete.commit ? 'ok' : 'niedomknieta') : (stan.zakonczenie.complete === 'done' ? 'done-w-poprzednim-runie' : 'complete-null'),

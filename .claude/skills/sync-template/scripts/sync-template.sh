@@ -160,8 +160,14 @@ fi
 LOCAL_SHA=""
 [[ -f "$VERSION_FILE" ]] && LOCAL_SHA="$(tr -d ' \n' < "$VERSION_FILE" 2>/dev/null || true)"
 
+# Weryfikacja partii 26–45, punkt 55 (27): pierwszy sync po wyłączeniu testów maszynerii idzie jeszcze starym skryptem z projektu,
+# kopiuje testy, wpisuje je do manifestu i zapisuje nowy SHA — następny sync kończył się UP_TO_DATE i testy zostawały do kolejnego
+# commitu szablonu. Manifest ze ścieżką __tests__/ wymusza pełną ścieżkę: testy trafiają do REMOVE.
+STARE_TESTY=0
+[[ -f "$MANIFEST_FILE" ]] && grep -q '/__tests__/' "$MANIFEST_FILE" && STARE_TESTY=1
+
 # --- Szybkie wyjście, gdy nic się nie zmieniło ---
-if [[ "$FORCE" -eq 0 && -n "$LOCAL_SHA" && "$LOCAL_SHA" == "$UPSTREAM_SHA" ]]; then
+if [[ "$FORCE" -eq 0 && "$STARE_TESTY" -eq 0 && -n "$LOCAL_SHA" && "$LOCAL_SHA" == "$UPSTREAM_SHA" ]]; then
   echo "STATUS: UP_TO_DATE"
   echo "SHA: $UPSTREAM_SHA"
   echo "Szablon jest aktualny — brak zmian w workflow do zaciągnięcia."

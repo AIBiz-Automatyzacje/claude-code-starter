@@ -135,6 +135,18 @@ test('opis autopilota i handoff: start to osobna wiadomość z samym poleceniem;
   assert.match(krok, /do wklejenia w innej sesji, dzielisz tak samo: wymagania wobec sesji w jednej wiadomości, samo polecenie startu w następnej/)
   const ramka = SKILL_MD.slice(SKILL_MD.indexOf('➡️ Następny krok'), SKILL_MD.indexOf('## Referencje'))
   assert.match(ramka, /Start to osobna wiadomość z samym poleceniem, np\. „Uruchom autopilota dla docs\/active\/<zadanie>” — bez warunków i próśb/)
+  // Weryfikacja partii 26–45, punkt 55 (36): zasady nie mialy README, szablon smoke'u autopilota (rdzen i Expo) ani komenda
+  // swiezego runu z powodow STOP-u.
+  const plaski = (/** @type {string} */ t) => t.replace(/\n\s*/g, ' ')
+  const readme = join(REPO, 'README.md')
+  if (existsSync(readme)) assert.match(plaski(readFileSync(readme, 'utf8')), /Start to osobna wiadomość z samym poleceniem \(np\. `\/dev-autopilot-wf docs\/active\/<zadanie>`\): wiadomość startową dostaje każdy agent runu, więc warunki i prośby wysyłasz wcześniejszą wiadomością\./)
+  const kopie = ['.claude/templates/smoke-autopilot', 'stacks/expo/nakladka/.claude/templates/smoke-autopilot']
+  for (const katalog of kopie.filter((k, i) => i === 0 || existsSync(join(REPO, k)))) {
+    assert.match(plaski(readFileSync(join(REPO, katalog, 'README.md'), 'utf8')), /`\/dev-autopilot-wf docs\/active\/smoke-autopilot` osobn[aą] wiadomo[sś]ci[aą] z samym tym poleceniem/i, `${katalog}/README.md`)
+    assert.ok(readFileSync(join(REPO, katalog, 'przygotuj-kopie.sh'), 'utf8').includes('i uruchom osobną wiadomością z samym tym poleceniem: /dev-autopilot-wf docs/active/smoke-autopilot'), `${katalog}/przygotuj-kopie.sh`)
+    assert.doesNotMatch(readFileSync(join(REPO, katalog, 'README.md'), 'utf8'), /__tests__/, `${katalog}/README.md: testow projekt nie dostaje`)
+  }
+  assert.match(readFileSync(join(REPO, '.claude/workflows/dev-autopilot-wf.js'), 'utf8'), /return `\/dev-autopilot-wf \$\{sciezka\} \(osobna wiadomosc z samym tym poleceniem, bez warunkow i prosb\)`/)
 })
 
 // Znaleziska 2026-11-02 pkt 31 (dashboard E2): sesja planowania zmieniła .claude/agents/feature-tester-e2e.md, a handoff mówił

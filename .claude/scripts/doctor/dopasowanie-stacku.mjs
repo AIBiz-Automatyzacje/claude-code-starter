@@ -11,19 +11,26 @@ import { realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 import { PROFIL } from '../stack/profil.mjs'
-import { manifestyZZaleznoscia, uzywaSupabase } from '../stack/projekt.mjs'
+import { manifestyZZaleznoscia, stanSupabase } from '../stack/projekt.mjs'
 
 /** @typedef {[element: string, stan: 'UWAGA' | 'nie dotyczy', szczegol: string, naprawa: string]} Wiersz */
 
-const MANIFESTY = 'package.json korzenia i katalogów pierwszego poziomu'
+const MANIFESTY = 'package.json do trzech poziomów katalogów, pliki Pythona korzenia i pierwszego poziomu'
 
 /**
  * Profil zaklada Supabase (klucz adresu w env klienta), a projekt nie ma ani katalogu supabase/, ani klienta w zaleznosciach.
  * @param {string} projekt @param {import('../stack/profil.mjs').Profil} profil @returns {Wiersz | null}
  */
 function wierszSupabase(projekt, profil) {
-  if (!profil.env.adresSupabase || uzywaSupabase(projekt)) return null
-  return ['stack: Supabase', 'nie dotyczy', `brak katalogu supabase/ i zależności @supabase/supabase-js (${MANIFESTY})`,
+  if (!profil.env.adresSupabase) return null
+  const { sygnal, nieczytelne } = stanSupabase(projekt)
+  if (sygnal === 'tak') return null
+  // Punkt 55 (26): przy nieczytelnym manifescie brak trafienia nie jest dowodem — UWAGA zamiast „nie dotyczy”.
+  if (sygnal === 'nieznane') {
+    return ['stack: Supabase', 'UWAGA', `nie udało się ustalić (nieczytelny package.json: ${nieczytelne.join(', ')})`,
+      'popraw JSON w tym pliku; do tego czasu stosuj elementy Supabase z profilu tylko tam, gdzie projekt ich używa']
+  }
+  return ['stack: Supabase', 'nie dotyczy', `brak katalogu supabase/, supabase/config.toml, zależności @supabase/* i wpisu supabase w requirements.txt/pyproject.toml (${MANIFESTY})`,
     'projekt bez Supabase: nie stosuj skilla supabase-dev-guidelines, komend supabase z roli buildera danych ani reguł RLS i GRANT; migracje i dostęp do danych narzędziami projektu (plan, CLAUDE.md)']
 }
 

@@ -36,7 +36,7 @@ import { sprawdzPlan } from './walidacja-planu.mjs'
  *   claudeMd: { ok: boolean, glowna: string | null, zadania: string[], naprawa: string },
  *   spojnosc: import('./spojnosc.mjs').StanPrzegladu,
  *   higiena: { ok: true, uwagi: string[] },
- *   odlozone: { ok: true, plik: string, otwarte: { linia: number, etap: string, tresc: string }[] } }} Gotowosc
+ *   odlozone: { ok: true, plik: string, otwarte: { linia: number, etap: string, tresc: string }[], decyzje: { zadanie: string, wiersz: string }[] } }} Gotowosc
  */
 
 /**
@@ -116,17 +116,21 @@ function planTechnicznyZadania(projekt, katalogZadania) {
 /**
  * Nieodhaczone blokery checklisty zadania z faza, ktora wstrzymuja (P25 A1): bootstrap autopilota przepisuje je 1:1, a STOP
  * przed faza liczy orkiestrator. Pozycje startu (`planowanie`, `faza 1`, marker bez numeru) wstrzymuja faze 1.
+ * `spojnosc` (weryfikacja partii, punkt 53): autopilot nie wolal ani `spojnosc`, ani `gotowosc`, wiec plan bez aktualnego
+ * przegladu spojnosci szedl do runu; stan przegladu liczony jak w bramce gotowosci, decyzje (STOP albo uwaga) liczy orkiestrator.
  * @param {string} projekt @param {string} katalogZadania
- * @returns {{ checklista: string | null, blokery: { faza: number, linia: number, tresc: string }[] }}
+ * @returns {{ checklista: string | null, blokery: { faza: number, linia: number, tresc: string }[], spojnosc: { ok: boolean, powod: string } }}
  */
 export function blokeryZadania(projekt, katalogZadania) {
-  const { plan } = planTechnicznyZadania(projekt, katalogZadania)
+  const { wskaznik, plan } = planTechnicznyZadania(projekt, katalogZadania)
+  const przeglad = stanPrzegladu(projekt, wskaznik, plan ? plan.fazy.map((f) => f.oznaczenie) : [])
+  const spojnosc = { ok: przeglad.ok, powod: przeglad.powod }
   const prep = plan ? przygotowanie(projekt, poleTekstowe(plan, 'operator_prep')) : null
-  if (!prep) return { checklista: null, blokery: [] }
+  if (!prep) return { checklista: null, blokery: [], spojnosc }
   const blokery = [...prep.blokujace, ...prep.odroczone]
     .map(({ faza, linia, tresc }) => ({ faza: faza ?? 1, linia, tresc }))
     .sort((a, b) => a.linia - b.linia)
-  return { checklista: prep.sciezka, blokery }
+  return { checklista: prep.sciezka, blokery, spojnosc }
 }
 
 /** @param {string} projekt @returns {Gotowosc['testy']} */
@@ -161,6 +165,7 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
   // Zadanie z migracjami (P17): advisors bez tokenu albo bazy e2e nie pobiegnie — uwaga, nie bloker (security sprawdzi recznie).
   const advisors = zadania.includes('supabase/migrations/') ? gotowoscAdvisors(projekt, srodowisko) : null
   if (advisors && !advisors.gotowe) e2e.uwagi.push(advisors.uwaga)
+  const sprawy = otwarte(projekt)
   const wynik = {
     plan: { ok: !walidacja.bledy.length, bledy: walidacja.bledy, uwagi: walidacja.uwagi },
     e2e,
@@ -170,7 +175,8 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
     claudeMd: decyzjeClaudeMd(projekt),
     spojnosc: stanPrzegladu(projekt, wskaznik, plan ? plan.fazy.map((f) => f.oznaczenie) : []),
     higiena: higienaZadania(projekt),
-    odlozone: { ok: /** @type {const} */ (true), ...otwarte(projekt).odlozone },
+    // Punkt 52: decyzje poprzednich zadan bez rozstrzygniecia (smoke pominiety) — pokazane, nie blokuja.
+    odlozone: { ok: /** @type {const} */ (true), ...sprawy.odlozone, decyzje: sprawy.decyzje ?? [] },
   }
   return {
     ok: wynik.plan.ok && wynik.e2e.ok && wynik.przygotowanie.ok && wynik.git.ok && wynik.testy.ok && wynik.claudeMd.ok && wynik.spojnosc.ok,

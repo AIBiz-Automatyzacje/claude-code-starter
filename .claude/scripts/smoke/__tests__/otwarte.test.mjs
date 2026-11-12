@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { liczSmoke, otwarte, parsujOdlozone, plikSmoke, zdanieOtwartych } from '../otwarte.mjs'
+import { decyzjeNierozstrzygniete, liczSmoke, otwarte, parsujOdlozone, plikSmoke, zdanieOtwartych } from '../otwarte.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
 const CLI = resolve(KATALOG, '..', 'otwarte.mjs')
@@ -70,7 +70,7 @@ test('otwarte + zdanie: liczby z plików; zero mówi wprost „brak”, bez smok
     const w = otwarte(k, { zadanie: 'sklep' })
     assert.deepEqual(w.smoke, { plik: 'docs/operator/2026-11-11-sklep-smoke.md', otwarte: 3, poDeployu: 1 })
     assert.equal(w.odlozone.otwarte.length, 2)
-    assert.equal(w.zdanie, 'Otwarte: 3 pozycji smoke\'u, 2 odłożonych (docs/operator/odlozone.md).')
+    assert.equal(w.zdanie, 'Otwarte: 3 pozycji smoke\'u (w tym 1 po deployu), 2 odłożonych (docs/operator/odlozone.md).')
     assert.equal(otwarte(k).zdanie, 'Otwarte: 2 odłożonych (docs/operator/odlozone.md).')
     const cli = spawnSync(process.execPath, [CLI, '--zadanie', 'sklep', '--projekt', k], { encoding: 'utf8' })
     assert.equal(cli.status, 0)
@@ -94,4 +94,88 @@ test('skille: raporty biorą zdanie z otwarte.mjs, /dev-prep zamienia sprawy od�
   const prep = czytaj('dev-prep/SKILL.md')
   assert.match(prep, /`node \.claude\/scripts\/smoke\/otwarte\.mjs` \(pole `odlozone\.otwarte`/)
   assert.match(prep, /\*\*Sprawy odłożone w smoke'u\.\*\* Każda otwarta pozycja `odlozone\.otwarte` ze skanu \(1\.2\) to decyzja bez markera blokady/)
+})
+
+// Weryfikacja partii 26–45, punkt 52: sprawa odlozona, ktora weszla do etapu, nie byla zamykana — /dev-prep i /dev-plan pliku nie
+// zmienialy. Teraz zamyka ja /dev-plan po decyzji z /dev-prep; trzy wzory linii ze skilla przechodza parser jak trzeba.
+test('/dev-plan zamyka sprawy odłożone: wchodzi i rezygnacja nie są liczone, czeka zostaje otwarta z nową etykietą', () => {
+  const plan = readFileSync(resolve(KATALOG, '../../../skills/dev-plan/SKILL.md'), 'utf8')
+  const wzor = (/** @type {string} */ wyjscie) => new RegExp(`- ${wyjscie} → (?:po zapisaniu planu \\(5\\.2\\) )?\`([^\`]+)\``).exec(plan)?.[1] ?? ''
+  const wypelnij = (/** @type {string} */ w) => w.replace('<etykieta>', 'etap 5').replace('<nowa etykieta>', 'etap 6').replace('<treść>', 'sklep D2: limit koszyka — `src/k.ts:9` (smoke 2026-11-11)')
+    .replace('<ścieżka planu>', 'docs/plans/2026-11-12-001-feat-x-plan.md').replace('<YYYY-MM-DD>', '2026-11-12')
+  const [wchodzi, czeka, rezygnacja] = ['wchodzi', 'czeka', 'rezygnacja'].map((w) => wypelnij(wzor(w)))
+  assert.match(wchodzi, /^- \[x\] \[etap: etap 5\] sklep D2: .* → w planie docs\/plans\/2026-11-12-001-feat-x-plan\.md \(2026-11-12\)$/)
+  assert.match(rezygnacja, /^- \[x\] \[etap: etap 5\] sklep D2: .* → rezygnacja \(2026-11-12\)$/)
+  assert.deepEqual(parsujOdlozone([wchodzi, rezygnacja].join('\n')), [], 'zamkniete nie sa liczone')
+  assert.deepEqual(parsujOdlozone(czeka).map((p) => p.etap), ['etap 6'], 'czeka: otwarta z nowa etykieta')
+  assert.match(plan, /Plik idzie do commitu inicjalnego \(6\.5\) jawną ścieżką\./)
+  assert.match(plan, /`docs\/operator\/odlozone\.md` \(gdy 0\.3 go zmienił\)\. Bez `git add -A`/)
+  const prep = readFileSync(resolve(KATALOG, '../../../skills/dev-prep/SKILL.md'), 'utf8')
+  assert.match(prep, /po wypełnieniu decyzji \(„Ustalono”\) zmienia go `\/dev-plan` \(0\.3\)/)
+  assert.doesNotMatch(prep, /robi to operator po wyborze/)
+})
+
+// Punkt 52: do odlozone.md pisalo tylko wyjscie „Odłóż” decyzji — zwykla pozycja listy i usterka nie mialy formatu.
+test('/dev-smoke: odłożona pozycja listy i usterka (U<n>) mają wzory, które przechodzą parser odłożonych', () => {
+  const plaski = SKILL_SMOKE.replace(/\n\s+/g, ' ')
+  const usterka = /z numerem `U<n>` \(kolejna usterka tej sesji\) zamiast `D<n>`: `(- \[ \] \[etap: <etykieta>\] [^\n]+?)`\./.exec(plaski)?.[1] ?? ''
+  const pozycja = /Wtedy wpis w `docs\/operator\/odlozone\.md`: `(- \[ \] \[etap: <etykieta>\] [^\n]+?)`, a w pliku smoke'u/.exec(plaski)?.[1] ?? ''
+  assert.ok(usterka && pozycja, 'skill ma oba wzory')
+  const wypelnij = (/** @type {string} */ w) => w.replace(/\\`/g, '`').replace('<etykieta>', 'etap 4').replace('<zadanie>', 'sklep')
+  const linie = [wypelnij(usterka), wypelnij(pozycja)]
+  assert.deepEqual(parsujOdlozone(linie.join('\n')).map((p) => [p.etap, p.tresc.split(':')[0]]), [['etap 4', 'sklep U<n>'], ['etap 4', 'sklep smoke']])
+  assert.match(plaski, /a w pliku smoke'u pozycja `- \[x\] … → odłożone do <etykieta>`/)
+})
+
+// Punkt 52: decyzji nierozstrzygnietych (smoke pominiety albo przerwany) nie widzial ani /dev-prep, ani bramka gotowosci.
+test('decyzjeNierozstrzygniete: wiersze [DECYZJA bez ROZSTRZYGNIĘTA z sekcji „Decyzje operatora” archiwum; tylko bez --zadanie', () => {
+  const KI = '# Known issues — sklep\n\n## Decyzje operatora\n\n- [DECYZJA · faza 1 · fix] src/a.ts:5 — limit\n- [DECYZJA · faza 2 · autopilot] IU-4: mail bez imienia → ROZSTRZYGNIĘTA (smoke 2026-11-11): zostaw jak jest\n  - podpunkt\n\n## Faza 1\n\n- [DECYZJA · faza 1 · fix] poza sekcja\n'
+  const k = projekt({
+    'docs/completed/sklep/known-issues.md': KI.replace(/\n/g, '\r\n'),
+    'docs/completed/blog/known-issues.md': '# K\n\n## Zamkniete\n\n- x\n',
+    'docs/completed/bez-pliku/podsumowanie.md': '#\n',
+  })
+  try {
+    assert.deepEqual(decyzjeNierozstrzygniete(k), [{ zadanie: 'sklep', wiersz: '[DECYZJA · faza 1 · fix] src/a.ts:5 — limit' }])
+    assert.deepEqual(otwarte(k).decyzje, [{ zadanie: 'sklep', wiersz: '[DECYZJA · faza 1 · fix] src/a.ts:5 — limit' }])
+    assert.equal(Object.hasOwn(otwarte(k, { zadanie: 'sklep' }), 'decyzje'), false, 'z --zadanie liczy plik smoke\'u')
+    assert.equal(otwarte(k).zdanie, 'Otwarte: brak (bez smoke\'u, nic odłożonego).', 'zdanie bez zmian')
+  } finally {
+    rmSync(k, { recursive: true, force: true })
+  }
+  const pusty = projekt({ 'README.md': '#\n' })
+  try {
+    assert.deepEqual(decyzjeNierozstrzygniete(pusty), [], 'brak docs/completed')
+  } finally {
+    rmSync(pusty, { recursive: true, force: true })
+  }
+  const plaski = (/** @type {string} */ s) => readFileSync(resolve(KATALOG, '../../../skills', s), 'utf8').replace(/\n\s*/g, ' ')
+  assert.match(plaski('dev-prep/SKILL.md'), /Pole `decyzje` to decyzje poprzednich zadań, których nikt nie rozstrzygnął \(smoke pominięty albo przerwany\)/)
+  assert.match(plaski('dev-prep/SKILL.md'), /\*\*Decyzje poprzednich zadań bez rozstrzygnięcia\.\*\* Każda pozycja pola `decyzje` ze skanu \(1\.2\) trafia do sekcji „Decyzje” z odsyłaczem: .*`\/dev-smoke <zadanie>`/)
+  assert.match(plaski('dev-plan/SKILL.md'), /Pole `decyzje` \(zadanie, wiersz\) to decyzje poprzednich zadań, których nikt nie rozstrzygnął \(smoke pominięty albo przerwany\): wypisz każdą z odsyłaczem do `\/dev-smoke <zadanie>`; nie blokują\./)
+})
+
+// Punkt 52: opcje decyzji z autora smoke'u (2–3 warianty) nie pasowaly do trzech wyjsc, znacznik autopilot nie byl opisany,
+// a skill obiecywal, ze plik decyzji czyta autopilot (czyta tylko `claude_md:`).
+test('/dev-smoke sekcja 1: warianty jako „Popraw: <wariant>”, „Odłóż” przez Other przy trzech, znacznik autopilot, czytelnicy pliku decyzji', () => {
+  const sekcja1 = SKILL_SMOKE.slice(SKILL_SMOKE.indexOf('## 1. Decyzje przed PR'), SKILL_SMOKE.indexOf('## 2. Kontrola poprawek')).replace(/\n\s*/g, ' ')
+  assert.match(sekcja1, /Każdy wariant zmiany pokazujesz jako osobną odpowiedź „Popraw: <wariant>”, do tego „Zostaw jak jest” i „Odłóż”\./)
+  assert.match(sekcja1, /`AskUserQuestion` ma najwyżej 4 opcje: przy trzech wariantach zmiany „Odłóż” się nie mieści — napisz w pytaniu, że operator wybiera je przez „Other”\./)
+  assert.match(sekcja1, /\*\*Decyzja autopilota\*\* \(wiersz ze znacznikiem `\[DECYZJA · faza N · autopilot\]`\): wybór jest już w kodzie/)
+  assert.match(sekcja1, /„Zostaw jak jest” = potwierdzenie wyboru autopilota \(zapis jak wyżej\); „Popraw” = przywrócenie źródła, które przegrało/)
+  assert.match(sekcja1, /Ten plik czyta klasyfikator odrzuceń bota w `\/dev-pr` i etap uzgodnienia `CLAUDE\.md`/)
+  assert.match(sekcja1, /Autopilot treści decyzji nie czyta \(z tego pliku bierze tylko pole `claude_md:`\)\./)
+  assert.doesNotMatch(sekcja1, /czytają autopilot i klasyfikator/)
+  // Znacznik w skillu ten sam co w wierszu decyzji autopilota (wierszDecyzji: `[DECYZJA · faza N · <zrodlo>]`).
+  const autopilot = readFileSync(resolve(KATALOG, '../../../workflows/dev-autopilot-wf.js'), 'utf8')
+  assert.match(autopilot, /return `- \[DECYZJA · faza \$\{faza\} · \$\{zrodlo\}\] \$\{tresc\}`/)
+  assert.match(autopilot, /await zapiszDecyzje\(numerFazy, 'autopilot', /)
+})
+
+// Punkt 52: pole poDeployu nie mialo czytelnika — zdanie mowi teraz, ile otwartych pozycji czeka na wdrozenie.
+test('zdanieOtwartych: pozycje po deployu w nawiasie, tylko gdy są; zdanie zaczyna się od „Otwarte: ”', () => {
+  const odl = { otwarte: [] }
+  assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 2 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u (w tym 2 po deployu), 0 odłożonych (docs/operator/odlozone.md).')
+  assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 0 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u, 0 odłożonych (docs/operator/odlozone.md).')
+  assert.equal(zdanieOtwartych({ smoke: { otwarte: 3 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u, 0 odłożonych (docs/operator/odlozone.md).', 'stary ksztalt bez pola')
 })

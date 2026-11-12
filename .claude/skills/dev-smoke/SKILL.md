@@ -22,7 +22,7 @@ Czym klikasz i jak uruchamiasz aplikację: `references/stack.md`, sekcje „Narz
 2. Gałąź: `feature/<zadanie>`. Inna gałąź i czyste drzewo → `git switch feature/<zadanie>`; brudne drzewo → pokaż pliki
    i zapytaj operatora, zanim cokolwiek zmienisz.
 3. Przeczytaj cały plik smoke'u i `docs/completed/<zadanie>/known-issues.md` (sekcja `## Decyzje operatora`). Pozycje
-   odhaczone `[x]` pomijasz: sesja mogła być przerwana i wznowiona.
+   odhaczone `[x]` i wiersze decyzji z dopiskiem `→ ROZSTRZYGNIĘTA` pomijasz: sesja mogła być przerwana i wznowiona.
 4. Powiedz operatorowi w dwóch zdaniach: ile decyzji, ile pozycji listy, ile z nich wymaga człowieka.
 
 ## 1. Decyzje przed PR
@@ -35,12 +35,22 @@ rekomendacja i dlaczego. Pytanie ma trzy wyjścia (pierwsze to rekomendacja z do
   `fix(<zadanie>): decyzja D<n> — <co zmienione>`. Przy zmianie widocznej na ekranie sprawdź ją narzędziem sesji.
 - **Zostaw jak jest** — w pliku decyzji zadania `docs/decisions/*-<zadanie>.md`, sekcja `## Decyzje`, dopisz linię
   `- Zostaw jak jest (smoke, D<n>): <pytanie> — <powód operatora albo „decyzja operatora”> (<plik:linia>)`.
-  Ten plik czytają autopilot i klasyfikator odrzuceń bota w `/dev-pr`, więc sprawa nie wróci jako błąd.
+  Ten plik czyta klasyfikator odrzuceń bota w `/dev-pr` i etap uzgodnienia `CLAUDE.md`, więc sprawa nie wróci jako błąd
+  bota. Autopilot treści decyzji nie czyta (z tego pliku bierze tylko pole `claude_md:`).
 - **Odłóż** — dopisz pozycję do `docs/operator/odlozone.md` (brak pliku = utwórz z nagłówkiem `# Sprawy odłożone` i zdaniem
   „Pozycje odłożone w smoke'u do późniejszego etapu; czyta je `/dev-prep` i bramka gotowości planu.”):
   `- [ ] [etap: <etykieta>] <zadanie> D<n>: <pytanie> — \`<plik:linia>\` (smoke <YYYY-MM-DD>)`. Etykieta to etap, do którego
   operator odkłada sprawę; nie podał go → „następny etap”. Pozycję odhacza (`[x]` z numerem commitu) sesja, która sprawę
   później wykona; plik czytają `/dev-prep` i bramka gotowości planu.
+
+**Opcje z pozycji.** Pozycja smoke'u ma 2–3 opcje ze skutkiem dla użytkownika (pisze je archiwizacja; jedna to zawsze „zostaw
+jak jest”). Każdy wariant zmiany pokazujesz jako osobną odpowiedź „Popraw: <wariant>”, do tego „Zostaw jak jest” i „Odłóż”.
+`AskUserQuestion` ma najwyżej 4 opcje: przy trzech wariantach zmiany „Odłóż” się nie mieści — napisz w pytaniu, że operator
+wybiera je przez „Other”.
+
+**Decyzja autopilota** (wiersz ze znacznikiem `[DECYZJA · faza N · autopilot]`): wybór jest już w kodzie, bo builder rozstrzygnął
+sprzeczność źródeł planu. „Zostaw jak jest” = potwierdzenie wyboru autopilota (zapis jak wyżej); „Popraw” = przywrócenie źródła,
+które przegrało (opisane w pozycji, np. tekst ze scenariusza), z testem, który bez zmiany pada.
 
 Po każdej decyzji zapisz ślad w dwóch miejscach:
 - plik smoke'u: linia `- [ ] D<n> …` → `- [x] D<n> … → <poprawione w <sha 12 znaków> | zostaw jak jest | odłożone>`;
@@ -60,12 +70,13 @@ i poprawką; bez zmian w plikach.”
 - P3 i findingi zostawione do opisu PR dopisz do `docs/completed/<zadanie>/known-issues.md`, sekcja `## P3 po archiwizacji`
   (brak = utwórz przed `## Zamkniete`), po linii: `- 🟡 [P<n>/<oś>] <plik:linia> — <opis> (krótkie review w smoke'u)`,
   oś = `correctness` albo `security`.
-- Znacznik: pusty commit, który `/dev-pr` (`po-archiwum.mjs`) czyta, żeby nie recenzować tych commitów drugi raz:
+- Znacznik: pusty commit, który `/dev-pr` (`po-archiwum.mjs`) czyta, żeby nie recenzować tych commitów drugi raz
+  (każda linia `Sprawdzone:` w osobnym wierszu wiadomości):
 
-  ```
-  git commit --allow-empty -m "chore(<zadanie>): krótkie review poprawek decyzji" -m "Sprawdzone: <pełny sha 1>
-  Sprawdzone: <pełny sha 2>"
-  ```
+```
+git commit --allow-empty -m "chore(<zadanie>): krótkie review poprawek decyzji" -m "Sprawdzone: <pełny sha 1>
+Sprawdzone: <pełny sha 2>"
+```
 
   W znaczniku są tylko commity, które reviewerzy obejrzeli. Poprawka po findingu z tego review idzie bez znacznika:
   krótkie review `/dev-pr` obejrzy ją przed PR.
@@ -81,8 +92,13 @@ Pozostałe pozycje smoke'u przechodzisz po kolei, sam, narzędziem sesji z `refe
 3. Niezgodne → usterka: odtwórz ją, napraw z testem, który bez poprawki pada, commit jawnymi ścieżkami
    `fix(<zadanie>): <co naprawione> (smoke)`, sprawdź pozycję jeszcze raz i odhacz z dopiskiem `→ poprawione w <sha>`.
    Usterki, której nie umiesz naprawić bez decyzji o zakresie, nie zgadujesz: zapytaj operatora z trzema wyjściami jak w sekcji 1.
+   Usterkę odłożoną przez operatora zapisujesz w `docs/operator/odlozone.md` jak decyzję, z numerem `U<n>` (kolejna usterka
+   tej sesji) zamiast `D<n>`: `- [ ] [etap: <etykieta>] <zadanie> U<n>: <opis usterki> — \`<plik:linia>\` (smoke <YYYY-MM-DD>)`.
 4. Pozycja z wyjątku dla człowieka → zatrzymaj się i prowadź operatora krok po kroku: co otworzyć, gdzie kliknąć, czego się
    spodziewać. Wynik od operatora wpisz przy pozycji.
+5. Operator może odłożyć pozycję listy (np. sprawdzenie wymaga czegoś, czego jeszcze nie ma). Wtedy wpis w
+   `docs/operator/odlozone.md`: `- [ ] [etap: <etykieta>] <zadanie> smoke: <treść pozycji> — \`<plik smoke'u>\` (smoke <YYYY-MM-DD>)`,
+   a w pliku smoke'u pozycja `- [x] … → odłożone do <etykieta>`. Etykieta jak w sekcji 1 (brak = „następny etap”).
 
 Pozycje „E2E nieuruchomione” i „E2E do odegrania ręcznie” odgrywasz narzędziem sesji jak zwykłe pozycje; tylko przy pozycjach
 z sekcji „E2E przebiegło i padło” najpierw naprawiasz defekt opisany w known-issues.

@@ -43,6 +43,11 @@ function wartosc(tresc, klucz, odLinii = 0) {
  */
 function lista(tresc, klucz) {
   const linie = tresc.split('\n')
+  // Lista w jednej linii (`klucz: [a, "b"]`) — weryfikacja partii, punkt 55 (28): dawala falszywe ostrzezenie synca.
+  for (const l of linie) {
+    const w = new RegExp(`^\\s*${klucz}:\\s*\\[(.*)\\]\\s*(?:#.*)?$`).exec(l)
+    if (w) return (w[1] ?? '').split(',').map((e) => bezCudzyslowu(e)).filter(Boolean)
+  }
   const start = linie.findIndex((l) => new RegExp(`^\\s*${klucz}:\\s*(#.*)?$`).test(l))
   if (start === -1) return null
   const wynik = []
@@ -107,7 +112,8 @@ export function ostrzezeniaBazy(claudeMd, galaz) {
  * @returns {string[]}
  */
 export function ostrzezeniaSynca(tresc) {
-  if (lista(tresc, 'ignore_title_keywords')?.includes(SLOWO_SYNCA)) return []
+  // Bot porownuje slowa tytulu bez wzgledu na wielkosc liter, wiec „Chore(Szablon)” tez wylacza recenzje.
+  if (lista(tresc, 'ignore_title_keywords')?.some((s) => s.toLowerCase() === SLOWO_SYNCA.toLowerCase())) return []
   return [`ignore_title_keywords bez "${SLOWO_SYNCA}": PR synca szablonu poczeka na recenzje bota (dopisz slowo albo /coderabbit-setup)`]
 }
 

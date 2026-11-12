@@ -29,8 +29,12 @@ import { checkboxyIu, naglowekFazy, wierszFazy } from './zadanie.mjs'
  * @typedef {{ numer: number, naglowek: string[], wiersz: string, iu: IuZadan[] }} FazaZadan
  * @typedef {{ ok: boolean, odmowa: string | null, plan: string | null, od: string, konflikty: string[], bledy: string[],
  *   zmiany: { dodane: string[], usuniete: string[], przeniesione: string[], naglowki: string[], noweIu: string[], usunieteIu: string[], tabelaFaz: number[], juzNaniesione: string[] },
- *   pliki: Record<string, string> }} Odswiezenie
+ *   pliki: Record<string, string>, przeglad?: string }} Odswiezenie
  */
+
+// Weryfikacja partii 26–45, punkt 53: odswiez nie wspominal o przegladzie spojnosci, a kazda zmiana tresci planu zmienia jego
+// odcisk — bramka gotowosci i start autopilota stoja do ponownego przegladu. Przypomnienie idzie z kazdym udanym odswiezeniem.
+export const PRZYPOMNIENIE_PRZEGLADU = 'zmiana planu wymaga ponownego przeglądu spójności zmienionych faz (/dev-plan 6.2b); do zapisu przeglądu bramka gotowości jest czerwona'
 
 const CHECKBOX = /^- \[([ xX])\] (.*)$/
 const NAGLOWEK_2 = /^## /
@@ -318,5 +322,6 @@ export function odswiezZadanie(projekt, zadanie, opcje = {}) {
     return odmow(w, 'plik zadań ma już tę zmianę planu (odświeżenie zapisane wcześniej) — nic do zapisania')
   }
   w.pliki = { [`${zadanie}/${plikZadan}`]: linie.join('\n'), ...(w.zmiany.tabelaFaz.length ? { [`${zadanie}/${plikPlanu}`]: liniePlanu.join('\n') } : {}) }
+  w.przeglad = PRZYPOMNIENIE_PRZEGLADU
   return w
 }

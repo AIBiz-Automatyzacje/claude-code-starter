@@ -130,10 +130,15 @@ test('odswiez (dashboard E2): pozycje przeniesione do innej jednostki zabieraja 
   assert.equal(czytaj(korzen, ZADANIA), zadaniaPrzed)
   assert.deepEqual(proba.wynik.zmiany.przeniesione, ['IU-3: Stwórz: `src/services/oferty-statusy.ts`', 'IU-3: Test: [Unit] publikacja cudzej oferty zwraca błąd uprawnień (odhaczona)'])
   assert.deepEqual(proba.wynik.zmiany.dodane, [])
+  // Punkt 53: udane odswiezenie przypomina o ponownym przegladzie spojnosci (odcisk planu sie zmienil).
+  assert.equal(proba.wynik.przeglad, 'zmiana planu wymaga ponownego przeglądu spójności zmienionych faz (/dev-plan 6.2b); do zapisu przeglądu bramka gotowości jest czerwona')
 
   const zapis = cli(korzen, ['odswiez', ZADANIE, '--zapisz'])
   assert.equal(zapis.kod, 0, JSON.stringify(zapis.wynik))
   assert.deepEqual(zapis.wynik.zapisane, [ZADANIA])
+  assert.match(String(zapis.wynik.przeglad), /^zmiana planu wymaga ponownego przeglądu spójności/)
+  // Odmowa (powtorka tej samej zmiany) nie niesie przypomnienia: nic sie nie zmienilo.
+  assert.equal(cli(korzen, ['odswiez', ZADANIE]).wynik.przeglad, undefined)
   const po = czytaj(korzen, ZADANIA)
   const iu1 = sekcja(po, 'IU-1')
   const iu3 = sekcja(po, 'IU-3')

@@ -36,7 +36,7 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 |---|---|
 | `/dev-pr` | **Interaktywny.** Po każdej klasyfikacji operator wybiera przez `AskUserQuestion` (multiSelect), co naprawiamy w tej turze. Merge zawsze zostaje jego decyzją. |
 | `/dev-pr 3` | **Autonomiczny, do 3 tur.** Sam wybierasz wg rubryki. Po wyczerpaniu tur albo po czystej turze przechodzisz do bramki merge'a. Krótkie review zmian po archiwizacji (krok 1) uruchamiasz sam, bez pytania, gdy po archiwizacji są pliki kodu w tej części. |
-| `/dev-pr 3 --bez-merge` | Jak wyżej, ale kończysz raportem zamiast merge'em. Tę komendę podają raporty i handoffy pipeline'u: tury idą same, a merge, czyli często deploy, zostaje decyzją operatora. |
+| `/dev-pr 3 --bez-merge` | Jak wyżej, ale merge'a nie robisz sam: przy zielonej bramce merge'a kończysz **jednym pytaniem o merge**, bez zielonej bramki raportem. Tę komendę podają raporty i handoffy pipeline'u: tury idą same, a merge, czyli często deploy, zostaje decyzją operatora. |
 | `--review` / `--bez-review` (z każdym trybem) | Odpowiedź z góry na pytanie o krótkie review zmian po archiwizacji (krok 1): `--review` = krótkie review, potem PR; `--bez-review` = PR bez review. |
 | `/dev-pr --czesc N` (z trybem jak wyżej) | **Część N PR wieloczęściowego** — zadanie ma w podsumowaniu sekcję „Części PR” (archiwizacja: więcej niż 150 plików do recenzji bota). Części wysyłasz po kolei; każda przechodzi pełny cykl do merge'a. |
 | `--bez-push` (z każdym trybem) | Etapy `compound` i `claude-md` commitują lokalnie i nie wypychają głównej: w projekcie, gdzie push na główną to deploy, push zostaje operatorowi. |
@@ -90,9 +90,8 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 wątki otwarte, rozstrzygnięte i czekające na bota, recenzję czubka. `tura` = `tury` + 1. `sufit: true` → od razu krok 6, bez nowej tury
 napraw. Przy tabeli części bierzesz `--czesc`, którego PR jest otwarty. Gdy kontekst sesji się kończy, kończysz raportem z gotowym
 poleceniem dla nowej sesji (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `/dev-pr 3 --bez-merge`; stan: `etap stan`), zamiast prowadzić merge ręcznie.
-
-**Smoke przed PR.** Gdy `docs/operator/*-<zadanie>-smoke.md` ma nieodhaczone pozycje bez dopisku „po deployu”, przed pytaniem o zgodę podajesz ich liczbę i pytasz, czy
-wysyłać mimo to. To miękka bramka: decyduje operator.
+Powrót tą komendą do PR bez otwartych wątków (np. po odpowiedzi „Jeszcze nie” albo po zielonym CI) przechodzi kroki 2–3 bez
+tury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge.
 
 ### 1. Start — bramka wejścia i pull request
 
@@ -103,6 +102,11 @@ Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit 
 smoke'u i dokumenty zadania commitujesz na `feature/<zadanie>`, nie na `feature/<zadanie>-czN`: plik smoke'u leży na gałęzi
 zadania, a jej commity po cięciu jadą z ostatnią częścią. Stasha nie używasz: `start` przełącza gałęzie i nikt go potem
 nie zdejmie. Po commicie sprawdzasz drzewo jeszcze raz; czyste → dalsza część kroku 1, do pytania o wysłanie.
+
+**Smoke przed PR.** Na czystym drzewie: `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>`. Otwarte pozycje smoke'u
+to `smoke.otwarte − smoke.poDeployu` (pozycje z dopiskiem „po deployu” czekają z definicji na wdrożenie). Liczba większa od
+zera → przed pytaniem o zgodę podajesz ją i pytasz, czy wysyłać mimo to. To miękka bramka: decyduje operator. `smoke: null`
+(zadanie bez pliku smoke'u) → bez pytania; `ok: false` albo nieczytelny wynik → podajesz błąd i pytasz jak przy otwartych pozycjach.
 
 **Zmiany po archiwizacji.** Najpierw `node .claude/scripts/pr/po-archiwum.mjs --zadanie <zadanie>` (z `--czesc N` przy części).
 Skrypt wylicza commity `<archiwum>..feature/<zadanie>` bez tematów pipeline'u, czyli zmiany ze smoke'u operatora, których
@@ -303,7 +307,8 @@ kolejnej naprawy: `zbierz` i krok 6 (uwagi trafiają do raportu i `odlozone`).
 Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "merge", zadanie, auto, turyWykonane}})
 ```
 
-`auto: true` tylko w trybie autonomicznym **i** bez `--bez-merge`; `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze większą z tej i z commitów PR).
+Pierwsze wywołanie etapu: `auto: true` tylko w trybie autonomicznym **i** bez `--bez-merge`; po odpowiedzi „Merguj” na pytanie
+przy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`. `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze większą z tej i z commitów PR).
 Merge wykonuje się wyłącznie przy `rekomendacja: "MERGUJ"`: `mergeable = MERGEABLE`, `mergeStateStatus = CLEAN`, zero otwartych wątków bez naszej decyzji,
 CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury za nami. Liczy to JS ze stanu PR. `informacje` (wątki rozstrzygnięte, `reviewDecision`) pokaż w raporcie: nie blokują.
 
@@ -312,7 +317,9 @@ CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury
   P1/P2 → `AskUserQuestion`: naprawa poza turami bota albo decyzja o merge'u mimo to. Potem etap `merge` z `reviewOstatniejTury: true`. Zmiany, których nie dało się sprawdzić testem (współbieżność na prawdziwej bazie, przeglądarka),
   podajesz w raporcie jako gotowe polecenie dla sesji: przejście lokalnie przed merge'em, a nie samą uwagę.
 - `MERGE-NIEUDANY` → komenda merge'a zawiodła (`merge.detal`): raport z treścią błędu, bez innej strategii. Bramka przeszła, więc to nie jest pytanie o warunki.
-- `GOTOWY-DO-MERGE` (tryb interaktywny) → pokaż warunki i zapytaj operatora, czy mergujemy. Tak → ten sam etap z `auto: true`.
+- `GOTOWY-DO-MERGE` (tryb interaktywny i `--bez-merge`) → pokaż warunki i zapytaj przez `AskUserQuestion`: „Wszystkie warunki
+  merge'a spełnione. Mergować teraz?” z opcjami „Merguj” (ten sam etap z `auto: true`) i „Jeszcze nie” (raport końcowy; merge
+  zostaje operatorowi).
 - `ZMERGOWANY` → idź dalej.
 
 **Compound** — uruchom **zawsze**, także gdy merge nie doszedł do skutku. To jest część, która zamienia
@@ -379,6 +386,11 @@ którego ostatnia linia to „Następny krok: /clear, potem /dev-pr 3 --bez-merg
 świeża sesja nie niesie kontekstu poprzedniej części, a operator wpisuje komendę sam. Krok CLAUDE.md workflow pomija
 (`pominiety: true`) — plik decyzji jedzie w ostatniej części; uzgodnienie robisz po merge'u ostatniej.
 
+**Część albo PR niezmergowany** (odpowiedź „Jeszcze nie” albo niespełnione warunki bramki): ostatnia linia raportu to
+„Następny krok: <co ma się wydarzyć, np. zielone CI>, potem /clear i /dev-pr 3 --bez-merge --czesc <N> — dokończy i zapyta o merge”;
+przy jednym PR ta sama linia bez `--czesc <N>`. Linii z `--czesc <N+1>` przed merge'em części N nie podajesz: start części
+N+1 zatrzyma się na niezmergowanej części N.
+
 ## Raport końcowy
 
 Po `ZMERGOWANY` pierwsza linia raportu to „ZMERGOWANY”, nie rekomendacja sprzed merge'a.
@@ -389,7 +401,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
    Tury: <N wykonanych> / <limit albo "interaktywnie"> (sufit 3)
    Wątki: naprawione <a> · odrzucone z dokumentem decyzji <b> · do operatora <c> · nieruszone <d>
    Walidacja ostatniej tury: PASS/FAIL/BRAK-KOMEND
-   Merge: <zmergowany / gotowy do decyzji: lista niespełnionych warunków / --bez-merge>
+   Merge: <zmergowany / gotowy do decyzji: lista niespełnionych warunków / warunki spełnione, operator: „Jeszcze nie”>
    CI po merge'u: <ciGlownej z compoundu albo kroku CLAUDE.md, 1:1; failure/cancelled = „deploy commitu merge'a niepotwierdzony”>
    CLAUDE.md: <uzgodniony (przed → po zn, commit, push) / STOP: powód / nie dotyczy — PR niezmergowany>
    Otwarte sprawy: <pole `zdanie` z `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>`, 1:1>
@@ -412,8 +424,9 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
 ⚠️ Do Twojej decyzji: <wątki do-operatora, jeden wiersz na wątek z wplywNaProjekt>
 ```
 
-Przy części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>”: tury idą same, a merge, czyli
-często deploy, zostaje decyzją operatora. Tryb interaktywny (`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.
+Przy zmergowanej części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>”: tury idą same, a merge, czyli
+często deploy, zostaje decyzją operatora. Część albo PR niezmergowany kończy linia z akapitu „Część albo PR niezmergowany”
+(krok 6): ta sama komenda z `--czesc <N>`, która dokończy i zapyta o merge. Tryb interaktywny (`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.
 
 Linię „Otwarte sprawy” bierzesz ze skryptu, nie z pamięci sesji: dopóki zdanie nie brzmi „Otwarte: brak …”, nie piszesz, że zadanie
 jest zamknięte w całości (punkt 45: raport mówił „zamknięte w całości” przy otwartych pozycjach smoke'u).

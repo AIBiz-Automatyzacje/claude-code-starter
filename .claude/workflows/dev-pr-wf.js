@@ -19,6 +19,10 @@ export const meta = {
 
 // Kopia zasady z dev-autopilot-wf.js (workflowy sa self-contained — przy zmianie synchronizuj recznie; zakres testow
 // `test` + `test:*` bez e2e = finalValidationPrompt, rownosc pilnuje dev-pr.test.mjs).
+// Dopisek, ktorym /dev-smoke zamyka wiersz sekcji „## Decyzje operatora” w known-issues (punkt 40, krok 4). Ten sam napis
+// w skillu /dev-smoke — pilnuje dev-pr.test.mjs.
+const ZNACZNIK_ROZSTRZYGNIETEJ = '→ ROZSTRZYGNIĘTA'
+
 const BLOK_KOMEND_PROJEKTU = `
 === KOMENDY WALIDACYJNE (czytaj z projektu, nie zgaduj) ===
 Komendy typecheck / test / build bierz z pola "scripts" w package.json TEGO repo. Nie zakladaj \`npm\`:
@@ -446,7 +450,10 @@ const MECHANIZM_W_KODZIE = `MECHANIZM JUZ W KODZIE (pole mechanizm wpisu; tylko 
 // Wartosc o innym ksztalcie niz plik:linia (opis, sam hash, sciezka bezwzgledna) = brak mechanizmu: wpis idzie do operatora.
 function miejsceMechanizmu(w) {
   const m = typeof w.mechanizm === 'string' ? w.mechanizm.trim() : ''
-  return /^[^\s:/][^\s:]*:[1-9]\d*$/.test(m) ? m : null
+  if (!/^[^\s:/][^\s:]*:[1-9]\d*$/.test(m)) return null
+  // Weryfikacja partii, punkt 55 (43): dokument albo test to nie mechanizm w kodzie — wpis idzie do operatora (strona bezpieczna).
+  const sciezka = m.slice(0, m.lastIndexOf(':'))
+  return sciezka.startsWith('docs/') || sciezka.includes('__tests__/') || /\.(test|spec)\./.test(sciezka) ? null : m
 }
 function propozycjeBramek(wpisy) {
   return wpisy
@@ -692,6 +699,16 @@ function bramkaStartu(pomiar, opcje) {
       naprawa: "Wypchnij główną (push może oznaczać deploy, więc to decyzja operatora) albo potwierdź, że jadą w tym PR: etap start z zGlowna: true.",
     }
   }
+  // Weryfikacja partii, punkt 55 (stara dziura): nieczytelny wynik kontrakt-bota.mjs (pusty tekst, blad, JSON bez odstepstwa)
+  // dawal powod: null — start szedl bez sprawdzenia configu, jak przy nieczytelnym rozmiar.mjs nie idzie. Teraz STOP z ta sama
+  // droga decyzji co przy odstepstwach (pole konfigBota: /coderabbit-setup, bezKonfigu albo bezBota).
+  if (!Array.isArray(kontrakt?.odstepstwa) && !opcje.bezKonfigu && !opcje.bezBota) {
+    const powod = `nie udało się sprawdzić configu bota (kontrakt-bota.mjs: ${String(pomiar.kontraktBota ?? '').trim().slice(0, 200) || 'pusty wynik'})`
+    return {
+      ostrzezenia, pola: { konfigBota: { plik: null, odstepstwa: [powod], ostrzezenia: [] } }, powod,
+      naprawa: 'Uruchom `node .claude/scripts/pr/kontrakt-bota.mjs` i usuń przyczynę błędu, albo decyzja operatora: etap start z bezKonfigu: true albo z bezBota: true.',
+    }
+  }
   if (kontrakt?.odstepstwa?.length && !opcje.bezKonfigu && !opcje.bezBota) {
     return {
       ostrzezenia, pola: { konfigBota: kontrakt },
@@ -862,7 +879,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (cz) {
     cz.pliki = rozmiar.pliki
     const scalona = `\`gh pr list --state merged --head ${cz.poprzednia} --json number -q length\` > 0, inaczej STOP
-   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr 3 --bez-merge --czesc ${cz.czesc - 1}”`
+   „czesc ${cz.czesc - 1} niezmergowana — najpierw /dev-pr 3 --bez-merge --czesc ${cz.czesc - 1} (dokonczy ture i zapyta o merge)”`
     // Rebase od ciecia tylko, gdy ciecie jest jeszcze w historii galezi; galaz juz na origin/main = rebase zrobiony; galaz po
     // rebase na starszy main (operator rozwiazal konflikt i wrocil pozniej) — zwykly rebase na nowy main.
     const rebase = `REBASE: (a) \`git merge-base --is-ancestor origin/main HEAD\` kod 0 — rebase=juz-wykonany, bez rebase'u;
@@ -957,11 +974,14 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
     log(`/dev-pr czesc ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy}, ${cz.pliki} plikow do recenzji): galaz ${cz.galaz}, rebase ${przyg.rebase}, walidacja ${przyg.walidacja}, push ${przyg.pushDetal}`)
   }
   const zrodloOpisu = `git show 'feature/${zadanie}:docs/completed/${zadanie}`
+  // Weryfikacja partii, punkt 52: decyzja rozstrzygnieta w /dev-smoke (dopisek ZNACZNIK_ROZSTRZYGNIETEJ na koncu wiersza sekcji
+  // „Decyzje operatora”) trafiala do „Swiadomie nienaprawione”, bo za otwarte uchodzilo wszystko poza „## Zamkniete”.
+  const otwartyWpis = `otwarte = poza sekcja "## Zamkniete" i bez dopisku "${ZNACZNIK_ROZSTRZYGNIETEJ}" (wiersz sekcji "## Decyzje operatora" rozstrzygniety w smoke'u)`
   const opisCzesci = cz
     ? `\nCZESC ${cz.czesc} Z ${cz.czesci} (fazy ${cz.fazy}) — zrodla opisu zastepuja punkt a) nizej (katalog zadania na tej galezi
 moze nie miec podsumowania): tytul PR "<tytul zadania> — cz. ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy})"; podsumowanie z
 \`${zrodloOpisu}/${zadanie}-podsumowanie.md'\`, otwarte P3 z \`${zrodloOpisu}/${zadanie}-zadania.md'\` (sekcje "Do poprawy po review
-fazy N" dla faz ${cz.fazy}), otwarte wpisy z \`${zrodloOpisu}/known-issues.md'\` (brak pliku = brak wpisow). Pierwsza linia opisu:
+fazy N" dla faz ${cz.fazy}), otwarte wpisy z \`${zrodloOpisu}/known-issues.md'\` (${otwartyWpis}; brak pliku = brak wpisow). Pierwsza linia opisu:
 "Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}."\n${cz.czesc > 1 ? watkiPoprzednich(cz, zadanie) : ''}`
     : ''
   const wynik = await agent(
@@ -989,7 +1009,7 @@ STAN PULL REQUESTA:
      - podsumowanie z \`<katalog zadania>/${zadanie}-podsumowanie.md\` (gdy pliku nie ma — z pliku planu zadania),
      - sekcja \`## Swiadomie nienaprawione\` zlozona z: otwartych P3 z sekcji "## Do poprawy po review fazy N"
        w \`<katalog zadania>/*-zadania.md\` (wiersze \`- [ ]\` z tokenem [P3]) ORAZ otwartych wpisow
-       z \`<katalog zadania>/known-issues.md\` (otwarte = poza sekcja "## Zamkniete"). Gdy oba zrodla puste,
+       z \`<katalog zadania>/known-issues.md\` (${otwartyWpis}). Gdy oba zrodla puste,
        wpisz w tej sekcji jedna linie "Brak — wszystkie findingi review zamkniete."
      - ZADNYCH wartosci sekretow, tokenow ani hasel, takze gdy cytujesz known-issues.
   b) \`gh pr create --title "<tytul zadania>" --body-file /tmp/dev-pr-body-${zadanie}.md\`.
@@ -1157,7 +1177,8 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     mergeable: wynik.mergeable, mergeStateStatus: wynik.mergeStateStatus, ciZielone: wynik.ciZielone, ciDetal: wynik.ciDetal,
     watkiNapraw: licznik['napraw'] + licznik['napraw-szerzej'], watkiDoOperatora: licznik['do-operatora'],
     watkiOdrzucBezOdpowiedzi: watki.filter((w) => w.klasa === 'odrzuc' && w.naszaOdpowiedz !== true).length,
-    recenzjaCzubka: stanPr?.recenzjaCzubka,
+    // Punkt 55 (stara dziura): nieczytelny stan-pr dawal recenzjaCzubka: undefined, a `ok !== false` przepuszczal MERGUJ.
+    recenzjaCzubka: stanPr ? stanPr.recenzjaCzubka : { ok: false, powod: 'stan PR nieczytelny' },
   }, turaBiezaca - 1)
   log(`/dev-pr tura ${turaBiezaca}: rekomendacja ${rek}`)
   log(`/dev-pr tura ${turaBiezaca}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)

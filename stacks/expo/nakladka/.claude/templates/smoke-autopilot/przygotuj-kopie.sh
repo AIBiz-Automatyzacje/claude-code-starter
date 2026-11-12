@@ -136,4 +136,4 @@ if ! (cd "$KOPIA" && "$PM" run typecheck && CI=1 "$PM" test) > "$LOG_BRAMEK" 2>&
   exit 7
 fi
 echo "GOTOWE. Git kopii: $(git -C "$KOPIA" status --porcelain | wc -l | tr -d ' ') zmian (oczekiwane 0), gałąź $GALAZ, bramki zielone."
-echo "Otwórz $KOPIA w osobnej sesji desktop (efort medium) i uruchom: /dev-autopilot-wf docs/active/smoke-autopilot"
+echo "Otwórz $KOPIA w osobnej sesji desktop (efort medium) i uruchom osobną wiadomością z samym tym poleceniem: /dev-autopilot-wf docs/active/smoke-autopilot"

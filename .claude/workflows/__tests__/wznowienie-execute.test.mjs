@@ -102,7 +102,15 @@ test('domkniecie czesciowe: schowek z nazwa zadania i fazy, walidacja bez napraw
   const prompt = ex.domkniecieCzesciowePrompt('docs/active/e3-design/', 3, czesc, BAZA)
   assert.equal(ex.nazwaSchowka('docs/active/e3-design/', 3), 'autopilot/e3-design/faza-3')
   assert.match(prompt, /- IU-10: src\/a\.ts\nJednostki nieukonczone: IU-12 \(blocked\)/)
-  assert.match(prompt, /`git stash push --include-untracked -m "autopilot\/e3-design\/faza-3" -- <pliki \(c\)>`/)
+  assert.match(prompt, /`git stash push --include-untracked -m "<nazwa>" -- <pliki \(c\)>`/)
+  // Weryfikacja partii, punkt 54: drugi STOP tej samej fazy, lockfile, commit odrzucony przez hook i nieudany stash pop.
+  assert.match(prompt, /Nazwa: "autopilot\/e3-design\/faza-3"; gdy `git stash list` ma juz\n {3}wpis o tej nazwie \(drugi STOP tej samej fazy\), uzyj kolejnego numeru: "autopilot\/e3-design\/faza-3#2", "autopilot\/e3-design\/faza-3#3" itd\./)
+  assert.match(prompt, /W polu schowek zwracasz nazwe, ktorej faktycznie uzyles\./)
+  assert.match(prompt, /schowek \(faktyczna nazwa schowka albo null\)/)
+  assert.match(prompt, /Lockfile \(package-lock\.json, pnpm-lock\.yaml, yarn\.lock, bun\.lock, bun\.lockb\) idzie do grupy\n {3}manifestu package\.json z tego samego katalogu: manifest w \(a\) → lockfile w \(a\)/)
+  assert.match(prompt, /5a\. Commit odrzucony mimo zielonej walidacji \(np\. hook\): niczego nie poprawiasz; `git stash pop` \(gdy schowek powstal\) i\n {3}zakoncz: zacommitowano=false, schowek=null, w powod tresc bledu commita\./)
+  assert.match(prompt, /Nieudany `git stash pop` \(tu albo w punkcie 3\): nie probuj dalej \(bez reset, checkout ani drop\); zakoncz z zacommitowano=false,\n {3}schowek = nazwa \(wpis zostaje w git stash list\), w powod "schowek <nazwa> nie wrocil do drzewa: git stash list"/)
+  assert.ok(prompt.indexOf('5a. Commit odrzucony') > prompt.indexOf('5. Commit:') && prompt.indexOf('5a. Commit odrzucony') < prompt.indexOf('6. Bramek'))
   assert.match(prompt, /Niczego nie naprawiasz i nie zmieniasz kodu: czerwona walidacja znaczy, ze jednostki ukonczone\n\s+nie stoja bez przerwanej\. Wtedy przywroc pliki \(c\) \(`git stash pop`, gdy schowek powstal\)/)
   assert.match(prompt, /`git add` wylacznie pliki \(a\) i dwa pliki z punktu 4 \(nie git add \.\)/)
   assert.match(prompt, new RegExp(`Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${BAZA}`))
@@ -136,7 +144,10 @@ test('wiring execute-wf: oba przerwane wyjscia ida przez domkniecie czesciowe i 
   const orkiestracja = EXECUTE.slice(EXECUTE.indexOf('// ── Orkiestracja'))
   assert.equal(orkiestracja.split('const { czesc, czesciowe } = await zapiszUkonczone()').length - 1, 2, 'blocked i builder bez wyniku')
   assert.equal(orkiestracja.split('return wynikPrzerwanego({').length - 1, 2)
-  assert.doesNotMatch(orkiestracja, /commity: \[\],\n\s+testy: 'n\/a'/, 'stare zwroty bez bazy znikaja')
+  // Zwroty przerwanego execute bez bazy znikaja; jedyny literal `commity: []` + `testy: 'n/a'` to galaz domkniecia bez wyniku (punkt 54), z baza.
+  const bezWyniku = orkiestracja.indexOf('if (!wynik) {')
+  assert.doesNotMatch(orkiestracja.slice(0, bezWyniku), /commity: \[\],\n\s+testy: 'n\/a'/, 'stare zwroty bez bazy znikaja')
+  assert.match(orkiestracja.slice(bezWyniku), /testy: 'n\/a',[\s\S]*?baza: bazaWyniku,/)
   assert.match(orkiestracja, /agent\(domkniecieCzesciowePrompt\(sciezka, faza, czesc, bazaFazy\(plan\)\), \{ schema: CZESCIOWE_RESULT, agentType: 'klasa-orkiestracyjny'/)
   assert.match(orkiestracja, /if \(!czesc\.mozna\) return \{ czesc, czesciowe: null \}/)
   assert.match(wytnij(EXECUTE, 'const BLOK_PYTANIE_BLOKERA = `', '.`\n'), /Pole pliki wypelniasz takze przy blocked i partial: kazdy plik, ktory zdazyles utworzyc albo zmienic \(pusta lista, gdy zadnego\)/)
@@ -186,11 +197,25 @@ test('autopilot: lista idzie do execute-wf, STOP utrwala nowa liste i mowi opera
   assert.match(petla, /\$\{opisCzesciowego\(exec\)\}`, faza: numerFazy, exec, raporty \}\)/)
   assert.match(petla, /faza\.execute = 'done'\n\s+delete faza\.iuUkonczone\n/)
   const zapisane = wf.opisCzesciowego({ iuUkonczone: ['IU-10', 'IU-11'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: 'autopilot/e3/faza-3', plikiOdlozone: ['src/mail.ts', 'src/mail.test.ts'], powod: null } })
-  assert.equal(zapisane, ' Jednostki ukonczone zapisane commitem fedcba9: IU-10, IU-11 — swiezy run zacznie od przerwanej. Pliki jednostki nieukonczonej (2) sa w schowku gita "autopilot/e3/faza-3" (git stash list); nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.')
+  assert.equal(zapisane, ' Jednostki ukonczone zapisane commitem fedcba9: IU-10, IU-11 — swiezy run zacznie od przerwanej. Pliki jednostki nieukonczonej sa w schowku gita "autopilot/e3/faza-3" (git stash list): src/mail.ts, src/mail.test.ts; nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.')
+  // Punkt 54: ponad 10 plikow — dziesiec nazw i reszta liczba; brak commita z zapisanym schowkiem (nieudany stash pop) mowi o schowku.
+  const duzo = Array.from({ length: 13 }, (_, i) => `src/p${i}.ts`)
+  assert.match(wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: 'autopilot/e3/faza-3#2', plikiOdlozone: duzo, powod: null } }),
+    /schowku gita "autopilot\/e3\/faza-3#2" \(git stash list\): src\/p0\.ts, .*, src\/p9\.ts i 3 innych; nie przywracaj/)
+  assert.equal(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: 'autopilot/e3/faza-3', plikiOdlozone: ['src/mail.ts'], powod: 'schowek autopilot/e3/faza-3 nie wrocil do drzewa: git stash list' } }),
+    ' Jednostek ukonczonych nie zapisano (schowek autopilot/e3/faza-3 nie wrocil do drzewa: git stash list): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie. Schowek gita "autopilot/e3/faza-3" nie wrocil do drzewa (git stash list), sa w nim pliki jednostki nieukonczonej: src/mail.ts — przywroc go (git stash pop) przed decyzja i swiezym runem.')
   assert.equal(wf.opisCzesciowego({ iuUkonczone: ['IU-10'], czesciowe: { zacommitowano: true, commit: 'fedcba9', schowek: null, plikiOdlozone: [], powod: null } }), ' Jednostki ukonczone zapisane commitem fedcba9: IU-10 — swiezy run zacznie od przerwanej.')
   assert.equal(wf.opisCzesciowego({ iuUkonczone: [], czesciowe: { zacommitowano: false, commit: null, schowek: null, plikiOdlozone: [], powod: 'typecheck: TS2304' } }),
     ' Jednostek ukonczonych nie zapisano (typecheck: TS2304): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.')
   // Execute zakonczony w domknieciu (porazka bramki) nie ma pola `czesciowe`: powod STOP-u bez dopisku.
   assert.equal(wf.opisCzesciowego({ status: 'partial', problem: 'bramka stack' }), '')
   assert.equal(wf.opisCzesciowego(null), '')
+})
+
+// Punkt 54: schowek nie byl opisany w skillach — /dev-plan 0.1 mowi, co w nim jest, ze nie wraca przed swiezym runem i kiedy go usunac.
+test('skill /dev-plan 0.1: schowek autopilot/<zadanie>/faza-N — szkic jednostki, nie przywracany przed swiezym runem, drop po zamknieciu fazy', () => {
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-plan/SKILL.md'), 'utf8')
+  const wznowienie = skill.slice(skill.indexOf('#### 0.1 Wznowienie'), skill.indexOf('\n#### ', skill.indexOf('#### 0.1 Wznowienie') + 5))
+  assert.match(wznowienie, /Przerwany execute odkłada pracę jednostki nieukończonej do schowka gita `autopilot\/<zadanie>\/faza-N` \(drugi STOP tej samej fazy: `#2`, `#3`\): to szkic jednostki, która po decyzji operatora powstanie od nowa, więc przed świeżym runem go nie przywracasz\./)
+  assert.match(wznowienie, /Po zamknięciu fazy \(`execute: done` w stanie\) usuwasz wpis `git stash drop stash@\{<n>\}` \(numer z `git stash list`\) za zgodą operatora\./)
 })

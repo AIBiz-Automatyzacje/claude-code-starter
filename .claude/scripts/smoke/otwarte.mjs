@@ -4,12 +4,14 @@
 // - pozycje smoke'u zadania: nieodhaczone checkboxy najnowszego `docs/operator/<data>-<zadanie>-smoke.md` (osobno te z dopiskiem
 //   „po deployu”, ktore z definicji czekaja na wdrozenie);
 // - sprawy odlozone projektu: nieodhaczone linie `- [ ] [etap: <etykieta>] …` w `docs/operator/odlozone.md` (format skilla /dev-smoke).
+// - decyzje poprzednich zadan bez rozstrzygniecia (weryfikacja partii, punkt 52): wiersze `- [DECYZJA …` sekcji „## Decyzje operatora”
+//   w `docs/completed/*/known-issues.md` bez dopisku „ROZSTRZYGNIĘTA” (smoke pominiety albo przerwany) — tylko bez --zadanie.
 // Czytaja go raporty (autopilot, archiwizacja, /dev-pr), bramka gotowosci planu i /dev-prep.
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   otwarte.mjs [--zadanie <nazwa>]     bez --zadanie: tylko sprawy odlozone
 // Wynik: JSON w jednej linii { ok, smoke: { plik, otwarte, poDeployu } | null, odlozone: { plik, otwarte: [{ linia, etap, tresc }] },
-// zdanie }. Kod wyjscia: 0 = ok, 2 = zle argumenty, 3 = wyjatek.
+// decyzje?: [{ zadanie, wiersz }] (tylko bez --zadanie), zdanie }. Kod wyjscia: 0 = ok, 2 = zle argumenty, 3 = wyjatek.
 
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
 import { join } from 'node:path'
@@ -20,6 +22,8 @@ const KOD_ZLYCH_ARGUMENTOW = 2
 const KOD_WYJATKU = 3
 export const PLIK_ODLOZONYCH = 'docs/operator/odlozone.md'
 const KATALOG_OPERATORA = 'docs/operator'
+const KATALOG_ARCHIWUM = 'docs/completed'
+const SEKCJA_DECYZJI = '## Decyzje operatora'
 
 /**
  * @param {string} tresc zawartosc docs/operator/odlozone.md
@@ -52,14 +56,37 @@ export function plikSmoke(projekt, zadanie) {
 }
 
 /**
- * @param {{ smoke: { otwarte: number } | null, odlozone: { otwarte: unknown[] } }} w
+ * Decyzje zadan z archiwum, ktorych nikt nie rozstrzygnal: smoke pominiety albo przerwany zostawia wiersz sekcji decyzji bez dopisku.
+ * @param {string} projekt
+ * @returns {{ zadanie: string, wiersz: string }[]} wiersz bez „- ” na poczatku
+ */
+export function decyzjeNierozstrzygniete(projekt) {
+  const katalog = join(projekt, KATALOG_ARCHIWUM)
+  if (!existsSync(katalog)) return []
+  return readdirSync(katalog, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort().flatMap((zadanie) => {
+    const plik = join(katalog, zadanie, 'known-issues.md')
+    if (!existsSync(plik)) return []
+    let wSekcji = false
+    return readFileSync(plik, 'utf8').replace(/\r\n/g, '\n').split('\n').flatMap((l) => {
+      if (l.startsWith('## ')) wSekcji = l.trimEnd() === SEKCJA_DECYZJI
+      if (!wSekcji || !l.startsWith('- [DECYZJA') || l.includes('ROZSTRZYGNIĘTA')) return []
+      return [{ zadanie, wiersz: l.slice(2).trim() }]
+    })
+  })
+}
+
+/**
+ * Punkt 52: `poDeployu` liczyl sie, a nikt go nie czytal — zdanie podaje teraz, ile otwartych pozycji czeka na wdrozenie.
+ * Zdanie zaczyna sie zawsze od „Otwarte: ” (archiwizacja przyjmuje tylko taki poczatek).
+ * @param {{ smoke: { otwarte: number, poDeployu?: number } | null, odlozone: { otwarte: unknown[] } }} w
  * @returns {string} zdanie do raportu; przy zerze mowi to wprost
  */
 export function zdanieOtwartych({ smoke, odlozone }) {
   const n = smoke?.otwarte ?? 0
+  const k = smoke?.poDeployu ?? 0
   const m = odlozone.otwarte.length
   if (!n && !m) return `Otwarte: brak${smoke ? ' (smoke odhaczony' : ' (bez smoke\'u'}, nic odłożonego).`
-  const czesci = [smoke ? `${n} pozycji smoke'u` : null, `${m} odłożonych (${PLIK_ODLOZONYCH})`].filter(Boolean)
+  const czesci = [smoke ? `${n} pozycji smoke'u${k > 0 ? ` (w tym ${k} po deployu)` : ''}` : null, `${m} odłożonych (${PLIK_ODLOZONYCH})`].filter(Boolean)
   return `Otwarte: ${czesci.join(', ')}.`
 }
 
@@ -71,7 +98,8 @@ export function otwarte(projekt, { zadanie } = {}) {
   const smoke = sciezkaSmoke ? { plik: sciezkaSmoke, ...liczSmoke(readFileSync(join(projekt, sciezkaSmoke), 'utf8')) } : null
   const plikOdl = join(projekt, PLIK_ODLOZONYCH)
   const odlozone = { plik: PLIK_ODLOZONYCH, otwarte: existsSync(plikOdl) ? parsujOdlozone(readFileSync(plikOdl, 'utf8')) : [] }
-  return { ok: true, smoke, odlozone, zdanie: zdanieOtwartych({ smoke, odlozone }) }
+  // Z --zadanie pozycje D<n> liczy juz plik smoke'u tego zadania; bez niego (planowanie, /dev-prep) — decyzje calego archiwum.
+  return { ok: true, smoke, odlozone, ...(zadanie ? {} : { decyzje: decyzjeNierozstrzygniete(projekt) }), zdanie: zdanieOtwartych({ smoke, odlozone }) }
 }
 
 // realpath i fileURLToPath: sciezka ze spacja albo polskimi znakami jest w URL-u zakodowana (%20), /var → /private/var.

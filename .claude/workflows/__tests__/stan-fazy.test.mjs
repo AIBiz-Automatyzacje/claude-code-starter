@@ -115,8 +115,21 @@ test('domkniecie: punkt zapisu stanu po dossier, tylko przy status=completed; be
 
 test('wiring execute-wf: punkt zapisu doklejony do promptu domkniecia, wynik niesie baze fazy z JS', () => {
   assert.match(zrodloExecute, /domknieciePrompt\(sciezka, faza, buildResults, bazaFazy\(plan\), plikBramek\(sciezka, faza\), ukonczoneWczesniej, decyzjeAutopilota\) \+ punktZapisuStanu\(sciezka, faza, bazaFazy\(plan\), args\.stanPoExecute\)/)
-  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)(, decyzjeAutopilota)? \}/)
+  assert.match(zrodloExecute, /const bazaWyniku = bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)\n/)
+  assert.match(zrodloExecute, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
   assert.match(zrodloExecute, /stanZapisany: \{ type: \['boolean', 'null'\]/)
+})
+
+// Weryfikacja partii 26–45, punkt 54: `return wynik && {…}` przy padzie domkniecia dawal null — stan bez bazy, decyzje przepadaly.
+test('execute-wf: domkniecie bez wyniku = partial z baza fazy, decyzjami i jednostkami builderow (zgodny z EXECUTE_RESULT)', () => {
+  assert.doesNotMatch(zrodloExecute, /return wynik && \{/)
+  const galaz = zrodloExecute.slice(zrodloExecute.indexOf('if (!wynik) {'), zrodloExecute.indexOf('return { ...wynik, baza: bazaWyniku'))
+  assert.ok(galaz.length > 0 && zrodloExecute.indexOf('if (!wynik) {') > zrodloExecute.indexOf("label: `domkniecie:faza-${faza}`"), 'galaz po domknieciu')
+  assert.match(galaz, /status: 'partial',\n {4}iu: buildResults\.map\(\(b\) => \(\{ id: b\.id, status: b\.status \}\)\),\n {4}commity: \[\],\n {4}testy: 'n\/a',\n {4}odchylenia: \[\],/)
+  assert.match(galaz, /problem: 'domkniecie fazy nie zwrocilo wyniku \(agent padl albo zostal przerwany\) — commit fazy mogl juz powstac: sprawdz git log i git status',\n {4}baza: bazaWyniku,\n {4}decyzjeAutopilota,\n/)
+  // Pola galezi sa w schemacie wyniku domkniecia (baza i decyzjeAutopilota dokleja JS takze w galezi z wynikiem).
+  const schemat = wytnij('const EXECUTE_RESULT = {', '\n}', zrodloExecute)
+  for (const pole of ['fazaNumer', 'status', 'iu', 'commity', 'testy', 'odchylenia', 'problem']) assert.match(schemat, new RegExp(`\\n {4}${pole}: \\{`), pole)
 })
 
 // ── Wiring 14 miejsc (mapa HANDOFF 6a pkt 54) ─────────────────────────────────
@@ -213,7 +226,8 @@ test('baza fazy przezywa execute bez „completed” i wznowienie z plannerem be
   assert.match(zrodloExecute, /const bazaZeStanu = \/\^\[0-9a-f\]\{7,40\}\$\/\.test\(\(args && args\.baza\) \|\| ''\) \? args\.baza : null\nif \(bazaZeStanu\) plan\.baza = bazaZeStanu\n/)
   assert.ok(zrodloExecute.indexOf('if (bazaZeStanu) plan.baza = bazaZeStanu') < zrodloExecute.indexOf('if (plan.iu.length === 0 && !bazaZeStanu) {'), 'baza ze stanu przed wyjsciem plannera bez pracy')
   assert.match(zrodloExecute, /if \(plan\.iu\.length === 0 && !bazaZeStanu\) \{\n {2}return \{ fazaNumer: faza, status: 'completed', iu: \[\], commity: \[\], testy: 'brak', odchylenia: \[\], problem: null, baza: null \}/)
-  assert.match(zrodloExecute, /return wynik && \{ \.\.\.wynik, baza: bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)(, decyzjeAutopilota)? \}/)
+  assert.match(zrodloExecute, /const bazaWyniku = bazaFazy\(plan\) === 'HEAD' \? null : bazaFazy\(plan\)\n/)
+  assert.match(zrodloExecute, /return \{ \.\.\.wynik, baza: bazaWyniku, decyzjeAutopilota \}/)
   // To samo przypisanie co w zrodle: po nim bazaFazy(plan) daje baze ze stanu, nie HEAD plannera.
   const plan = { baza: 'fedcba9' }
   plan.baza = 'abc1234'

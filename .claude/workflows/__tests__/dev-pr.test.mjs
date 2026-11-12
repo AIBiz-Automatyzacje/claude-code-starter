@@ -299,9 +299,12 @@ test('claude-md: brak pliku decyzji przy zmergowanym PR = krok pominiety; niezme
   assert.match(bezGh.wynik.powod, /albo nie dalo sie tego sprawdzic \(gh\)$/)
 })
 
+// Stan PR ze stan-pr.mjs z recenzja czubka: bez niego zbierz nie daje MERGUJ (punkt 55, nieczytelny stan = recenzja niepotwierdzona).
+const STAN_CZUBEK_OK = JSON.stringify({ pr: 4, watki: [], liczniki: { otwarty: 0 }, recenzjaCzubka: { ok: true, powod: 'recenzja bota dotyczy czubka' } })
+
 // Dashboard PR #104: bot potwierdzil poprawke parsera, ale watku nie rozwiazal — tura 2 zweryfikowala go bez zmiany kodu.
 test('zbierz: watki potwierdzone przez bota rozwiazane mutacja, poza watki[]; bez potwierdzonych — bez drugiego agenta', async () => {
-  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10 }
+  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10, stanPr: STAN_CZUBEK_OK }
   const z = await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, potwierdzone: [{ id: 'T1', plik: 'a.ts:3' }] }, { rozwiazane: ['T1'], bledy: [] }])
   assert.equal(z.prompty.length, 2)
   assert.match(z.prompty[0], /POTWIERDZONE: watek z nasza odpowiedzia o poprawce/)
@@ -406,7 +409,9 @@ async function uruchom(args, odpowiedzi) {
 const TABELA_ETAPU_3 = tabela([['1–3', A, B, 93], ['4–6', B, E, 121]])
 const PRZYG_OK = { status: 'OK', galaz: 'feature/etap-3', konflikty: [], rebase: 'wykonany', walidacja: 'PASS', walidacjaDetal: 'tsc, vitest', push: true, pushDetal: 'OK' }
 // Pomiar rozmiaru czesci (E5-6) — drugi agent etapu start z --czesc.
-const POMIAR = (/** @type {number} */ n) => ({ wynik: JSON.stringify({ baza: 'x', czubek: 'y', doRecenzji: n }) })
+// Pomiar startu niesie wynik kontrakt-bota.mjs: bez niego bramka startu zatrzymuje PR (punkt 55, nieczytelny kontrakt = STOP).
+const KONTRAKT_OK = JSON.stringify({ plik: true, odstepstwa: [], ostrzezenia: [] })
+const POMIAR = (/** @type {number} */ n) => ({ wynik: JSON.stringify({ baza: 'x', czubek: 'y', doRecenzji: n }), kontraktBota: KONTRAKT_OK })
 const START_OK = { bramka: 'OK', branch: 'feature/etap-3', prUtworzony: true, prNumer: 4, prUrl: 'u', headRefOid: 'abc' }
 
 test('start --czesc 2 z 2: odczyt tabeli, rebase galezi zadania od 909f669 na origin/main, push z lease, tytul czesci; wynik niesie czesc', async () => {
@@ -451,7 +456,7 @@ test('claude-md czesci 1 z 2 bez agenta; zbierz oddaje czesc do telemetrii', asy
   const cm = await uruchom({ etap: 'claude-md', zadanie: 'etap-3', czesc: 1, czesci: 2 }, [])
   assert.deepEqual([cm.wynik.status, cm.wynik.pominiety, cm.prompty.length], ['OK', true, 0])
   const zb = await uruchom({ etap: 'zbierz', zadanie: 'etap-3', tura: 1, czesc: 2, czesci: 2 }, [{
-    watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'brak CI', recenzjaAktualna: true, plikiPr: 194,
+    watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'brak CI', recenzjaAktualna: true, plikiPr: 194, stanPr: STAN_CZUBEK_OK,
   }])
   assert.deepEqual([zb.wynik.czesc, zb.wynik.prNumer, zb.wynik.rekomendacja, zb.wynik.headRefOid], [2, 4, 'MERGUJ', 'abc'], 'czubek PR do telemetrii (ucieczki, E5-20)')
 })
@@ -594,6 +599,12 @@ test('skill /dev-pr: krok 1 zaczyna `git status --porcelain`; brudne drzewo = na
   assert.ok(drzewo >= 0, 'akapit o drzewie w kroku 1')
   assert.ok(drzewo < krok1.indexOf('**Zmiany po archiwizacji.**'), 'przed po-archiwum.mjs: commit sprzed startu skrypt policzy')
   assert.ok(drzewo < krok1.indexOf('**Zgoda na wysłanie.**'), 'przed pytaniem o wyslanie')
+  // Weryfikacja partii, punkt 51 (drobne z punktu 37): smoke przed PR liczony dopiero na czystym drzewie, ze skryptu.
+  const smoke = krok1.indexOf('**Smoke przed PR.**')
+  assert.ok(drzewo < smoke && smoke < krok1.indexOf('**Zgoda na wysłanie.**'), 'Czyste drzewo < Smoke przed PR < Zgoda')
+  assert.equal(skillPr.indexOf('**Smoke przed PR.**'), skillPr.indexOf('### 1. Start') + krok1.indexOf('**Smoke przed PR.**'), 'akapit tylko w kroku 1')
+  const akapitSmoke = krok1.slice(smoke, krok1.indexOf('**Zmiany po archiwizacji.**')).replace(/\n/g, ' ')
+  assert.match(akapitSmoke, /`node \.claude\/scripts\/smoke\/otwarte\.mjs --zadanie <zadanie>`\. Otwarte pozycje smoke'u to `smoke\.otwarte − smoke\.poDeployu`/)
   const akapit = krok1.slice(drzewo, krok1.indexOf('**Zmiany po archiwizacji.**')).replace(/\n/g, ' ')
   assert.match(akapit, /Krok 1 zaczynasz od `git status --porcelain`, w każdym trybie i także wtedy, gdy pytanie o wysłanie pomijasz/)
   assert.match(akapit, /Niepusty wynik → pokazujesz pliki i pytasz przez `AskUserQuestion`: „Commit wskazanych plików” \(pierwsza opcja, z listą ścieżek\) albo „Jeszcze nie” \(koniec bez etapu `start`\)/)
@@ -626,8 +637,21 @@ test('skill /dev-pr: commity po archiwum ze skryptu; pliki kodu = pytanie o krot
 
 test('skill /dev-pr: czesc nieostatnia konczy sie linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>” bez startu kolejnej', () => {
   assert.match(skillPr, /którego ostatnia linia to „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”\.\s+Kolejnej części nie uruchamiasz w tej sesji/)
-  assert.match(skillPr, /Przy części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”/)
+  assert.match(skillPr, /Przy zmergowanej części nieostatniej raport kończy linia „Następny krok: \/clear, potem \/dev-pr 3 --bez-merge --czesc <N\+1>”/)
   assert.doesNotMatch(skillPr, /dalej: \/dev-pr --czesc N\+1\]/)
+})
+
+// Punkt 51: linia „--czesc <N+1>” po niezmergowanej czesci N prowadzila na STOP startu czesci N+1. Ostatnia linia raportu
+// zalezy od stanu: zmergowana czesc = nastepna czesc, niezmergowana = ta sama komenda, ktora dokonczy i zapyta o merge.
+test('punkt 51: ostatnia linia raportu zalezy od merge\'a — niezmergowana czesc wraca ta sama komenda z --czesc <N>', () => {
+  const tekst = skillPr.replace(/\n/g, ' ')
+  assert.match(tekst, /\*\*Część albo PR niezmergowany\*\* \(odpowiedź „Jeszcze nie” albo niespełnione warunki bramki\): ostatnia linia raportu to „Następny krok: <co ma się wydarzyć, np\. zielone CI>, potem \/clear i \/dev-pr 3 --bez-merge --czesc <N> — dokończy i zapyta o merge”; przy jednym PR ta sama linia bez `--czesc <N>`\./)
+  assert.match(tekst, /Linii z `--czesc <N\+1>` przed merge'em części N nie podajesz/)
+  assert.match(tekst, /Część albo PR niezmergowany kończy linia z akapitu „Część albo PR niezmergowany” \(krok 6\)/)
+  assert.match(skillPr, /Merge: <zmergowany \/ gotowy do decyzji: lista niespełnionych warunków \/ warunki spełnione, operator: „Jeszcze nie”>/)
+  // Akapit czesci zmergowanej stoi przed niezmergowanej, oba w kroku 6 przed raportem.
+  const zm = skillPr.indexOf('**Część nieostatnia**'), niezm = skillPr.indexOf('**Część albo PR niezmergowany**')
+  assert.ok(zm > 0 && zm < niezm && niezm < skillPr.indexOf('## Raport końcowy'))
 })
 
 // Punkt 38 (piszemy_wirale 08.11, /dev-pr --czesc 1 i 2): raporty i handoffy podawaly `/dev-pr --czesc N`, czyli tryb interaktywny,
@@ -654,7 +678,7 @@ test('punkt 38: gotowe komendy /dev-pr w raportach i handoffach to `3 --bez-merg
   }
   // Miejsca bez slowa „potem”.
   assert.doesNotMatch(zrodlo, /\/dev-pr --czesc/, 'dev-pr-wf.js: kazda komenda czesci z liczba tur i --bez-merge')
-  assert.match(zrodlo, /niezmergowana — najpierw \/dev-pr 3 --bez-merge --czesc \$\{cz\.czesc - 1\}”/)
+  assert.match(zrodlo, /niezmergowana — najpierw \/dev-pr 3 --bez-merge --czesc \$\{cz\.czesc - 1\} \(dokonczy ture i zapyta o merge\)”/)
   assert.match(skillPr, /poleceniem dla nowej sesji \(`\/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `\/dev-pr 3 --bez-merge`; stan: `etap stan`\)/)
   assert.match(skillPr, /znów krok 1 \(`\/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `--czesc 1`\)/)
   assert.match(skillPr, /„Rozwiążę sam” \(koniec; operator wraca `\/dev-pr 3 --bez-merge --czesc N`\)/)
@@ -714,15 +738,15 @@ test('start --czesc: rozmiar czubka czesci przeliczany rozmiar.mjs przed przygot
   assert.deepEqual([ok.wynik.status, ok.prompty.length], ['OK', 4])
   const granica = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, POMIAR(150)])
   assert.deepEqual([granica.wynik.status, granica.prompty.length], ['STOP', 2], 'próg ≥ 150')
-  const zLogiem = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: `ostrzezenie\n${POMIAR(152).wynik}` }])
+  const zLogiem = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: `ostrzezenie\n${POMIAR(152).wynik}`, kontraktBota: KONTRAKT_OK }])
   assert.equal(zLogiem.wynik.rozmiar.pliki, 152, 'ostatnia linia stdout')
   assert.match(duza.prompty[1], /inaczej BAZA = stdout `git merge-base origin\/main feature\/etap-5`\./)
-  for (const zly of [{ wynik: '{"wyjatek":"nie ma commita feature/etap-5"}' }, { wynik: '' }]) {
+  for (const zly of [{ wynik: '{"wyjatek":"nie ma commita feature/etap-5"}', kontraktBota: KONTRAKT_OK }, { wynik: '', kontraktBota: KONTRAKT_OK }]) {
     const r = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, zly])
     assert.deepEqual([r.wynik.status, r.prompty.length], ['STOP', 2])
     assert.match(r.wynik.powod, /pomiar rozmiaru części 2 nieczytelny/)
   }
-  const tekst = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: '{"doRecenzji":"152"}' }])
+  const tekst = await uruchom({ etap: 'start', zadanie: 'etap-5', czesc: 2 }, [tab, { wynik: '{"doRecenzji":"152"}', kontraktBota: KONTRAKT_OK }])
   assert.match(tekst.wynik.powod, /brak liczbowego pola doRecenzji/)
   // Czesc srodkowa (N > 1, nieostatnia): czubek = commit ciecia, nie galaz zadania.
   const trzy = { tabela: tabela([['1–3', A, B, 93], ['4', B, D, 40], ['5–6', D, E, 70]]), galazZadania: true }
@@ -1075,4 +1099,63 @@ test('skill /dev-pr: tryb bez bota wlacza operator; kroki 2–5 odpadaja, merge 
   assert.match(tryb, /etap z `zgodaBezCi: true` i `auto: true`\) i „Jeszcze nie” \(raport\)\. Sam tej zgody nie przekazujesz\./)
   assert.match(tryb, /\*\*Compound PR pomijasz\*\*/)
   assert.match(skill, /albo „Projekt bez bota recenzji”\n\(zapis wyboru i krok 1 z `bezBota: true` wg sekcji „Tryb bez bota”/)
+})
+
+// Weryfikacja partii 26–45, punkt 51: po `--bez-merge` nie bylo opisanej drogi do merge'a — status GOTOWY-DO-MERGE mial
+// dopisek „(tryb interaktywny)”, a powrot ta sama komenda znow konczyl sie raportem. Teraz zielona bramka = jedno pytanie.
+test('punkt 51: --bez-merge przy zielonej bramce konczy sie jednym pytaniem o merge; „Merguj” = drugie wywolanie z auto: true', () => {
+  const tryby = skillPr.slice(skillPr.indexOf('## Tryby'), skillPr.indexOf('## Przebieg'))
+  assert.match(tryby, /\| `\/dev-pr 3 --bez-merge` \| Jak wyżej, ale merge'a nie robisz sam: przy zielonej bramce merge'a kończysz \*\*jednym pytaniem o merge\*\*, bez zielonej bramki raportem\./)
+  assert.doesNotMatch(skillPr, /kończysz raportem zamiast merge'em/)
+  const krok6 = skillPr.slice(skillPr.indexOf('### 6. Domknięcie'), skillPr.indexOf('**Compound**'))
+  assert.match(krok6, /Pierwsze wywołanie etapu: `auto: true` tylko w trybie autonomicznym \*\*i\*\* bez `--bez-merge`; po odpowiedzi „Merguj” na pytanie\nprzy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`\./)
+  assert.match(krok6, /- `GOTOWY-DO-MERGE` \(tryb interaktywny i `--bez-merge`\) → pokaż warunki i zapytaj przez `AskUserQuestion`: „Wszystkie warunki\n {2}merge'a spełnione\. Mergować teraz\?” z opcjami „Merguj” \(ten sam etap z `auto: true`\) i „Jeszcze nie” \(raport końcowy/)
+  // Powrot ta sama komenda dochodzi do tego samego pytania.
+  assert.match(skillPr, /Powrót tą komendą do PR bez otwartych wątków \(np\. po odpowiedzi „Jeszcze nie” albo po zielonym CI\) przechodzi kroki 2–3 bez\ntury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge\./)
+})
+
+// Punkt 51 (drobne): README nie wspominal komendy z raportow ani /dev-smoke w schemacie pipeline'u.
+test('punkt 51: README — schemat z /dev-smoke miedzy autopilotem a /dev-pr; krok 6 mowi o /dev-pr 3 --bez-merge i pytaniu o merge', () => {
+  // README szablonu nie jedzie do zbudowanego wariantu (stacks/testuj-wariant.mjs) — tam test nie ma czego czytac.
+  const plik = resolve(KATALOG, '../../../README.md')
+  if (!existsSync(plik)) return
+  const readme = readFileSync(plik, 'utf8')
+  assert.match(readme, /dev-autopilot-wf → \/dev-smoke → \/dev-pr → merge/)
+  const krok6 = readme.slice(readme.indexOf('6. **`/dev-pr`**'), readme.indexOf('Szczegóły każdego kroku')).replace(/\n\s*/g, ' ')
+  assert.match(krok6, /Raporty podają gotową komendę `\/dev-pr 3 --bez-merge`: tury idą same, a gdy wszystkie warunki merge'a są spełnione, komenda kończy się jednym pytaniem, czy mergować\./)
+})
+
+// Weryfikacja partii 26–45, punkt 52: dopisek `→ ROZSTRZYGNIĘTA` nie mial czytelnika — opis PR bral jako otwarte wszystko poza
+// „## Zamkniete”, wiec decyzja rozstrzygnieta w smoke'u trafiala do „Swiadomie nienaprawione”.
+test('punkt 52: rozstrzygnieta decyzja nie jest otwartym wpisem — ten sam znacznik w /dev-smoke i w opisie PR (obie sciezki opisu)', () => {
+  const znacznik = /const ZNACZNIK_ROZSTRZYGNIETEJ = '([^']+)'/.exec(zrodlo)?.[1]
+  const skillSmoke = readFileSync(resolve(KATALOG, '../../skills/dev-smoke/SKILL.md'), 'utf8')
+  const zeSmoke = /na końcu wiersza tej decyzji dopisz\n\s+` (→ [^ ]+) \(smoke <YYYY-MM-DD>\)/.exec(skillSmoke)?.[1]
+  assert.equal(znacznik, '→ ROZSTRZYGNIĘTA')
+  assert.equal(zeSmoke, znacznik, 'dopisek /dev-smoke i znacznik dev-pr-wf.js')
+  assert.ok(skillSmoke.includes(`Pozycje\n   odhaczone \`[x]\` i wiersze decyzji z dopiskiem \`${znacznik}\` pomijasz`), '/dev-smoke 0.3 przy wznowieniu')
+  assert.match(zrodlo, /const otwartyWpis = `otwarte = poza sekcja "## Zamkniete" i bez dopisku "\$\{ZNACZNIK_ROZSTRZYGNIETEJ\}" \(wiersz sekcji "## Decyzje operatora" rozstrzygniety w smoke'u\)`/)
+  assert.match(zrodlo, /otwarte wpisy z \\`\$\{zrodloOpisu\}\/known-issues\.md'\\` \(\$\{otwartyWpis\}; brak pliku = brak wpisow\)/)
+  assert.match(zrodlo, /z \\`<katalog zadania>\/known-issues\.md\\` \(\$\{otwartyWpis\}\)\. Gdy oba zrodla puste/)
+  assert.doesNotMatch(zrodlo, /\(otwarte = poza sekcja "## Zamkniete"\)/)
+})
+
+// Weryfikacja partii 26–45, punkt 55 (stare dziury bramek /dev-pr): nieczytelny wynik kontrakt-bota.mjs dawal start bez sprawdzenia
+// configu, a nieczytelny stan-pr w etapie zbierz — recenzjaCzubka: undefined, ktore `ok !== false` przepuszczalo do MERGUJ.
+test('punkt 55: nieczytelny kontrakt bota = STOP z droga konfigBota (bez przy bezKonfigu i bezBota); nieczytelny stan PR w zbierz nie daje MERGUJ', async () => {
+  for (const zly of ['Error: Cannot find module kontrakt-bota.mjs', '', '{}', undefined, 'null']) {
+    const b = P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, {})
+    assert.match(String(b.powod), /^nie udało się sprawdzić configu bota \(kontrakt-bota\.mjs: /, String(zly))
+    assert.deepEqual(b.pola.konfigBota?.odstepstwa, [b.powod], 'skill pokazuje odstepstwa i trzy drogi decyzji')
+    assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, { bezKonfigu: true }).powod, null)
+    assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: zly }, { bezBota: true }).powod, null)
+  }
+  assert.match(String(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: '' }, {}).powod), /pusty wynik\)$/)
+  assert.equal(P.bramkaStartu({ niewypchnieteGlowna: 0, kontraktBota: KONTRAKT_OK }, {}).powod, null)
+  const zebrane = { watki: [], prNumer: 4, headRefOid: 'abc', mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', ciZielone: true, ciDetal: 'ok', recenzjaAktualna: true, plikiPr: 10, potwierdzone: [] }
+  for (const stanPr of [undefined, 'blad gh', '{"pr":"x"}']) {
+    const z = await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, stanPr }])
+    assert.match(z.wynik.rekomendacja, /^NIE MERGUJ — .*stan PR nieczytelny/, String(stanPr))
+  }
+  assert.equal((await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, stanPr: STAN_CZUBEK_OK }])).wynik.rekomendacja, 'MERGUJ')
 })
