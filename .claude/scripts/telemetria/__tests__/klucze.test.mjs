@@ -87,10 +87,38 @@ test('literal z dokumentacji nie jest trafieniem: sam prefiks, wielokropek, za k
     ['postgresql', '://app:<haslo>@db'].join(''), `${['po', 'stgres'].join('')}://app:\${DB_PASSWORD}@db`,
   ]
   for (const l of noweLiteraly) assert.deepEqual(wzorceWTekscie(`Ustaw \`${l}\` w zmiennych srodowiska.`), [], l)
+  // Walidacja 51–55, punkt 59: miejsce na haslo z panelu Supabase i z dokumentacji, adres bez hasla z `@` dalej w tekscie,
+  // nazwa w kodzie zaczynajaca sie od re_.
+  const falszyweAlarmy = [
+    ['postgresql', '://postgres:[YOUR-PASSWORD]@db.abc.supabase.co:5432/postgres'].join(''), ['postgres', '://user:%PASSWORD%@host/db'].join(''),
+    ['postgresql', '://postgres:PASSWORD_HERE@host/db'].join(''), ['postgresql', '://postgres:TwojeHaslo123@host/db'].join(''),
+    ['postgresql', '://localhost:5432/mydb?schema=public&user=x@y'].join(''),
+    `const ${prefiks('resend')}validate_emailAddressFormat1 = 1`, `${prefiks('resend')}${tresc(8)}_${'AbCdEfGhIjKlMnOpQrSt'}`,
+    `${prefiks('resend')}${tresc(8)}_${tresc(24)}_ogon`,
+  ]
+  for (const l of falszyweAlarmy) assert.deepEqual(wzorceWTekscie(`Ustaw ${l} w zmiennych srodowiska.`), [], l)
   // Granica `re_`: slowo konczace sie na „re_” (np. „before_”) nie zaczyna klucza.
   assert.deepEqual(wzorceWTekscie(`before_${tresc(8)}_${tresc(24)}`), [])
   // whsec_ dopuszcza znaki base64 (+ i /).
   assert.deepEqual(wzorceWTekscie(`${prefiks('stripe-whsec')}${tresc(20)}+/${tresc(10)}`), [{ wzorzec: 'stripe-whsec', trafien: 1 }])
+})
+
+// Walidacja 51–55, punkt 60: alternatywy wzorcow bez fixture'u — zawezony wzorzec (sam gho_, sam xoxb-, sam postgresql://)
+// przechodzil caly zestaw.
+test('kazda alternatywa prefiksu jest trafieniem: gho/ghs/ghu/ghr, xoxb/xoxp/xoxa, postgres:// i postgresql://; granice ASIA i AIza', () => {
+  for (const litera of ['o', 's', 'u', 'r']) assert.deepEqual(wzorceWTekscie(`token=${['gh', litera, '_'].join('')}${tresc(36)}`), [{ wzorzec: 'github-token', trafien: 1 }], litera)
+  for (const litera of ['b', 'p', 'a']) assert.deepEqual(wzorceWTekscie(`token=${['xo', 'x', litera, '-'].join('')}${tresc(12)}-${tresc(24)}`), [{ wzorzec: 'slack', trafien: 1 }], litera)
+  for (const schemat of ['postgres', 'postgresql']) {
+    assert.deepEqual(wzorceWTekscie(`DATABASE_URL=${[schemat, '://app:'].join('')}${tresc(8)}@db.wewnetrzny:5432/app`), [{ wzorzec: 'postgres-haslo', trafien: 1 }], schemat)
+  }
+  // Haslo krotsze niz 8 znakow i adres bez `@` po hasle nie sa trafieniem.
+  assert.deepEqual(wzorceWTekscie(`${['postgres', '://app:'].join('')}${tresc(7)}@db`), [])
+  assert.deepEqual(wzorceWTekscie(`${['postgres', '://app:'].join('')}${tresc(20)} db`), [])
+  // Granice: prefiks w srodku dluzszego ciagu wielkich liter i cyfr nie zaczyna klucza, a dluzsza tresc nie jest kluczem.
+  for (const nazwa of ['aws-asia', 'google-aiza']) {
+    assert.deepEqual(wzorceWTekscie(`X9${klucz(nazwa)}`), [], `${nazwa}: przed`)
+    assert.deepEqual(wzorceWTekscie(`${klucz(nazwa)}Q7`), [], `${nazwa}: po`)
+  }
 })
 
 // `supabase status` wypisuje klucz serwisowy lokalnego stosu: jawny i taki sam na kazdej maszynie. Builder danych wola te

@@ -27,7 +27,8 @@ export const PLIK_KLUCZY = plikKluczy(PLIK_DANYCH)
 
 // Zestaw zachowawczy: prefiks dostawcy ORAZ tresc klucza o jego dlugosci, zeby literal z dokumentacji (`sk_live_...`,
 // `whsec_xxx`) nie byl trafieniem. `przed` i `po` tylko tam, gdzie prefiks nie jest wyrozniajacy (AKIA).
-/** @type {Array<{ nazwa: string, prefiks: string, tresc: string, przed?: string, po?: string }>} */
+// `wypelniacz` (walidacja 51–55, punkt 59): ksztalt tresci, ktory dla tego wzorca jest miejscem na wartosc albo nazwa w kodzie.
+/** @type {Array<{ nazwa: string, prefiks: string, tresc: string, przed?: string, po?: string, wypelniacz?: RegExp }>} */
 const DEFINICJE = [
   { nazwa: 'stripe-sk-live', prefiks: 'sk_live_', tresc: '[A-Za-z0-9]{24,}' },
   { nazwa: 'stripe-rk-live', prefiks: 'rk_live_', tresc: '[A-Za-z0-9]{24,}' },
@@ -44,13 +45,17 @@ const DEFINICJE = [
   { nazwa: 'aws-asia', prefiks: 'ASIA', tresc: '[0-9A-Z]{16}', przed: '(?<![A-Z0-9])', po: '(?![A-Z0-9])' },
   { nazwa: 'slack', prefiks: 'xox[bpa]-', tresc: '[A-Za-z0-9-]{24,}' },
   { nazwa: 'google-aiza', prefiks: 'AIza', tresc: '[0-9A-Za-z_-]{35}', przed: '(?<![A-Z0-9])', po: '(?![A-Z0-9])' },
-  { nazwa: 'resend', prefiks: 're_', tresc: '[A-Za-z0-9]{8,}_[A-Za-z0-9]{16,}', przed: '(?<![A-Za-z0-9_])' },
+  // Nazwa w kodzie (`re_validate_emailAddressFormat1`) ma pierwszy czlon z samych malych liter albo drugi z samych liter;
+  // klucz Resend ma oba czlony losowe i konczy sie na granicy slowa.
+  { nazwa: 'resend', prefiks: 're_', tresc: '[A-Za-z0-9]{8,}_[A-Za-z0-9]{16,}', przed: '(?<![A-Za-z0-9_])', po: '(?![A-Za-z0-9_])', wypelniacz: /^[a-z]+_|_[A-Za-z]+$/ },
   // Haslo w adresie bazy: tresc to samo haslo (filtr wypelniacza odrzuca „postgres:postgres@localhost” z dokumentacji);
-  // wartosc zaczynajaca sie od `$`, `<` albo `{` to zmienna albo miejsce na haslo (`${DB_PASSWORD}`, `<haslo>`), nie haslo.
-  { nazwa: 'postgres-haslo', prefiks: 'postgres(?:ql)?://[^:/\\s"]+:', tresc: '(?![$<{])[^@\\s"]{8,}', po: '@' },
+  // wartosc zaczynajaca sie od `$`, `<`, `{`, `[` albo `%` to zmienna albo miejsce na haslo (`${DB_PASSWORD}`, `<haslo>`,
+  // `[YOUR-PASSWORD]` z panelu Supabase, `%PASSWORD%`), nie haslo. Bez `/` w tresci: adres bez hasla (`//localhost:5432/db?…@`)
+  // dawal trafienie z portu i sciezki; haslo ze znakiem `/` jest w adresie zakodowane (%2F).
+  { nazwa: 'postgres-haslo', prefiks: 'postgres(?:ql)?://[^:/\\s"]+:', tresc: '(?![$<{\\[%])[^@\\s"/]{8,}', po: '@', wypelniacz: /pass|has[lł]o|your|secret|changeme|placeholder/i },
   { nazwa: 'supabase-secret', prefiks: 'sb_secret_', tresc: '[A-Za-z0-9_-]{20,}' },
 ]
-export const WZORCE_KLUCZY = DEFINICJE.map((d) => ({ nazwa: d.nazwa, wzor: new RegExp(`${d.przed ?? ''}${d.prefiks}(${d.tresc})${d.po ?? ''}`, 'g') }))
+export const WZORCE_KLUCZY = DEFINICJE.map((d) => ({ nazwa: d.nazwa, wzor: new RegExp(`${d.przed ?? ''}${d.prefiks}(${d.tresc})${d.po ?? ''}`, 'g'), wypelniacz: d.wypelniacz ?? null }))
 
 // Wypelniacz z dokumentacji ma dlugosc klucza, ale nie jego tresc: jeden znak w kolko (`xxxxxxxx…`), slowo EXAMPLE (klucz
 // AWS z dokumentacji) albo same male litery z lacznikami (slowa zamiast losowej tresci; proba na 793 runach tej maszyny:
@@ -80,7 +85,7 @@ const czyJawny = (klucz) => JAWNE_SHA256.has(createHash('sha256').update(klucz).
  */
 export function wzorceWTekscie(tekst) {
   return WZORCE_KLUCZY
-    .map(({ nazwa, wzor }) => ({ wzorzec: nazwa, trafien: [...tekst.matchAll(wzor)].filter((m) => !czyWypelniacz(m[1] ?? '') && !czyJawny(m[0])).length }))
+    .map(({ nazwa, wzor, wypelniacz }) => ({ wzorzec: nazwa, trafien: [...tekst.matchAll(wzor)].filter((m) => !czyWypelniacz(m[1] ?? '') && !wypelniacz?.test(m[1] ?? '') && !czyJawny(m[0])).length }))
     .filter((t) => t.trafien > 0)
 }
 
