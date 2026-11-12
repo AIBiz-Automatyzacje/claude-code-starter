@@ -25,7 +25,8 @@ bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-zrodlowy> <ka
   `.claude/.backups/` w `.git/info/exclude`;
 - sync maszynerii z LOKALNEGO szablonu (pliki sledzone przez gita — zacommituj zmiany `.claude/` przed skryptem) → commit;
 - fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` + (projekt pnpm workspace) pakiet `packages/smoke-autopilot`
-  z plikami z `pakiet/`, `pnpm install` → commit. Git kopii czysty;
+  z plikami z `pakiet/`, zapis przegladu spojnosci planu (`plan.mjs spojnosc … --zapisz`; bez niego autopilot zatrzymuje swieze
+  zadanie na starcie), `pnpm install` → commit. Git kopii czysty;
 - **doctor kopii** `.claude/scripts/doctor/doctor.sh <kopia>` — tabela narzedzi wyliczonych z projektu. Brak obowiazkowego = kod 8,
   runu NIE odpalaj: zainstaluj wg kolumny „Instalacja” i sprawdz ponownie;
 - **bazowe bramki** `pnpm typecheck` + `pnpm test` w kopii (log `.git/smoke-bramki.log`). Czerwone = kod 7, runu NIE odpalaj:
