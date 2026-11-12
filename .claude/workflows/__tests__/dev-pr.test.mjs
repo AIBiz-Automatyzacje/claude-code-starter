@@ -1119,3 +1119,18 @@ test('punkt 51: README — schemat z /dev-smoke miedzy autopilotem a /dev-pr; kr
   const krok6 = readme.slice(readme.indexOf('6. **`/dev-pr`**'), readme.indexOf('Szczegóły każdego kroku')).replace(/\n\s*/g, ' ')
   assert.match(krok6, /Raporty podają gotową komendę `\/dev-pr 3 --bez-merge`: tury idą same, a gdy wszystkie warunki merge'a są spełnione, komenda kończy się jednym pytaniem, czy mergować\./)
 })
+
+// Weryfikacja partii 26–45, punkt 52: dopisek `→ ROZSTRZYGNIĘTA` nie mial czytelnika — opis PR bral jako otwarte wszystko poza
+// „## Zamkniete”, wiec decyzja rozstrzygnieta w smoke'u trafiala do „Swiadomie nienaprawione”.
+test('punkt 52: rozstrzygnieta decyzja nie jest otwartym wpisem — ten sam znacznik w /dev-smoke i w opisie PR (obie sciezki opisu)', () => {
+  const znacznik = /const ZNACZNIK_ROZSTRZYGNIETEJ = '([^']+)'/.exec(zrodlo)?.[1]
+  const skillSmoke = readFileSync(resolve(KATALOG, '../../skills/dev-smoke/SKILL.md'), 'utf8')
+  const zeSmoke = /na końcu wiersza tej decyzji dopisz\n\s+` (→ [^ ]+) \(smoke <YYYY-MM-DD>\)/.exec(skillSmoke)?.[1]
+  assert.equal(znacznik, '→ ROZSTRZYGNIĘTA')
+  assert.equal(zeSmoke, znacznik, 'dopisek /dev-smoke i znacznik dev-pr-wf.js')
+  assert.ok(skillSmoke.includes(`Pozycje\n   odhaczone \`[x]\` i wiersze decyzji z dopiskiem \`${znacznik}\` pomijasz`), '/dev-smoke 0.3 przy wznowieniu')
+  assert.match(zrodlo, /const otwartyWpis = `otwarte = poza sekcja "## Zamkniete" i bez dopisku "\$\{ZNACZNIK_ROZSTRZYGNIETEJ\}" \(wiersz sekcji "## Decyzje operatora" rozstrzygniety w smoke'u\)`/)
+  assert.match(zrodlo, /otwarte wpisy z \\`\$\{zrodloOpisu\}\/known-issues\.md'\\` \(\$\{otwartyWpis\}; brak pliku = brak wpisow\)/)
+  assert.match(zrodlo, /z \\`<katalog zadania>\/known-issues\.md\\` \(\$\{otwartyWpis\}\)\. Gdy oba zrodla puste/)
+  assert.doesNotMatch(zrodlo, /\(otwarte = poza sekcja "## Zamkniete"\)/)
+})

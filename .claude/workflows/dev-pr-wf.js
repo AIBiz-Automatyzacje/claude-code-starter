@@ -19,6 +19,10 @@ export const meta = {
 
 // Kopia zasady z dev-autopilot-wf.js (workflowy sa self-contained — przy zmianie synchronizuj recznie; zakres testow
 // `test` + `test:*` bez e2e = finalValidationPrompt, rownosc pilnuje dev-pr.test.mjs).
+// Dopisek, ktorym /dev-smoke zamyka wiersz sekcji „## Decyzje operatora” w known-issues (punkt 40, krok 4). Ten sam napis
+// w skillu /dev-smoke — pilnuje dev-pr.test.mjs.
+const ZNACZNIK_ROZSTRZYGNIETEJ = '→ ROZSTRZYGNIĘTA'
+
 const BLOK_KOMEND_PROJEKTU = `
 === KOMENDY WALIDACYJNE (czytaj z projektu, nie zgaduj) ===
 Komendy typecheck / test / build bierz z pola "scripts" w package.json TEGO repo. Nie zakladaj \`npm\`:
@@ -957,11 +961,14 @@ Rebase zakonczony = status OK. Nie zmieniasz innych plikow i nie pushujesz. Zwro
     log(`/dev-pr czesc ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy}, ${cz.pliki} plikow do recenzji): galaz ${cz.galaz}, rebase ${przyg.rebase}, walidacja ${przyg.walidacja}, push ${przyg.pushDetal}`)
   }
   const zrodloOpisu = `git show 'feature/${zadanie}:docs/completed/${zadanie}`
+  // Weryfikacja partii, punkt 52: decyzja rozstrzygnieta w /dev-smoke (dopisek ZNACZNIK_ROZSTRZYGNIETEJ na koncu wiersza sekcji
+  // „Decyzje operatora”) trafiala do „Swiadomie nienaprawione”, bo za otwarte uchodzilo wszystko poza „## Zamkniete”.
+  const otwartyWpis = `otwarte = poza sekcja "## Zamkniete" i bez dopisku "${ZNACZNIK_ROZSTRZYGNIETEJ}" (wiersz sekcji "## Decyzje operatora" rozstrzygniety w smoke'u)`
   const opisCzesci = cz
     ? `\nCZESC ${cz.czesc} Z ${cz.czesci} (fazy ${cz.fazy}) — zrodla opisu zastepuja punkt a) nizej (katalog zadania na tej galezi
 moze nie miec podsumowania): tytul PR "<tytul zadania> — cz. ${cz.czesc} z ${cz.czesci} (fazy ${cz.fazy})"; podsumowanie z
 \`${zrodloOpisu}/${zadanie}-podsumowanie.md'\`, otwarte P3 z \`${zrodloOpisu}/${zadanie}-zadania.md'\` (sekcje "Do poprawy po review
-fazy N" dla faz ${cz.fazy}), otwarte wpisy z \`${zrodloOpisu}/known-issues.md'\` (brak pliku = brak wpisow). Pierwsza linia opisu:
+fazy N" dla faz ${cz.fazy}), otwarte wpisy z \`${zrodloOpisu}/known-issues.md'\` (${otwartyWpis}; brak pliku = brak wpisow). Pierwsza linia opisu:
 "Część ${cz.czesc} z ${cz.czesci} — fazy ${cz.fazy}${cz.ostatnia ? '' : '; kolejne części po merge\'u tej'}."\n${cz.czesc > 1 ? watkiPoprzednich(cz, zadanie) : ''}`
     : ''
   const wynik = await agent(
@@ -989,7 +996,7 @@ STAN PULL REQUESTA:
      - podsumowanie z \`<katalog zadania>/${zadanie}-podsumowanie.md\` (gdy pliku nie ma — z pliku planu zadania),
      - sekcja \`## Swiadomie nienaprawione\` zlozona z: otwartych P3 z sekcji "## Do poprawy po review fazy N"
        w \`<katalog zadania>/*-zadania.md\` (wiersze \`- [ ]\` z tokenem [P3]) ORAZ otwartych wpisow
-       z \`<katalog zadania>/known-issues.md\` (otwarte = poza sekcja "## Zamkniete"). Gdy oba zrodla puste,
+       z \`<katalog zadania>/known-issues.md\` (${otwartyWpis}). Gdy oba zrodla puste,
        wpisz w tej sekcji jedna linie "Brak — wszystkie findingi review zamkniete."
      - ZADNYCH wartosci sekretow, tokenow ani hasel, takze gdy cytujesz known-issues.
   b) \`gh pr create --title "<tytul zadania>" --body-file /tmp/dev-pr-body-${zadanie}.md\`.

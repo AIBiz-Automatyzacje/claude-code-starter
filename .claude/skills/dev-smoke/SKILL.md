@@ -22,7 +22,7 @@ Czym klikasz i jak uruchamiasz aplikację: `references/stack.md`, sekcje „Narz
 2. Gałąź: `feature/<zadanie>`. Inna gałąź i czyste drzewo → `git switch feature/<zadanie>`; brudne drzewo → pokaż pliki
    i zapytaj operatora, zanim cokolwiek zmienisz.
 3. Przeczytaj cały plik smoke'u i `docs/completed/<zadanie>/known-issues.md` (sekcja `## Decyzje operatora`). Pozycje
-   odhaczone `[x]` pomijasz: sesja mogła być przerwana i wznowiona.
+   odhaczone `[x]` i wiersze decyzji z dopiskiem `→ ROZSTRZYGNIĘTA` pomijasz: sesja mogła być przerwana i wznowiona.
 4. Powiedz operatorowi w dwóch zdaniach: ile decyzji, ile pozycji listy, ile z nich wymaga człowieka.
 
 ## 1. Decyzje przed PR
