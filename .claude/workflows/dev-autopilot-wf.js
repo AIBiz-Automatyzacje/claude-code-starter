@@ -327,7 +327,7 @@ function opisCzesciowego(exec) {
   const nazwy = pliki.length > 10 ? `${pliki.slice(0, 10).join(', ')} i ${pliki.length - 10} innych` : pliki.join(', ')
   if (!c.zacommitowano) {
     const wSchowku = c.schowek
-      ? ` Schowek gita "${c.schowek}" nie wrocil do drzewa (git stash list)${nazwy ? `, sa w nim pliki jednostki nieukonczonej: ${nazwy}` : ''} — przywroc go (git stash pop) przed decyzja i swiezym runem.`
+      ? ` Schowek gita "${c.schowek}" nie wrocil do drzewa (git stash list)${nazwy ? `, sa w nim pliki jednostki nieukonczonej: ${nazwy}` : ''} — przywroc go (git stash pop) przed decyzja i swiezym runem; gdy git znowu odmowi, nie usuwaj wpisu (bez git stash drop): pokaz blad w sesji i popros o przywrocenie plikow ze schowka.`
       : ''
     return ` Jednostek ukonczonych nie zapisano (${c.powod || 'brak powodu'}): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.${wSchowku}`
   }
@@ -489,7 +489,9 @@ Folder zadania: ${sciezka}
 1c. BLOKERY OPERATORA: \`node .claude/scripts/plan/plan.mjs blokery ${sciezka}\` — z JSON-u na stdout przepisz pola
    checklista, blokery i spojnosc (gdy wynik je ma) 1:1 do wejscie.blokery (bez oceny, czy pozycja jest juz zrobiona
    ani czy przeglad jest aktualny — liczy orkiestrator). Wynik bez pola spojnosc -> pomin je w wejscie.blokery.
-   Brak skryptu albo kod wyjscia inny niz 0 -> wejscie.blokery = { checklista: null, blokery: [] }.
+   Brak pliku skryptu -> wejscie.blokery = { checklista: null, blokery: [] }. Skrypt jest, ale kod wyjscia inny niz 0 albo
+   stdout to nie JSON -> wejscie.blokery = { checklista: null, blokery: [], spojnosc: { ok: false, powod: "plan.mjs blokery
+   zakonczyl sie bledem: <pierwsza linia stderr>" } } — awaria skryptu nie moze wylaczyc kontroli po cichu.
 
 2. STAN — najpierw sprawdz czy istnieje ${sciezka}/.autopilot-state.json:
 
@@ -1247,8 +1249,10 @@ function sciezkiZmian(linie) {
 }
 
 // Punkt 55 (36): komenda dla operatora niesie zasade osobnej wiadomosci — wiadomosc startowa dostaje kazdy agent runu.
+// Zasada stoi przed komenda (walidacja 51–55, punkt 61): dopisek w nawiasie za sciezka wklejony razem z nia stawal sie
+// czescia argumentu, a komenda konczy teraz tekst naprawy i daje sie skopiowac w calosci.
 function komendaSwiezegoRunu(sciezka) {
-  return `/dev-autopilot-wf ${sciezka} (osobna wiadomosc z samym tym poleceniem, bez warunkow i prosb)`
+  return `w osobnej wiadomosci z samym poleceniem (bez warunkow i prosb): /dev-autopilot-wf ${sciezka}`
 }
 
 // Zielony start sprawdzamy przed pierwsza faza. Gdy faza ma execute=done, kod faz testuje juz domkniecie execute.

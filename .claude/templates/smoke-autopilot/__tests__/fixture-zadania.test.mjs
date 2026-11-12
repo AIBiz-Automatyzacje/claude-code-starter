@@ -76,6 +76,7 @@ test('zadania fixture\'u: dwie fazy, cztery testy [Unit], [Manual] w sekcji oper
 test('fixture po kroku przegladu z przygotuj-kopie.sh przechodzi kontrole spojnosci startu autopilota; bez kroku nie', () => {
   const korzen = mkdtempSync(join(tmpdir(), 'fixture-smoke-spojnosc-'))
   try {
+    /** @type {Record<string, string>} */
     const pliki = { [SCIEZKA_PLANU]: podstaw(readFileSync(join(KATALOG, PLAN_TECHNICZNY), 'utf8'), false) }
     for (const [plik, tresc] of Object.entries(plikiFixture())) pliki[`docs/active/${NAZWA}/${plik}`] = podstaw(tresc, false)
     for (const [sciezka, tresc] of Object.entries(pliki)) {

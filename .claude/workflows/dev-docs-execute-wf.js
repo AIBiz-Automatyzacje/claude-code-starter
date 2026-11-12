@@ -339,7 +339,8 @@ ${BLOK_DLUGIE_KOMENDY}
 5a. Commit odrzucony mimo zielonej walidacji (np. hook): niczego nie poprawiasz; \`git stash pop\` (gdy schowek powstal) i
    zakoncz: zacommitowano=false, schowek=null, w powod tresc bledu commita.
    Nieudany \`git stash pop\` (tu albo w punkcie 3): nie probuj dalej (bez reset, checkout ani drop); zakoncz z zacommitowano=false,
-   schowek = nazwa (wpis zostaje w git stash list), w powod "schowek <nazwa> nie wrocil do drzewa: git stash list" i blad gita.6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
+   schowek = nazwa (wpis zostaje w git stash list), w powod "schowek <nazwa> nie wrocil do drzewa: git stash list" i blad gita.
+6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
 
 Zwroc obiekt zgodny ze schematem: zacommitowano, commit (SHA), schowek (faktyczna nazwa schowka albo null), plikiOdlozone (pliki (c)),
 walidacja, powod (null przy zacommitowano=true).`
