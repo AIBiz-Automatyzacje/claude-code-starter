@@ -70,7 +70,7 @@ test('otwarte + zdanie: liczby z plików; zero mówi wprost „brak”, bez smok
     const w = otwarte(k, { zadanie: 'sklep' })
     assert.deepEqual(w.smoke, { plik: 'docs/operator/2026-11-11-sklep-smoke.md', otwarte: 3, poDeployu: 1 })
     assert.equal(w.odlozone.otwarte.length, 2)
-    assert.equal(w.zdanie, 'Otwarte: 3 pozycji smoke\'u, 2 odłożonych (docs/operator/odlozone.md).')
+    assert.equal(w.zdanie, 'Otwarte: 3 pozycji smoke\'u (w tym 1 po deployu), 2 odłożonych (docs/operator/odlozone.md).')
     assert.equal(otwarte(k).zdanie, 'Otwarte: 2 odłożonych (docs/operator/odlozone.md).')
     const cli = spawnSync(process.execPath, [CLI, '--zadanie', 'sklep', '--projekt', k], { encoding: 'utf8' })
     assert.equal(cli.status, 0)
@@ -170,4 +170,12 @@ test('/dev-smoke sekcja 1: warianty jako „Popraw: <wariant>”, „Odłóż”
   const autopilot = readFileSync(resolve(KATALOG, '../../../workflows/dev-autopilot-wf.js'), 'utf8')
   assert.match(autopilot, /return `- \[DECYZJA · faza \$\{faza\} · \$\{zrodlo\}\] \$\{tresc\}`/)
   assert.match(autopilot, /await zapiszDecyzje\(numerFazy, 'autopilot', /)
+})
+
+// Punkt 52: pole poDeployu nie mialo czytelnika — zdanie mowi teraz, ile otwartych pozycji czeka na wdrozenie.
+test('zdanieOtwartych: pozycje po deployu w nawiasie, tylko gdy są; zdanie zaczyna się od „Otwarte: ”', () => {
+  const odl = { otwarte: [] }
+  assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 2 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u (w tym 2 po deployu), 0 odłożonych (docs/operator/odlozone.md).')
+  assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 0 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u, 0 odłożonych (docs/operator/odlozone.md).')
+  assert.equal(zdanieOtwartych({ smoke: { otwarte: 3 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u, 0 odłożonych (docs/operator/odlozone.md).', 'stary ksztalt bez pola')
 })

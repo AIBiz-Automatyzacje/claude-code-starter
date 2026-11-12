@@ -76,14 +76,17 @@ export function decyzjeNierozstrzygniete(projekt) {
 }
 
 /**
- * @param {{ smoke: { otwarte: number } | null, odlozone: { otwarte: unknown[] } }} w
+ * Punkt 52: `poDeployu` liczyl sie, a nikt go nie czytal — zdanie podaje teraz, ile otwartych pozycji czeka na wdrozenie.
+ * Zdanie zaczyna sie zawsze od „Otwarte: ” (archiwizacja przyjmuje tylko taki poczatek).
+ * @param {{ smoke: { otwarte: number, poDeployu?: number } | null, odlozone: { otwarte: unknown[] } }} w
  * @returns {string} zdanie do raportu; przy zerze mowi to wprost
  */
 export function zdanieOtwartych({ smoke, odlozone }) {
   const n = smoke?.otwarte ?? 0
+  const k = smoke?.poDeployu ?? 0
   const m = odlozone.otwarte.length
   if (!n && !m) return `Otwarte: brak${smoke ? ' (smoke odhaczony' : ' (bez smoke\'u'}, nic odłożonego).`
-  const czesci = [smoke ? `${n} pozycji smoke'u` : null, `${m} odłożonych (${PLIK_ODLOZONYCH})`].filter(Boolean)
+  const czesci = [smoke ? `${n} pozycji smoke'u${k > 0 ? ` (w tym ${k} po deployu)` : ''}` : null, `${m} odłożonych (${PLIK_ODLOZONYCH})`].filter(Boolean)
   return `Otwarte: ${czesci.join(', ')}.`
 }
 
