@@ -77,6 +77,11 @@ Zrób glob `docs/operator/*.md` (bez `*-smoke.md`) i sprawdź **frontmattery**: 
 - ogłoś: „Znalazłem checklistę operatora etapu: `<ścieżka>` (N pozycji, M nieodhaczonych) — uzupełnię ją po zbudowaniu IU.”;
 - nieodhaczone pozycje `[blokuje: planowanie]` wymień i zapytaj, czy planować mimo nich (plan powstanie z lukami), czy przerwać.
 - decyzję z wypełnionym „Ustalono”, która jest sprzeczna z dokumentem źródłowym (linia `Zmienia wymaganie:` przy decyzji albo rozjazd widoczny przy czytaniu obu dokumentów), pokaż przez `AskUserQuestion`: wymaganie, decyzja z datą i proponowane nowe brzmienie wymagania. Po zgodzie popraw wymaganie w dokumencie źródłowym z dopiskiem `(zmienione decyzją <nr> z <data>, <ścieżka checklisty>)` i planuj z poprawionego źródła. Odmowa to bloker z 0.5: z dwóch sprzecznych źródeł planu nie piszesz, bo builder dostaje oba (aa-exam E3: decyzja D1 w checkliście nowsza niż R48 w wymaganiach).
+- decyzje „Sprawy odłożone w smoke'u” z wypełnionym „Ustalono” zamykasz w `docs/operator/odlozone.md` (po smoke'u tylko `/dev-plan` zmienia ten plik; operator go nie edytuje), linię tej sprawy zamieniasz na:
+  - wchodzi → po zapisaniu planu (5.2) `- [x] [etap: <etykieta>] <treść> → w planie <ścieżka planu> (<YYYY-MM-DD>)`;
+  - czeka → `- [ ] [etap: <nowa etykieta>] <treść>` (linia zostaje otwarta, zmienia się tylko etykieta);
+  - rezygnacja → `- [x] [etap: <etykieta>] <treść> → rezygnacja (<YYYY-MM-DD>)`.
+  Plik idzie do commitu inicjalnego (6.5) jawną ścieżką.
 
 Brak checklisty jest poprawny — 5.2b utworzy krótką listę, jeśli będzie co wpisać.
 
@@ -318,7 +323,7 @@ Skrypt zapisuje `docs/active/<zadanie>/<zadanie>-plan.md`, `-kontekst.md` i `-za
 
 #### 6.5 Commit inicjalny
 
-`git add docs/active/<zadanie>/` plus dokładnie ścieżki z 6.3 (a): plan techniczny, zapis przeglądu spójności `docs/plans/<plik>.spojnosc.json`, `docs/plans/<feature-slug>-figma/`, checklista z `operator_prep:` (dokładna ścieżka z frontmattera), zmieniony dokument źródłowy. Bez `git add -A` i bez całego `docs/plans/`. Commit: `docs: inicjalizacja planu dla <zadanie>`.
+`git add docs/active/<zadanie>/` plus dokładnie ścieżki z 6.3 (a): plan techniczny, zapis przeglądu spójności `docs/plans/<plik>.spojnosc.json`, `docs/plans/<feature-slug>-figma/`, checklista z `operator_prep:` (dokładna ścieżka z frontmattera), zmieniony dokument źródłowy, `docs/operator/odlozone.md` (gdy 0.3 go zmienił). Bez `git add -A` i bez całego `docs/plans/`. Commit: `docs: inicjalizacja planu dla <zadanie>`.
 
 #### 6.6 Bramka gotowości
 
@@ -336,7 +341,7 @@ Wynik ma dziewięć pozycji, każdą wypisujesz w handoffie:
 - `claudeMd` — pliki decyzji na gałęzi głównej bez `claude_md: do-uzgodnienia`; `ok: false` = autopilot zatrzyma się na starcie → wypisz `naprawa` (uzgodnienie na gałęzi głównej przez `/dev-pr --claude-md <zadanie>`, potem wciągnięcie głównej do gałęzi zadania);
 - `spojnosc` — przegląd spójności planu (6.2b): zapis istnieje, odcisk planu się zgadza (odhaczenia i sekcja `## Decyzje z realizacji` go nie zmieniają, zmiana treści tak), zero otwartych pozycji, każda faza przejrzana. `ok: false` zatrzymuje start → wypisz `powod` i wróć do 6.2b dla wskazanych faz. Autopilot sprawdza to samo na starcie (`plan.mjs blokery`): świeże zadanie bez ważnego przeglądu kończy STOP-em, zadanie w toku dostaje uwagę;
 - `higiena` — nie blokuje, ale każdą `uwagi` wypisz z komendą przed startem: stara baza wiedzy (`learned-patterns.md` w `.claude/rules/`, przed konwersją: `/dev-compound-refresh --konwersja`) albo kontekst startowy agenta ponad próg (CLAUDE.md + reguły bez `paths:`) kosztują każdego agenta każdej fazy. Operator decyduje, czy porządkuje przed autopilotem; pełna lista kontroli jest w doctorze (`bash .claude/scripts/doctor/doctor.sh`).
-- `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań (`docs/operator/odlozone.md`, `otwarte`: etap, treść, linia). Wypisz każdą z etapem; sprawa z etykietą tego etapu, której nie ma w planie, to pytanie do operatora, czy wchodzi teraz (dopisanie IU), czy czeka dalej (zmiana etykiety w pliku).
+- `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań (`docs/operator/odlozone.md`, `otwarte`: etap, treść, linia). Wypisz każdą z etapem; sprawa z etykietą tego etapu, której nie ma w planie, to pytanie do operatora, czy wchodzi teraz (dopisanie IU), czy czeka dalej, czy rezygnujemy. Odpowiedź zapisujesz w pliku wzorem z 0.3 (wchodzi / czeka / rezygnacja) i commitujesz jawną ścieżką.
 
 Czerwona pozycja usuwana w tej sesji (odhaczenie checklisty, opt-out, `.gitignore` po setupie e2e) zmienia śledzone pliki: zacommituj je jawnymi ścieżkami (`git add <ścieżki> && git commit -m "docs(<zadanie>): przygotowanie operatora"`) i uruchom `gotowosc` ponownie. Autopilota nie uruchamiasz przy czerwonej bramce.
 

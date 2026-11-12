@@ -95,3 +95,22 @@ test('skille: raporty biorą zdanie z otwarte.mjs, /dev-prep zamienia sprawy od�
   assert.match(prep, /`node \.claude\/scripts\/smoke\/otwarte\.mjs` \(pole `odlozone\.otwarte`/)
   assert.match(prep, /\*\*Sprawy odłożone w smoke'u\.\*\* Każda otwarta pozycja `odlozone\.otwarte` ze skanu \(1\.2\) to decyzja bez markera blokady/)
 })
+
+// Weryfikacja partii 26–45, punkt 52: sprawa odlozona, ktora weszla do etapu, nie byla zamykana — /dev-prep i /dev-plan pliku nie
+// zmienialy. Teraz zamyka ja /dev-plan po decyzji z /dev-prep; trzy wzory linii ze skilla przechodza parser jak trzeba.
+test('/dev-plan zamyka sprawy odłożone: wchodzi i rezygnacja nie są liczone, czeka zostaje otwarta z nową etykietą', () => {
+  const plan = readFileSync(resolve(KATALOG, '../../../skills/dev-plan/SKILL.md'), 'utf8')
+  const wzor = (/** @type {string} */ wyjscie) => new RegExp(`- ${wyjscie} → (?:po zapisaniu planu \\(5\\.2\\) )?\`([^\`]+)\``).exec(plan)?.[1] ?? ''
+  const wypelnij = (/** @type {string} */ w) => w.replace('<etykieta>', 'etap 5').replace('<nowa etykieta>', 'etap 6').replace('<treść>', 'sklep D2: limit koszyka — `src/k.ts:9` (smoke 2026-11-11)')
+    .replace('<ścieżka planu>', 'docs/plans/2026-11-12-001-feat-x-plan.md').replace('<YYYY-MM-DD>', '2026-11-12')
+  const [wchodzi, czeka, rezygnacja] = ['wchodzi', 'czeka', 'rezygnacja'].map((w) => wypelnij(wzor(w)))
+  assert.match(wchodzi, /^- \[x\] \[etap: etap 5\] sklep D2: .* → w planie docs\/plans\/2026-11-12-001-feat-x-plan\.md \(2026-11-12\)$/)
+  assert.match(rezygnacja, /^- \[x\] \[etap: etap 5\] sklep D2: .* → rezygnacja \(2026-11-12\)$/)
+  assert.deepEqual(parsujOdlozone([wchodzi, rezygnacja].join('\n')), [], 'zamkniete nie sa liczone')
+  assert.deepEqual(parsujOdlozone(czeka).map((p) => p.etap), ['etap 6'], 'czeka: otwarta z nowa etykieta')
+  assert.match(plan, /Plik idzie do commitu inicjalnego \(6\.5\) jawną ścieżką\./)
+  assert.match(plan, /`docs\/operator\/odlozone\.md` \(gdy 0\.3 go zmienił\)\. Bez `git add -A`/)
+  const prep = readFileSync(resolve(KATALOG, '../../../skills/dev-prep/SKILL.md'), 'utf8')
+  assert.match(prep, /po wypełnieniu decyzji \(„Ustalono”\) zmienia go `\/dev-plan` \(0\.3\)/)
+  assert.doesNotMatch(prep, /robi to operator po wyborze/)
+})
