@@ -408,3 +408,19 @@ test('odciskPlanu: odhaczenia w kazdej postaci listy, biale znaki, CRLF, BOM i s
     ['sekcja o innej nazwie', `${plan}\n## Decyzje z realizacji fazy 2\n\n- x\n`],
   ])) assert.notEqual(odciskPlanu(wariant), bazowy, opis)
 })
+
+// Punkt 53, krok B2: domkniecie fazy pisze decyzje korygujace plan tylko do sekcji realizacji na koncu planu. Parser zamyka
+// faze i jednostke na kazdym `## `, wiec sekcja nie zmienia ani walidacji planu, ani struktury pliku zadan (odswiez).
+test('sekcja „Decyzje z realizacji” na koncu planu: sprawdz bez zmian, odswiez nie widzi roznicy; prompt domkniecia ja nazywa', () => wRepo((k) => {
+  zadanieNaGalezi(k)
+  const przed = cli(k, ['sprawdz', PLAN])
+  writeFileSync(join(k, PLAN), `${readFileSync(join(k, PLAN), 'utf8').replace(/\n*$/, '\n')}\n${SEKCJA_REALIZACJI}\n\n- faza 1, IU-1: mail bez imienia (Granice wygrywaja ze scenariuszem)\n- faza 2, IU-3: [x] lista bez filtra\n`)
+  const po = cli(k, ['sprawdz', PLAN])
+  assert.deepEqual([po.kod, po.json], [przed.kod, przed.json])
+  const odsw = cli(k, ['odswiez', ZADANIE])
+  assert.match(String(odsw.json.odmowa), /^plan względem HEAD nie zmienia pliku zadań/)
+  const execute = readFileSync(resolve(KATALOG, '../../../workflows/dev-docs-execute-wf.js'), 'utf8')
+  const domkniecie = execute.slice(execute.indexOf('function domknieciePrompt('), execute.indexOf('\n}\n', execute.indexOf('function domknieciePrompt(')))
+  assert.ok(domkniecie.includes(`\\\`${SEKCJA_REALIZACJI}\\\``), 'prompt domkniecia nazywa sekcje stala ze spojnosc.mjs')
+  assert.match(domkniecie, /trafia WYLACZNIE do sekcji \\`## Decyzje z realizacji\\` na koncu planu \(brak sekcji = utworz ja jako ostatnia\), jedna linia\n {3}na decyzje: \\`- faza \$\{faza\}, IU-x: <decyzja>\\`\. Poza ta sekcja w planie zmieniasz tylko stan checkboxow/)
+}))

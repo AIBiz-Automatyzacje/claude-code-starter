@@ -543,8 +543,11 @@ ${BLOK_DLUGIE_KOMENDY}
    (jedna sekcja, chronologicznie) plus "Ostatnia aktualizacja". Odchylenia i nastepne kroki builderow z listy raportow dopisz do \`## Dziennik\` (linia na IU), bo to jedyny zapis pracy, ktora builder zostawil poza jednostka. NIE zakladaj w tym pliku sekcji
    "Decyzje techniczne", "Kluczowe pliki", "Odroczone do implementacji" ani "Wzorce do nasladowania" —
    te tresci zyja w planie technicznym, a kopia w pliku kontekstu rozjezdza sie z nim. Decyzja korygujaca plan idzie
-   do planu technicznego w docs/plans/ (punkt 4), a w Dzienniku zostaje jedno zdanie i wskaznik.
-4. Aktualizuj plan techniczny w docs/plans/ (odznacz test scenarios / verification dla tej fazy).
+   do sekcji \`## Decyzje z realizacji\` planu technicznego w docs/plans/ (punkt 4), a w Dzienniku zostaje jedno zdanie i wskaznik.
+4. Aktualizuj plan techniczny w docs/plans/: odznacz test scenarios / verification dla tej fazy. Decyzja korygujaca plan
+   trafia WYLACZNIE do sekcji \`## Decyzje z realizacji\` na koncu planu (brak sekcji = utworz ja jako ostatnia), jedna linia
+   na decyzje: \`- faza ${faza}, IU-x: <decyzja>\`. Poza ta sekcja w planie zmieniasz tylko stan checkboxow: przeglad spojnosci
+   planu liczy odcisk tresci bez tej sekcji i bez checkboxow, wiec kazda inna zmiana zatrzyma kolejny run na bramce gotowosci.
 5. Commit inkrementalny: feat/fix/refactor([nazwa]): [co i dlaczego]. Staguj tylko zmienione pliki (nie git add .).
 6. DOSSIER FAZY (po commicie):
    \`node .claude/scripts/dossier/dossier.mjs --sciezka ${sciezka} --faza ${faza}${baza === 'HEAD' ? '' : ` --baza ${baza}`} --bramki ${plikBramek}\`
