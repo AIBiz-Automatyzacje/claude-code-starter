@@ -36,8 +36,9 @@ Całość jest zestrojona pod stack **React 19 + TypeScript + Supabase + Vite + 
 
 1. **`/dev-brainstorm`** *(opcjonalny)* - przepytuje Cię pytanie po pytaniu, aż będzie jasne, co ma powstać. Efekt: dokument wymagań.
 2. **`/dev-prep`** *(opcjonalny)* - lista tego, co musisz dostarczyć Ty: decyzje, konta i sekrety, treści, makiety.
-3. **`/dev-plan`** - plan techniczny w fazach, branch `feature/<nazwa>`, zadanie w `docs/active/` i bramka gotowości.
-   Na końcu dostajesz gotowe polecenie autopilota.
+3. **`/dev-plan`** - plan techniczny w fazach, przegląd spójności planu (sprzeczności wychodzą jako pytania do Ciebie,
+   zanim ruszy budowanie), branch `feature/<nazwa>`, zadanie w `docs/active/` i bramka gotowości.
+   Na końcu dostajesz gotowe polecenie autopilota. Autopilot nie ruszy z nowym zadaniem bez aktualnego przeglądu spójności.
 4. **`dev-autopilot-wf`** - wykonuje fazy jedna po drugiej: implementacja, review, naprawa. Start to osobna wiadomość
    z samym poleceniem (np. `/dev-autopilot-wf docs/active/<zadanie>`): wiadomość startową dostaje każdy agent runu, więc
    warunki i prośby wysyłasz wcześniejszą wiadomością. Na koniec zapisuje wnioski,
@@ -75,7 +76,8 @@ Wszystko instalujesz **w projekcie**, nie globalnie na koncie, więc inne Twoje 
 5. Otwórz **nową** sesję Claude Code i wpisz `/dev-brainstorm` albo `/dev-plan`.
 
 Aktualizacja szablonu w projekcie: `/sync-template` (zaciąga zmiany z tego repo, nadpisywane pliki trafiają do `.claude/.backups/`).
-Po niej zacznij nową sesję - skille i instrukcje wczytują się na starcie.
+Po niej zacznij nową sesję - skille i instrukcje wczytują się na starcie. Gdy aktualizacja zmienia sam skrypt synchronizacji
+(raport wymienia `sync-template.sh`), uruchom `/sync-template` drugi raz: pierwszy bieg idzie jeszcze starym skryptem z projektu.
 
 ## Wymagania
 

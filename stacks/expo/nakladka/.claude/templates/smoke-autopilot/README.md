@@ -25,7 +25,7 @@ bash .claude/templates/smoke-autopilot/przygotuj-kopie.sh <projekt-źródłowy> 
 - `--env <plik>`: atrapy zmiennych (bez sekretów) kopiowane jako `.env` kopii, gdy testy projektu bez nich nie startują;
 - kopia to `git clone` lokalny bez remote, bez `.env` i `supabase/.temp`, na gałęzi `feature/smoke-autopilot`;
 - sync maszynerii z lokalnego szablonu (pliki śledzone przez gita) → commit;
-- fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` → commit, potem instalacja menedżerem z lockfile i `expo customize tsconfig.json`;
+- fixture zadania do `docs/active/smoke-autopilot/` i `docs/plans/` z zapisem przeglądu spójności planu (bez niego autopilot zatrzymuje świeże zadanie na starcie) → commit, potem instalacja menedżerem z lockfile i `expo customize tsconfig.json`;
 - doctor kopii: brak obowiązkowego narzędzia = kod 8, runu nie odpalaj;
 - bazowe bramki (typecheck, testy) z logiem `.git/smoke-bramki.log`: czerwone = kod 7, runu nie odpalaj. Napraw w kopii osobnym commitem.
 
