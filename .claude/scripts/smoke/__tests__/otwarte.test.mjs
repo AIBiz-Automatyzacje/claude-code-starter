@@ -114,3 +114,15 @@ test('/dev-plan zamyka sprawy odłożone: wchodzi i rezygnacja nie są liczone, 
   assert.match(prep, /po wypełnieniu decyzji \(„Ustalono”\) zmienia go `\/dev-plan` \(0\.3\)/)
   assert.doesNotMatch(prep, /robi to operator po wyborze/)
 })
+
+// Punkt 52: do odlozone.md pisalo tylko wyjscie „Odłóż” decyzji — zwykla pozycja listy i usterka nie mialy formatu.
+test('/dev-smoke: odłożona pozycja listy i usterka (U<n>) mają wzory, które przechodzą parser odłożonych', () => {
+  const plaski = SKILL_SMOKE.replace(/\n\s+/g, ' ')
+  const usterka = /z numerem `U<n>` \(kolejna usterka tej sesji\) zamiast `D<n>`: `(- \[ \] \[etap: <etykieta>\] [^\n]+?)`\./.exec(plaski)?.[1] ?? ''
+  const pozycja = /Wtedy wpis w `docs\/operator\/odlozone\.md`: `(- \[ \] \[etap: <etykieta>\] [^\n]+?)`, a w pliku smoke'u/.exec(plaski)?.[1] ?? ''
+  assert.ok(usterka && pozycja, 'skill ma oba wzory')
+  const wypelnij = (/** @type {string} */ w) => w.replace(/\\`/g, '`').replace('<etykieta>', 'etap 4').replace('<zadanie>', 'sklep')
+  const linie = [wypelnij(usterka), wypelnij(pozycja)]
+  assert.deepEqual(parsujOdlozone(linie.join('\n')).map((p) => [p.etap, p.tresc.split(':')[0]]), [['etap 4', 'sklep U<n>'], ['etap 4', 'sklep smoke']])
+  assert.match(plaski, /a w pliku smoke'u pozycja `- \[x\] … → odłożone do <etykieta>`/)
+})

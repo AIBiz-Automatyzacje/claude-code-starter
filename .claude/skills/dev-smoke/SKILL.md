@@ -81,8 +81,13 @@ Pozostałe pozycje smoke'u przechodzisz po kolei, sam, narzędziem sesji z `refe
 3. Niezgodne → usterka: odtwórz ją, napraw z testem, który bez poprawki pada, commit jawnymi ścieżkami
    `fix(<zadanie>): <co naprawione> (smoke)`, sprawdź pozycję jeszcze raz i odhacz z dopiskiem `→ poprawione w <sha>`.
    Usterki, której nie umiesz naprawić bez decyzji o zakresie, nie zgadujesz: zapytaj operatora z trzema wyjściami jak w sekcji 1.
+   Usterkę odłożoną przez operatora zapisujesz w `docs/operator/odlozone.md` jak decyzję, z numerem `U<n>` (kolejna usterka
+   tej sesji) zamiast `D<n>`: `- [ ] [etap: <etykieta>] <zadanie> U<n>: <opis usterki> — \`<plik:linia>\` (smoke <YYYY-MM-DD>)`.
 4. Pozycja z wyjątku dla człowieka → zatrzymaj się i prowadź operatora krok po kroku: co otworzyć, gdzie kliknąć, czego się
    spodziewać. Wynik od operatora wpisz przy pozycji.
+5. Operator może odłożyć pozycję listy (np. sprawdzenie wymaga czegoś, czego jeszcze nie ma). Wtedy wpis w
+   `docs/operator/odlozone.md`: `- [ ] [etap: <etykieta>] <zadanie> smoke: <treść pozycji> — \`<plik smoke'u>\` (smoke <YYYY-MM-DD>)`,
+   a w pliku smoke'u pozycja `- [x] … → odłożone do <etykieta>`. Etykieta jak w sekcji 1 (brak = „następny etap”).
 
 Pozycje „E2E nieuruchomione” i „E2E do odegrania ręcznie” odgrywasz narzędziem sesji jak zwykłe pozycje; tylko przy pozycjach
 z sekcji „E2E przebiegło i padło” najpierw naprawiasz defekt opisany w known-issues.
