@@ -49,6 +49,7 @@ w `.claude/`. Etap `/dev-pr` sprawdzamy na kopii z prywatnym repo testowym na Gi
 | W32 | Run 3: tura poprawkowa po kontroli diffu fixa zostawiła pozycję bez naprawy z uzasadnieniem „do decyzji operatora”, ale bez prefiksu `OPERATOR:`. `doDecyzjiOperatora` było puste, gate CZYSTE, a pozycja została tylko w `kontrolaFixa.pominiete` wyniku runu — poza „Akcjami operatora”. | `nastepneKroki` wypisuje pozycje kontroli fixa bez naprawy (pominięte bez prefiksu i bez śladu) z numerem fazy. | średni | poprawione (`popr/pilot-nawykometr-run3`) |
 | W33 | Run 3: reviewer zgodności ze specyfikacją zgłosił jako P2 „scenariusz `[E2E]` nie był uruchomiony w chwili review” (sceptyk obniżył do P3). To stan z konstrukcji pipeline'u: tester odgrywa scenariusze w tym samym review. | Zdanie w procedurze reviewera: niezaznaczony `[E2E]` przed przebiegiem testera nie jest findingiem. | niski | otwarty |
 | W35 | Run 4 (przygotowanie): `/dev-pr --claude-md opinia-z-ustawien --bez-push` wypchnął commit `8ebb1ec` na `origin` (repo testowe) i zwrócił `push: true`, `pushDetal: "OK"`, `ciGlownej: "brak-ci"`. Zakaz „NIE pushuj” był doklejony do polecenia agenta (`klasa-mechaniczny`) zaraz za krokiem `git push origin …`, a JS workflowu nie sprawdzał wyniku. W projekcie, w którym push na główną to deploy, tryb bez pushu nie chronił. | Rdzeń (`dev-pr-wf.js`, etapy `claude-md` i `compound`): w trybie bez pushu kroków CI głównej i PUSH nie ma w poleceniu (`krokiPoCommicie`, `KROK_BEZ_PUSHA`); `push: true` mimo trybu → `pushMimoBezPusha: true` i UWAGA w logu; skill każe podać to w raporcie jako pierwszą uwagę. | wysoki | poprawione (`popr/pilot-run4-kopie-repo-testowe`); niesprawdzone na żywym runie (kopia ma maszynerię `2ef6b6e`) |
+| W36 | Run 4: start autopilota stanął na STOP-ie bramki E2E „canary na Nawykometr-kopia: kod SIGKILL” ze stosem Maestro (`FileUtils.zipDir` ← `DebugLogStore.finalizeRun`). To własny limit skryptu (`LIMIT_CANARY_MS` 240 s w `expo-canary.mjs`: canary ruszył 22:34:45, zatrzymany ok. 22:38:45), a sesja kopii opisała to jako zabicie przez system. Ręczny canary chwilę później: 34 s, kod 0 (dwa razy). Prawdopodobna przyczyna spowolnienia: bramki szablonu (ok. 3,4 tys. testów) uruchomione przeze mnie równolegle na tym samym Macu. | Nakładka (`expo-canary.mjs`): `uruchomMaestro` zwraca `przekroczonyLimitMs`, gdy SIGKILL dał limit skryptu; STOP mówi „przekroczony limit 240 s — skrypt zatrzymał Maestro”, a naprawa każe zmierzyć czas ręcznie i odróżnia obciążenie maszyny od wiszącego flow. Lekcja pilota: bramek szablonu nie puszczam w trakcie startu E2E kopii. | średni | poprawione (`popr/pilot-run4-kopie-repo-testowe`); niesprawdzone na żywym runie |
 | W34 | Run 3: etykieta agenta rozgrzewki `warmup:vitest` w projekcie na Jest. | Brak: etykieta to klucz telemetrii (`stacks/straznik.json`, świadomy wyjątek). | niski | zamknięty bez zmiany |
 
 ## Ustalenia dla projektu Nawykometr (nie dla szablonu)
@@ -178,6 +179,19 @@ Niesprawdzone w runie 3 (ścieżki nie wystąpiły): W23 (STOP startu E2E), W25 
   `../Nawykometr` (`pushurl` `BRAK`, `main` 36 commitów za kopią) etap PR nie mógłby wypchnąć gałęzi, a `niewypchnieteGlowna`
   zawyżyłby rozmiar. Dlatego w kopii `origin` przemianowany na `nawykometr-lokalny` (`pushurl` `BRAK` zostaje), a repo testowe
   dodane jako `origin`; `main` śledzi `origin/main`. To ustawienie pilota, nie błąd szablonu (projekt z GitHubem ma `origin`).
+- CLAUDE.md zadania `opinia-z-ustawien` uzgodniony (`/dev-pr --claude-md opinia-z-ustawien --bez-push`, sesja kopii na maszynerii
+  `2ef6b6e`): commit `8ebb1ec` (CLAUDE.md +3/−1, plik decyzji `claude_md: uzgodniono`), mimo `--bez-push` wypchnięty na
+  `origin` (W35; repo testowe, `nawykometr-lokalny` nietknięty). Stopka commita znów z modelem agenta workflowu (W30).
+
+## Run 4 — `wersja-w-ustawieniach` (2026-11-12)
+
+Zadanie: stopka z wersją i buildem aplikacji (`expo-application`) pod wylogowaniem w Ustawieniach, testy Jest, jeden `[E2E]`;
+bez migracji i nowych paczek.
+
+- `/dev-plan`: plan Lekki, 1 faza, 2 IU (oba `feature-builder-ui`), commit `553864a`. `sprawdz` `ok: true` po jednej czerwonej
+  rundzie: **W12 potwierdzony** (grep po `run-all.sh` w polu Weryfikacja uznany za uruchomienie runnera E2E; sesja usunęła linię).
+  W11 nie wystąpił (plan bez `[Manual]`). `gotowosc` zielona, jedna uwaga (brak skilla weryfikacji); W15 nie wystąpił (zadanie bez
+  migracji), W21 zielony po uzgodnieniu CLAUDE.md.
 
 ## Niesprawdzone
 

@@ -569,6 +569,32 @@ test('canary: uruchomMaestro maskuje hasło w ogonie i na stderr, oddaje kod; br
   }
 })
 
+// Pilot run 4 (W36): canary zatrzymany limitem skryptu dał STOP „kod SIGKILL” ze stosem Maestro, a sesja uznała to za zabicie przez system.
+test('canary: przekroczony limit skryptu nazwany w wyniku i w STOP-ie, z pomiarem czasu w naprawie; zwykły SIGKILL bez tej treści', async () => {
+  const bin = katalog()
+  writeFileSync(join(bin, 'maestro'), '#!/bin/sh\necho "at maestro.utils.FileUtils.zipDir"\nexec sleep 30\n', { mode: 0o755 })
+  const sciezka = process.env.PATH
+  const pisz = process.stderr.write
+  process.stderr.write = /** @type {typeof process.stderr.write} */ (() => true)
+  try {
+    process.env.PATH = `${bin}:${sciezka}`
+    const w = await canary.uruchomMaestro(['test'], bin, { sekrety: [] }, 3000)
+    assert.deepEqual(w, { kod: 'SIGKILL', ogon: 'at maestro.utils.FileUtils.zipDir', przekroczonyLimitMs: 3000 })
+  } finally {
+    process.stderr.write = pisz
+    process.env.PATH = sciezka
+  }
+  const p = katalog()
+  const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'U1', nazwa: 'iPhone 17', sciezkaAplikacji: null }, aplikacja: APLIKACJA }
+  const limit = await canary.przejdzCanary(p, {}, cel, { maestro: async () => ({ kod: 'SIGKILL', ogon: 'zipDir', przekroczonyLimitMs: 240_000 }) })
+  assert.equal(limit.ok, false)
+  assert.match(limit.detal, /^canary na iPhone 17: przekroczony limit 240 s — skrypt zatrzymał Maestro \(SIGKILL\)/)
+  assert.match(limit.naprawa, /^Zmierz czas ręcznie: time maestro --device U1 test <flow>\. Krótki przebieg = obciążony komputer/)
+  const obcy = await canary.przejdzCanary(p, {}, cel, { maestro: async () => ({ kod: 'SIGKILL', ogon: 'zipDir' }) })
+  assert.equal(obcy.detal, 'canary na iPhone 17: kod SIGKILL\nzipDir')
+  assert.equal(obcy.naprawa, 'Sprawdź ręcznie: maestro --device U1 test <flow>.')
+})
+
 test('reload: wysyła metodę reload przez /message i kończy się ok; zamknięty port = wynik z błędem', async () => {
   /** @type {string} */
   let odebrane = ''

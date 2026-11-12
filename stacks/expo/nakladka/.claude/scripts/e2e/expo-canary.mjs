@@ -59,12 +59,14 @@ export const zamaskuj = (tekst, sekrety) => sekrety.filter(Boolean).reduce((t, s
 
 /**
  * @param {string[]} argumenty @param {string} cwd @param {{ sekrety: string[], srodowisko?: Record<string, string> }} zmienne @param {number} [limitMs]
- * @returns {Promise<{ kod: number | string | null, ogon: string }>}
+ * @returns {Promise<{ kod: number | string | null, ogon: string, przekroczonyLimitMs?: number }>}
  */
 export function uruchomMaestro(argumenty, cwd, { sekrety, srodowisko = {} }, limitMs = LIMIT_CANARY_MS) {
   return new Promise((rozwiaz) => {
     const proces = spawn('maestro', argumenty, { cwd, env: { ...process.env, ...srodowisko }, stdio: ['ignore', 'pipe', 'pipe'] })
     let wyjscie = ''
+    // Pilot run 4 (W36): SIGKILL z własnego limitu wyglądał w STOP-ie jak zabicie przez system — wynik mówi, że to limit skryptu.
+    let przekroczony = false
     const zbieraj = (/** @type {Buffer} */ porcja) => {
       const tekst = zamaskuj(porcja.toString(), sekrety)
       wyjscie += tekst
@@ -72,11 +74,12 @@ export function uruchomMaestro(argumenty, cwd, { sekrety, srodowisko = {} }, lim
     }
     proces.stdout.on('data', zbieraj)
     proces.stderr.on('data', zbieraj)
-    const termin = setTimeout(() => proces.kill('SIGKILL'), limitMs)
+    const termin = setTimeout(() => { przekroczony = true; proces.kill('SIGKILL') }, limitMs)
     proces.on('error', (e) => { clearTimeout(termin); rozwiaz({ kod: e.message, ogon: '' }) })
     proces.on('close', (kod, sygnal) => {
       clearTimeout(termin)
-      rozwiaz({ kod: kod ?? sygnal, ogon: wyjscie.trimEnd().split('\n').slice(-LINIE_OGONA).join('\n') })
+      const ogon = wyjscie.trimEnd().split('\n').slice(-LINIE_OGONA).join('\n')
+      rozwiaz({ kod: kod ?? sygnal, ogon, ...(przekroczony ? { przekroczonyLimitMs: limitMs } : {}) })
     })
   })
 }
@@ -118,7 +121,7 @@ export async function przejdzCanary(projekt, env, { port, urzadzenie, aplikacja 
   const flow = wlasny ? PLIK_CANARY : join(robocze, 'canary.yaml')
   if (!wlasny) writeFileSync(flow, flowWejscia(String(idAplikacji), aplikacja.scheme, adres))
   const { argumenty: argumentyEnv, srodowisko, sekrety } = zmienneFlow(env, { port, urzadzenie, aplikacja })
-  const { kod, ogon } = await maestro(['--device', urzadzenie.id, 'test', '--test-output-dir', robocze, '--debug-output', join(robocze, 'debug'), ...argumentyEnv, flow], projekt, { sekrety, srodowisko })
+  const { kod, ogon, przekroczonyLimitMs } = await maestro(['--device', urzadzenie.id, 'test', '--test-output-dir', robocze, '--debug-output', join(robocze, 'debug'), ...argumentyEnv, flow], projekt, { sekrety, srodowisko })
   if (kod === 0) {
     rmSync(robocze, { recursive: true, force: true })
     const typ = wlasny ? `${PLIK_CANARY} przeszedł` : `canary bez logowania przeszedł, to słaby dowód: dodaj ${PLIK_CANARY} (wzór: .claude/templates/e2e-env/_canary.yaml)`
@@ -127,5 +130,14 @@ export async function przejdzCanary(projekt, env, { port, urzadzenie, aplikacja 
   // Katalog roboczy zostaje dla zrzutów i logów Maestro, ale bez zapisu komend: `commands-*.json` niesie wartości zmiennych flow, także te ze środowiska.
   usunZapisKomend(robocze)
   const natywny = /cannot find native module/i.test(ogon) ? ' Komunikat o module natywnym oznacza przestarzały dev-client: przebuduj go.' : ''
-  return { ok: false, detal: `canary na ${urzadzenie.nazwa}: kod ${kod}\n${ogon}`, naprawa: `Sprawdź ręcznie: maestro --device ${urzadzenie.id} test ${wlasny ? PLIK_CANARY : '<flow>'}.${natywny}` }
+  const reczny = `maestro --device ${urzadzenie.id} test ${wlasny ? PLIK_CANARY : '<flow>'}`
+  if (przekroczonyLimitMs) {
+    const s = Math.round(przekroczonyLimitMs / 1000)
+    return {
+      ok: false,
+      detal: `canary na ${urzadzenie.nazwa}: przekroczony limit ${s} s — skrypt zatrzymał Maestro (SIGKILL); ogon pokazuje miejsce, w którym stał\n${ogon}`,
+      naprawa: `Zmierz czas ręcznie: time ${reczny}. Krótki przebieg = obciążony komputer albo symulator (równoległe testy, buildy): powtórz start, gdy maszyna jest wolna. Przebieg dłuższy niż ${s} s albo wiszący = sprawdź flow i zrzut w ${robocze}.${natywny}`,
+    }
+  }
+  return { ok: false, detal: `canary na ${urzadzenie.nazwa}: kod ${kod}\n${ogon}`, naprawa: `Sprawdź ręcznie: ${reczny}.${natywny}` }
 }
