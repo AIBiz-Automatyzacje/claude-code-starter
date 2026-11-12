@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url'
 
 import { pozycjaBajtuSterujacego } from '../wiedza/walidacja.mjs'
 
-import { kontraktBota } from '../pr/kontrakt-bota.mjs'
+import { kontraktBota, ostrzezeniaSynca } from '../pr/kontrakt-bota.mjs'
 import { PLIK_USTAWIEN, trybRecenzji } from '../pr/tryb-recenzji.mjs'
 
 /** @typedef {{ element: string, stan: 'OK' | 'UWAGA' | 'nie dotyczy', szczegol: string, instalacja: string }} Wiersz */
@@ -180,6 +180,10 @@ export function konfiguracjaCodeRabbit(projekt) {
   }
   const { odstepstwa } = kontraktBota(projekt)
   if (odstepstwa.length) return { element, stan: 'UWAGA', szczegol: `niezgodny z kontraktem /dev-pr: ${odstepstwa.join('; ')}`, instalacja: '/coderabbit-setup (nadpisanie po potwierdzeniu)' }
+  // Weryfikacja partii, punkt 55 (28): ostrzezenie synca widzial tylko etap start /dev-pr, przez ktory PR synca nie idzie.
+  // Ostrzezenia o bazie PR (inny temat) tu nie przenosimy.
+  const synca = ostrzezeniaSynca(readFileSync(plik, 'utf8'))
+  if (synca.length) return { element, stan: 'UWAGA', szczegol: synca.join('; '), instalacja: 'dopisz "chore(szablon)" do ignore_title_keywords albo /coderabbit-setup' }
   return { element, stan: 'OK', szczegol: '.coderabbit.yaml zgodny z kontraktem /dev-pr', instalacja: '—' }
 }
 

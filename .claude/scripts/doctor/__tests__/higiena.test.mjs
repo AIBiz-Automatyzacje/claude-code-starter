@@ -108,11 +108,21 @@ test('higienaProjektu: dziewiec wierszy w stalej kolejnosci; CLI wypisuje je jak
 
 test('CodeRabbit: config spelniajacy kontrakt = OK, odstepstwo = UWAGA z /coderabbit-setup', () => zProjektem((p, zapisz) => {
   const zgodny = ['language: pl-PL', 'reviews:', '  request_changes_workflow: false', '  review_status: true', '  auto_review:', '    enabled: true', '    auto_incremental_review: true',
+    '    ignore_title_keywords:', '      - "chore(szablon)"',
     '  pre_merge_checks:', '    docstrings:', '      mode: "off"', '  path_filters:', '    - "!docs/**"', '    - "!.claude/**"', '    - "!**/CLAUDE.md"',
     'knowledge_base:', '  code_guidelines:', '    filePatterns:', '      - "CLAUDE.md"', ''].join('\n')
   zapisz('CLAUDE.md', '# x')
   zapisz('.coderabbit.yaml', zgodny)
   assert.equal(konfiguracjaCodeRabbit(p).stan, 'OK')
+  // Punkt 55 (28): config bez slowa synca = UWAGA w doctorze (wczesniej widzial to tylko start /dev-pr); lista w jednej linii
+  // i inna wielkosc liter to dalej OK.
+  zapisz('.coderabbit.yaml', zgodny.replace('    ignore_title_keywords:\n      - "chore(szablon)"\n', ''))
+  const bezSlowa = konfiguracjaCodeRabbit(p)
+  assert.deepEqual([bezSlowa.stan, bezSlowa.instalacja], ['UWAGA', 'dopisz "chore(szablon)" do ignore_title_keywords albo /coderabbit-setup'])
+  assert.match(bezSlowa.szczegol, /^ignore_title_keywords bez "chore\(szablon\)"/)
+  zapisz('.coderabbit.yaml', zgodny.replace('    ignore_title_keywords:\n      - "chore(szablon)"', '    ignore_title_keywords: ["WIP", "Chore(Szablon)"]'))
+  assert.equal(konfiguracjaCodeRabbit(p).stan, 'OK', 'lista w linii, inna wielkosc liter')
+  zapisz('.coderabbit.yaml', zgodny)
   zapisz('.coderabbit.yaml', zgodny.replace('request_changes_workflow: false', 'request_changes_workflow: true'))
   const w = konfiguracjaCodeRabbit(p)
   assert.deepEqual([w.stan, w.instalacja], ['UWAGA', '/coderabbit-setup (nadpisanie po potwierdzeniu)'])
