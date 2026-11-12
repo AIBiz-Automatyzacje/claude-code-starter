@@ -297,13 +297,22 @@ function stanPoExecute(stan, numer) {
 }
 
 // Zdanie do powodu STOP-u po przerwanym execute (punkt 34): co zapisano commitem, co lezy w schowku gita, a czego nie zapisano.
+// Weryfikacja partii, punkt 54: przy nieudanym commicie powod pomijal schowek (pop mogl sie nie udac), a przy zapisanym podawal
+// sama liczbe plikow — operator nie wiedzial, czego szukac w git stash list.
 function opisCzesciowego(exec) {
   const c = exec && exec.czesciowe
   if (!c) return ''
-  if (!c.zacommitowano) return ` Jednostek ukonczonych nie zapisano (${c.powod || 'brak powodu'}): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.`
+  const pliki = Array.isArray(c.plikiOdlozone) ? c.plikiOdlozone : []
+  const nazwy = pliki.length > 10 ? `${pliki.slice(0, 10).join(', ')} i ${pliki.length - 10} innych` : pliki.join(', ')
+  if (!c.zacommitowano) {
+    const wSchowku = c.schowek
+      ? ` Schowek gita "${c.schowek}" nie wrocil do drzewa (git stash list)${nazwy ? `, sa w nim pliki jednostki nieukonczonej: ${nazwy}` : ''} — przywroc go (git stash pop) przed decyzja i swiezym runem.`
+      : ''
+    return ` Jednostek ukonczonych nie zapisano (${c.powod || 'brak powodu'}): pliki fazy zostaly w drzewie, a bramka czystosci swiezego runu na nich stanie.${wSchowku}`
+  }
   const lista = Array.isArray(exec.iuUkonczone) && exec.iuUkonczone.length ? exec.iuUkonczone.join(', ') : 'brak listy'
   const schowek = c.schowek
-    ? ` Pliki jednostki nieukonczonej (${(c.plikiOdlozone || []).length}) sa w schowku gita "${c.schowek}" (git stash list); nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.`
+    ? ` Pliki jednostki nieukonczonej sa w schowku gita "${c.schowek}" (git stash list)${nazwy ? `: ${nazwy}` : ''}; nie przywracaj ich przed swiezym runem — jednostka powstanie od nowa po decyzji.`
     : ''
   return ` Jednostki ukonczone zapisane commitem ${c.commit || '(brak SHA)'}: ${lista} — swiezy run zacznie od przerwanej.${schowek}`
 }

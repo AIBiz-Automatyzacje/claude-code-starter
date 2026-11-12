@@ -317,9 +317,12 @@ Jednostki nieukonczone: ${czesc.nieukonczone.join(', ')}
 
 1. \`git status --porcelain --untracked-files=all\`. Zmienione pliki dzielisz na trzy grupy: (a) pliki jednostek ukonczonych
    z listy wyzej, (b) pliki w ${sciezka}/, (c) reszta — praca jednostki nieukonczonej. Plik z listy, ktorego nie ma w wyniku
-   git status, pomijasz.
-2. Pliki (c) odkladasz do schowka jedna komenda, z nazwami plikow po \`--\`:
-   \`git stash push --include-untracked -m "${schowek}" -- <pliki (c)>\`. Bez plikow (c) krok pomijasz (schowek = null).
+   git status, pomijasz. Lockfile (package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lock, bun.lockb) idzie do grupy
+   manifestu package.json z tego samego katalogu: manifest w (a) → lockfile w (a); bez manifestu w (a) lockfile zostaje w (c).
+2. Pliki (c) odkladasz do schowka jedna komenda, z nazwami plikow po \`--\`. Nazwa: "${schowek}"; gdy \`git stash list\` ma juz
+   wpis o tej nazwie (drugi STOP tej samej fazy), uzyj kolejnego numeru: "${schowek}#2", "${schowek}#3" itd.
+   \`git stash push --include-untracked -m "<nazwa>" -- <pliki (c)>\`. Bez plikow (c) krok pomijasz (schowek = null).
+   W polu schowek zwracasz nazwe, ktorej faktycznie uzyles.
 3. Walidacja na drzewie bez plikow (c): typecheck i testy projektu (komendy z package.json, szczegoly stacku w
    .claude/stack/walidacja.md). Niczego nie naprawiasz i nie zmieniasz kodu: czerwona walidacja znaczy, ze jednostki ukonczone
    nie stoja bez przerwanej. Wtedy przywroc pliki (c) (\`git stash pop\`, gdy schowek powstal), sprawdz w git status, ze
@@ -330,9 +333,12 @@ ${BLOK_DLUGIE_KOMENDY}
    jedna linie: faza ${faza} przerwana, jednostki ukonczone i zapisane, jednostki nieukonczone, nazwa schowka (gdy powstal).
 5. Commit: \`git add\` wylacznie pliki (a) i dwa pliki z punktu 4 (nie git add .), potem
    \`git commit -m "feat(<nazwa zadania>): faza ${faza}, jednostki <lista ukonczonych> (execute przerwany)"\`.
-6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
+5a. Commit odrzucony mimo zielonej walidacji (np. hook): niczego nie poprawiasz; \`git stash pop\` (gdy schowek powstal) i
+   zakoncz: zacommitowano=false, schowek=null, w powod tresc bledu commita.
+   Nieudany \`git stash pop\` (tu albo w punkcie 3): nie probuj dalej (bez reset, checkout ani drop); zakoncz z zacommitowano=false,
+   schowek = nazwa (wpis zostaje w git stash list), w powod "schowek <nazwa> nie wrocil do drzewa: git stash list" i blad gita.6. Bramek mechanicznych i dossier nie uruchamiasz: zrobi je domkniecie calej fazy, liczone od bazy ${baza}.
 
-Zwroc obiekt zgodny ze schematem: zacommitowano, commit (SHA), schowek ("${schowek}" albo null), plikiOdlozone (pliki (c)),
+Zwroc obiekt zgodny ze schematem: zacommitowano, commit (SHA), schowek (faktyczna nazwa schowka albo null), plikiOdlozone (pliki (c)),
 walidacja, powod (null przy zacommitowano=true).`
 }
 
