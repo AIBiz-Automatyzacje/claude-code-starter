@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Czesc doctor.sh czytajaca JSON (bez jq): pluginy projektu i Dynamic Workflows. Wypisuje wiersze tabeli doctora
+// Czesc doctor.sh czytajaca JSON (bez jq): pluginy projektu, Dynamic Workflows i tokeny kont w srodowisku. Wypisuje wiersze tabeli doctora
 // jako TSV: element \t stan \t szczegol \t instalacja. Zly JSON w pliku ustawien = blad i exit ≠ 0 (doctor pokaze go jako UWAGA).
 //
 // Uzycie: node ustawienia.mjs <katalog-projektu>      (HOME wskazuje konto Claude Code: ~/.claude/…)
@@ -90,11 +90,40 @@ export function wierszWorkflowow(projekt, dom, srodowisko) {
   return [element, 'OK', efektywne.enableWorkflows ? 'włączone (enableWorkflows: true)' : 'włączone (domyślnie)', '—']
 }
 
+// Pilot mobile W1/W8 (2026-11-09): SUPABASE_ACCESS_TOKEN i EXPO_TOKEN w srodowisku shella operatora daja kazdej sesji i kazdemu
+// agentowi dostep do calego konta (wszystkie projekty Supabase, buildy i publikacje EAS), takze w projekcie bez plikow .env.
+// Szablon potrzebuje tokenu Supabase tylko w .env.e2e (advisors, token projektu e2e), a EXPO_TOKEN wcale.
+export const TOKENY_KONT = [
+  ['SUPABASE_ACCESS_TOKEN', 'konto Supabase: wszystkie projekty'],
+  ['EXPO_TOKEN', 'konto Expo: buildy i publikacje EAS'],
+]
+
+/**
+ * Tokeny kont w srodowisku, z ktorego sesja uruchamia doctor. Klucz w `env` ustawien projektu (settings.json albo
+ * settings.local.json) zastepuje wartosc dla sesji tego projektu — wtedy OK. Wartosci nigdy nie trafiaja do wiersza.
+ * @param {string} projekt @param {NodeJS.ProcessEnv} srodowisko @returns {Wiersz}
+ */
+export function wierszTokenow(projekt, srodowisko) {
+  const element = 'tokeny kont w środowisku'
+  const zastapione = new Set()
+  for (const plik of ['settings.json', 'settings.local.json']) {
+    for (const klucz of Object.keys(obiekt(czytajJson(join(projekt, '.claude', plik)).env))) zastapione.add(klucz)
+  }
+  const widoczne = TOKENY_KONT.filter(([klucz]) => srodowisko[klucz] && !zastapione.has(klucz))
+  if (!widoczne.length) {
+    const z = TOKENY_KONT.filter(([klucz]) => zastapione.has(klucz)).map(([klucz]) => klucz)
+    return [element, 'OK', z.length ? `zastąpione w .claude/settings*.json: ${z.join(', ')}` : 'brak tokenów kont w środowisku', '—']
+  }
+  const opis = widoczne.map(([klucz, zakres]) => `${klucz} (${zakres})`).join('; ')
+  return [element, 'UWAGA', `widoczne dla każdej sesji i agenta: ${opis}`,
+    `usuń z profilu shella (~/.zshrc, ~/.bashrc) albo zastąp w projekcie: "env": { ${widoczne.map(([k]) => `"${k}": ""`).join(', ')} } w .claude/settings.local.json; token Supabase do advisors trzymaj w .env.e2e (token projektu e2e)`]
+}
+
 const projekt = process.argv[2]
 if (!projekt) {
   process.stderr.write('Użycie: node ustawienia.mjs <katalog-projektu>\n')
   process.exit(2)
 }
-for (const w of [...wierszePluginow(projekt, homedir()), wierszWorkflowow(projekt, homedir(), process.env)]) {
+for (const w of [...wierszePluginow(projekt, homedir()), wierszWorkflowow(projekt, homedir(), process.env), wierszTokenow(projekt, process.env)]) {
   process.stdout.write(`${w.join('\t')}\n`)
 }

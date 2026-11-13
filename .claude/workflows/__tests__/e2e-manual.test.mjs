@@ -335,6 +335,15 @@ test('smoke operatora: marker projektu tylko z grepa po biezacych .env*, z wczes
   assert.match(skill, /Bierzesz z niego tylko układ: markerów projektów, adresów, kont ani kroków środowiska nie przepisujesz/)
 })
 
+// Pilot mobile run 5: kopia z sama baza lokalna (supabase start) — polecenie markera nie trafialo w http://127.0.0.1, a sekcja 0
+// kazala wskazac projekt dev, ktorego projekt nie ma.
+test('smoke operatora: polecenie markera rozpoznaje baze lokalna, sekcja 0 sprawdza wtedy supabase status', () => {
+  assert.ok(complete.includes("grep -ohE 'SUPABASE_URL=(https://[a-z0-9]{6}|http://(127\\\\.0\\\\.0\\\\.1|localhost))'"), 'polecenie markera w workflowie')
+  assert.match(complete, /Trafienie \\`http:\/\/127\.0\.0\.1\\` albo \\`http:\/\/localhost\\` to baza lokalna/)
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.match(skill, /zamiast markera piszesz „baza lokalna \(supabase start\)”, a w sekcji 0 pozycję o projekcie dev zastępuje `- \[ \] Lokalny Supabase działa/)
+})
+
 test('D4: pelny dowod [Manual] w raporcie review, smoke odsyla do sciezki po archiwizacji (docs/completed/)', () => {
   // Linia [Manual] ma powod skrocony do 160 znakow; pelny dowod testera zapisuje scribe w Bookkeeping raportu fazy.
   assert.match(review, /przeniesione w trakcie runu na \[Manual\]: M \(lista: flow — przyczyna: PELNY dowod testera z "Przebiegi E2E"/)

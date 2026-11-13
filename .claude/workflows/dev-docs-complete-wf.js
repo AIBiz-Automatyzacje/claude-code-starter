@@ -261,8 +261,10 @@ ostatnia linie stdout \`zmienne.mjs\` z kroku 6.
 DANE DO NAGLOWKA I SEKCJI 0 — NIE uruchamiaj testow ani scenariuszy E2E (wynik juz jest w artefaktach):
 - <N> testow: docs/active/${nazwaZadania}/.autopilot-state.json -> walidacjaWynik.testy ("PASS X/Y"); brak -> "testy zielone wg walidacji koncowej" bez liczby.
 - <M> scenariuszy E2E: \`grep -hE '^- \\[x\\].*\\[E2E\\]' docs/active/${nazwaZadania}/*-zadania.md | grep -vcE 'Operator:|\\[P[123]\\]'\` (bez kopii "Operator:" i pozycji findingow; brak trafien = 0).
-- marker projektu glownego / ref e2e: TYLKO pierwsze 6 znakow hosta: \`grep -ohE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local .env.e2e 2>/dev/null\`.
+- marker projektu glownego / ref e2e: TYLKO pierwsze 6 znakow hosta: \`grep -ohE 'SUPABASE_URL=(https://[a-z0-9]{6}|http://(127\\.0\\.0\\.1|localhost))' .env .env.local .env.e2e 2>/dev/null\`.
   Marker pochodzi WYLACZNIE z wyniku tego polecenia. Plik bez trafienia albo brak pliku: wpisz "brak <plik> — ustal projekt przed startem", bez markera.
+  Trafienie \`http://127.0.0.1\` albo \`http://localhost\` to baza lokalna (\`supabase start\`): wpisz "baza lokalna (supabase start)" zamiast markera
+  i w sekcji 0 zamiast wskazania projektu dev dajesz \`- [ ] Lokalny Supabase działa: \`supabase status\`\` (pilot mobile run 5: projekt bez .env dostawal pozycje o projekcie dev).
 - nazwa zmiennej z haslem konta testowego: TYLKO nazwy: \`grep -oE '^[A-Z0-9_]*(PASSWORD|PASS|HASLO)[A-Z0-9_]*=' .env .env.local .env.e2e 2>/dev/null | cut -d= -f1 | sort -u\`.
 ZAKAZ cat/Read calego .env* — nigdy nie wczytuj wartosci sekretow do kontekstu.
 

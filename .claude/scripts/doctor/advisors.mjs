@@ -20,6 +20,7 @@ function wierszAdvisors(projekt) {
   if (!existsSync(join(projekt, 'supabase')) && !env?.[adres]) return [ELEMENT, 'nie dotyczy', `projekt bez Supabase (brak supabase/ i ${adres} w .env.e2e)`, '—']
   const g = gotowoscAdvisors(projekt)
   if (g.gotowe) return [ELEMENT, 'OK', `token i projekt e2e ${g.ref}`, '—']
+  if (g.nieDotyczy) return [ELEMENT, 'nie dotyczy', g.nieDotyczy, '—']
   const [szczegol, naprawa] = g.uwaga.split(' — ')
   return [ELEMENT, 'UWAGA', `${szczegol} — security sprawdzi migracje ręcznie`, naprawa ?? '—']
 }

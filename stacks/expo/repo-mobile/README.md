@@ -70,9 +70,15 @@ Projekt zsynchronizowany z tym repo przed listopadem 2026 ma starszy zestaw (inn
    podmienia sam siebie w trakcie i może skończyć się błędem `syntax error` w połowie. Uruchom sync drugi raz: nowy skrypt
    dokończy usunięcia, marker wersji i manifest.
 4. Usuń własne skille syncu sprzed wariantu (np. `.claude/skills/sync-claude-template/`), żeby nie konkurowały z `/sync-template`.
+5. Dokumenty wymagań trzymaj w `docs/brainstorms/` (tam szuka ich `/dev-plan`); katalog o innej nazwie, np. `docs/dev-brainstorms/`,
+   przenieś. Wpisy `docs/solutions/` z odsyłaczem do `.claude/rules/learned-patterns.md` popraw na odsyłacz do samego wpisu.
 
-Projekt z własną konfiguracją ESLint nie dostaje bramki ESLint szablonu (doctor: „nie dotyczy”), dopóki nie zainstaluje wzoru z
-`.claude/templates/bramki/`, który wymaga ESLint 10 i TypeScript 6.
+Projekt z własną konfiguracją ESLint nie dostaje reguł ESLint szablonu (doctor: UWAGA „własny eslint.config…”), dopóki nie
+zainstaluje wzoru z `.claude/templates/bramki/` osobnym zadaniem; wzór wymaga ESLint 10 i TypeScript < 6.1.
+
+Tokeny kont (`SUPABASE_ACCESS_TOKEN`, `EXPO_TOKEN`) w profilu shella widzi każda sesja i agent; doctor zgłasza je jako UWAGA.
+Token do advisors trzymaj w `.env.e2e`, a w projekcie, który ma ich nie widzieć, zastąp je pustymi wartościami w
+`.claude/settings.local.json` (`"env": { "SUPABASE_ACCESS_TOKEN": "", "EXPO_TOKEN": "" }`).
 
 ## Bonus: Output Style „adhd"
 

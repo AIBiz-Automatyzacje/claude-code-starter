@@ -38,6 +38,20 @@ function refZBazy(dbUrl) {
   return UZYTKOWNIK_POOLERA.exec(decodeURIComponent(u.username))?.[1] ?? HOST_BAZY.exec(u.hostname)?.[1] ?? null
 }
 
+const HOSTY_LOKALNE = new Set(['127.0.0.1', 'localhost', '0.0.0.0', '[::1]', 'host.docker.internal'])
+/**
+ * Pilot mobile W15: baza e2e z `supabase start` (adres 127.0.0.1) nie ma projektu w chmurze, wiec Management API nie ma czego
+ * sprawdzic — uwaga „brak ref” wychodzila w kazdym planie z migracjami. Lokalna = adres klienta i adres bazy (gdy sa) lokalne,
+ * bez SUPABASE_E2E_PROJECT_REF.
+ * @param {Record<string, string>} env zawartosc .env.e2e @returns {boolean}
+ */
+export function bazaLokalna(env) {
+  if (env.SUPABASE_E2E_PROJECT_REF) return false
+  const adresy = [env[ADRES_APLIKACJI], env.SUPABASE_E2E_DB_URL].filter(Boolean).map(adres)
+  return adresy.length > 0 && adresy.every((u) => u !== null && HOSTY_LOKALNE.has(u.hostname))
+}
+const LOKALNA = 'baza e2e lokalna (supabase start) — advisors działa tylko na projekcie w chmurze; security sprawdza migracje ręcznie'
+
 /**
  * @param {Record<string, string>} env zawartosc .env.e2e
  * @returns {{ ref: string | null, blad: string | null }} ref projektu Supabase e2e albo powod, ze go nie ustalono
@@ -65,11 +79,12 @@ export const tokenAdvisors = (env, srodowisko) => env[KLUCZ_TOKENU] || srodowisk
  * statusem `brak` przez dwie fazy z migracjami, a nikt przed runem nie wiedzial o brakujacym tokenie).
  * @param {string} projekt
  * @param {Record<string, string | undefined>} [srodowisko]
- * @returns {{ gotowe: boolean, ref: string | null, uwaga: string }}
+ * @returns {{ gotowe: boolean, ref: string | null, uwaga: string, nieDotyczy?: string }} nieDotyczy: baza lokalna, bez uwagi
  */
 export function gotowoscAdvisors(projekt, srodowisko = process.env) {
   const env = envE2e(projekt)
   if (!env) return { gotowe: false, ref: null, uwaga: `advisors nie pobiegnie: brak ${PLIK_ENV} (lint biegnie na bazie e2e po wgraniu migracji fazy) — .claude/templates/e2e-env/README.md` }
+  if (bazaLokalna(env)) return { gotowe: false, ref: null, uwaga: '', nieDotyczy: LOKALNA }
   const { ref, blad } = refE2e(env)
   if (!ref) return { gotowe: false, ref: null, uwaga: `advisors nie pobiegnie: ${blad}` }
   if (!tokenAdvisors(env, srodowisko)) {
@@ -97,6 +112,7 @@ export async function advisorsE2e(projekt, { baza, bazaApi = API_SUPABASE, srodo
   const env = envE2e(projekt)
   if (!env) return wynik({ detal: `brak ${PLIK_ENV} — advisors sprawdza tylko baze e2e (migracje fazy wgrywa tam db-sync)` })
   if (baza && fazaZMigracjami(projekt, baza) === false) return wynik({ detal: `faza nie zmienila ${KATALOG_MIGRACJI}/ — lint bazy bez zmian` })
+  if (bazaLokalna(env)) return wynik({ detal: LOKALNA })
   const { ref, blad } = refE2e(env)
   if (!ref) return wynik({ status: 'brak', detal: blad ?? 'brak ref projektu e2e', naprawa: `dopisz SUPABASE_E2E_PROJECT_REF=<ref> do ${PLIK_ENV}` })
   const token = tokenAdvisors(env, srodowisko)

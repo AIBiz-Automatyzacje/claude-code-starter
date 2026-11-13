@@ -22,11 +22,11 @@ function czytajJson(plik) {
   return existsSync(plik) ? JSON.parse(readFileSync(plik, 'utf8')) : {}
 }
 
-/** @param {string} projekt @returns {boolean} */
-function maKonfiguracjeZSzablonu(projekt) {
-  return readdirSync(projekt)
-    .filter((n) => /^eslint\.config\.[cm]?[jt]s$/.test(n))
-    .some((n) => readFileSync(join(projekt, n), 'utf8').includes(ZNACZNIK))
+/** @param {string} projekt @returns {{ zSzablonu: boolean, wlasna: string | null }} */
+function konfiguracjaEslint(projekt) {
+  const pliki = readdirSync(projekt).filter((n) => /^eslint\.config\.[cm]?[jt]s$/.test(n))
+  const zSzablonu = pliki.some((n) => readFileSync(join(projekt, n), 'utf8').includes(ZNACZNIK))
+  return { zSzablonu, wlasna: zSzablonu ? null : pliki[0] ?? null }
 }
 
 /** @param {string} projekt @param {string} nazwa @returns {string | null} wersja zainstalowanej paczki */
@@ -41,8 +41,15 @@ function zainstalowana(projekt, nazwa) {
  * @returns {Wiersz}
  */
 export function wierszBramek(projekt, wymagane) {
-  if (!maKonfiguracjeZSzablonu(projekt)) {
-    return [ELEMENT, 'nie dotyczy', 'brak eslint.config.* z szablonu (README: „Bramki domknięcia”)', '—']
+  const { zSzablonu, wlasna } = konfiguracjaEslint(projekt)
+  // Pilot mobile W6: Nawykometr ma wlasny eslint.config.js (eslint 9, eslint-config-expo) — wiersz „nie dotyczy” ukrywal, ze bramka
+  // ESLint biegnie na regulach projektu, bez regul szablonu (rozmiar pliku, zlozonosc), a reszta bramek bez swoich konfiguracji.
+  if (wlasna) {
+    return [ELEMENT, 'UWAGA', `własny ${wlasna} bez konfiguracji szablonu — bramka ESLint biegnie na regułach projektu, bez reguł szablonu`,
+      'osobne zadanie sprzątające: konfiguracja z .claude/templates/bramki/eslint.config.szablon.ts (README szablonu: „Bramki domknięcia”)']
+  }
+  if (!zSzablonu) {
+    return [ELEMENT, 'nie dotyczy', 'brak eslint.config.* (README: „Bramki domknięcia”)', '—']
   }
   const brakujace = Object.keys(wymagane).filter((n) => !zainstalowana(projekt, n))
   const problemy = brakujace.length ? [`brak: ${brakujace.join(', ')}`] : []

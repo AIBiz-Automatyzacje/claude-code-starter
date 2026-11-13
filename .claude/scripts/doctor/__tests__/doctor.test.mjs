@@ -44,10 +44,10 @@ function atrapa(bin, nazwa, tresc) {
 }
 
 /** @param {Srodowisko} s */
-function doctor(s) {
+function doctor(s, dodatkowe = {}) {
   return spawnSync('/bin/bash', [SKRYPT, s.projekt], {
     encoding: 'utf8',
-    env: { PATH: s.bin, HOME: s.dom },
+    env: { PATH: s.bin, HOME: s.dom, ...dodatkowe },
   })
 }
 
@@ -334,9 +334,16 @@ function zainstaluj(projekt, nazwa, wersja) {
   writeFileSync(join(projekt, 'node_modules', nazwa, 'package.json'), JSON.stringify({ name: nazwa, version: wersja }))
 }
 
-test('bramki: projekt bez eslint.config.* z szablonu → nie dotyczy (starszy projekt, ESLint = osobne zadanie)', () => zSrodowiskiem((s) => {
-  writeFileSync(join(s.projekt, 'eslint.config.js'), 'export default []\n')
+// Pilot mobile W6: wlasny eslint.config.js projektu dawal „nie dotyczy”, choc bramka ESLint biegla na jego regulach.
+test('bramki: brak eslint.config.* → nie dotyczy; własny bez szablonu → UWAGA z drogą przejścia, bez blokady', () => zSrodowiskiem((s) => {
   assert.equal(wiersz(doctor(s).stdout, 'bramki domknięcia')[1], 'nie dotyczy')
+  writeFileSync(join(s.projekt, 'eslint.config.js'), 'export default []\n')
+  const w = doctor(s)
+  const bramki = wiersz(w.stdout, 'bramki domknięcia')
+  assert.equal(bramki[1], 'UWAGA')
+  assert.match(bramki[2], /^własny eslint\.config\.js bez konfiguracji szablonu/)
+  assert.match(bramki[3], /eslint\.config\.szablon\.ts/)
+  assert.equal(w.status, 0)
 }))
 
 test('bramki: konfiguracja z szablonu bez zaleznosci → UWAGA z komenda instalacji dokladnych wersji; komplet → OK', () => zSrodowiskiem((s) => {
@@ -404,6 +411,25 @@ test('advisors: bez Supabase nie dotyczy; baza e2e bez tokenu → UWAGA z napraw
   const ok = doctor(s)
   assert.deepEqual(wiersz(ok.stdout, 'advisors (baza e2e)').slice(1, 3), ['OK', 'token i projekt e2e abcdefghijklmnopqrst'])
   assert.doesNotMatch(ok.stdout, /tajny/)
+}))
+
+// Pilot mobile W1/W8: tokeny kont w shellu operatora widzi kazda sesja i kazdy agent. Doctor mowi o tym bez wartosci.
+test('tokeny kont: brak = OK; w srodowisku = UWAGA bez wartosci; zastapione w settings.local.json = OK; nie blokuje', () => zSrodowiskiem((s) => {
+  assert.deepEqual(wiersz(doctor(s).stdout, 'tokeny kont w środowisku').slice(1, 3), ['OK', 'brak tokenów kont w środowisku'])
+  const z = doctor(s, { SUPABASE_ACCESS_TOKEN: 'sbp_tajny', EXPO_TOKEN: 'expo_tajny' })
+  const w = wiersz(z.stdout, 'tokeny kont w środowisku')
+  assert.equal(w[1], 'UWAGA')
+  assert.match(w[2], /SUPABASE_ACCESS_TOKEN \(konto Supabase: wszystkie projekty\); EXPO_TOKEN \(konto Expo/)
+  assert.match(w[3], /"SUPABASE_ACCESS_TOKEN": "", "EXPO_TOKEN": "" \} w \.claude\/settings\.local\.json/)
+  assert.doesNotMatch(z.stdout, /tajny/)
+  assert.equal(z.status, 0, 'UWAGA nie blokuje runu')
+  json(s.projekt, '.claude/settings.local.json', { env: { SUPABASE_ACCESS_TOKEN: 'atrapa' } })
+  const czesc = wiersz(doctor(s, { SUPABASE_ACCESS_TOKEN: 'sbp_tajny', EXPO_TOKEN: 'expo_tajny' }).stdout, 'tokeny kont w środowisku')
+  assert.equal(czesc[1], 'UWAGA')
+  assert.doesNotMatch(czesc[2], /SUPABASE_ACCESS_TOKEN/)
+  json(s.projekt, '.claude/settings.local.json', { env: { SUPABASE_ACCESS_TOKEN: 'atrapa', EXPO_TOKEN: '' } })
+  assert.deepEqual(wiersz(doctor(s, { SUPABASE_ACCESS_TOKEN: 'sbp_tajny', EXPO_TOKEN: 'expo_tajny' }).stdout, 'tokeny kont w środowisku').slice(1, 3),
+    ['OK', 'zastąpione w .claude/settings*.json: SUPABASE_ACCESS_TOKEN, EXPO_TOKEN'])
 }))
 
 // P19: w vibersi zwykly dev server Vite na 5173 zajal port E2E (domyslny do P19) i start przyjal go jako serwer aplikacji.

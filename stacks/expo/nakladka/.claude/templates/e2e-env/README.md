@@ -43,7 +43,7 @@ Baza e2e (projekt z katalogiem `supabase/` albo z kluczami `SUPABASE_E2E_*`) wym
 `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (albo legacy `EXPO_PUBLIC_SUPABASE_ANON_KEY`), `SUPABASE_E2E_DB_URL`,
 `SUPABASE_E2E_SERVICE_ROLE_KEY`, `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`. Opcjonalnie `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access
 Tokens): lint advisors (RLS, `search_path`, indeksy) bazy e2e po wgraniu migracji każdej fazy; wynik dostaje reviewer security, a bez tokenu
-security sprawdza migracje ręcznie. Token daje dostęp do całego konta Supabase i nie trafia do procesu aplikacji. Ref projektu advisors
+security sprawdza migracje ręcznie. Token daje dostęp do całego konta Supabase i nie trafia do procesu aplikacji. Trzymaj go wyłącznie w `.env.e2e`, nie w profilu shella (`~/.zshrc`): zmienną ze środowiska shella widzi każda sesja i każdy agent, także w projektach bez Supabase — doctor zgłasza ją wtedy jako UWAGA (to samo dla `EXPO_TOKEN`). Ref projektu advisors
 bierze z `EXPO_PUBLIC_SUPABASE_URL` (`https://<ref>.supabase.co`) albo z `SUPABASE_E2E_PROJECT_REF`. Guard tożsamości:
 `EXPO_PUBLIC_SUPABASE_URL` z `.env.e2e` musi się różnić od `.env` i `.env.local`. Projekt bez bazy e2e ustawia tylko parametry Metro; db-sync
 wtedy się nie uruchamia.

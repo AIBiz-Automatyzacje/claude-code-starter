@@ -1761,6 +1761,13 @@ Nie modyfikuj plikow, nie uruchamiaj testow, nie przelaczaj brancha.`
     : await agent(polecenie, { schema: COMMIT_ARTEFAKTOW, agentType: 'klasa-mechaniczny', label: 'start:commit-zadania' })
 }
 
+// Pilot mobile W26 (run 2) i run 4: STOP celowo zostawia zywe srodowisko E2E (serwer z pliku PID, plik env klienta), ale komunikat
+// STOP-u o tym nie mowil. Operator naprawial recznie (`expo install --fix`) przy dzialajacym Metro — instalacja padla w polowie
+// i zostawila `node_modules` w stanie czesciowym. Ustawiane, gdy start albo restart fazy podniosl serwer; zerowane po env-down.
+let srodowiskoZostawione = false
+const UWAGA_SRODOWISKA = (sciezka) => ` UWAGA: srodowisko E2E dziala dalej (serwer aplikacji uruchomiony przez pipeline, plik env klienta) — swiezy run je przejmie.`
+  + ` Przed reczna naprawa, ktora instaluje paczki albo przebudowuje aplikacje, zatrzymaj je: \`node .claude/scripts/e2e/e2e.mjs stop --zadanie "${sciezka}"\`.`
+
 // Kazde zatrzymanie runu przechodzi TEDY — inaczej bramka, ktora zadziala, nie zostawia po sobie danych.
 async function stopRun(obj) {
   // try/catch, bo to wywolanie wola agenta, a najczestsza przyczyna STOP-u bywa przeciazenie API (529).
@@ -1788,6 +1795,7 @@ async function stopRun(obj) {
       powod = `${powod} UWAGA: poza katalogiem zadania zostaly niezacommitowane zmiany (${brudne.join(', ')}) — NIE tknelismy ich, ale bramka czystosci nastepnego runu na nich stanie.`
     }
   }
+  if (srodowiskoZostawione) powod = `${powod}${UWAGA_SRODOWISKA(sciezka)}`
   // Fazy domkniete w zadaniu (nie w tym runie): STOP na fazie 3 z 3 po dwoch zielonych to nie porazka calego zadania.
   const ukonczone = stan && Array.isArray(stan.fazy) ? fazyUkonczone(stan.fazy) : null
   return { status: 'STOP', ...obj, powod, fazyUkonczone: ukonczone, artefaktyStop: artefakty, ...poleNiezapisanych(decyzjeNiezapisane) }
@@ -1945,6 +1953,8 @@ if (!e2eStart) {
 }
 e2eStart = startZeSkryptu(e2eStart)
 const srodowiskoStartu = decyzjaSrodowiskaE2e(e2eStart, sciezka)
+// Takze przy STOP-ie startu: canary pada PO podniesieniu serwera (start.mjs zwraca wtedy serwer 'uruchomione').
+if (e2eStart && e2eStart.serwer === 'uruchomione') srodowiskoZostawione = true
 log(`E2E start: ${e2eStart ? `${e2eStart.status} (serwer: ${e2eStart.serwer}, scenariusze: ${e2eStart.scenariusze}) — ${e2eStart.detal}` : 'agent zwrocil null 2x'}`)
 if (srodowiskoStartu.stop) {
   return await stopRun({ ...srodowiskoStartu.stop, e2eStart, stan })
@@ -2075,7 +2085,7 @@ for (const numerFazy of kolejka) {
       if (po.srodowisko === 'martwe' && po.przyczyna) przyczynaBezPrzegladarki = po.przyczyna
       else if (po.srodowisko === 'martwe') restartBlad = po.detal
       if (po.trwale) e2eTrwaleMartwe = true
-      if (po.nasz) serwerNasz = true
+      if (po.nasz) { serwerNasz = true; srodowiskoZostawione = true }
       log(`E2E restart fazy ${numerFazy}: ${po.srodowisko || 'bez zmian'} — ${po.detal}${po.trwale ? ' (serwer nie odpowiada w limicie startu — do konca runu tester bez przegladarki)' : ''}`)
     }
     // db-sync zalezy od bazy e2e, nie od serwera: migracje i advisors biegna takze w zadaniu bez scenariuszy i po awarii serwera.
@@ -2338,6 +2348,7 @@ if (serwerNasz) {
   const down = await agent(zeStanem(e2eEnvDownPrompt(sciezka)), { schema: E2E_DOWN_RESULT, agentType: 'klasa-mechaniczny', label: 'e2e:env-down' })
   await potwierdzStan(down)
   log(`E2E env-down: ${down ? `${down.posprzatano ? 'OK' : 'pominieto'} — ${down.detal}` : 'agent zwrocil null'}`)
+  if (down && down.posprzatano) srodowiskoZostawione = false
 }
 
 // Compound PRZED complete: dokumentuje solutions gdy sciezki w docs/active/ jeszcze zyja.

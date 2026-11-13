@@ -231,3 +231,10 @@ test('correctness (PR #20 vibersi): przerwany odczyt ciala po fetch z AbortSigna
   assert.match(siec, /strumień ciała rzuca `DOMException`, to finding P2/)
   assert.equal(liczbaPolecen(rola('correctness-reviewer')), 19)
 })
+
+// Pilot mobile W33 (run 3): reviewer zgodności zgłosił P2 „scenariusz [E2E] nie był uruchomiony w chwili review”, a tester
+// odgrywa scenariusze w tym samym review, po reviewerach.
+test('rola spec-compliance: niezaznaczony [E2E] w chwili przeglądu nie jest findingiem', () => {
+  const rola = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'agents', 'spec-compliance-reviewer.md'), 'utf8')
+  assert.match(rola, /^- Pomijaj stan checkboxów `\[E2E\]`: scenariusze odgrywa tester w tym samym review, po reviewerach/m)
+})
