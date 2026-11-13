@@ -16,7 +16,7 @@ import assert from 'node:assert/strict'
 
 import { bezOgonkow, parsujPlan } from '../plan-techniczny.mjs'
 import { podsumowanieBudzetu } from '../budzet-pliku.mjs'
-import { BUILDERZY, sprawdzPlan } from '../walidacja-planu.mjs'
+import { BUILDERZY, sprawdzPlan, uruchamiaRunner } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
 import { doWzorca, PROFIL } from '../../stack/profil.mjs'
 
@@ -202,6 +202,21 @@ test('Weryfikacja z runnerem E2E bez znacznika [E2E] jest odrzucona — scribe u
   const runner = `bash ${PROFIL.e2e.katalogRunnerow}/run-all.sh`
   const w = sprawdz(mutacja(ostatnia, `- \`${runner}\` przechodzi`))
   assert.match(w.bledy.join('\n'), new RegExp(`IU-2: Weryfikacja „\`${doWzorca(runner)}\` przechodzi” uruchamia runner E2E bez znacznika \\[E2E\\]`))
+})
+
+// Pilot mobile W12 (runy 3–5): `grep -c "<flow>" <katalog>/run-all.sh` w Weryfikacji szło jako uruchomienie runnera.
+test('Weryfikacja, która tylko czyta plik runnera (grep, test -f), przechodzi; runner po powłoce, zmiennej i && jest odrzucony', () => {
+  const k = PROFIL.e2e.katalogRunnerow
+  const ostatnia = przykladPlanu().match(/^- `[^`]+` przechodzi$/gm)?.at(-1) ?? ''
+  const odczyt = sprawdz(mutacja(ostatnia, `- \`grep -c "notatki" ${k}/run-all.sh\` zwraca 1`))
+  assert.deepEqual(odczyt.bledy, [])
+  for (const czyta of [`grep -c "x" ${k}/run-all.sh`, `test -f ${k}/run-all.sh`, `wc -l ${k}/run-all.sh`, `npm test -- ${k}/run-all.sh`]) {
+    assert.equal(uruchamiaRunner(`\`${czyta}\` zwraca 1`), false, czyta)
+  }
+  for (const uruchamia of [`${k}/run-all.sh`, `./${k}/run-all.sh`, `bash ${k}/run-all.sh`, `sh -e ${k}/x.sh`, `CI=1 ${k}/x.sh --flow a`, `timeout 60 bash ${k}/x.sh`, `npm run build && ${k}/x.sh`, `grep x plik | ${k}/x.sh`]) {
+    assert.equal(uruchamiaRunner(`\`${uruchamia}\` przechodzi`), true, uruchamia)
+  }
+  assert.equal(uruchamiaRunner(`${k}/run-all.sh bez backticków`), false)
 })
 
 test('wymaganie ze „Śledzenia wymagań” bez IU dostaje uwagę (autopilot pominąłby je po cichu)', () => {

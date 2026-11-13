@@ -88,3 +88,35 @@ Kolejność:
 4. Run 5 na kopii, zadanie z makietą i pozycją smoke'u: `/dev-plan` (bramka spójności), autopilot (canary bez reloadu),
    `/dev-smoke` na symulatorze, `/dev-pr --bez-bota --bez-push` (pomiar pushu).
 5. Decyzja o automacie po runie 5. Android poza runem 5, chyba że operator zdecyduje inaczej.
+
+## 5. Run 5 na kopii (2026-11-13) — wynik
+
+Stan po zgodach operatora: merge gałęzi do `main` szablonu (`9794dfb`, CI `maszyneria` zielone, run `43389237439`), publikacja
+`workflow_dispatch` (run `43389482884`) → repo mobile `71674d1` (`sync: rdzeń 9794dfb…`, 77 plików), strażnik zielony (run
+`43389511190`). Kopia: `sync-template` nowe 5, zmienione 41, usunięte 0; doctor OK (4 uwagi); commit `78b90fa` wypchnięty na
+repo testowe. Automat publikacji dalej wyłączony.
+
+Zadanie `o-aplikacji-w-ustawieniach` (rozwijany wiersz „O aplikacji” w Ustawieniach, 1 faza, 2 IU, bez migracji i paczek):
+
+- **Przegląd spójności planu:** agent `spojnosc-planu` zatrzymał plan na 2 pozycjach (rozjazd z PRD R37, tekst sprzeczny
+  z PRD §8); po decyzjach operatora (S1: A, S2: B) drugi przegląd bez otwartych pozycji. Bramka gotowości zielona.
+- **Autopilot:** 1 start, 0 STOP-ów, ok. 20,5 min, 27 agentów. Review P1 0, P2 0, P3 3, 1 decyzja operatora. Jest 1241/1241,
+  `[E2E]` `e11-o-aplikacji` PASS. Start środowiska z canary: 130 s (autopilot) i 112 s (smoke), bez ponowienia.
+- **`/dev-smoke`:** uruchomiony na symulatorze; 7 pozycji zostaje dla operatora (D1, 4 przygotowania, 2 na fizycznym telefonie).
+- **`/dev-pr --bez-bota --bez-push`:** PR `nawykometr-kopia-pilot#2` zmergowany (`d22c9a7`, zgoda operatora). **W35 sprawdzone
+  na żywo:** commit etapu `claude-md` `79d3608` został lokalnie; sprawdzone niezależnie z sesji nadrzędnej: `git branch -r
+  --contains HEAD` puste, `git ls-remote origin main` = `d22c9a7`, kopia `main` o 1 commit przed `origin/main`.
+
+Usterki z runu 5:
+
+| Usterka | Stan |
+|---|---|
+| W12: `plan.mjs sprawdz` uznawał `grep -c "<flow>" <katalog runnerów>/run-all.sh` za uruchomienie runnera | Poprawione (`walidacja-planu.mjs`, `uruchamiaRunner`): runner uruchamia komenda, w której jego ścieżka stoi na miejscu polecenia (początek, po powłoce, po `&&`, `\|\|`, `;`, `\|`); ścieżka jako argument to odczyt. Test z 4 odczytami i 8 uruchomieniami. |
+| Wynik canary bez czasu | Poprawione: `_canary.yaml przeszedł w <s> s z 240 s limitu`. |
+| P3 typu E2E jest w raporcie review, a nie ma go w `known-issues` | Bez zmiany, do decyzji. Scribe zapisuje do `known-issues` P3 typu KOD/TEST (pkt 2a), a pkt 2 obejmuje E2E tylko dla P1/P2 — P3 typu E2E zostaje wyłącznie w `review-faza-N.md`. Dopisanie go do 2a koliduje z `polaczFindingiPoPowtorce`, które findingi E2E z przerwanego podejścia celowo odrzuca (sekcja P3 jest tylko dopisywana). |
+| Smoke: sekcja „0. Przygotowanie” zakłada projekt dev i `.env` | Bez zmiany. Kopia nie ma `.env` (cecha kopii). Osobna luka tej samej klasy co W15: polecenie markera `SUPABASE_URL=https://[a-z0-9]{6}` nie rozpoznaje bazy lokalnej (`http://127.0.0.1`); komenda jest przypięta w hooku `env-wartosci` i w dwóch testach. |
+| Sesja podrzędna: pytania przeglądu spójności i „osobna wiadomość startu” autopilota | Bez zmiany: cecha prowadzenia pilota przez sesję nadrzędną. |
+
+Dalej niesprawdzone na żywo: limit canary z ubiciem potomków i ponowienie po błędzie sterownika (W37 — nie wystąpiły), treść
+STOP-u przy limicie (W36), bramka spójności w autopilocie w wariancie czerwonym, Android, automat w gałęzi `workflow_run`,
+recenzja z botem, merge z CI.

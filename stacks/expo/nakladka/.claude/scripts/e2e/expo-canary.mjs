@@ -144,7 +144,9 @@ export async function przejdzCanary(projekt, env, { port, urzadzenie, aplikacja 
   const dopisek = ponowiony ? ' (drugi przebieg: w pierwszym sterownik Maestro nie wstał)' : ''
   if (kod === 0) {
     rmSync(robocze, { recursive: true, force: true })
-    const typ = wlasny ? `${PLIK_CANARY} przeszedł` : `canary bez logowania przeszedł, to słaby dowód: dodaj ${PLIK_CANARY} (wzór: .claude/templates/e2e-env/_canary.yaml)`
+    // Pilot run 5: wynik bez czasu nie pokazywał, ile zostaje do limitu — a o tym, czy canary jest stabilny, mówi właśnie zapas.
+    const czas = `${Math.round((Date.now() - poczatek) / 1000)} s z ${Math.round(limitMs / 1000)} s limitu`
+    const typ = wlasny ? `${PLIK_CANARY} przeszedł w ${czas}` : `canary bez logowania przeszedł w ${czas}, to słaby dowód: dodaj ${PLIK_CANARY} (wzór: .claude/templates/e2e-env/_canary.yaml)`
     return { ok: true, detal: `${urzadzenie.platforma} ${urzadzenie.nazwa}: ${typ}${dopisek}`, naprawa: '' }
   }
   // Katalog roboczy zostaje dla zrzutów i logów Maestro, ale bez zapisu komend: `commands-*.json` niesie wartości zmiennych flow, także te ze środowiska.
