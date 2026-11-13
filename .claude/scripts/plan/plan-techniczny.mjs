@@ -7,11 +7,11 @@ import { rejestrStalych } from './rejestr-stalych.mjs'
 
 export { bezOgonkow } from './pola-iu.mjs'
 
-const NAGLOWEK_FAZY = /^(#{2,3})\s+Faza\s+(\S+?)\s*[—–:-]\s*(.+?)\s*$/
-const NAGLOWEK_IU = /^(?:(?:- \[[ x]\] )?\*\*IU-(\d+)\s*[:—–-]\s*(.+?)\*\*.*|#{3,4}\s+IU-(\d+)\s*[:—–-]\s*(.+?)\s*)$/
+export const NAGLOWEK_FAZY = /^(#{2,3})\s+Faza\s+(\S+?)\s*[—–:-]\s*(.+?)\s*$/
+export const NAGLOWEK_IU = /^(?:(?:- \[[ x]\] )?\*\*IU-(\d+)\s*[:—–-]\s*(.+?)\*\*.*|#{3,4}\s+IU-(\d+)\s*[:—–-]\s*(.+?)\s*)$/
 const NAGLOWEK_IU_LUZNY = /^(?:- \[[ x]\] \*\*|\*\*|#{2,4}\s+)IU-\d+/
 const KLUCZ_FM = /^([A-Za-z_][\w-]*):(?:\s+(.*))?$/
-const PLOT = /^\s*(?:```|~~~)/
+export const PLOT = /^\s*(?:```|~~~)/
 
 /**
  * @typedef {import('./pola-iu.mjs').Jednostka} Jednostka

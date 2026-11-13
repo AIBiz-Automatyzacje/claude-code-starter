@@ -6,7 +6,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 
 | Sekcja | Zawartość | Kiedy |
 |---|---|---|
-| frontmatter | `title`, `type`, `status: active`, `date`, `origin`, `design_md`, `figma_spec`, `figma_screens`, `operator_prep` | zawsze; cztery ostatnie jako ścieżka albo `null` / `{}` |
+| frontmatter | `title`, `type`, `status: active`, `date`, `origin`, `design_md`, `figma_spec`, `figma_screens`, `operator_prep`, `glebokosc`, `research_zewnetrzny`, `dotyka_ui` | zawsze; `design_md`…`operator_prep` jako ścieżka albo `null` / `{}`; trzy decyzje startowe zawsze wypełnione (opis niżej) |
 | `## Przegląd` | co się zmienia i dlaczego; pierwszy akapit trafia do celu zadania | zawsze |
 | `## Ujęcie problemu` | problem użytkownika lub biznesu, odwołanie do źródła | zawsze |
 | `## Śledzenie wymagań` | lista `- R1. …` | zawsze |
@@ -23,6 +23,18 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `## Dokumentacja / Notatki operacyjne` | docs, rollout, monitoring | gdy dotyczy |
 | `## Źródła i referencje` | dokument źródłowy, powiązany kod, PR, docs zewnętrzne | zawsze |
 | `## Rozważane alternatywy`, `## Metryki sukcesu`, `## Zależności techniczne`, `## Analiza ryzyk i mitygacja`, `## Plan dokumentacji`, `## Notatki operacyjne / rolloutowe` | rozszerzenia analizy | Głęboka, gdy realnie pomagają |
+
+## Decyzje startowe we frontmatterze
+
+Trzy pola są źródłem prawdy dla decyzji z początku planowania; zdanie w sesji je ogłasza, ale `plan.mjs sprawdz` czyta pola i daje błąd przy braku albo pustej wartości.
+
+| Pole | Zapis | Krok skilla |
+|---|---|---|
+| `glebokosc` | `Lekka` \| `Standardowa` \| `Głęboka` | 0.6 |
+| `research_zewnetrzny` | `"tak — <powód jednym zdaniem>"` albo `"nie — <powód jednym zdaniem>"` | 1.3 |
+| `dotyka_ui` | `tak` \| `nie` (klasyfikacja z kroku A; IU do buildera UI albo fullstack przy `nie` daje uwagę) | 1.6 |
+
+Plan zadania, które już ma `docs/active/<zadanie>/` (zaplanowane przed tymi polami), dostaje przy ich braku tylko uwagę w bramce gotowości i w `plan.mjs odswiez`.
 
 `## Zależności techniczne` to biblioteki, wersje i kolejność merge'ów; czynności człowieka należą do „Wymagania wstępne operatora”.
 
@@ -46,6 +58,7 @@ Plan ma frontmatter i sekcje poniżej. Sekcje opcjonalne pomijasz, gdy nic nie w
 | `**Scenariusze testowe:**` | `- [Unit] …`, `- [E2E] \`<flow>\` … → …`, `- [Manual] …` | typ na początku każdej pozycji |
 | `**Weryfikacja:**` | `- <komenda w backtickach> <oczekiwany wynik>`; `- [E2E] \`.maestro/<runner>.sh\` — <stan>` dla runnera niebędącego scenariuszem | |
 | `**Operator checklist:**` | `- [ ] <krok człowieka po implementacji>` | opcjonalne |
+| `**Rozmiar:**` | `zostaje w całości (<P> plików, <S> scenariuszy) — <powód>` | obowiązkowe przy IU z co najmniej 8 scenariuszami albo 12 plikami, które zostaje niepodzielona; liczby z chwili decyzji — `sprawdz` daje uwagę, gdy jednostka urośnie ponad nie |
 
 Kolumna „Linie dziś → po” to dwie liczby całkowite ze strzałką (`285 → 260`); plik spoza kodu może mieć `— → —`, a wiersz `Usuń` ma `—` po strzałce (`45 → —`). Listy pól zaczynają się od `- ` w kolumnie 0; kontynuacja pozycji jest wcięta. Lista wcięta, numerowana, z `*` albo pole drugi raz w tej samej IU — `sprawdz` zgłasza jako błąd z numerem linii.
 
@@ -64,6 +77,9 @@ design_md: ./docs/DESIGN.md
 figma_spec: null
 figma_screens: {}
 operator_prep: null
+glebokosc: Lekka
+research_zewnetrzny: "nie — repo ma wzorzec serwisu z walidacją, bez nowych zależności i usług zewnętrznych"
+dotyka_ui: tak
 ---
 
 # feat: Notatki do klienta

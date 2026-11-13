@@ -151,7 +151,7 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
   const zadania = plikZadania(join(projekt, katalogZadania), '-zadania.md')?.tresc ?? ''
   const { wskaznik, plan } = planTechnicznyZadania(projekt, katalogZadania)
   // Bramka dziala tez po fazie 1 (wznowienie): budzet wobec repo sprawdzil `generuj`, tu tylko reguly strukturalne.
-  const walidacja = plan ? sprawdzPlan(plan, projekt, { wzgledemRepo: false })
+  const walidacja = plan ? sprawdzPlan(plan, projekt, { wzgledemRepo: false, zadanieWToku: true })
     : { bledy: [`brak planu technicznego (wskaźnik w planie zadania: ${wskaznik ?? 'brak linii „Plan techniczny:”'})`], uwagi: [] }
   if (!zadania) walidacja.bledy.push(`brak pliku *-zadania.md w ${katalogZadania}`)
 

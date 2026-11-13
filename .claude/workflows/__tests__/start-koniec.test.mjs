@@ -250,6 +250,14 @@ test('punkt 53: zadanie w toku (faza zbudowana albo jednostki zapisane) = tylko 
   assert.deepEqual(A.decyzjaSpojnosci(SWIEZE, undefined, ZADANIE), { stop: null, uwaga: null }, 'starszy plan.mjs bez pola')
 })
 
+// Analiza vibersi audyt-paczki-1-2: faza zamknieta bez czytania za zgoda operatora — bramka zielona z zastrzezeniem.
+test('przeglad spojnosci z zastrzezeniem (ok, powod „OK z zastrzezeniem”) = bez STOP, uwaga z powodem; takze w zadaniu w toku', () => {
+  const zastrzezenie = { ok: true, powod: 'OK z zastrzeżeniem: faza 3 zmieniona po ostatnim czytaniu (decyzja operatora)' }
+  for (const fazy of [SWIEZE, [{ ...SWIEZE[0], execute: 'done' }, SWIEZE[1]]]) {
+    assert.deepEqual(A.decyzjaSpojnosci(fazy, zastrzezenie, ZADANIE), { stop: null, uwaga: `przeglad spojnosci planu: ${zastrzezenie.powod}` })
+  }
+})
+
 test('punkt 53: bootstrap przepisuje spojnosc z plan.mjs blokery; schemat ja dopuszcza; decyzja przed blokerem i testami startu', () => {
   const schemat = wytnij(autopilot, '        blokery: {\n', "      required: ['zmiany', 'doctorKod'")
   assert.match(schemat, /spojnosc: \{\n\s+type: 'object',\n\s+additionalProperties: false,\n\s+properties: \{ ok: \{ type: 'boolean' \}, powod: \{ type: 'string' \} \},\n\s+required: \['ok', 'powod'\],/)

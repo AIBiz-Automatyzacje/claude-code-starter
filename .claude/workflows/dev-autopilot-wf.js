@@ -1344,8 +1344,10 @@ function decyzjaBlokeraFazy(numerFazy, blokery, sciezka) {
 // Przeglad spojnosci planu (weryfikacja partii 26–45, punkt 53, decyzja 3 planu poprawek): bootstrap bral tylko blokery, wiec
 // plan bez aktualnego przegladu szedl do runu. Swieze zadanie (zadna faza nie zbudowana ani zaczeta) bez waznego przegladu = STOP
 // na starcie; zadanie w toku (np. zaplanowane przed ta bramka) dostaje tylko uwage — STOP zatrzymalby je bez potrzeby.
-// Brak pola (starszy plan.mjs w projekcie) = brak kontroli.
+// Brak pola (starszy plan.mjs w projekcie) = brak kontroli. Przeglad zamkniety bez czytania fazy za zgoda operatora (ok z powodem
+// „OK z zastrzezeniem: …”, analiza vibersi audyt-paczki-1-2) nie zatrzymuje runu, ale idzie do wyniku jako uwaga.
 function decyzjaSpojnosci(fazy, spojnosc, sciezka) {
+  if (spojnosc && spojnosc.ok === true && spojnosc.powod) return { stop: null, uwaga: `przeglad spojnosci planu: ${spojnosc.powod}` }
   if (!spojnosc || spojnosc.ok !== false) return { stop: null, uwaga: null }
   const wToku = fazy.some((f) => f.execute === 'done' || (Array.isArray(f.iuUkonczone) && f.iuUkonczone.length > 0))
   if (wToku) return { stop: null, uwaga: `przeglad spojnosci planu nieaktualny, zadanie w toku — run idzie dalej: ${spojnosc.powod}` }
@@ -2649,7 +2651,8 @@ return {
   archiwumCommit: (complete && complete.commit) || '',
   // Plik decyzji i rozmiar PR (P4) — UWAGA, nie STOP: operator decyduje o podziale PR-a.
   uwagiArchiwum: (complete && complete.uwagi) || [],
-  // Punkt 53: zadanie w toku z nieaktualnym przegladem spojnosci planu — run poszedl, operator widzi uwage w wyniku.
+  // Punkt 53: zadanie w toku z nieaktualnym przegladem spojnosci planu albo przeglad z zastrzezeniem (faza zamknieta bez
+  // czytania za zgoda operatora) — run poszedl, operator widzi uwage w wyniku.
   uwagaSpojnosci: bramkaSpojnosci.uwaga,
   nastepneKroki: nastepneKroki({ smoke: (complete && complete.smokeOperatora) || '', raporty, propozycjeBramek: (compound && compound.propozycjeBramek) || [], czesci: !!(complete && complete.czesciPr), zadanie: stan.nazwaZadania, decyzjeZPliku: stan.walidacjaWynik ? (stan.walidacjaWynik.decyzjeOtwarte || []) : null, otwarte: (complete && complete.otwarte) || null, smokeStatus: complete ? complete.smokeStatus : (stan.zakonczenie.complete === 'done' ? null : 'complete-null'), niezapisane: decyzjeNiezapisane, nieOdegraneZeStanu: e2eNieOdegrane }),
   decyzjeNiezapisane,

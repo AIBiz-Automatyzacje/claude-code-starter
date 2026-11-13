@@ -8,7 +8,7 @@ import { join } from 'node:path'
 import { akcja, sprawdzBudzet } from './budzet-pliku.mjs'
 import { sprawdzCzesci } from './czesci-pr.mjs'
 import { uwagiImporterow } from './importerzy.mjs'
-import { ekranyFigmy, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
+import { bezOgonkow, ekranyFigmy, poleTekstowe, sciezkaOrigin } from './plan-techniczny.mjs'
 import { sprawdzMakiety } from './makiety.mjs'
 import { sciezkaWzgledna } from './przygotowanie.mjs'
 import { uwagiRejestru } from './rejestr-stalych.mjs'
@@ -76,6 +76,36 @@ function frontmatter(plan, projekt, w) {
   const origin = poleTekstowe(plan, 'origin')
   const zrodlo = sciezkaOrigin(origin)
   if (zrodlo && !existsSync(join(projekt, zrodlo))) w.uwagi.push(`frontmatter: origin ${origin} — plik nie istnieje (popraw origin)`)
+}
+
+// Decyzje startowe planu (analiza vibersi audyt-paczki-1-2, decyzja operatora 2026-11-13): sesja nie oglaszala glebokosci (0.6),
+// researchu zewnetrznego (1.3) ani klasyfikacji UI (1.6 krok A). Zrodlem prawdy sa pola frontmattera; zdanie w sesji zostaje.
+const GLEBOKOSCI = ['Lekka', 'Standardowa', 'Głęboka']
+const TAK_NIE = /^(tak|nie)$/i
+// „tak — <powod>” / „nie: <powod>”; powod to jedno zdanie, wiec wymagamy choc kilku znakow po separatorze.
+const RESEARCH = /^(tak|nie)\s*[—–:,-]\s*(\S.{4,})$/i
+
+/**
+ * @param {Plan} plan @param {Jednostka[]} jednostki
+ * @param {Wynik} w przy zadaniu w toku wywolujacy podstawia uwagi w miejsce bledow
+ */
+function decyzjeStartowe(plan, jednostki, w) {
+  const glebokosc = poleTekstowe(plan, 'glebokosc')
+  if (!glebokosc || !GLEBOKOSCI.map((g) => bezOgonkow(g).toLowerCase()).includes(bezOgonkow(glebokosc).toLowerCase())) {
+    w.bledy.push(`frontmatter: glebokosc ${glebokosc ? `„${glebokosc}”` : 'brak albo puste'} — ${GLEBOKOSCI.join(' | ')} (dev-plan 0.6)`)
+  }
+  const research = poleTekstowe(plan, 'research_zewnetrzny')
+  if (!research || !RESEARCH.test(research)) {
+    w.bledy.push(`frontmatter: research_zewnetrzny ${research ? `„${research.slice(0, 60)}”` : 'brak albo puste'} — „tak — <powód>”`
+      + ' albo „nie — <powód>”, powód jednym zdaniem (dev-plan 1.3)')
+  }
+  const ui = poleTekstowe(plan, 'dotyka_ui')
+  if (!ui || !TAK_NIE.test(ui)) w.bledy.push(`frontmatter: dotyka_ui ${ui ? `„${ui}”` : 'brak albo puste'} — tak | nie (dev-plan 1.6 krok A)`)
+  const uiIu = jednostki.filter((iu) => /^feature-builder-(?:ui|fullstack)/.test(iu.delegate)).map((iu) => iu.id)
+  if (ui && /^nie$/i.test(ui) && uiIu.length) {
+    w.uwagi.push(`frontmatter: dotyka_ui: nie, a ${uiIu.join(', ')} idą do buildera UI albo fullstack — klasyfikacja wstępna nie`
+      + ' trzyma: dotyka_ui: tak i kroki B–F kontekstu designerskiego (dev-plan 1.6)')
+  }
 }
 
 /** @param {Plan} plan @param {Jednostka[]} jednostki @param {Wynik} w */
@@ -228,26 +258,61 @@ export function uwagiRozmiaruFaz(fazy) {
 }
 
 // E5-14 (vibersi etapy 3–5, 51 IU): scenariusze IU ↔ ctx_max buildera Spearman +0,83, pliki ↔ tury +0,71; IU z 10+ plikami
-// tury p50 72 i ctx_max p50 227k, z 7–9 scenariuszami 80 i 263k (1–3 pliki: 27 i 89k). Zero porazek buildera — uwaga, nie blad.
+// tury p50 72 i ctx_max p50 227k, z 7–9 scenariuszami 80 i 263k (1–3 pliki: 27 i 89k).
 // Prog 8/12 (decyzja operatora): 7/10 lapal 29/51 IU, czyli srodek zwyklego rozmiaru; 8/12 — 17/51 najciezszych.
+// Analiza vibersi audyt-paczki-1-2 (decyzja operatora 2026-11-13): uwaga nie wystarczala — 6 IU ponad progiem bez decyzji
+// o podziale, a w poprawkach po przegladzie spojnosci urosly (IU-9 z 9 do 15 plikow). Jednostka ponad progiem bez pola
+// „Rozmiar” to blad; z polem — uwaga jak dawniej, a przyrost ponad liczby zapisane przy decyzji — osobna uwaga.
 const PROG_SCENARIUSZY_IU = 8
 const PROG_PLIKOW_IU = 12
+const DECYZJA_ROZMIARU = /^zostaje w ca[łl]o[śs]ci\b/i
 
 /**
- * @param {{ id: string, scenariusze: unknown[], pliki: unknown[] }[]} jednostki
- * @returns {string[]} uwaga na kazda IU z co najmniej PROG_SCENARIUSZY_IU scenariuszami albo PROG_PLIKOW_IU plikami
+ * @param {{ id: string, scenariusze: unknown[], pliki: unknown[], rozmiar?: import('./pola-iu.mjs').Rozmiar | null }[]} jednostki
+ * @param {{ zadanieWToku?: boolean }} [opcje] zadanieWToku: plan zadania, ktore juz istnieje — brak decyzji to uwaga (zgodnosc wstecz)
+ * @returns {Wynik} blad na IU z co najmniej PROG_SCENARIUSZY_IU scenariuszami albo PROG_PLIKOW_IU plikami bez decyzji w polu
+ *   „Rozmiar” (albo z nieczytelnym polem); uwaga na IU ponad progiem z decyzja i na przyrost ponad liczby z decyzji
  */
-export function uwagiRozmiaruIu(jednostki) {
-  return jednostki.filter((iu) => iu.scenariusze.length >= PROG_SCENARIUSZY_IU || iu.pliki.length >= PROG_PLIKOW_IU)
-    .map((iu) => `${iu.id}: ${iu.scenariusze.length} scenariuszy testowych, ${iu.pliki.length} plików (próg: ${PROG_SCENARIUSZY_IU}`
-      + ` scenariuszy albo ${PROG_PLIKOW_IU} plików) — builder takiej IU ma ~2–3× więcej tur i kontekstu (E5-14); podziel ją`
-      + ' na granicy zachowania albo warstwy, jeśli obie części dają się zreviewować osobno (dev-plan 3.3)')
+export function rozmiarIu(jednostki, opcje = {}) {
+  /** @type {Wynik} */
+  const w = { bledy: [], uwagi: [] }
+  const bezDecyzji = opcje.zadanieWToku ? w.uwagi : w.bledy
+  for (const iu of jednostki) {
+    const s = iu.scenariusze.length
+    const p = iu.pliki.length
+    const ponad = s >= PROG_SCENARIUSZY_IU || p >= PROG_PLIKOW_IU
+    const r = iu.rozmiar ?? null
+    const opis = `${iu.id}: ${s} scenariuszy testowych, ${p} plików (próg: ${PROG_SCENARIUSZY_IU} scenariuszy albo ${PROG_PLIKOW_IU} plików)`
+    const wzor = `**Rozmiar:** zostaje w całości (${p} plików, ${s} scenariuszy) — <powód>`
+    const czytelne = r && DECYZJA_ROZMIARU.test(r.tresc) && r.pliki !== null && r.scenariusze !== null && r.powod
+    if (r && !czytelne) {
+      bezDecyzji.push(`${iu.id}: pole Rozmiar „${r.tresc.slice(0, 80)}” — zapis ${wzor}`
+        + ' (liczby z chwili decyzji i powód; dev-plan 3.3)')
+      continue
+    }
+    if (ponad && !r) {
+      bezDecyzji.push(`${opis} bez decyzji o rozmiarze — podziel ją na granicy zachowania`
+        + ` albo warstwy, jeśli obie części dają się zreviewować osobno, albo zapisz w jednostce ${wzor} (dev-plan 3.3)`)
+      continue
+    }
+    if (ponad) {
+      w.uwagi.push(`${opis}, decyzja „zostaje w całości” — builder takiej IU ma ~2–3× więcej tur i kontekstu (E5-14)`)
+    }
+    if (r && ((r.pliki ?? 0) < p || (r.scenariusze ?? 0) < s)) {
+      w.uwagi.push(`${iu.id}: urosła od decyzji o rozmiarze (${r.pliki} plików, ${r.scenariusze} scenariuszy → ${p} plików, ${s}`
+        + ' scenariuszy) — oceń podział od nowa i zaktualizuj liczby w polu Rozmiar (podział po przeglądzie spójności wymaga'
+        + ' ponownego przeglądu faz; dev-plan 3.3)')
+    }
+  }
+  return w
 }
 
 /**
  * @param {Plan} plan sparsowany plan techniczny
  * @param {string} projekt katalog projektu (sciezki planu sa wzgledne wobec niego)
- * @param {{ wzgledemRepo?: boolean }} [opcje] wzgledemRepo=false: bez regul budzetu i importerow wobec stanu repo (bramka po fazie 1)
+ * @param {{ wzgledemRepo?: boolean, zadanieWToku?: boolean }} [opcje] wzgledemRepo=false: bez regul budzetu i importerow wobec
+ *   stanu repo (bramka po fazie 1); zadanieWToku: plan zadania, ktore juz ma docs/active/ (bramka gotowosci, odswiez) — brak
+ *   decyzji startowych i decyzji o rozmiarze IU to uwagi, nie bledy (zadania zaplanowane przed tymi regulami)
  * @returns {Wynik}
  */
 export function sprawdzPlan(plan, projekt, opcje = {}) {
@@ -255,6 +320,7 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   const w = { bledy: [], uwagi: [] }
   const jednostki = [...plan.bezFazy, ...plan.fazy.flatMap((f) => f.iu)].sort((a, b) => a.start - b.start)
   frontmatter(plan, projekt, w)
+  decyzjeStartowe(plan, jednostki, opcje.zadanieWToku ? { bledy: w.uwagi, uwagi: w.uwagi } : w)
   struktura(plan, jednostki, w)
   const plikiAkcji = (/** @type {string} */ znacznik) => new Set(jednostki.flatMap((iu) => iu.pliki.filter((p) => akcja(p).includes(znacznik)).map((p) => p.sciezka)))
   const planu = { seedy: plikiAkcji('e2e seed'), pliki: plikiAkcji('e2e flow') }
@@ -276,7 +342,9 @@ export function sprawdzPlan(plan, projekt, opcje = {}) {
   sprawdzBudzet(jednostki, projekt, w, opcje.wzgledemRepo !== false)
   if (opcje.wzgledemRepo !== false) w.uwagi.push(...uwagiImporterow(jednostki, projekt))
   w.uwagi.push(...uwagiRozmiaruFaz(plan.fazy))
-  w.uwagi.push(...uwagiRozmiaruIu(jednostki))
+  const rozmiar = rozmiarIu(jednostki, opcje)
+  w.bledy.push(...rozmiar.bledy)
+  w.uwagi.push(...rozmiar.uwagi)
   w.uwagi.push(...uwagiRejestru(plan, jednostki))
   const makiety = sprawdzMakiety(plan, jednostki, projekt)
   w.bledy.push(...makiety.bledy)

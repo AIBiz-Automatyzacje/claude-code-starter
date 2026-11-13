@@ -9,6 +9,9 @@ figma_spec: ./docs/plans/publikacja-ofert-figma/SPEC.md
 figma_screens:
   lista-ofert: ./docs/plans/publikacja-ofert-figma/lista-ofert.png
 operator_prep: ./docs/operator/publikacja-ofert-przygotowanie.md
+glebokosc: Standardowa
+research_zewnetrzny: "nie — repo ma wzorzec serwisu i listy ofert, bez nowych zależności i usług zewnętrznych"
+dotyka_ui: tak
 ---
 
 # feat: Publikacja ofert

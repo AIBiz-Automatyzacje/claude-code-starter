@@ -18,6 +18,8 @@ Plan techniczny jest jedynym źródłem treści zadania: builder dostaje jednost
 
 Pytania zadawaj narzędziem `AskUserQuestion`, jedno naraz, z opcjami single-select, gdy istnieją naturalne odpowiedzi. Bez tego narzędzia — numerowane opcje w czacie i czekanie na odpowiedź.
 
+Jedyny wyjątek od „jedno naraz” to pozycje techniczne z przeglądu spójności (6.2b): do 5 takich pozycji w jednym pytaniu, każda z rekomendacją w jednej linii, z opcją „Pokaż po kolei”. Pozycje widoczne dla użytkownika aplikacji idą zawsze pojedynczo.
+
 ## Opis feature'a
 
 <feature_description> #$ARGUMENTS </feature_description>
@@ -101,7 +103,7 @@ Pytania „do rozwiązania przed planowaniem” ze źródła przejrzyj po kolei.
 - **Standardowa** — zwykły feature albo ograniczony refactor z kilkoma decyzjami; 3–6 IU w 2–3 fazach.
 - **Głęboka** — praca przekrojowa, strategiczna, wysokiego ryzyka albo bardzo niejednoznaczna; 4–8 IU w 3–6 fazach.
 
-Niejasna głębokość → jedno celowane pytanie.
+Niejasna głębokość → jedno celowane pytanie. Decyzję ogłaszasz jednym zdaniem z powodem, a źródłem prawdy jest pole frontmattera planu `glebokosc: Lekka | Standardowa | Głęboka` (`references/szablon-planu.md`, „Decyzje startowe”); `plan.mjs sprawdz` odrzuca plan bez niego.
 
 ### Faza 1: Kontekst
 
@@ -127,7 +129,7 @@ Sygnały: użytkownik prosi o TDD / test-first / characterization-first, źród�
 
 #### 1.3 Research zewnętrzny (warunkowy)
 
-Research zewnętrzny wołasz, gdy temat jest wysokiego ryzyka (bezpieczeństwo, płatności, prywatność, zewnętrzne API, migracje, compliance), repo nie ma lokalnego wzorca albo użytkownik wchodzi na nieznany teren — przy Lekkiej to warunek (a) z 1.1. Pomijasz, gdy repo ma silny wzorzec, a użytkownik zna docelowy kształt. Decyzję ogłoś jednym zdaniem. Research: równolegle `best-practices-researcher` i `framework-docs-researcher`, prompt = samo podsumowanie kontekstu.
+Research zewnętrzny wołasz, gdy temat jest wysokiego ryzyka (bezpieczeństwo, płatności, prywatność, zewnętrzne API, migracje, compliance), repo nie ma lokalnego wzorca albo użytkownik wchodzi na nieznany teren — przy Lekkiej to warunek (a) z 1.1. Pomijasz, gdy repo ma silny wzorzec, a użytkownik zna docelowy kształt. Decyzję ogłoś jednym zdaniem i zapisz w polu frontmattera `research_zewnetrzny: "tak — <powód>"` albo `"nie — <powód>"` (powód jednym zdaniem) — pole jest źródłem prawdy, `sprawdz` odrzuca plan bez niego. Research: równolegle `best-practices-researcher` i `framework-docs-researcher`, prompt = samo podsumowanie kontekstu.
 
 #### 1.4 Konsolidacja
 
@@ -141,7 +143,7 @@ Wywołaj `spec-flow-analyzer` z podsumowaniem kontekstu i wynikami researchu. Bi
 
 Ustal teraz `<feature-slug>` (kebab-case, 3–5 słów) — użyjesz go bez zmian w 3.1, w `docs/plans/<feature-slug>-figma/` i w 5.2b. Checklista z 0.3 daje slug gotowy (`feature_slug:`).
 
-**Krok A — klasyfikacja (bez pytania).** Feature dotyka UI, gdy wymagania opisują ekrany, komponenty, layouty, nawigację, animacje albo stany widoczne dla użytkownika, lub research wskazuje pliki warstwy UI wg `.claude/stack/buildery.md`, sekcja „Ścieżki warstw”. Praca w warstwie danych z tej sekcji, testach i konfiguracji to pure-data. Ogłoś wynik jednym zdaniem; pytaj tylko, gdy po researchu nadal nie wiesz.
+**Krok A — klasyfikacja (bez pytania).** Feature dotyka UI, gdy wymagania opisują ekrany, komponenty, layouty, nawigację, animacje albo stany widoczne dla użytkownika, lub research wskazuje pliki warstwy UI wg `.claude/stack/buildery.md`, sekcja „Ścieżki warstw”. Praca w warstwie danych z tej sekcji, testach i konfiguracji to pure-data. Ogłoś wynik jednym zdaniem i zapisz go w polu frontmattera `dotyka_ui: tak | nie` (źródło prawdy; `sprawdz` odrzuca plan bez niego, a przy `nie` i IU dla buildera UI albo fullstack daje uwagę); pytaj tylko, gdy po researchu nadal nie wiesz.
 
 - Pure-data → frontmatter planu: `design_md: null`, `figma_spec: null`, `figma_screens: {}`; reszta 1.6 odpada.
 - Dotyka UI → przeczytaj `references/kontekst-designerski.md` i wykonaj kroki B–F (DESIGN.md, makiety Figmy, SPEC.md, idempotentność).
@@ -174,13 +176,13 @@ Fazy są obowiązkowe na każdej głębokości, bo autopilot wykonuje plan fazam
 - faza kończy się w stanie, który da się zreviewować i przetestować niezależnie (typecheck i testy przechodzą, aplikacja działa); typowy układ: fundament danych → warstwa danych i akcje → strony i komponenty → polish i E2E; trywialna IU dołącza do sąsiedniej fazy;
 - IU ze scenariuszem `[E2E]` stoi w fazie, w której istnieje wszystko, czego flow potrzebuje (strona, dane, seed);
 - faza ma najwyżej 5 IU, a migracje przepisujące istniejące funkcje bazy (`create or replace` funkcji z poprzednich etapów, `drop function` + `create` RPC) stoją w fazie bez fundamentu serwera i klienta — review takiej fazy czyta same zmiany schematu (vibersi etap 5: faza z 3 migracjami, serwerem, E2E i Sentry po podziale dała dwa mniejsze review); `sprawdz` daje uwagę przy fazie powyżej 5 IU;
-- IU z co najmniej 8 scenariuszami testowymi albo 12 plikami dostaje uwagę `sprawdz`: builder takiej jednostki ma 2–3 razy więcej tur i kontekstu (vibersi etapy 3–5: 10+ plików — tury p50 72 i kontekst 227k wobec 27 i 89k przy 1–3 plikach). Dzielisz ją na granicy zachowania albo warstwy, gdy obie części dają się zreviewować osobno; jednostkę spójną zostawiasz.
+- IU z co najmniej 8 scenariuszami testowymi albo 12 plikami to błąd `sprawdz`, dopóki nie ma jawnej decyzji: builder takiej jednostki ma 2–3 razy więcej tur i kontekstu (vibersi etapy 3–5: 10+ plików — tury p50 72 i kontekst 227k wobec 27 i 89k przy 1–3 plikach). Dzielisz ją na granicy zachowania albo warstwy, gdy obie części dają się zreviewować osobno; jednostkę spójną zostawiasz z polem `**Rozmiar:** zostaje w całości (<P> plików, <S> scenariuszy) — <powód>` — wtedy `sprawdz` daje uwagę jak dawniej. Liczby w polu to rozmiar z chwili decyzji: gdy jednostka później urośnie ponad nie (poprawki po przeglądzie dopisują pliki testów do tabel — vibersi audyt-paczki-1-2: IU-9 z 9 do 15 plików), `sprawdz` daje uwagę o przyroście, a ty oceniasz podział od nowa i aktualizujesz liczby. O podziale decydujesz przed przeglądem spójności (6.2b): podział po przeglądzie zmienia fazy i wymaga ich ponownego przeglądu.
 
 Numeracja IU jest ciągła przez cały plan (IU-1, IU-2, …).
 
 #### 3.4 Pola IU
 
-Format jednostki i całego planu jest w `references/szablon-planu.md` — przeczytaj go przed pisaniem (Faza 4). Pola: Cel, Wymagania, Zależności, Pliki (tabela, 3.6), Delegate to (3.5), Makiety (IU ui/fullstack w planie z `figma_screens`), Skills in play, Podejście, Notatka wykonawcza (opcjonalna), Teksty (verbatim) (obowiązkowe, gdy IU renderuje zatwierdzone treści), Znika z obecnej wersji (IU z makietami, która modyfikuje istniejący plik), Wzorce do naśladowania, Scenariusze testowe, Weryfikacja, Operator checklist (opcjonalna).
+Format jednostki i całego planu jest w `references/szablon-planu.md` — przeczytaj go przed pisaniem (Faza 4). Pola: Cel, Wymagania, Zależności, Pliki (tabela, 3.6), Rozmiar (IU ponad progiem z 3.3, która zostaje niepodzielona), Delegate to (3.5), Makiety (IU ui/fullstack w planie z `figma_screens`), Skills in play, Podejście, Notatka wykonawcza (opcjonalna), Teksty (verbatim) (obowiązkowe, gdy IU renderuje zatwierdzone treści), Znika z obecnej wersji (IU z makietami, która modyfikuje istniejący plik), Wzorce do naśladowania, Scenariusze testowe, Weryfikacja, Operator checklist (opcjonalna).
 
 - **Makiety** — w planie z `figma_screens` każda IU ui/fullstack wymienia ekrany, które buduje (`**Makiety:** \`logowanie-komputer\`, \`logowanie-telefon\``), albo `—`. Planner wkleja builderowi SPEC i PNG tylko tych ekranów (`plan.mjs designerski`); IU bez pola dostaje wszystkie ekrany i cały SPEC, a `sprawdz` daje uwagę, bo pełny SPEC czytany przez każdego buildera w każdej turze to ok. 0,6 M na etap z 8 builderami UI.
 - **Odwołanie do decyzji niesie jej treść.** IU trafia do buildera jako osobny prompt — builder nie widzi reszty planu. Przy każdym odwołaniu dopisz zdanie treści w nawiasie: `strażnik regresji R2 (przy zmianie CTA istniejący tracking zostaje — nowy event, nie modyfikacja)`.
@@ -260,7 +262,7 @@ Plan nie zawiera kodu implementacji (chyba że kształt kodu jest artefaktem des
 - Z dokumentem źródłowym: przeczytaj go ponownie — podejście pasuje do intencji, granice i kryteria są zachowane, blokery rozwiązane albo jawnie założone, każda sekcja źródła ma odpowiedź w planie.
 - Każde ID ze „Śledzenia wymagań” ma IU, która je wymienia w polu Wymagania (`sprawdz` zgłasza brak jako uwagę).
 - Każda IU: konkretna, w kolejności zależności, z `Delegate to:` wg 3.5 i `Skills in play:` zgodnym z builderem, z tabelą plików wg 3.6, z odwołaniami do decyzji niosącymi treść.
-- Frontmatter ma `design_md`, `figma_spec`, `figma_screens`, `operator_prep` — ścieżki albo jawne `null` / `{}`; `figma_spec` i ekrany `figma_screens` istnieją na dysku. Plan z IU ui/fullstack przeszedł kroki B–C z 1.6 (`figma_spec: null` tylko jako świadoma odpowiedź „projektujemy z głowy”).
+- Frontmatter ma decyzje startowe `glebokosc`, `research_zewnetrzny` (z powodem) i `dotyka_ui` zgodne z tym, co ogłosiłeś w 0.6, 1.3 i 1.6, oraz `design_md`, `figma_spec`, `figma_screens`, `operator_prep` — ścieżki albo jawne `null` / `{}`; `figma_spec` i ekrany `figma_screens` istnieją na dysku. Plan z IU ui/fullstack przeszedł kroki B–C z 1.6 (`figma_spec: null` tylko jako świadoma odpowiedź „projektujemy z głowy”).
 - Scenariusze są konkretne, ale nie są kodem testu; Weryfikacja wg 3.4; `[E2E]` wg 3.4b.
 - Każda IU z makietami i wierszem `Modyfikuj` ma pole „Znika z obecnej wersji”; element z decyzją „znika” nie występuje w Podejściu, Tekstach ani scenariuszach tej IU.
 - Twierdzenia o stanie repo w Ryzykach i Kluczowych decyzjach sprawdzone w kodzie, nie z pamięci: ryzyko budżetu paczki opierasz na routerze (które trasy ładują się przez `lazy(`) i wypisujesz, co faktycznie trafia do pliku startowego (vibersi etap 5: plan liczył widoki strony projektu do pliku startowego, a strona była już leniwa).
@@ -298,13 +300,15 @@ Wynik JSON: `bledy` i `uwagi` z numerami linii i identyfikatorami IU. Każdy bł
 
 #### 6.2b Przegląd spójności planu
 
-Każdy plan, także Lekki, przechodzi przegląd spójności przed zadaniem dla autopilota (punkt 41: w aa-exam E3 test wymagał imienia w mailu logowania, makieta i teksty go nie miały, a granice zabraniały tekstów spoza makiet — faza 3 stanęła w runie, bo nikt nie zestawił źródeł przed startem).
+Każdy plan, także Lekki, przechodzi przegląd spójności przed zadaniem dla autopilota (punkt 41: w aa-exam E3 test wymagał imienia w mailu logowania, makieta i teksty go nie miały, a granice zabraniały tekstów spoza makiet — faza 3 stanęła w runie, bo nikt nie zestawił źródeł przed startem). Decyzje o podziale dużych IU (3.3, pole Rozmiar) zapadają przed tym krokiem.
 
-1. Po zielonym `sprawdz` uruchom naraz, narzędziem `Agent` z typem `spojnosc-planu`, po jednym agencie na fazę planu, z poleceniem: „Przegląd spójności fazy <N> planu `docs/plans/<plik>.md`.” Agent czyta plan, wymagania, checklistę przygotowania, SPEC makiet i obecne pliki sam, ze świeżym kontekstem; planu nie zmienia.
-2. Każdą pozycję wyniku pokazujesz operatorowi po jednej narzędziem `AskUserQuestion`: kontekst prostym językiem (co użytkownik aplikacji zobaczy), opcje ze skutkiem, rekomendacja jako pierwsza opcja z uzasadnieniem. Pozycji nie rozstrzygasz sam.
-3. Po odpowiedzi poprawiasz plan (pole jednostki wskazane w „Poprawce planu po wyborze”: Podejście, Teksty, scenariusz, „Znika z obecnej wersji”, Kluczowe decyzje) albo dokument wskazany w pozycji. Decyzja sprzeczna z wymaganiami idzie wg 0.3 (operator zgadza się na poprawkę wymagania).
-4. Po poprawkach: `sprawdz` jeszcze raz i ponowny przegląd faz, które zmieniłeś, aż każda faza ma wynik „brak otwartych pozycji”.
-5. Zapis: `node .claude/scripts/plan/plan.mjs spojnosc docs/plans/<plik>.md --zapisz --fazy <wszystkie fazy po przecinku> --otwarte 0`. Plik `docs/plans/<plik>.spojnosc.json` (odcisk planu bez stanu checkboxów i bez sekcji `## Decyzje z realizacji`, do której domknięcie fazy dopisuje decyzje korygujące plan) idzie do commitu inicjalnego. Operator świadomie zostawia pozycję otwartą → zapis z `--otwarte <N>`; bramka gotowości zostaje wtedy czerwona.
+1. **Czytanie.** Po zielonym `sprawdz` zapisz czytanie każdej fazy, którą teraz przeglądasz — po kolei, w jednym poleceniu, bo zapis idzie do jednego pliku: `for f in <fazy>; do node .claude/scripts/plan/plan.mjs spojnosc docs/plans/<plik>.md --faza $f --czytanie; done`. Wynik podaje `tura` fazy. Potem uruchom naraz, narzędziem `Agent` z typem `spojnosc-planu`, po jednym agencie na fazę planu, z poleceniem: „Przegląd spójności fazy <N> planu `docs/plans/<plik>.md`, tura <T>.” Polecenie ma tylko to zdanie: bez dopisków o sprawach rozstrzygniętych, zakresie czy głębokości — rozstrzygnięte sprawy agent rozpoznaje po oznaczeniu w planie (punkt 4), a od tury 2 sam pobiera ze skryptu różnicę fazy (`--roznica`) i sprawdza zmienione miejsca zamiast całej fazy. Agent czyta plan, wymagania, checklistę przygotowania, SPEC makiet i obecne pliki sam, ze świeżym kontekstem; planu nie zmienia.
+2. **Czysty wynik.** Faza z wynikiem „Faza N: brak otwartych pozycji.” → `node .claude/scripts/plan/plan.mjs spojnosc docs/plans/<plik>.md --faza <N> --czysta`. Od tej chwili każda zmiana treści fazy wymaga kolejnego czytania albo zgody operatora na zamknięcie bez niego (punkt 7).
+3. **Pytania do operatora.** Każda pozycja ma typ `[widoczna]` albo `[techniczna]`. Pozycję widoczną pokazujesz operatorowi po jednej narzędziem `AskUserQuestion`: kontekst prostym językiem (co użytkownik aplikacji zobaczy), opcje ze skutkiem, rekomendacja jako pierwsza opcja z uzasadnieniem. Pozycje techniczne możesz pokazać paczką do 5 w jednym pytaniu: każda w jednej linii z rekomendacją, opcje `Przyjmij wszystkie rekomendacje` i `Pokaż po kolei` (wtedy pytasz o każdą osobno). Pozycji nie rozstrzygasz sam. Jedyny wyjątek to pozycje techniczne po limicie tur (punkt 6).
+4. **Poprawka planu.** Po odpowiedzi poprawiasz plan (pole jednostki wskazane w „Poprawce planu po wyborze”: Podejście, Teksty, scenariusz, „Znika z obecnej wersji”, Kluczowe decyzje) albo dokument wskazany w pozycji. Poprawione miejsce dostaje oznaczenie: `(decyzja operatora RRRR-MM-DD)` przy pozycji rozstrzygniętej osobno, `(przyjęte zbiorczo RRRR-MM-DD)` przy pozycji z paczki przyjętej jednym kliknięciem, `(przyjęte przez sesję RRRR-MM-DD)` przy pozycji technicznej naniesionej po limicie tur — dzięki temu wiadomo, które decyzje operator widział osobno, a recenzent nie zgłasza ich ponownie. Decyzja sprzeczna z wymaganiami idzie wg 0.3 (operator zgadza się na poprawkę wymagania).
+5. **Kolejna tura.** Po poprawkach: `sprawdz` jeszcze raz i ponowny przegląd faz, które zmieniłeś (punkt 1 — nowe czytanie, wyższa tura), aż każda faza ma wynik „brak otwartych pozycji”.
+6. **Limit tur.** Po trzeciej turze fazy (`--czytanie` zwraca `poLimicie: true` od tury 4) do operatora wracają tylko pozycje widoczne. Techniczne nanosisz sam według rekomendacji recenzenta, z oznaczeniem `(przyjęte przez sesję …)`, i wypisujesz je w handoffie. Gdy po ich naniesieniu fazy nikt nie przeczytał, zamykasz ją wg punktu 7.
+7. **Zapis.** `node .claude/scripts/plan/plan.mjs spojnosc docs/plans/<plik>.md --zapisz --fazy <wszystkie fazy po przecinku> --otwarte 0`. Skrypt porównuje bieżący odcisk każdej fazy z odciskiem jej ostatniego czystego czytania i odmawia zapisu, gdy faza zmieniła się po nim albo nie była przeczytana na czysto. Wtedy czytasz ją jeszcze raz (punkt 1) albo pytasz operatora przez `AskUserQuestion`: „Faza <N> zmieniła się po ostatnim czytaniu (<co naniesiono>). Czytamy ją jeszcze raz (ok. <koszt tury> i kilka minut) czy zamykamy bez czytania?” z opcjami `Czytamy jeszcze raz` i `Zamykamy bez czytania`. Tylko po wyborze zamknięcia dopisujesz `--bez-czytania <numery faz>`: bramka gotowości jest wtedy zielona „z zastrzeżeniem”, a zastrzeżenie idzie do handoffu. Flagi `--bez-czytania` nie używasz bez tej zgody, także po limicie tur. Plik `docs/plans/<plik>.spojnosc.json` (odcisk planu bez stanu checkboxów i bez sekcji `## Decyzje z realizacji`, do której domknięcie fazy dopisuje decyzje korygujące plan; odciski faz i pól z czytań) idzie do commitu inicjalnego. Operator świadomie zostawia pozycję otwartą → zapis z `--otwarte <N>`; bramka gotowości zostaje wtedy czerwona.
 
 #### 6.3 Git i branch
 
@@ -339,7 +343,7 @@ Wynik ma dziewięć pozycji, każdą wypisujesz w handoffie:
 - `git` — branch `feature/<zadanie>` i czyste drzewo; autopilot nie przełącza brancha i zatrzymuje się na brudnym drzewie;
 - `testy` — runner testów projektu (vitest, jest) nie zbiera testów maszynerii z `.claude/**`; `ok: false` = autopilot zatrzyma się na `npm test` na starcie → wpisz do configu `poprawka` i zacommituj;
 - `claudeMd` — pliki decyzji na gałęzi głównej bez `claude_md: do-uzgodnienia`; `ok: false` = autopilot zatrzyma się na starcie → wypisz `naprawa` (uzgodnienie na gałęzi głównej przez `/dev-pr --claude-md <zadanie>`, potem wciągnięcie głównej do gałęzi zadania);
-- `spojnosc` — przegląd spójności planu (6.2b): zapis istnieje, odcisk planu się zgadza (odhaczenia i sekcja `## Decyzje z realizacji` go nie zmieniają, zmiana treści tak), zero otwartych pozycji, każda faza przejrzana. `ok: false` zatrzymuje start → wypisz `powod` i wróć do 6.2b dla wskazanych faz. Autopilot sprawdza to samo na starcie (`plan.mjs blokery`): świeże zadanie bez ważnego przeglądu kończy STOP-em, zadanie w toku dostaje uwagę;
+- `spojnosc` — przegląd spójności planu (6.2b): zapis istnieje, odcisk planu się zgadza (odhaczenia i sekcja `## Decyzje z realizacji` go nie zmieniają, zmiana treści tak), zero otwartych pozycji, każda faza przejrzana. `ok: false` zatrzymuje start → wypisz `powod` i wróć do 6.2b dla wskazanych faz. `ok: true` z niepustym `zastrzezenie` (faza zamknięta bez czytania za zgodą operatora, 6.2b punkt 7) nie blokuje: wypisz `powod` („OK z zastrzeżeniem: …”). Autopilot sprawdza to samo na starcie (`plan.mjs blokery`): świeże zadanie bez ważnego przeglądu kończy STOP-em, zadanie w toku dostaje uwagę;
 - `higiena` — nie blokuje, ale każdą `uwagi` wypisz z komendą przed startem: stara baza wiedzy (`learned-patterns.md` w `.claude/rules/`, przed konwersją: `/dev-compound-refresh --konwersja`) albo kontekst startowy agenta ponad próg (CLAUDE.md + reguły bez `paths:`) kosztują każdego agenta każdej fazy. Operator decyduje, czy porządkuje przed autopilotem; pełna lista kontroli jest w doctorze (`bash .claude/scripts/doctor/doctor.sh`).
 - `odlozone` — nie blokuje: otwarte sprawy odłożone w smoke'u poprzednich zadań (`docs/operator/odlozone.md`, `otwarte`: etap, treść, linia). Wypisz każdą z etapem; sprawa z etykietą tego etapu, której nie ma w planie, to pytanie do operatora, czy wchodzi teraz (dopisanie IU), czy czeka dalej, czy rezygnujemy. Odpowiedź zapisujesz w pliku wzorem z 0.3 (wchodzi / czeka / rezygnacja) i commitujesz jawną ścieżką. Pole `decyzje` (zadanie, wiersz) to decyzje poprzednich zadań, których nikt nie rozstrzygnął (smoke pominięty albo przerwany): wypisz każdą z odsyłaczem do `/dev-smoke <zadanie>`; nie blokują.
 
@@ -361,7 +365,7 @@ Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruch
 ```
 ✅ Zadanie "<zadanie>" gotowe dla autopilota
 
-📄 Plan techniczny: docs/plans/<plik>.md (głębokość: <Lekka|Standardowa|Głęboka>, research: <agenci albo powód pominięcia>)
+📄 Plan techniczny: docs/plans/<plik>.md (głębokość: <glebokosc>, research: <research_zewnetrzny>, UI: <dotyka_ui> — z frontmattera)
 🔀 Branch: feature/<zadanie>
 📁 docs/active/<zadanie>/ (wygenerowane plan.mjs)
    - <N> faz, <K> IU
@@ -376,7 +380,8 @@ Start to osobna wiadomość z samym poleceniem startu. Wiadomość, która uruch
    - Git: <OK / brudne pozycje>
    - Testy: <OK / nie dotyczy / szczegół + poprawka configu>
    - CLAUDE.md: <OK / zadania do uzgodnienia + naprawa → STOP>
-   - Spójność: <OK (fazy: …) / powod → STOP>
+   - Spójność: <OK (fazy: …) / OK z zastrzeżeniem: faza N zmieniona po ostatnim czytaniu (decyzja operatora) — nie blokuje / powod → STOP>
+   - Przegląd spójności: <tury per faza; pozycje przyjęte zbiorczo: K; techniczne naniesione przez sesję po limicie tur: lista albo brak>
    - Higiena: <OK / uwagi z komendą — nie blokują>
    - Odłożone: <brak / M otwartych: etap — treść (linia) — nie blokują>
 

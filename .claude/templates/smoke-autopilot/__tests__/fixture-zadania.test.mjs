@@ -90,7 +90,9 @@ test('fixture po kroku przegladu z przygotuj-kopie.sh przechodzi kontrole spojno
     assert.ok(skrypt.indexOf('wstaw_fixture_zadania\n') < skrypt.indexOf(krok[0]) && skrypt.indexOf(krok[0]) < skrypt.indexOf('test(smoke): fixture'), 'zapis przegladu ma stac po wstawieniu fixture\'u i przed jego commitem')
     const wynik = spawnSync('node', [join(KATALOG, '..', '..', 'scripts', 'plan', 'plan.mjs'), ...(krok[2] ?? '').split(' '), '--projekt', korzen], { encoding: 'utf8' })
     assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
-    assert.deepEqual(blokeryZadania(korzen, `docs/active/${NAZWA}`).spojnosc, { ok: true, powod: '' })
+    // Fixture nie ma czytan recenzenta: zapis zamyka fazy bez czytania — start przechodzi z zastrzezeniem (uwaga, nie STOP).
+    assert.deepEqual(blokeryZadania(korzen, `docs/active/${NAZWA}`).spojnosc,
+      { ok: true, powod: 'OK z zastrzeżeniem: faza 1 bez czystego czytania, faza 2 bez czystego czytania (decyzja operatora)' })
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }

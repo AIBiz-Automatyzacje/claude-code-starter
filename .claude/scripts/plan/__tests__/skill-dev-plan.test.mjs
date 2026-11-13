@@ -313,9 +313,47 @@ test('SKILL.md 6.2b: przegląd spójności każdej fazy, pytania do operatora, p
   assert.match(SKILL_MD, /plan techniczny, zapis przeglądu spójności `docs\/plans\/<plik>\.spojnosc\.json`/)
   assert.match(SKILL_MD, /Wynik ma dziewięć pozycji/)
   assert.match(SKILL_MD, /- `spojnosc` — przegląd spójności planu \(6\.2b\)[^\n]*`ok: false` zatrzymuje start/)
-  assert.match(SKILL_MD, /^ {3}- Spójność: <OK \(fazy: …\) \/ powod → STOP>$/m)
+  assert.match(SKILL_MD, /^ {3}- Spójność: <OK \(fazy: …\) \/ OK z zastrzeżeniem: [^\n]*\/ powod → STOP>$/m)
   const agent = readFileSync(join(REPO, '.claude/agents/spojnosc-planu.md'), 'utf8')
   assert.match(agent, /^name: spojnosc-planu$/m)
   assert.match(agent, /Planu nie zmieniasz\./)
   assert.match(agent, /Faza N: brak otwartych pozycji\./, 'pusty wynik ma stałe zdanie, którego szuka skill')
+})
+
+// Analiza vibersi audyt-paczki-1-2 (decyzje operatora 2026-11-13): czytania faz w bramce, pytania techniczne paczka, stale
+// polecenie recenzenta z tura, limit tur, rozmiar IU przed 6.2b i decyzje startowe we frontmatterze.
+test('SKILL.md 6.2b i agent: czytania faz, paczka technicznych do 5, oznaczenia decyzji, stałe polecenie, limit tur, zamknięcie za zgodą', () => {
+  const krok = SKILL_MD.slice(SKILL_MD.indexOf('#### 6.2b Przegląd spójności planu'), SKILL_MD.indexOf('#### 6.3 Git i branch'))
+  assert.match(krok, /--faza \$f --czytanie/)
+  assert.match(krok, /--faza <N> --czysta/)
+  assert.match(krok, /„Przegląd spójności fazy <N> planu `docs\/plans\/<plik>\.md`, tura <T>\.” Polecenie ma tylko to zdanie/)
+  assert.match(krok, /Pozycje techniczne możesz pokazać paczką do 5 w jednym pytaniu[^.]*`Pokaż po kolei`/)
+  assert.match(krok, /`\(przyjęte zbiorczo RRRR-MM-DD\)`/)
+  assert.match(krok, /Po trzeciej turze fazy[^.]*do operatora wracają tylko pozycje widoczne/)
+  assert.match(krok, /Tylko po wyborze zamknięcia dopisujesz `--bez-czytania <numery faz>`/)
+  assert.ok(krok.indexOf('Decyzje o podziale dużych IU') > 0, 'podział IU przed przeglądem')
+  const metoda = SKILL_MD.slice(SKILL_MD.indexOf('## Metoda interakcji'), SKILL_MD.indexOf('## Opis feature'))
+  assert.match(metoda, /do 5 takich pozycji w jednym pytaniu[^.]*„Pokaż po kolei”\. Pozycje widoczne dla użytkownika aplikacji idą zawsze pojedynczo/)
+  assert.match(SKILL_MD, /`ok: true` z niepustym `zastrzezenie`/)
+  const agent = readFileSync(join(REPO, '.claude/agents/spojnosc-planu.md'), 'utf8')
+  assert.match(agent, /^model: inherit$/m)
+  assert.match(agent, /--faza <N> --roznica/)
+  assert.match(agent, /`\(decyzja operatora RRRR-MM-DD\)` albo\n?\s*`\(przyjęte zbiorczo RRRR-MM-DD\)`/)
+  assert.match(agent, /^S1 \[<sprzecznosc[^\]]*\] \[<widoczna \| techniczna>\] IU-<n>$/m)
+})
+
+test('SKILL.md 3.3, 0.6, 1.3, 1.6 i szablon: pole Rozmiar jako warunek IU ponad progiem, decyzje startowe w polach frontmattera', () => {
+  assert.match(SKILL_MD, /12 plikami to błąd `sprawdz`, dopóki nie ma jawnej decyzji/)
+  assert.match(SKILL_MD, /`\*\*Rozmiar:\*\* zostaje w całości \(<P> plików, <S> scenariuszy\) — <powód>`/)
+  assert.match(SKILL_MD, /O podziale decydujesz przed przeglądem spójności \(6\.2b\)/)
+  assert.match(SKILL_MD, /pole frontmattera planu `glebokosc: Lekka \| Standardowa \| Głęboka`/)
+  assert.match(SKILL_MD, /`research_zewnetrzny: "tak — <powód>"` albo `"nie — <powód>"`/)
+  assert.match(SKILL_MD, /`dotyka_ui: tak \| nie` \(źródło prawdy/)
+  // Wariant stacku ma szablon z nakladki pod ta sama sciezka (testuj-wariant.mjs) — test sprawdza ten, ktory jest na lawce.
+  for (const plik of ['.claude/skills/dev-plan/references/szablon-planu.md']) {
+    const szablon = readFileSync(join(REPO, plik), 'utf8')
+    assert.match(szablon, /^\| `\*\*Rozmiar:\*\*` \|/m, plik)
+    assert.match(szablon, /^## Decyzje startowe we frontmatterze$/m, plik)
+    assert.match(szablon, /^glebokosc: Lekka$/m, plik)
+  }
 })
