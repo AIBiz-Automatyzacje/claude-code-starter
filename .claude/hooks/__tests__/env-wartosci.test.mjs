@@ -85,6 +85,7 @@ const BEZ_WARTOSCI = [
   'git check-ignore -q .env.e2e && echo ok; ls -l .env.e2e | awk \'{print $1}\'; set -a; . ./.env.e2e; set +a',
   'node --env-file=.env.e2e skrypt.mjs',
   "grep -ohE 'SUPABASE_URL=https://[a-z0-9]{6}' .env .env.local .env.e2e 2>/dev/null",
+  "grep -ohE 'SUPABASE_URL=(https://[a-z0-9]{6}|http://(127\\.0\\.0\\.1|localhost))' .env .env.local .env.e2e 2>/dev/null",
   "grep -oE '^[A-Z0-9_]*(PASSWORD|PASS|HASLO)[A-Z0-9_]*=' .env .env.local .env.e2e 2>/dev/null | cut -d= -f1 | sort -u",
   "awk -F= '{print $1}' .env",
   'cut -d= -f1 .env.local',

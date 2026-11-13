@@ -25,7 +25,9 @@ test('STOP przy zywym srodowisku E2E dopisuje do powodu UWAGE z komenda e2e.mjs 
 })
 
 test('flaga zywego srodowiska: ustawiana po starcie z serwerem i po restarcie fazy, zerowana po udanym env-down', () => {
-  assert.match(zrodlo, /e2eStart = startZeSkryptu\(e2eStart\)\n[^\n]*\nif \(e2eStart && e2eStart\.serwer === 'uruchomione'\) srodowiskoZostawione = true/)
+  const start = zrodlo.indexOf('e2eStart = startZeSkryptu(e2eStart)')
+  const flaga = zrodlo.indexOf("if (e2eStart && e2eStart.serwer === 'uruchomione') srodowiskoZostawione = true")
+  assert.ok(start > 0 && flaga > start && flaga < zrodlo.indexOf('if (srodowiskoStartu.stop)'), 'flaga po starcie, przed STOP-em startu')
   assert.match(zrodlo, /if \(po\.nasz\) \{ serwerNasz = true; srodowiskoZostawione = true \}/)
   assert.match(zrodlo, /if \(down && down\.posprzatano\) srodowiskoZostawione = false/)
   assert.ok(zrodlo.indexOf('let srodowiskoZostawione') < zrodlo.indexOf("return await stopRun({ powod: 'bootstrap nie zwrocil stanu"), 'deklaracja przed pierwszym STOP-em (TDZ)')

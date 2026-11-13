@@ -1952,9 +1952,9 @@ if (!e2eStart) {
   e2eStart = await agent(e2eStartPrompt(sciezka), { schema: E2E_START, agentType: 'klasa-mechaniczny', label: 'e2e:start:retry', phase: 'Bootstrap' })
 }
 e2eStart = startZeSkryptu(e2eStart)
+const srodowiskoStartu = decyzjaSrodowiskaE2e(e2eStart, sciezka)
 // Takze przy STOP-ie startu: canary pada PO podniesieniu serwera (start.mjs zwraca wtedy serwer 'uruchomione').
 if (e2eStart && e2eStart.serwer === 'uruchomione') srodowiskoZostawione = true
-const srodowiskoStartu = decyzjaSrodowiskaE2e(e2eStart, sciezka)
 log(`E2E start: ${e2eStart ? `${e2eStart.status} (serwer: ${e2eStart.serwer}, scenariusze: ${e2eStart.scenariusze}) — ${e2eStart.detal}` : 'agent zwrocil null 2x'}`)
 if (srodowiskoStartu.stop) {
   return await stopRun({ ...srodowiskoStartu.stop, e2eStart, stan })
