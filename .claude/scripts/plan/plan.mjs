@@ -17,9 +17,17 @@
 //                                                  runner testow bez .claude/**
 //   plan.mjs blokery <docs/active/zadanie>         nieodhaczone blokery checklisty z faza, ktora wstrzymuja (bootstrap autopilota;
 //                                                  pozycje startu = faza 1)
-//   plan.mjs spojnosc <plan.md> [--zapisz --fazy <1,2,…> --otwarte <N>]
+//   plan.mjs spojnosc <plan.md> [--zapisz --fazy <1,2,…> --otwarte <N> [--bez-czytania <3,…>]]
 //                                                  stan przegladu spojnosci planu (odcisk bez stanu checkboxow); z --zapisz
-//                                                  zapis docs/plans/<plan>.spojnosc.json po przegladzie agentem spojnosc-planu
+//                                                  zapis docs/plans/<plan>.spojnosc.json po przegladzie agentem spojnosc-planu;
+//                                                  --otwarte 0 wymaga czystego czytania kazdej fazy zgodnego z jej obecna trescia,
+//                                                  --bez-czytania = fazy zamykane bez czytania za zgoda operatora (bramka
+//                                                  „OK z zastrzezeniem”)
+//   plan.mjs spojnosc <plan.md> --faza <N> --czytanie | --czysta | --roznica
+//                                                  czytanie fazy recenzentem: --czytanie przed uruchomieniem agenta (tura, odciski
+//                                                  pol, lista pol zmienionych od poprzedniej tury), --czysta po wyniku „brak
+//                                                  otwartych pozycji”, --roznica (bez zapisu) = pola zmienione miedzy dwoma
+//                                                  ostatnimi czytaniami — dla recenzenta tury 2+
 //   plan.mjs designerski <plan.md> --iu <IU-N>      blok kontekstu designerskiego buildera jednostki (DESIGN.md, SPEC.md, SPEC
 //                                                  i PNG ekranow z pola Makiety); tresc pusta = blok pominiety
 // Wynik: JSON na stdout. Kod wyjscia: 0 = ok, 1 = do poprawy (bledy planu, STOP bramki, katalog zadania zajety),
@@ -35,7 +43,7 @@ import { blokeryZadania, gotowosc } from './gotowosc.mjs'
 import { blokDesignerski } from './makiety.mjs'
 import { odswiezZadanie } from './odswiez.mjs'
 import { parsujPlan } from './plan-techniczny.mjs'
-import { stanPrzegladu, zapiszPrzeglad } from './spojnosc.mjs'
+import { oznaczCzysta, roznicaFazy, stanPrzegladu, zapiszCzytanie, zapiszPrzeglad } from './spojnosc.mjs'
 import { sprawdzPlan } from './walidacja-planu.mjs'
 import { zadanieZPlanu } from './zadanie.mjs'
 
@@ -46,11 +54,13 @@ const USTAWIENIA = /** @type {const} */ ({
   projekt: { type: 'string' }, nazwa: { type: 'string' }, data: { type: 'string' },
   zapisz: { type: 'boolean' }, nadpisz: { type: 'boolean' }, iu: { type: 'string' }, od: { type: 'string' },
   fazy: { type: 'string' }, otwarte: { type: 'string' }, 'pomin-brakujace': { type: 'boolean' },
+  faza: { type: 'string' }, czytanie: { type: 'boolean' }, czysta: { type: 'boolean' }, roznica: { type: 'boolean' },
+  'bez-czytania': { type: 'string' },
 })
 
 /** @param {string} komunikat @returns {never} */
 function zleArgumenty(komunikat) {
-  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | odswiez <docs/active/zadanie> [--od <rewizja>] [--zapisz] [--pomin-brakujace] | spojnosc <plan.md> [--zapisz --fazy <1,2> --otwarte <N>] | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
+  process.stderr.write(`plan: ${komunikat}\nUzycie: plan.mjs linie <plik>... | sprawdz <plan.md> | generuj <plan.md> [--nazwa <zadanie>] [--data RRRR-MM-DD] [--zapisz] [--nadpisz] | odswiez <docs/active/zadanie> [--od <rewizja>] [--zapisz] [--pomin-brakujace] | spojnosc <plan.md> [--zapisz --fazy <1,2> --otwarte <N> [--bez-czytania <3>]] | spojnosc <plan.md> --faza <N> --czytanie|--czysta|--roznica | gotowosc <docs/active/zadanie> | blokery <docs/active/zadanie> [--projekt <katalog>]\n`)
   process.exit(KOD_ZLYCH_ARGUMENTOW)
 }
 
@@ -98,7 +108,7 @@ function planWzgledny(projekt, sciezka) {
 
 /**
  * @param {string[]} positionals
- * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string, fazy?: string, otwarte?: string, 'pomin-brakujace'?: boolean }} values
+ * @param {{ projekt?: string, nazwa?: string, data?: string, zapisz?: boolean, nadpisz?: boolean, iu?: string, od?: string, fazy?: string, otwarte?: string, 'pomin-brakujace'?: boolean, faza?: string, czytanie?: boolean, czysta?: boolean, roznica?: boolean, 'bez-czytania'?: string }} values
  */
 function wykonaj(positionals, values) {
   const [polecenie, sciezka, ...reszta] = positionals
@@ -128,12 +138,28 @@ function wykonaj(positionals, values) {
   if (polecenie === 'spojnosc') {
     const planRel = planWzgledny(projekt, sciezka)
     const fazyPlanu = parsujPlan(readFileSync(join(projekt, planRel), 'utf8')).fazy.map((f) => f.oznaczenie)
-    if (values.zapisz) {
-      if (!values.fazy || !/^\d+$/.test(values.otwarte ?? '')) zleArgumenty('spojnosc --zapisz wymaga --fazy <1,2,…> i --otwarte <liczba>')
-      const fazy = values.fazy.split(',').map((f) => f.trim()).filter(Boolean)
+    const lista = (/** @type {string | undefined} */ v) => (v ?? '').split(',').map((f) => f.trim()).filter(Boolean)
+    const spozaPlanu = (/** @type {string[]} */ fazy) => {
       const nieznane = fazy.filter((f) => !fazyPlanu.includes(f))
       if (nieznane.length) zakoncz({ ok: false, bledy: [`fazy spoza planu: ${nieznane.join(', ')} (plan ma: ${fazyPlanu.join(', ')})`] }, false)
-      zapiszPrzeglad(projekt, planRel, { fazy, otwarte: Number(values.otwarte), data })
+    }
+    const tryby = [values.czytanie, values.czysta, values.roznica].filter(Boolean).length
+    if (values.faza !== undefined || tryby) {
+      if (!values.faza || tryby !== 1 || values.zapisz) zleArgumenty('spojnosc --faza <N> wymaga dokładnie jednego z --czytanie, --czysta, --roznica (bez --zapisz)')
+      spozaPlanu([values.faza])
+      const wynik = values.czytanie ? zapiszCzytanie(projekt, planRel, values.faza, data)
+        : values.czysta ? oznaczCzysta(projekt, planRel, values.faza)
+          : roznicaFazy(projekt, planRel, values.faza)
+      zakoncz(wynik, wynik.ok)
+    }
+    if (values['bez-czytania'] !== undefined && !values.zapisz) zleArgumenty('--bez-czytania tylko z --zapisz')
+    if (values.zapisz) {
+      if (!values.fazy || !/^\d+$/.test(values.otwarte ?? '')) zleArgumenty('spojnosc --zapisz wymaga --fazy <1,2,…> i --otwarte <liczba>')
+      const fazy = lista(values.fazy)
+      const bezCzytania = lista(values['bez-czytania'])
+      spozaPlanu([...fazy, ...bezCzytania])
+      const zapis = zapiszPrzeglad(projekt, planRel, { fazy, otwarte: Number(values.otwarte), data, bezCzytania })
+      if (!zapis.ok) zakoncz({ ok: false, bledy: zapis.bledy }, false)
     }
     const stan = stanPrzegladu(projekt, planRel, fazyPlanu)
     zakoncz(stan, stan.ok)

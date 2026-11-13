@@ -103,7 +103,9 @@ echo "+ fixture zadania → docs/active/smoke-autopilot, docs/plans"
 # Zapis przeglądu spójności planu fixture'u (walidacja 51–55, punkt 56): autopilot zatrzymuje świeże zadanie bez ważnego
 # przeglądu, a fixture go nie miał — smoke stawał na starcie. Odcisk planu liczy się po podstawieniu placeholderów, więc
 # zapis powstaje tutaj, nie w szablonie; faza spoza planu albo czerwony stan kończy skrypt (kod wyjścia plan.mjs).
-krok node "$KOPIA/.claude/scripts/plan/plan.mjs" spojnosc docs/plans/plan-techniczny-smoke-autopilot.md --zapisz --fazy 1,2 --otwarte 0 --projekt "$KOPIA"
+# Fixture nie przechodzi przez recenzenta spójności, więc obie fazy zamyka zapis bez czytania (analiza vibersi
+# audyt-paczki-1-2): bramka jest zielona „z zastrzeżeniem”, a autopilot pokazuje to jako uwagę, nie STOP.
+krok node "$KOPIA/.claude/scripts/plan/plan.mjs" spojnosc docs/plans/plan-techniczny-smoke-autopilot.md --zapisz --fazy 1,2 --otwarte 0 --bez-czytania 1,2 --projekt "$KOPIA"
 if [[ "$KATALOG_KODU" == "$PAKIET/src" ]]; then
   krok node "$SZABLON_SMOKE/wstaw-pakiet.mjs" "$KOPIA/$PAKIET"
 fi

@@ -276,7 +276,7 @@ export function odswiezZadanie(projekt, zadanie, opcje = {}) {
   const staryMd = plikZRewizji(projekt, od, sciezkaPlanu)
   if (staryMd === null) return odmow(w, `git nie ma planu ${sciezkaPlanu} w rewizji ${od} — podaj --od <commit sprzed zmiany planu>`)
   const nowyPlan = parsujPlan(readFileSync(join(projekt, sciezkaPlanu), 'utf8'))
-  w.bledy = sprawdzPlan(nowyPlan, projekt).bledy
+  w.bledy = sprawdzPlan(nowyPlan, projekt, { zadanieWToku: true }).bledy
   if (w.bledy.length) return odmow(w, 'plan po zmianie nie przechodzi walidacji (plan.mjs sprawdz) — popraw błędy')
   const stare = strukturaZadan(parsujPlan(staryMd))
   const nowe = strukturaZadan(nowyPlan)

@@ -11,13 +11,15 @@ import { doWzorca, PROFIL } from '../stack/profil.mjs'
  * @typedef {{ tresc: string, e2e: boolean }} Weryfikacja
  * @typedef {{ id: string, numer: number, nazwa: string, faza: number | null, start: number, delegate: string,
  *   tabelaPlikow: boolean, pliki: Plik[], scenariusze: Scenariusz[], weryfikacja: Weryfikacja[], operator: string[],
- *   wymagania: string, opis: string, makiety: string[] | null, znika: string | null, problemy: string[] }} Jednostka
+ *   wymagania: string, opis: string, makiety: string[] | null, znika: string | null, rozmiar: Rozmiar | null, problemy: string[] }} Jednostka
+ * @typedef {{ tresc: string, pliki: number | null, scenariusze: number | null, powod: string }} Rozmiar  pole „Rozmiar”: jawna decyzja
+ *   o jednostce ponad progiem; liczby z chwili decyzji (null = brak w zapisie)
  */
 
 const POLE_W_GWIAZDKACH = /^\*\*([^*]+?):\*\*\s*(.*)$/
 const POLE_ZA_GWIAZDKAMI = /^\*\*([^*]+?)\*\*\s*(?:\([^)]*\))?\s*:\s*(.*)$/
 const POLA_IU = new Set(['cel', 'wymagania', 'zaleznosci', 'pliki', 'delegate to', 'skills in play', 'podejscie', 'notatka wykonawcza',
-  'teksty', 'wzorce do nasladowania', 'scenariusze testowe', 'weryfikacja', 'operator checklist', 'makiety', 'znika z obecnej wersji'])
+  'teksty', 'wzorce do nasladowania', 'scenariusze testowe', 'weryfikacja', 'operator checklist', 'makiety', 'znika z obecnej wersji', 'rozmiar'])
 const POLA_LISTY = ['scenariusze testowe', 'weryfikacja', 'operator checklist']
 const POLA_OPISU = ['cel', 'podejscie', 'notatka wykonawcza']
 const SEPARATOR_KOMOREK = /(?<!\\)\|/
@@ -185,6 +187,26 @@ function znikajace(p) {
 }
 
 /**
+ * Pole "Rozmiar" (analiza vibersi audyt-paczki-1-2: 6 IU ponad progiem bez decyzji, potem urosly w poprawkach po przegladzie):
+ * `zostaje w całości (9 plików, 8 scenariuszy) — <powód>`. Liczby zapamietuja rozmiar z chwili decyzji, zeby walidacja
+ * zauwazyla przyrost; kolejnosc liczb w nawiasie dowolna.
+ * @param {{ wartosc: string, linie: Linia[] } | undefined} p
+ * @returns {Rozmiar | null} null = brak pola albo placeholder szablonu
+ */
+function rozmiar(p) {
+  if (!p) return null
+  const tresc = bezPlaceholdera([p.wartosc, ...p.linie.map((l) => l.tekst)].join(' ').replace(/\s+/g, ' '))
+  if (!tresc) return null
+  const nawias = /\(([^)]*)\)/.exec(tresc)?.[1] ?? ''
+  const liczba = (/** @type {RegExp} */ wzor) => {
+    const m = wzor.exec(nawias)
+    return m ? Number(m[1]) : null
+  }
+  const powod = /\)\s*[—–-]\s*(\S.*)$/.exec(tresc)?.[1]?.trim() ?? ''
+  return { tresc, pliki: liczba(/(\d+)\s*plik/i), scenariusze: liczba(/(\d+)\s*scenariusz/i), powod }
+}
+
+/**
  * @param {{ id: string, numer: number, nazwa: string, faza: number | null, start: number }} naglowek
  * @param {Linia[]} linie blok jednostki bez naglowka
  * @returns {Jednostka}
@@ -208,6 +230,7 @@ export function jednostka(naglowek, linie) {
     opis: POLA_OPISU.map((k) => [pola.get(k)?.wartosc ?? '', ...(pola.get(k)?.linie ?? []).map((l) => l.tekst)].join('\n')).join('\n'),
     makiety: nazwyMakiet(pola.get('makiety')),
     znika: znikajace(pola.get('znika z obecnej wersji')),
+    rozmiar: rozmiar(pola.get('rozmiar')),
     problemy,
   }
 }

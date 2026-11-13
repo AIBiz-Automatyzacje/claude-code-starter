@@ -13,7 +13,7 @@ import assert from 'node:assert/strict'
 
 import { parsujPlan } from '../plan-techniczny.mjs'
 import { liczLinieKodu } from '../budzet-pliku.mjs'
-import { KOMENDY_CLI, PROG_ESLINT, sprawdzPlan, uwagiRozmiaruFaz, uwagiRozmiaruIu } from '../walidacja-planu.mjs'
+import { KOMENDY_CLI, PROG_ESLINT, rozmiarIu, sprawdzPlan, uwagiRozmiaruFaz } from '../walidacja-planu.mjs'
 import { zadanieZPlanu } from '../zadanie.mjs'
 import { PROFIL } from '../../stack/profil.mjs'
 
@@ -559,26 +559,106 @@ test('sprawdzPlan: faza z 6 IU daje uwage rozmiaru fazy (wpiecie uwagiRozmiaruFa
 // IU z 10+ plikami: tury p50 72, ctx_max p50 227k (1–3 pliki: 27 i 89k); 7–9 scenariuszy: 80 i 263k. Zero porazek buildera,
 // wiec uwaga (koszt i kontekst), nie blad — decyzja operatora 2026-10-27.
 // Decyzja operatora 2026-10-27: prog 7/10 dawal uwage 29/51 IU etapow 3–5 (srodek zwyklego rozmiaru), 8/12 — 17/51 najciezszym.
-test('rozmiar IU: >= 8 scenariuszy albo >= 12 plikow = uwaga z liczbami; 7 scenariuszy i 11 plikow — bez uwagi', () => {
-  /** @param {string} id @param {number} scen @param {number} pliki */
-  const iu = (id, scen, pliki) => ({ id, scenariusze: Array.from({ length: scen }, () => ({})), pliki: Array.from({ length: pliki }, () => ({})) })
-  assert.deepEqual(uwagiRozmiaruIu([iu('IU-1', 7, 11)]), [])
-  const uwagi = uwagiRozmiaruIu([iu('IU-1', 8, 2), iu('IU-2', 1, 12), iu('IU-3', 9, 14), iu('IU-4', 7, 11)])
-  assert.equal(uwagi.length, 3)
-  assert.match(uwagi[0], /^IU-1: 8 scenariuszy testowych, 2 plików \(próg: 8 scenariuszy albo 12 plików\)/)
-  assert.match(uwagi[1], /^IU-2: 1 scenariuszy testowych, 12 plików/)
-  assert.match(uwagi[2], /^IU-3: /)
-  assert.match(uwagi[0], /podziel/)
+// Analiza vibersi audyt-paczki-1-2 (decyzja operatora 2026-11-13): 6 IU ponad progiem bez decyzji o podziale — teraz blad, dopoki
+// jednostka nie ma pola Rozmiar z jawna decyzja; z polem uwaga jak dawniej.
+/** @param {string} id @param {number} scen @param {number} pliki @param {string} [rozmiar] tresc pola Rozmiar */
+const iuRozmiar = (id, scen, pliki, rozmiar) => {
+  const md = `- [ ] **${id}: x**\n\n${rozmiar === undefined ? '' : `**Rozmiar:** ${rozmiar}\n`}`
+  const pole = parsujPlan(`### Faza 1 — x\n\n**Zależy od:** Brak\n\n${md}`).fazy[0]?.iu[0]?.rozmiar ?? null
+  return { id, scenariusze: Array.from({ length: scen }, () => ({})), pliki: Array.from({ length: pliki }, () => ({})), rozmiar: pole }
+}
+
+test('rozmiar IU: >= 8 scenariuszy albo >= 12 plikow bez pola Rozmiar = blad z liczbami i wzorem pola; 7 i 11 — nic', () => {
+  assert.deepEqual(rozmiarIu([iuRozmiar('IU-1', 7, 11)]), { bledy: [], uwagi: [] })
+  const w = rozmiarIu([iuRozmiar('IU-1', 8, 2), iuRozmiar('IU-2', 1, 12), iuRozmiar('IU-3', 9, 14), iuRozmiar('IU-4', 7, 11)])
+  assert.equal(w.bledy.length, 3)
+  assert.deepEqual(w.uwagi, [])
+  assert.match(w.bledy[0] ?? '', /^IU-1: 8 scenariuszy testowych, 2 plików \(próg: 8 scenariuszy albo 12 plików\) bez decyzji o rozmiarze/)
+  assert.match(w.bledy[0] ?? '', /\*\*Rozmiar:\*\* zostaje w całości \(2 plików, 8 scenariuszy\) — <powód>/)
+  assert.match(w.bledy[1] ?? '', /^IU-2: 1 scenariuszy testowych, 12 plików/)
+  assert.match(w.bledy[2] ?? '', /^IU-3: /)
 })
 
-test('sprawdzPlan: IU z 8 scenariuszami daje uwage rozmiaru IU (wpiecie), fixture — bez niej', () => {
+test('rozmiar IU: pole Rozmiar z decyzja = uwaga zamiast bledu; przyrost ponad liczby z decyzji = osobna uwaga', () => {
+  const zostaje = rozmiarIu([iuRozmiar('IU-9', 8, 9, 'zostaje w całości (9 plików, 8 scenariuszy) — jeden przepływ formularza')])
+  assert.deepEqual(zostaje.bledy, [])
+  assert.equal(zostaje.uwagi.length, 1)
+  assert.match(zostaje.uwagi[0] ?? '', /^IU-9: 8 scenariuszy testowych, 9 plików .*decyzja „zostaje w całości”/)
+  // vibersi: IU-9 urosla z 9 do 15 plikow w poprawkach po przegladzie spojnosci.
+  const urosla = rozmiarIu([iuRozmiar('IU-9', 8, 15, 'zostaje w całości (8 scenariuszy, 9 plików) — jeden przepływ')])
+  assert.deepEqual(urosla.bledy, [])
+  assert.equal(urosla.uwagi.length, 2)
+  assert.match(urosla.uwagi[1] ?? '', /^IU-9: urosła od decyzji o rozmiarze \(9 plików, 8 scenariuszy → 15 plików, 8 scenariuszy\)/)
+  // Pod progiem z polem i bez przyrostu — nic; ponizej progu, ale ponad liczby decyzji — uwaga o przyroscie.
+  assert.deepEqual(rozmiarIu([iuRozmiar('IU-1', 3, 5, 'zostaje w całości (5 plików, 3 scenariuszy) — spójne')]), { bledy: [], uwagi: [] })
+  assert.equal(rozmiarIu([iuRozmiar('IU-1', 4, 5, 'zostaje w całości (5 plików, 3 scenariuszy) — spójne')]).uwagi.length, 1)
+})
+
+test('rozmiar IU: pole bez liczb, bez powodu albo z inna decyzja = blad; zadanie w toku — uwagi zamiast bledow', () => {
+  for (const tresc of ['zostaje w całości — spójna', 'zostaje w całości (9 plików, 8 scenariuszy)', 'podzielę później (9 plików, 8 scenariuszy) — x']) {
+    const w = rozmiarIu([iuRozmiar('IU-2', 8, 9, tresc)])
+    assert.equal(w.bledy.length, 1, tresc)
+    assert.match(w.bledy[0] ?? '', /^IU-2: pole Rozmiar/)
+  }
+  // Zgodnosc wstecz: plan zadania z docs/active/ (bramka gotowosci, odswiez) nie staje na braku decyzji.
+  const wToku = rozmiarIu([iuRozmiar('IU-1', 8, 2), iuRozmiar('IU-2', 8, 9, 'zostaje')], { zadanieWToku: true })
+  assert.deepEqual(wToku.bledy, [])
+  assert.equal(wToku.uwagi.length, 2)
+})
+
+test('sprawdzPlan: IU z 8 scenariuszami bez pola Rozmiar to blad (wpiecie), z polem — uwaga; zadanie w toku — uwaga; fixture — nic', () => {
   const korzen = projekt()
   try {
+    assert.deepEqual(sprawdzPlan(parsujPlan(FIXTURE), korzen).bledy.filter((b) => /próg: 8 scenariuszy/.test(b)), [])
     const plan = parsujPlan(FIXTURE)
-    assert.deepEqual(sprawdzPlan(plan, korzen).uwagi.filter((u) => /próg: 8 scenariuszy/.test(u)), [])
     const [jednostka] = plan.fazy[0].iu
     while (jednostka.scenariusze.length < 8) jednostka.scenariusze.push({ ...jednostka.scenariusze[0] })
-    assert.equal(sprawdzPlan(plan, korzen).uwagi.filter((u) => new RegExp(`^${jednostka.id}: 8 scenariuszy`).test(u)).length, 1)
+    const bezPola = sprawdzPlan(plan, korzen)
+    assert.equal(bezPola.bledy.filter((b) => new RegExp(`^${jednostka.id}: 8 scenariuszy`).test(b)).length, 1)
+    assert.equal(sprawdzPlan(plan, korzen, { zadanieWToku: true }).uwagi.filter((u) => new RegExp(`^${jednostka.id}: 8 scenariuszy`).test(u)).length, 1)
+    jednostka.rozmiar = { tresc: `zostaje w całości (${jednostka.pliki.length} plików, 8 scenariuszy) — jedna ścieżka`, pliki: jednostka.pliki.length, scenariusze: 8, powod: 'jedna ścieżka' }
+    const zPolem = sprawdzPlan(plan, korzen)
+    assert.equal(zPolem.bledy.filter((b) => /scenariuszy/.test(b)).length, 0)
+    assert.equal(zPolem.uwagi.filter((u) => new RegExp(`^${jednostka.id}: 8 scenariuszy`).test(u)).length, 1)
+  } finally {
+    rmSync(korzen, { recursive: true, force: true })
+  }
+})
+
+test('parser: pole Rozmiar w jednostce — tresc, liczby w dowolnej kolejnosci i powod; brak pola = null', () => {
+  const md = zmien('**Delegate to:** feature-builder-data', '**Rozmiar:** zostaje w całości (8 scenariuszy, 13 plików) — migracja i serwis jednym commitem\n\n**Delegate to:** feature-builder-data')
+  const iu = parsujPlan(md).fazy[0]?.iu[0]
+  assert.deepEqual(iu?.rozmiar, { tresc: 'zostaje w całości (8 scenariuszy, 13 plików) — migracja i serwis jednym commitem', pliki: 13, scenariusze: 8, powod: 'migracja i serwis jednym commitem' })
+  assert.equal(parsujPlan(FIXTURE).fazy[0]?.iu[0]?.rozmiar, null)
+})
+
+// Analiza vibersi audyt-paczki-1-2: sesja nie oglosila glebokosci, researchu ani klasyfikacji UI — pola frontmattera sa zrodlem prawdy.
+test('decyzje startowe: brak, puste albo zle glebokosc, research_zewnetrzny i dotyka_ui = bledy; poprawne — bez bledow', () => {
+  const fm = (/** @type {string} */ g, /** @type {string} */ r, /** @type {string} */ u) => zmien('glebokosc: Standardowa\nresearch_zewnetrzny: "nie — repo ma wzorzec serwisu i listy ofert, bez nowych zależności i usług zewnętrznych"\ndotyka_ui: tak', `${g}\n${r}\n${u}`)
+  const bez = sprawdz(fm('', '', ''))
+  assert.deepEqual(bez.bledy.filter((b) => /^frontmatter: (glebokosc|research_zewnetrzny|dotyka_ui)/.test(b)).length, 3)
+  const puste = sprawdz(fm('glebokosc:', 'research_zewnetrzny: ""', 'dotyka_ui:'))
+  assert.deepEqual(puste.bledy.filter((b) => /brak albo puste/.test(b)).length, 3)
+  const zle = sprawdz(fm('glebokosc: Średnia', 'research_zewnetrzny: tak', 'dotyka_ui: może'))
+  assert.match(zle.bledy.join('\n'), /frontmatter: glebokosc „Średnia” — Lekka \| Standardowa \| Głęboka/)
+  assert.match(zle.bledy.join('\n'), /frontmatter: research_zewnetrzny „tak” — „tak — <powód>”/, 'research bez powodu')
+  assert.match(zle.bledy.join('\n'), /frontmatter: dotyka_ui „może” — tak \| nie/)
+  for (const [g, r] of [['glebokosc: Głęboka', 'research_zewnetrzny: "tak — płatności i zewnętrzne API dostawcy"'], ['glebokosc: gleboka', 'research_zewnetrzny: nie: obszar ma trzy reguły w indeksie']]) {
+    assert.deepEqual(sprawdz(fm(g, r, 'dotyka_ui: tak')).bledy.filter((b) => /^frontmatter/.test(b)), [], g)
+  }
+})
+
+test('decyzje startowe: dotyka_ui: nie przy IU do buildera UI = uwaga; zadanie w toku bez pol — uwagi, nie bledy (zgodnosc wstecz)', () => {
+  const nie = sprawdz(zmien('dotyka_ui: tak', 'dotyka_ui: nie'))
+  assert.deepEqual(nie.bledy, [])
+  assert.match(nie.uwagi.join('\n'), /^frontmatter: dotyka_ui: nie, a IU-2, IU-3 idą do buildera UI albo fullstack/m)
+  const stary = zmien('glebokosc: Standardowa\nresearch_zewnetrzny: "nie — repo ma wzorzec serwisu i listy ofert, bez nowych zależności i usług zewnętrznych"\ndotyka_ui: tak\n', '')
+  const korzen = projekt()
+  try {
+    const w = sprawdzPlan(parsujPlan(stary), korzen, { zadanieWToku: true })
+    assert.deepEqual(w.bledy, [])
+    assert.equal(w.uwagi.filter((u) => /^frontmatter: (glebokosc|research_zewnetrzny|dotyka_ui)/.test(u)).length, 3)
+    assert.equal(sprawdzPlan(parsujPlan(stary), korzen).bledy.length, 3, 'nowy plan bez pol odrzucony')
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }

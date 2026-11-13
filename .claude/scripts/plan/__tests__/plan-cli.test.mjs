@@ -14,7 +14,7 @@ import assert from 'node:assert/strict'
 import { liczE2e as liczScenariuszeE2e } from '../../dossier/dokumenty.mjs'
 import { NARZEDZIE_JAZDY } from '../../e2e/adapter.mjs'
 import { gotowosc } from '../gotowosc.mjs'
-import { odciskPlanu, SEKCJA_REALIZACJI } from '../spojnosc.mjs'
+import { odciskFazy, odciskPlanu, polaFazy, roznicaPol, SEKCJA_REALIZACJI } from '../spojnosc.mjs'
 import { PROFIL } from '../../stack/profil.mjs'
 
 const KATALOG = dirname(fileURLToPath(import.meta.url))
@@ -71,13 +71,28 @@ function cli(korzen, argumenty) {
 const fazyPlanu = (korzen) => cli(korzen, ['spojnosc', PLAN]).json.fazyBez.join(',')
 
 /**
+ * Czyste czytanie kazdej fazy recenzentem (6.2b): zapis czytania przed recenzentem i oznaczenie czystego wyniku — bez tego
+ * koncowy zapis z --otwarte 0 odmawia (analiza vibersi audyt-paczki-1-2).
+ * @param {string} korzen @param {string[]} [fazy]
+ */
+function czysteCzytania(korzen, fazy = fazyPlanu(korzen).split(',')) {
+  for (const f of fazy) {
+    assert.equal(cli(korzen, ['spojnosc', PLAN, '--faza', f, '--czytanie']).kod, 0)
+    assert.equal(cli(korzen, ['spojnosc', PLAN, '--faza', f, '--czysta']).kod, 0)
+  }
+}
+
+/**
  * Gotowe zadanie na galezi feature/ z commitem. Punkt 41: /dev-plan zapisuje przeglad spojnosci (6.2b) przed commitem
  * inicjalnym, wiec zadanie bez przegladu to osobny przypadek (`{ przeglad: false }`).
  * @param {string} korzen @param {{ przeglad?: boolean }} [o]
  */
 function zadanieNaGalezi(korzen, o = {}) {
   git(korzen, ['checkout', '-qb', 'feature/publikacja-ofert'])
-  if (o.przeglad !== false) assert.equal(cli(korzen, ['spojnosc', PLAN, '--zapisz', '--fazy', fazyPlanu(korzen), '--otwarte', '0', '--data', '2026-10-07']).kod, 0)
+  if (o.przeglad !== false) {
+    czysteCzytania(korzen)
+    assert.equal(cli(korzen, ['spojnosc', PLAN, '--zapisz', '--fazy', fazyPlanu(korzen), '--otwarte', '0', '--data', '2026-10-07']).kod, 0)
+  }
   assert.equal(cli(korzen, ['generuj', PLAN, '--data', '2026-10-07', '--zapisz']).kod, 0)
   git(korzen, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'add', '-A'])
   git(korzen, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: inicjalizacja planu'])
@@ -339,6 +354,7 @@ test('blokery: pole spojnosc liczone jak w bramce gotowosci — brak przegladu i
   const bez = cli(k, ['blokery', ZADANIE]).json
   assert.equal(bez.spojnosc.ok, false)
   assert.match(bez.spojnosc.powod, /^brak zapisu przeglądu spójności planu → \/dev-plan krok 6\.2b/)
+  czysteCzytania(k)
   assert.equal(cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', fazyPlanu(k), '--otwarte', '0']).kod, 0)
   assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.spojnosc, { ok: true, powod: '' })
   writeFileSync(join(k, PLAN), readFileSync(join(k, PLAN), 'utf8').replace('## Granice zakresu', '## Granice zakresu\n\n- nowe wykluczenie'))
@@ -372,6 +388,7 @@ test('gotowosc: przeglad spojnosci — brak, otwarte, faza bez przegladu i zmian
   assert.deepEqual([bez.ok, bez.spojnosc.ok, bez.spojnosc.fazyBez], [false, false, fazy])
   assert.match(bez.spojnosc.powod, /^brak zapisu przeglądu spójności planu → \/dev-plan krok 6\.2b/)
 
+  czysteCzytania(k, fazy)
   const zapisz = (/** @type {string} */ f, /** @type {string} */ otwarte) => cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', f, '--otwarte', otwarte])
   assert.equal(zapisz(fazy.join(','), '2').kod, 1)
   assert.match(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.powod, /^przegląd spójności ma otwarte pozycje \(2\)/)
@@ -461,4 +478,133 @@ test('sekcja „Decyzje z realizacji” na koncu planu: sprawdz bez zmian, odswi
   assert.ok(skillPlanu.includes(`(odhaczenia i sekcja \`${SEKCJA_REALIZACJI}\` go nie zmieniają, zmiana treści tak)`), 'skill /dev-plan 6.6')
   assert.match(skillPlanu, /Autopilot sprawdza to samo na starcie \(`plan\.mjs blokery`\): świeże zadanie bez ważnego przeglądu kończy STOP-em, zadanie w toku dostaje uwagę;/)
   assert.match(domkniecie, /trafia WYLACZNIE do sekcji \\`## Decyzje z realizacji\\` na koncu planu \(brak sekcji = utworz ja jako ostatnia\), jedna linia\n {3}na decyzje: \\`- faza \$\{faza\}, IU-x: <decyzja>\\`\. Poza ta sekcja w planie zmieniasz tylko stan checkboxow/)
+}))
+
+// Analiza vibersi audyt-paczki-1-2 (decyzja operatora 2026-11-13): po piatym czytaniu fazy 3 sesja naniosla poprawki i zapisala
+// --otwarte 0 bez ponownego czytania. Koncowy zapis porownuje odcisk kazdej fazy z ostatnim czystym czytaniem.
+test('spojnosc: --otwarte 0 bez czystego czytania albo po zmianie fazy odmawia; --bez-czytania daje zielona bramke z zastrzezeniem', () => wRepo((k) => {
+  const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
+  zadanieNaGalezi(k, { przeglad: false })
+  const fazy = fazyPlanu(k).split(',')
+  const zapisz = (/** @type {string[]} */ dodatkowe = []) => cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', fazy.join(','), '--otwarte', '0', ...dodatkowe])
+  const nigdy = zapisz()
+  assert.equal(nigdy.kod, 1)
+  assert.match(nigdy.json.bledy[0], new RegExp(`^fazy ${fazy.map((f) => `${f} \\(bez czystego czytania\\)`).join(', ')} — przed zapisem z --otwarte 0`))
+  assert.ok(!existsSync(join(k, PLAN.replace(/\.md$/, '.spojnosc.json'))), 'odmowa niczego nie zapisuje')
+
+  czysteCzytania(k)
+  // Poprawka w fazie 2 po czystym czytaniu (jak w vibersi: trzy poprawki po piatym czytaniu fazy 3).
+  const plan = readFileSync(join(k, PLAN), 'utf8')
+  const iuFazy2 = /### Faza 2[\s\S]*?\*\*Podejście:\*\*\n/.exec(plan)?.[0] ?? ''
+  assert.ok(iuFazy2, 'fixture ma Podejście w fazie 2')
+  writeFileSync(join(k, PLAN), plan.replace(iuFazy2, `${iuFazy2}- poprawka po przeglądzie: przycisk nieaktywny bez tytułu\n`))
+  const poZmianie = zapisz()
+  assert.equal(poZmianie.kod, 1)
+  assert.match(poZmianie.json.bledy[0], /^fazy 2 \(zmieniona po ostatnim czytaniu\)/)
+  assert.equal(zapisz(['--bez-czytania', '99']).kod, 1, 'faza spoza planu w --bez-czytania')
+  assert.equal(cli(k, ['spojnosc', PLAN, '--bez-czytania', '2']).kod, 2, '--bez-czytania bez --zapisz')
+
+  // Zgoda operatora: faza 2 zamknieta bez czytania — bramka zielona z zastrzezeniem, autopilot dostaje powod.
+  const ok = zapisz(['--bez-czytania', '2'])
+  assert.deepEqual([ok.kod, ok.json.ok, ok.json.zastrzezenie], [0, true, 'faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)'])
+  const zapis = JSON.parse(readFileSync(join(k, PLAN.replace(/\.md$/, '.spojnosc.json')), 'utf8'))
+  assert.deepEqual([zapis.bezCzytania, Object.keys(zapis.czytania)], [['2'], fazy])
+  git(k, ['add', '-A'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: przeglad'])
+  const g = gotowosc(k, ZADANIE, { narzedzia }).spojnosc
+  assert.deepEqual([g.ok, g.zastrzezenie, g.powod], [true, 'faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)',
+    'OK z zastrzeżeniem: faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)'])
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.spojnosc, { ok: true, powod: 'OK z zastrzeżeniem: faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)' })
+
+  // Kolejne czyste czytanie fazy 2 zdejmuje zastrzezenie przy nastepnym zapisie.
+  czysteCzytania(k, ['2'])
+  const czysty = zapisz()
+  assert.deepEqual([czysty.kod, czysty.json.zastrzezenie, czysty.json.powod], [0, '', ''])
+  // --otwarte > 0 nie wymaga czytan (bramka i tak czerwona).
+  assert.equal(cli(k, ['spojnosc', PLAN, '--zapisz', '--fazy', fazy.join(','), '--otwarte', '1']).kod, 1)
+  assert.match(gotowosc(k, ZADANIE, { narzedzia }).spojnosc.powod, /^przegląd spójności ma otwarte pozycje \(1\)/)
+}))
+
+// Zgodnosc wstecz: zadania w toku maja zapisy sprzed odciskow faz (bez czytania i bezCzytania) — bramka czyta je jak dawniej.
+test('spojnosc: stary zapis bez czytan faz przechodzi bramke i blokery jak dawniej; zapis samych czytan = przeglad w toku', () => wRepo((k) => {
+  const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
+  zadanieNaGalezi(k, { przeglad: false })
+  const tresc = readFileSync(join(k, PLAN), 'utf8')
+  const plik = join(k, PLAN.replace(/\.md$/, '.spojnosc.json'))
+  writeFileSync(plik, `${JSON.stringify({ plan: PLAN, odcisk: odciskPlanu(tresc), data: '2026-11-01', fazy: fazyPlanu(k).split(','), otwarte: 0 }, null, 2)}\n`)
+  git(k, ['add', '-A'])
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: stary przeglad'])
+  const g = gotowosc(k, ZADANIE, { narzedzia }).spojnosc
+  assert.deepEqual([g.ok, g.zastrzezenie, g.powod], [true, '', ''])
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.spojnosc, { ok: true, powod: '' })
+  // Sesja zaczela czytania, koncowego zapisu jeszcze nie ma.
+  rmSync(plik)
+  assert.equal(cli(k, ['spojnosc', PLAN, '--faza', '1', '--czytanie']).kod, 0)
+  assert.match(cli(k, ['blokery', ZADANIE]).json.spojnosc.powod, /^przegląd spójności w toku — brak końcowego zapisu/)
+}))
+
+// 4b: recenzent tury 2+ czyta zmienione pola fazy zamiast calej fazy od zera; dziala bez gita (plan przed commitem inicjalnym).
+test('spojnosc --faza: czytanie liczy tury i roznice pol, --roznica wypisuje pola zmienione miedzy czytaniami, --czysta wymaga czytania', () => wRepo((k) => {
+  rmSync(join(k, '.git'), { recursive: true, force: true })
+  const tura1 = cli(k, ['spojnosc', PLAN, '--faza', '1', '--czytanie'])
+  assert.deepEqual([tura1.kod, tura1.json.tura, tura1.json.roznica, tura1.json.poLimicie], [0, 1, null, false])
+  assert.deepEqual(cli(k, ['spojnosc', PLAN, '--faza', '1', '--roznica']).json.roznica, null, 'pierwsza tura: cala faza')
+  assert.equal(cli(k, ['spojnosc', PLAN, '--faza', '2', '--czysta']).kod, 1, 'czysta bez czytania')
+  assert.match(cli(k, ['spojnosc', PLAN, '--faza', '2', '--czysta']).json.bledy[0], /^faza 2 bez zapisanego czytania/)
+
+  const plan = readFileSync(join(k, PLAN), 'utf8')
+  const podejscie = /### Faza 1[\s\S]*?\*\*Podejście:\*\*\n/.exec(plan)?.[0] ?? ''
+  writeFileSync(join(k, PLAN), plan.replace(podejscie, `${podejscie}- nowa decyzja w podejściu\n`).replace(/^(\s*- )\[ \]/gm, '$1[x]'))
+  const tura2 = cli(k, ['spojnosc', PLAN, '--faza', '1', '--czytanie'])
+  assert.equal(tura2.json.tura, 2)
+  assert.deepEqual(tura2.json.roznica, [{ pole: 'IU-1/podejscie', zmiana: 'zmienione' }], 'odhaczenia nie sa zmiana pola')
+  const r = cli(k, ['spojnosc', PLAN, '--faza', '1', '--roznica']).json
+  assert.deepEqual([r.tura, r.roznica, r.uwagi], [2, [{ pole: 'IU-1/podejscie', zmiana: 'zmienione' }], []])
+  // Zmiana po zapisie czytania: roznica zostaje z czytan, uwaga mowi o zmianie od czytania.
+  writeFileSync(join(k, PLAN), readFileSync(join(k, PLAN), 'utf8').replace('**Zależy od:** Brak', '**Zależy od:** Brak (fundament)'))
+  assert.match(cli(k, ['spojnosc', PLAN, '--faza', '1', '--roznica']).json.uwagi[0], /^faza 1 zmieniła się od zapisu czytania w turze 2/)
+  const czysta = cli(k, ['spojnosc', PLAN, '--faza', '1', '--czysta'])
+  assert.deepEqual([czysta.kod, czysta.json.tura], [0, 2])
+  assert.match(czysta.json.uwagi[0], /^faza 1 zmieniła się od czytania w turze 2/)
+  for (let t = 3; t <= 4; t += 1) assert.equal(cli(k, ['spojnosc', PLAN, '--faza', '1', '--czytanie']).json.poLimicie, t > 3, `tura ${t}`)
+
+  assert.equal(cli(k, ['spojnosc', PLAN, '--faza', '1']).kod, 2, '--faza bez trybu')
+  assert.equal(cli(k, ['spojnosc', PLAN, '--faza', '1', '--czytanie', '--czysta']).kod, 2, 'dwa tryby')
+  assert.equal(cli(k, ['spojnosc', PLAN, '--czytanie']).kod, 2, 'tryb bez --faza')
+  assert.deepEqual(cli(k, ['spojnosc', PLAN, '--faza', '9', '--czytanie']).json.bledy, [`fazy spoza planu: 9 (plan ma: ${fazyPlanu(k).split(",").join(", ")})`])
+}))
+
+test('odciskFazy i polaFazy: sekcja fazy do nastepnej fazy albo naglowka ##; zmiana innej fazy, checkboxy i sekcja realizacji — bez zmiany', () => {
+  const plan = ['# P', '', '## Implementation Units', '', '### Faza 1 — A', '', '**Zależy od:** Brak', '', '- [ ] **IU-1: x**', '',
+    '**Podejście:**', '- a', '', '**Scenariusze testowe:**', '- [ ] [Unit] t', '', '```', '### Faza 9 — w kodzie', '```', '',
+    '### Faza 2 — B', '', '**Zależy od:** Faza 1', '', '#### IU-2: y', '', '**Podejście:**', '- b', '', '## Ryzyka', '', '- r', ''].join('\n')
+  const f1 = odciskFazy(plan, '1')
+  assert.equal(odciskFazy(plan, '9'), null, 'naglowek w bloku kodu to nie faza')
+  assert.equal(odciskFazy(plan.replace('- b', '- b2'), '1'), f1, 'zmiana fazy 2')
+  assert.equal(odciskFazy(plan.replace('- r', '- r2'), '2'), odciskFazy(plan, '2'), 'sekcja ## Ryzyka poza faza')
+  assert.equal(odciskFazy(plan.replace('- [ ] [Unit]', '- [x] [Unit]').replace('- [ ] **IU-1', '- [x] **IU-1'), '1'), f1, 'odhaczenia')
+  assert.equal(odciskFazy(`${plan}\n${SEKCJA_REALIZACJI}\n\n- faza 1, IU-1: x\n`, '1'), f1, 'sekcja realizacji')
+  assert.notEqual(odciskFazy(plan.replace('- a', '- a2'), '1'), f1)
+  assert.deepEqual(Object.keys(polaFazy(plan, '1') ?? {}), ['faza/naglowek', 'IU-1/naglowek', 'IU-1/podejscie', 'IU-1/scenariusze testowe'])
+  assert.deepEqual(Object.keys(polaFazy(plan, '2') ?? {}), ['faza/naglowek', 'IU-2/naglowek', 'IU-2/podejscie'])
+  assert.deepEqual(roznicaPol(polaFazy(plan, '1'), polaFazy(plan.replace('- a', '- a2').replace('**Scenariusze testowe:**\n- [ ] [Unit] t\n', ''), '1') ?? {}),
+    [{ pole: 'IU-1/podejscie', zmiana: 'zmienione' }, { pole: 'IU-1/scenariusze testowe', zmiana: 'usunięte' }])
+  assert.deepEqual(roznicaPol(null, {}), [])
+})
+
+// Zgodnosc wstecz decyzji startowych: zadanie zaplanowane przed polami glebokosc/research_zewnetrzny/dotyka_ui nie staje
+// w bramce gotowosci ani w odswiez (autopilot woła blokery, ktore walidacji planu nie robia); nowy plan — blad w sprawdz.
+test('decyzje startowe: plan zadania w toku bez pol — gotowosc i odswiez daja uwagi, nie bledy; sprawdz takiego planu — bledy', () => wRepo((k) => {
+  const narzedzia = { czyIgnorowany: () => true, narzedzieJazdy: () => ({ ok: true, detal: '' }) }
+  zadanieNaGalezi(k)
+  const stary = readFileSync(join(k, PLAN), 'utf8').replace(/^(glebokosc|research_zewnetrzny|dotyka_ui):.*\n/gm, '')
+  writeFileSync(join(k, PLAN), stary)
+  git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qam', 'docs: plan sprzed decyzji startowych'])
+  const g = gotowosc(k, ZADANIE, { narzedzia }).plan
+  assert.deepEqual(g.bledy, [])
+  assert.equal(g.uwagi.filter((u) => /^frontmatter: (glebokosc|research_zewnetrzny|dotyka_ui)/.test(u)).length, 3)
+  writeFileSync(join(k, PLAN), stary.replace('## Granice zakresu', '## Granice zakresu\n\n- nowe wykluczenie'))
+  const odsw = cli(k, ['odswiez', ZADANIE])
+  assert.deepEqual(odsw.json.bledy, [])
+  assert.equal(cli(k, ['sprawdz', PLAN]).json.bledy.filter((/** @type {string} */ b) => /^frontmatter: (glebokosc|research_zewnetrzny|dotyka_ui)/.test(b)).length, 3)
 }))

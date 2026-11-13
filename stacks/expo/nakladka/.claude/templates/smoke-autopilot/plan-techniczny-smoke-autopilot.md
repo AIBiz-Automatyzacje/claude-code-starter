@@ -8,6 +8,9 @@ design_md: null
 figma_spec: null
 figma_screens: {}
 operator_prep: null
+glebokosc: Lekka
+research_zewnetrzny: "nie — atrapa diagnostyczna bez nowych zależności i usług zewnętrznych"
+dotyka_ui: tak
 ---
 
 # test: smoke-autopilot
