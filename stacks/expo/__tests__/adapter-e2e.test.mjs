@@ -496,7 +496,7 @@ test('canary: własny flow dostaje zmienne i urządzenie; hasło nie wychodzi w 
   const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'UDID', nazwa: 'iPhone 17', sciezkaAplikacji: 'x' }, aplikacja: APLIKACJA }
   const w = await canary.przejdzCanary(p, { E2E_TEST_EMAIL: 'e2e@a.test', E2E_TEST_PASSWORD: 'tajne' }, cel, { maestro })
   assert.equal(w.ok, true)
-  assert.match(w.detal, /_canary\.yaml przeszedł/)
+  assert.match(w.detal, /_canary\.yaml przeszedł w \d+ s z 240 s limitu$/, 'czas canary w wyniku (pilot run 5)')
   assert.deepEqual(argumenty.slice(0, 3), ['--device', 'UDID', 'test'])
   assert.equal(argumenty.at(-1), canary.PLIK_CANARY)
   for (const z of [`APP_ID=${BUNDLE}`, 'APP_SCHEME=przyklad', 'METRO_URL=http%3A%2F%2F127.0.0.1%3A8081']) assert.ok(argumenty.includes(z), z)
@@ -628,7 +628,7 @@ test('canary: sterownik Maestro nie wstał = jedno ponowienie w reszcie limitu; 
   }
   const udany = await przebieg([{ ...BRAK_STEROWNIKA }, { kod: 0, ogon: '' }])
   assert.equal(udany.wynik.ok, true)
-  assert.match(udany.wynik.detal, /\(drugi przebieg: w pierwszym sterownik Maestro nie wstał\)$/)
+  assert.match(udany.wynik.detal, /przeszedł w \d+ s z 240 s limitu, .*\(drugi przebieg: w pierwszym sterownik Maestro nie wstał\)$/)
   assert.equal(udany.limity.length, 2)
   assert.equal(udany.limity[0], 240_000)
   assert.ok(Number(udany.limity[1]) <= 240_000 && Number(udany.limity[1]) > 230_000, `drugi przebieg dostaje resztę limitu: ${udany.limity[1]}`)

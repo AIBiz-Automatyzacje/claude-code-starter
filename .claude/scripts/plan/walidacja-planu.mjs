@@ -31,7 +31,24 @@ const PLIK_TESTU = /(?:\.(?:test|spec)\.[cm]?[jt]sx?$|__tests__\/)/
 const { katalogSeedow, katalogRunnerow, plikFlow } = PROFIL.e2e
 const SEED = new RegExp(`^${doWzorca(katalogSeedow)}\\/[\\w.-]+-seed\\.sql$`)
 // Runner E2E (`<katalog runnerow>/<x>.sh`) w backtickach — scribe uruchomilby go bez srodowiska e2e.
-const RUNNER_E2E = new RegExp(`\`[^\`]*(?<!\\w)${doWzorca(katalogRunnerow)}\\/[^\`\\s]*\\.sh\\b[^\`]*\``)
+const SCIEZKA_RUNNERA = new RegExp(`^(?:\\.\\/)?(?:[\\w.-]+\\/)*${doWzorca(katalogRunnerow)}\\/[^\\s]*\\.sh$`)
+const POWLOKI = new Set(['bash', 'sh', 'zsh', 'env', 'time', 'timeout'])
+/**
+ * Pilot mobile W12 (runy 3–5): `grep -c "<flow>" <katalog runnerow>/run-all.sh` w polu Weryfikacja szedl jako „uruchamia runner”,
+ * choc grep plik tylko czyta. Runner uruchamia komenda, w ktorej jego sciezka stoi na miejscu polecenia: na poczatku albo po
+ * powloce (`bash`, `sh`, `env`, `timeout 60`), takze za `&&`, `||`, `;` i `|`. Sciezka jako argument innej komendy to odczyt.
+ * @param {string} tresc @returns {boolean}
+ */
+export function uruchamiaRunner(tresc) {
+  for (const [, komenda] of tresc.matchAll(/`([^`]+)`/g)) {
+    for (const czlon of komenda.split(/&&|\|\||;|\|/)) {
+      const tokeny = czlon.trim().split(/\s+/).filter((t) => !/^\w+=/.test(t))
+      const polecenie = tokeny.findIndex((t) => !POWLOKI.has(t) && !/^-/.test(t) && !/^\d+[smh]?$/.test(t))
+      if (polecenie !== -1 && SCIEZKA_RUNNERA.test(tokeny[polecenie])) return true
+    }
+  }
+  return false
+}
 // Tokeny, po ktorych grepy konsumentow licza i wykluczaja linie zadan (precheck, tester, scribe, completion-gate, execute=done).
 const ZNACZNIKI = /\[(?:E2E|Manual|Unit)\]|Operator:|\[P[123]\]/
 // Kategorie CLI i Grep scribe'a review-wf (bookkeeping "Weryfikacja:", pkt 3): pozycja bez nich zostaje "klasyfikacja niejasna".
@@ -187,7 +204,7 @@ function weryfikacja(iu, flowy, w) {
       else if (flowy.has(runner.replace(/^.*\//, '').replace(/\.sh$/, ''))) {
         w.bledy.push(`${iu.id}: Weryfikacja [E2E] \`${runner}\` to scenariusz z linii [E2E] — drugi przebieg tego samego flow`)
       }
-    } else if (RUNNER_E2E.test(v.tresc)) {
+    } else if (uruchamiaRunner(v.tresc)) {
       w.bledy.push(`${iu.id}: Weryfikacja „${v.tresc.slice(0, 60)}” uruchamia runner E2E bez znacznika [E2E] — scribe uruchomiłby go`
         + ` bez środowiska e2e; zapis „[E2E] \`${katalogRunnerow}/<runner>.sh\` — <stan>”`)
     } else if (!KOMENDA.test(v.tresc)) {
