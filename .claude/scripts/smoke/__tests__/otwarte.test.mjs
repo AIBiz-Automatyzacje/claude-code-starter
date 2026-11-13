@@ -190,6 +190,15 @@ test('/dev-smoke sekcja 1: warianty jako „Popraw: <wariant>”, „Odłóż”
 })
 
 // Punkt 52: pole poDeployu nie mialo czytelnika — zdanie mowi teraz, ile otwartych pozycji czeka na wdrozenie.
+// Dopisek z ukladu smoke'u w skillu archiwizacji musi trafiac w to, czego szuka liczSmoke: inaczej autor smoke'u pisze
+// zgodnie z instrukcja, a licznik po deployu zostaje na 0 (vibersi audyt-paczki-1-2).
+test('liczSmoke: przykladowa pozycja „(po deployu)” z ukladu smoke\'u w /dev-docs-complete liczy sie jako po deployu', () => {
+  const skill = readFileSync(resolve(KATALOG, '../../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  const przyklad = skill.split('\n').filter((l) => /^\s*- \[ \] \(po deployu\)/.test(l))
+  assert.equal(przyklad.length, 1, 'uklad smoke\'u ma jedna przykladowa pozycje z dopiskiem')
+  assert.deepEqual(liczSmoke(`## 5. Wdrozenie\n${przyklad[0]}\n- [ ] Lokalnie: klik → lista\n`), { otwarte: 2, poDeployu: 1 })
+})
+
 test('zdanieOtwartych: pozycje po deployu w nawiasie, tylko gdy są; zdanie zaczyna się od „Otwarte: ”', () => {
   const odl = { otwarte: [] }
   assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 2 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u (w tym 2 po deployu), 0 odłożonych (docs/operator/odlozone.md).')

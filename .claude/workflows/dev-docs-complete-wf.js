@@ -275,6 +275,8 @@ potrzebne), potem sekcje per wymaganie/ekran w kolejnosci przechodzenia apki (ni
 kazdy z konkretnym oczekiwanym wynikiem. ODSYLACZE w smoke'u do plikow zadania pisz jako docs/completed/${nazwaZadania}/…:
 operator czyta smoke po archiwizacji, a docs/active/${nazwaZadania}/ juz wtedy nie istnieje (punkty wizualne maja wlasny format nizej). Pozycje wymagajace fizycznego urzadzenia (np. realny telefon
 zamiast mobilnego viewportu) oznacz **[fizyczne urządzenie]**.
+Pozycja, której nie da się sprawdzić przed wysłaniem PR, bo czeka na merge albo wdrożenie (migracje na dev i produkcji, zmienne w ustawieniach deployu, staging, produkcja), ma w linii checkboxa dopisek „(po deployu)”: skrypt otwartych spraw liczy ją osobno, a /dev-pr nie pyta o nią przed wysłaniem PR.
+Sam naglowek sekcji ("Przed wdrozeniem i po merge'u", "Staging") nie wystarcza: skrypt czyta tylko linie checkboxow (vibersi audyt-paczki-1-2: 5 takich pozycji policzonych jako 0 po deployu).
 PR WIELOCZESCIOWY: pozycje przypisuj do czesci, w ktorej kod faktycznie wchodzi (sprawdz plik w tabeli czesci, nie w tekscie planu; aa-exam: pole z czesci 4 w sekcji po deployu czesci 3). Przed merge'em kazdej
 czesci pozycja: przejscie kluczowego flow na stanie tej czesci, lokalnie. Odhaczanie miedzy czesciami: plik smoke'u lezy na \`feature/<zadanie>\`, commit lokalny tam jedzie z ostatnia czescia.
 ZMIANA SCHEMATU BEZ TRANSAKCJI (\`db:push\` i podobne): pozycja przed wdrozeniem to podglad SQL i sprawdzenie danych pod KAZDE nowe ograniczenie z tego podgladu, nie tylko to z planu.

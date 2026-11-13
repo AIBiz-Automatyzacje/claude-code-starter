@@ -424,6 +424,21 @@ test('smoke: zmienne srodowiska galezi skryptem (krok 6) i kontrola po zapisie; 
   assert.match(complete, /const uwagi = \[sprawdzDecyzje\(wynik\.decyzje, nazwaZadania\), pr\.uwaga, uwagaZmiennych\(smoke\),/)
 })
 
+// vibersi audyt-paczki-1-2: smoke mial sekcje „Przed wdrozeniem i po merge'u” i „Staging”, ale zadna linia checkboxa nie miala
+// dopisku „po deployu”, wiec otwarte.mjs policzyl 0 po deployu, a /dev-pr pytalby o 22 otwarte pozycje zamiast 17.
+test('smoke: pozycje czekajace na merge albo wdrozenie dostaja w linii checkboxa dopisek „(po deployu)” (workflow i skill)', () => {
+  /** @type {(nazwaZadania: string) => string} */
+  // eslint-disable-next-line no-new-func -- jw.
+  const smokePrompt = new Function(`return (nazwaZadania) => {\n${wytnij(complete, 'const smokePrompt = `', 'Zwroc obiekt zgodny ze schematem.`')}\nreturn smokePrompt\n}`)()
+  const plaski = (/** @type {string} */ t) => t.replace(/\n\s*/g, ' ')
+  const p = plaski(smokePrompt('zadanie-x'))
+  const skill = plaski(readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8'))
+  const regula = 'Pozycja, której nie da się sprawdzić przed wysłaniem PR, bo czeka na merge albo wdrożenie (migracje na dev i produkcji, zmienne w ustawieniach deployu, staging, produkcja), ma w linii checkboxa dopisek „(po deployu)”: skrypt otwartych spraw liczy ją osobno, a /dev-pr nie pyta o nią przed wysłaniem PR.'
+  assert.ok(p.includes(regula), 'workflow: regula dopisku')
+  assert.ok(skill.includes(regula), 'skill: regula dopisku')
+  assert.match(p, /Sam naglowek sekcji .* nie wystarcza: skrypt czyta tylko linie checkboxow/)
+})
+
 // P22 B2: vibersi etap 4 — smoke i oba PR w jednej sesji: sesja glowna 4,49 M wobec 1,42 M wszystkich runow PR. Sesja smoke'u
 // konczy sie linia z /clear i /dev-pr, sama PR nie wysyla. Punkt 40, krok 4: dluga ramka do wklejania zniknela, smoke prowadzi
 // skill /dev-smoke; sekcja „Jak kontynuowac” w pliku smoke'u (workflow i skill archiwizacji) podaje komende skilla i linie konca.
