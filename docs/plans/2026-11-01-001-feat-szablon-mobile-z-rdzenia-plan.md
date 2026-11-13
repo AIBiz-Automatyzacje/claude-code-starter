@@ -581,6 +581,15 @@ operatora 2026-11-13): usterki średnie W1/W8, W26, W6 → drobne zbiorczo → E
 - Własne skille mobile (`rn-expo-guidelines`, `mobile-e2e-maestro`, `ux-ui-guidelines-mobile`, `references/stack.md`
   skilli wspólnych) wchodzą do cyklicznego audytu świeżości razem z webowymi.
 
+**Etap 5 zrobiony (2026-11-13).** Procedura i stan źródeł: `stacks/expo/SWIEZOSC.md`; sprawdzenie jedną komendą
+`node stacks/expo/swiezosc.mjs` (plugin `expo` i skill Uniwind względem upstreamu na GitHubie, SDK z tabeli wersji względem
+`npm view expo dist-tags`, najnowszy Maestro). Audyt świeżości webowy (`freshness-audit`) został usunięty z rdzenia, więc cykl
+mobile to ten skrypt: przy nowym SDK, raz na kwartał i przed publikacją zmieniającą skille mobile. Stan z 2026-11-13: Uniwind
+`66bac01` najnowszy, SDK 58 = `latest` (58.0.25). **Plugin `expo` zostaje na `a9e5bd3` (1.14.3)**: upstream 1.15.1 kieruje każdą
+komendę Expo przez `npx --yes @expo/agent-cli@latest`, które szablon blokuje w `permissions.deny`; `expo-stos-szablonu` mówi
+wprost, że komendy idą przez `npx expo`. Maestro na maszynie operatora 2.5.1, najnowsze 2.12.1 — aktualizacja przed kolejnym
+runem na kopii (decyzja operatora, poza repo).
+
 ## Decyzje
 
 Przyjęte (operator, 2026-11-01/02):
