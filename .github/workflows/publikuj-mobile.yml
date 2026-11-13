@@ -4,8 +4,8 @@
 # Filtr ścieżek (.claude/, stacks/, output-styles/) liczy stacks/publikuj-mobile.mjs względem SHA ostatniej publikacji.
 # Dostęp do repo mobile: deploy key z prawem zapisu w sekrecie MOBILE_DEPLOY_KEY (instrukcja: stacks/expo/PUBLIKACJA.md).
 #
-# AUTOMAT WYŁĄCZONY do udanego pilota w Etapie 4 (D4): gałąź workflow_run w warunku joba zaczyna się od `false`.
-# Do tego czasu publikacja tylko ręczna, za zgodą operatora: workflow_dispatch z main albo lokalnie zbuduj.mjs --zastap.
+# AUTOMAT WŁĄCZONY 2026-11-13 po runie 5 pilota (Etap 4, D4; decyzja operatora). Wyłączenie: dopisz `false &&` na początku
+# gałęzi workflow_run w warunku joba. Zapas: workflow_dispatch z main albo lokalnie zbuduj.mjs --zastap.
 name: publikuj-mobile
 
 on:
@@ -25,10 +25,10 @@ concurrency:
 
 jobs:
   publikuj:
-    # Włączenie automatu po pilocie: usuń `false &&` z drugiej linii warunku.
+    # Wyłączenie automatu: dopisz `false &&` na początku drugiej linii warunku.
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-      (false && github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

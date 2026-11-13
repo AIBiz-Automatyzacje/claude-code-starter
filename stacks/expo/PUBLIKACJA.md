@@ -7,9 +7,9 @@ commitem `sync: rdzeń <sha>`, który zmienia tylko `.claude/` i `output-styles/
 
 | Sposób | Kiedy | Co robi |
 |---|---|---|
-| Ręcznie lokalnie | do udanego pilota (Etap 4) i jako zapas | `node stacks/zbuduj.mjs expo ../workspace-template-mobile --zastap`, potem commit `sync: rdzeń <sha>` w repo mobile i push |
-| `workflow_dispatch` workflowu `publikuj-mobile` | po założeniu deploy key, za zgodą operatora | to samo na runnerze, dla bieżącego `main` |
-| Automat po pushu na `main` | po udanym pilocie | `publikuj-mobile` po zielonym biegu `maszyneria` (z jobem `wariant-expo`); włączenie: usuń `false &&` z warunku joba |
+| Ręcznie lokalnie | jako zapas | `node stacks/zbuduj.mjs expo ../workspace-template-mobile --zastap`, potem commit `sync: rdzeń <sha>` w repo mobile i push |
+| `workflow_dispatch` workflowu `publikuj-mobile` | jako zapas, za zgodą operatora | to samo na runnerze, dla bieżącego `main` |
+| Automat po pushu na `main` | włączony 2026-11-13, po runie 5 pilota | `publikuj-mobile` po zielonym biegu `maszyneria` (z jobem `wariant-expo`); wyłączenie: dopisz `false &&` na początku gałęzi `workflow_run` w warunku joba |
 
 Lokalny build odmawia SHA z `-dirty`, gdy drzewo ma zmiany w `.claude/`, `output-styles/` albo `stacks/`; strażnik repo mobile takiej
 publikacji nie przepuści. Publikuj z czystego `main`.

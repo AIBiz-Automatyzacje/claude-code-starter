@@ -1,4 +1,4 @@
-// Workflow publikacji do repo mobile (IU-3.3, D4): automat wyłączony do pilota, warunki publikacji i zakres commitu.
+// Workflow publikacji do repo mobile (IU-3.3, D4): automat po zielonym biegu maszynerii, warunki publikacji i zakres commitu.
 //
 // Uruchomienie: node --test stacks/__tests__/publikuj-workflow.test.mjs
 
@@ -24,11 +24,11 @@ test('wyzwalacze: po biegu maszyneria na main i ręcznie; jedna publikacja naraz
   assert.deepEqual(wf.permissions, { contents: 'read', actions: 'read' })
 })
 
-// D4: automat włączony dopiero po udanym pilocie (Etap 4). Ten test zmienia się razem z włączeniem.
-test('automat wyłączony do pilota: gałąź workflow_run zaczyna się od false, ręczna publikacja tylko z main', () => {
+// D4: automat włączony 2026-11-13 po runie 5 pilota (Etap 4, decyzja operatora).
+test('automat włączony: gałąź workflow_run tylko po zielonym biegu z pusha, ręczna publikacja tylko z main', () => {
   const [reczna, automat] = job.if.split('||').map((/** @type {string} */ s) => s.trim())
   assert.equal(reczna, "(github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')")
-  assert.match(automat, /^\(false && github\.event_name == 'workflow_run' && github\.event\.workflow_run\.conclusion == 'success' && github\.event\.workflow_run\.event == 'push'\)$/)
+  assert.match(automat, /^\(github\.event_name == 'workflow_run' && github\.event\.workflow_run\.conclusion == 'success' && github\.event\.workflow_run\.event == 'push'\)$/)
 })
 
 test('przed buildem: sekret deploy key i zielony job wariant-expo dla publikowanego SHA', () => {
