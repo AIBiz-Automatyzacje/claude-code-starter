@@ -271,3 +271,10 @@ test('skill dev-compound-refresh: doScalenia → jedna regula klasy (Replace), d
   assert.match(raport, /Do bramki: /)
   assert.match(skill, /`doBramki`/)
 })
+
+// Pilot mobile W29 (run 2): compound zapisal solution z P3, ktory zostal w kodzie bez naprawy.
+test('compound autopilota: finding bez naprawy (P3 i otwarte wpisy known-issues) nie jest materialem na solution', () => {
+  const p = C.compoundPrompt('docs/active/x')
+  assert.match(p, /Dokumentujesz problem ROZWIAZANY w tej galezi: finding, ktory zostal bez naprawy \(sekcje "## P3 faza N"/)
+  assert.match(p, /finding bez commita `fix\(` w historii\), nie jest materialem na solution/)
+})

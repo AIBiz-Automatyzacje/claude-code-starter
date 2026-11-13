@@ -103,6 +103,9 @@ Kroki (compact, sekcja "Tryb Compact" skilla):
 4. Zapisz JEDEN plik docs/solutions/<category>/YYYY-MM-DD-kebab-title.md (data z \`date +%F\`) wg formatu ze skilla,
    razem z polami wiedzy we frontmatterze (klasa, regula, regula_krotka, paths, waga, szczebel, szczebel_powod, zrodlo, ucieczki — sekcja
    "Pola wiedzy" skilla). Jesli nie bylo nietrywialnego problemu wartego dokumentacji — ustaw plik=null, wiedza=null.
+   Dokumentujesz problem ROZWIAZANY w tej galezi: finding, ktory zostal bez naprawy (sekcje "## P3 faza N" i inne otwarte
+   wpisy known-issues.md, finding bez commita \`fix(\` w historii), nie jest materialem na solution — wpis opisalby jako
+   rozwiazane cos, co zostaje w kodzie (pilot mobile W29: martwa asercja w kodzie, a docs/solutions/ mowilo o naprawie).
 5. Sprawdzenie pol: \`node .claude/scripts/wiedza/wiedza.mjs sprawdz <plik>\`. Kod 1 = popraw pola wg \`bledy\` i sprawdz
    drugi raz. Gdy dalej kod 1 — usun plik (solution bez poprawnych pol wiedzy nie zostaje w bazie), zwroc plik=null,
    wiedza=null i bledy w odmowa.
