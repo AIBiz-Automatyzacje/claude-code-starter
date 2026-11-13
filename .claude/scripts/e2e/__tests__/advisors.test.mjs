@@ -105,11 +105,35 @@ test('brak tokenu = brak z naprawa (gdzie wygenerowac, gdzie wpisac); brak .env.
     assert.equal(bezTokenu.status, 'brak')
     assert.equal(bezTokenu.ref, REF)
     assert.match(bezTokenu.naprawa, /Access Tokens.*SUPABASE_ACCESS_TOKEN=<token> do \.env\.e2e/)
-    zapisz(repo, { '.env.e2e': `${ADRES}=http://127.0.0.1:54321\n` })
+    // Adres poza Supabase i poza maszyna (127.0.0.1 to baza lokalna — osobny test niżej, W15).
+    zapisz(repo, { '.env.e2e': `${ADRES}=https://api.example.com\n` })
     const bezRef = await advisorsE2e(repo, { srodowisko: { SUPABASE_ACCESS_TOKEN: 't' } })
     assert.equal(bezRef.status, 'brak')
     assert.match(bezRef.naprawa, /SUPABASE_E2E_PROJECT_REF/)
     assert.match(bezRef.detal, /brak ref projektu e2e/)
+  } finally {
+    usun(repo)
+  }
+})
+
+// Pilot mobile W15: baza e2e z `supabase start` (127.0.0.1) dawala uwage „brak ref” w kazdym planie z migracjami.
+test('baza lokalna: gotowość nie dotyczy (bez uwagi), advisors pominięty bez zapytania do API; ref w chmurze albo PROJECT_REF dalej działa', async () => {
+  const { bazaLokalna, gotowoscAdvisors } = await import('../advisors.mjs')
+  const LOKALNE = { [ADRES]: 'http://127.0.0.1:54321', SUPABASE_E2E_DB_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' }
+  assert.equal(bazaLokalna(LOKALNE), true)
+  assert.equal(bazaLokalna({ [ADRES]: 'http://localhost:54321' }), true)
+  assert.equal(bazaLokalna({ ...LOKALNE, SUPABASE_E2E_PROJECT_REF: REF }), false, 'jawny ref wygrywa')
+  assert.equal(bazaLokalna({ [ADRES]: `https://${REF}.supabase.co`, SUPABASE_E2E_DB_URL: LOKALNE.SUPABASE_E2E_DB_URL }), false, 'klient w chmurze')
+  assert.equal(bazaLokalna({}), false)
+  const repo = noweRepo()
+  try {
+    zapisz(repo, { '.env.e2e': Object.entries(LOKALNE).map(([k, v]) => `${k}=${v}`).join('\n') + '\n' })
+    const g = gotowoscAdvisors(repo, {})
+    assert.deepEqual([g.gotowe, g.uwaga], [false, ''])
+    assert.match(g.nieDotyczy ?? '', /^baza e2e lokalna \(supabase start\)/)
+    const w = await advisorsE2e(repo, { bazaApi: 'http://127.0.0.1:9', srodowisko: { SUPABASE_ACCESS_TOKEN: 't' } })
+    assert.deepEqual([w.status, w.naprawa], ['pominieta', ''])
+    assert.match(w.detal, /lokalna/)
   } finally {
     usun(repo)
   }

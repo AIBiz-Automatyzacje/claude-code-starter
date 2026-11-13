@@ -164,7 +164,7 @@ export function gotowosc(projekt, katalogZadania, { narzedzia = NARZEDZIA, srodo
   const e2e = srodowiskoE2e(projekt, katalogZadania, narzedzia)
   // Zadanie z migracjami (P17): advisors bez tokenu albo bazy e2e nie pobiegnie — uwaga, nie bloker (security sprawdzi recznie).
   const advisors = zadania.includes('supabase/migrations/') ? gotowoscAdvisors(projekt, srodowisko) : null
-  if (advisors && !advisors.gotowe) e2e.uwagi.push(advisors.uwaga)
+  if (advisors && !advisors.gotowe && !advisors.nieDotyczy) e2e.uwagi.push(advisors.uwaga)
   const sprawy = otwarte(projekt)
   const wynik = {
     plan: { ok: !walidacja.bledy.length, bledy: walidacja.bledy, uwagi: walidacja.uwagi },
