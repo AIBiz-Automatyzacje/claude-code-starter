@@ -3,10 +3,8 @@
 //
 // Uruchomienie: node --test stacks/expo/__tests__/adapter-e2e.test.mjs
 
-import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
-import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -569,37 +567,87 @@ test('canary: uruchomMaestro maskuje hasło w ogonie i na stderr, oddaje kod; br
   }
 })
 
-test('reload: wysyła metodę reload przez /message i kończy się ok; zamknięty port = wynik z błędem', async () => {
-  /** @type {string} */
-  let odebrane = ''
-  /** @type {import('node:stream').Duplex[]} */
-  const polaczenia = []
-  const serwer = createServer()
-  serwer.on('upgrade', (zadanie, gniazdo) => {
-    polaczenia.push(gniazdo)
-    const klucz = createHash('sha1').update(`${zadanie.headers['sec-websocket-key']}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`).digest('base64')
-    assert.equal(zadanie.url, '/message')
-    gniazdo.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${klucz}\r\n\r\n`)
-    gniazdo.on('data', (/** @type {Buffer} */ ramka) => {
-      if (odebrane) return
-      const dlugosc = ramka[1] & 0x7f
-      const maska = ramka.subarray(2, 6)
-      odebrane = Buffer.from(ramka.subarray(6, 6 + dlugosc).map((b, i) => b ^ maska[i % 4])).toString()
-    })
-    gniazdo.on('error', () => {})
-  })
-  await new Promise((r) => { serwer.listen(0, '127.0.0.1', () => r(undefined)) })
-  const adres = serwer.address()
-  const port = adres && typeof adres === 'object' ? adres.port : 0
+// Pilot run 4 (W36): canary zatrzymany limitem skryptu dał STOP „kod SIGKILL” ze stosem Maestro, a sesja uznała to za zabicie przez system.
+test('canary: przekroczony limit skryptu nazwany w wyniku i w STOP-ie, z pomiarem czasu w naprawie; zwykły SIGKILL bez tej treści', async () => {
+  const bin = katalog()
+  writeFileSync(join(bin, 'maestro'), '#!/bin/sh\necho "at maestro.utils.FileUtils.zipDir"\nexec sleep 30\n', { mode: 0o755 })
+  const sciezka = process.env.PATH
+  const pisz = process.stderr.write
+  process.stderr.write = /** @type {typeof process.stderr.write} */ (() => true)
   try {
-    assert.deepEqual(await canary.wyslijReload(port), { ok: true, detal: '' })
-    assert.deepEqual(JSON.parse(odebrane), { version: 2, method: 'reload' })
+    process.env.PATH = `${bin}:${sciezka}`
+    const w = await canary.uruchomMaestro(['test'], bin, { sekrety: [] }, 3000)
+    assert.deepEqual(w, { kod: 'SIGKILL', ogon: 'at maestro.utils.FileUtils.zipDir', przekroczonyLimitMs: 3000 })
   } finally {
-    // Gniazdo po upgrade nie należy już do serwera HTTP: zostawione trzyma proces testu przy życiu.
-    for (const g of polaczenia) g.destroy()
-    serwer.close()
+    process.stderr.write = pisz
+    process.env.PATH = sciezka
   }
-  assert.equal((await canary.wyslijReload(port)).ok, false)
+  const p = katalog()
+  const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'U1', nazwa: 'iPhone 17', sciezkaAplikacji: null }, aplikacja: APLIKACJA }
+  const limit = await canary.przejdzCanary(p, {}, cel, { maestro: async () => ({ kod: 'SIGKILL', ogon: 'zipDir', przekroczonyLimitMs: 240_000 }) })
+  assert.equal(limit.ok, false)
+  assert.match(limit.detal, /^canary na iPhone 17: przekroczony limit 240 s — skrypt zatrzymał Maestro \(SIGKILL\)/)
+  assert.match(limit.naprawa, /^Zmierz czas ręcznie: time maestro --device U1 test <flow>\. Krótki przebieg = obciążony komputer/)
+  const obcy = await canary.przejdzCanary(p, {}, cel, { maestro: async () => ({ kod: 'SIGKILL', ogon: 'zipDir' }) })
+  assert.equal(obcy.detal, 'canary na iPhone 17: kod SIGKILL\nzipDir')
+  assert.equal(obcy.naprawa, 'Sprawdź ręcznie: maestro --device U1 test <flow>.')
+})
+
+// Pilot run 4 (W37): Maestro ubity limitem zostawiał `xcodebuild` ze sterownikiem XCTest, a następny przebieg padł po 32 s.
+test('canary: limit skryptu ubija Maestro razem z potomkami', async () => {
+  const bin = katalog()
+  const plikPid = join(bin, 'potomek.pid')
+  writeFileSync(join(bin, 'maestro'), `#!/bin/sh\nsh -c 'sleep 30' > /dev/null 2>&1 &\necho $! > "${plikPid}"\nwait\n`, { mode: 0o755 })
+  const sciezka = process.env.PATH
+  /** @type {number} */
+  let potomek = 0
+  try {
+    process.env.PATH = `${bin}:${sciezka}`
+    const w = await canary.uruchomMaestro(['test'], bin, { sekrety: [] }, 1500)
+    assert.equal(w.przekroczonyLimitMs, 1500)
+    potomek = Number(readFileSync(plikPid, 'utf8'))
+    assert.ok(potomek > 0)
+    await new Promise((r) => setTimeout(r, 200))
+    assert.throws(() => process.kill(potomek, 0), /ESRCH/, 'potomek Maestro nie żyje po limicie')
+  } finally {
+    process.env.PATH = sciezka
+    try { if (potomek) process.kill(potomek, 'SIGKILL') } catch { /* już ubity */ }
+  }
+})
+
+test('canary: sterownik Maestro nie wstał = jedno ponowienie w reszcie limitu; inna porażka i krótka reszta bez ponowienia', async () => {
+  const p = katalog()
+  const cel = { port: 8081, urzadzenie: { platforma: 'ios', id: 'U1', nazwa: 'iPhone 17', sciezkaAplikacji: null }, aplikacja: APLIKACJA }
+  const BRAK_STEROWNIKA = { kod: 1, ogon: 'java.net.ConnectException: Failed to connect to /127.0.0.1:7001' }
+  /** @param {{ kod: number | string | null, ogon: string }[]} odpowiedzi @param {number} [limitMs] */
+  const przebieg = async (odpowiedzi, limitMs) => {
+    /** @type {(number | undefined)[]} */
+    const limity = []
+    const maestro = async (/** @type {string[]} */ _a, /** @type {string} */ _c, /** @type {unknown} */ _z, /** @type {number} */ limit) => { limity.push(limit); return odpowiedzi.shift() ?? { kod: 99, ogon: 'za dużo wywołań' } }
+    return { wynik: await canary.przejdzCanary(p, {}, cel, { maestro, ...(limitMs ? { limitMs } : {}) }), limity }
+  }
+  const udany = await przebieg([{ ...BRAK_STEROWNIKA }, { kod: 0, ogon: '' }])
+  assert.equal(udany.wynik.ok, true)
+  assert.match(udany.wynik.detal, /\(drugi przebieg: w pierwszym sterownik Maestro nie wstał\)$/)
+  assert.equal(udany.limity.length, 2)
+  assert.equal(udany.limity[0], 240_000)
+  assert.ok(Number(udany.limity[1]) <= 240_000 && Number(udany.limity[1]) > 230_000, `drugi przebieg dostaje resztę limitu: ${udany.limity[1]}`)
+  const dwaRazy = await przebieg([{ ...BRAK_STEROWNIKA }, { ...BRAK_STEROWNIKA }, { kod: 0, ogon: '' }])
+  assert.deepEqual([dwaRazy.wynik.ok, dwaRazy.limity.length], [false, 2], 'ponowienie jest jedno')
+  assert.match(dwaRazy.wynik.detal, /^canary na iPhone 17: kod 1 \(drugi przebieg: w pierwszym sterownik Maestro nie wstał\)\n/)
+  const asercja = await przebieg([{ kod: 1, ogon: 'Assertion is false' }, { kod: 0, ogon: '' }])
+  assert.deepEqual([asercja.wynik.ok, asercja.limity.length], [false, 1], 'porażka flow nie jest ponawiana')
+  const limit = await przebieg([{ kod: 'SIGKILL', ogon: BRAK_STEROWNIKA.ogon }, { kod: 0, ogon: '' }])
+  assert.deepEqual([limit.wynik.ok, limit.limity.length], [false, 1], 'przebieg ubity limitem nie jest ponawiany')
+  const krotko = await przebieg([{ ...BRAK_STEROWNIKA }, { kod: 0, ogon: '' }], 50_000)
+  assert.deepEqual([krotko.wynik.ok, krotko.limity.length], [false, 1], 'reszta poniżej minimum = bez ponowienia')
+})
+
+// Reload Metro przed canary wydłużał go z ~34 s do 133–154 s (pilot run 4, W37); canary sam otwiera aplikację od nowa.
+test('adapter: krok po starcie nie wysyła reloadu do Metro', () => {
+  const zrodloAdaptera = czytaj('.claude/scripts/e2e/adapter.mjs')
+  assert.doesNotMatch(zrodloAdaptera, /wyslijReload|method: 'reload'/)
+  assert.equal('wyslijReload' in canary, false)
 })
 
 // --- kontrakt adaptera ---

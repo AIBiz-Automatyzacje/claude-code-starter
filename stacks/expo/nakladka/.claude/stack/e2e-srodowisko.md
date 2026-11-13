@@ -31,5 +31,5 @@ konto `E2E_TEST_EMAIL`, polecenia `node .claude/scripts/e2e/e2e.mjs start|restar
 - Tester `feature-tester-e2e` prowadzi aplikację przez Maestro (skill `mobile-e2e-maestro`): plik flow `.maestro/<flow>.yaml` jest
   częścią dostawy buildera, a tester flow nie pisze.
 - Kontrola narzędzia: `maestro --version`, Java 17+ i próbny zrzut ekranu wybranego urządzenia.
-- Dowód startu (canary): po odpowiedzi Metro adapter wysyła reload i uruchamia `.maestro/_canary.yaml` z logowaniem i asercją za
+- Dowód startu (canary): po odpowiedzi Metro adapter uruchamia `.maestro/_canary.yaml` z logowaniem i asercją za
   logowaniem. Bez tego pliku idzie tymczasowy flow wejścia w dev-client, a wynik mówi, że to słaby dowód.

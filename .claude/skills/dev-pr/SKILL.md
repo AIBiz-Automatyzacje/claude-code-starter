@@ -339,7 +339,7 @@ gałąź (po merge'u to gałąź główna); `push: false` przy niepustym `commit
 Bez merge'u bieżąca gałąź to gałąź PR: commit compoundu trafia do PR i bot robi recenzję przyrostową samych plików wiedzy.
 Chroniona gałąź główna odrzuca push — wtedy `pushDetal` ma błąd, a commit wypychasz przez PR albo ręcznie.
 
-`--bez-push` → przekazujesz `bezPusha: true` etapom `compound` i `claude-md`; commit zostaje lokalnie, a w raporcie podajesz polecenie pushu i listę commitów.
+`--bez-push` → przekazujesz `bezPusha: true` etapom `compound` i `claude-md`; commit zostaje lokalnie, a w raporcie podajesz polecenie pushu i listę commitów. Po commicie osobny agent pomiaru sprawdza, czy commit jest na zdalnej gałęzi (`git branch -r --contains`). Wynik etapu z `pushMimoBezPusha: true` znaczy, że commit mimo to trafił na zdalną główną: piszesz to w raporcie jako pierwszą UWAGĘ (commit, `git log origin/<główna> -1`), bez cofania pushem.
 
 Przed pushem na gałąź główną compound i krok CLAUDE.md **czekają na CI czubka głównej** (do ~36 min): push zaraz po merge'u
 uruchamia CI od nowa, a CI z `concurrency: cancel-in-progress` anulowałby przebieg i deploy commitu merge'a. Wynik wraca jako

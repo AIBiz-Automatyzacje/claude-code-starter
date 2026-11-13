@@ -8,6 +8,9 @@
 # - Minimalny flow: logowanie i jedna asercja za logowaniem. To bramka, nie scenariusz testowy.
 # - Zmienne podaje adapter: APP_ID, APP_SCHEME, METRO_URL (adres Metro dla platformy, zakodowany do parametru),
 #   MAESTRO_E2E_EMAIL, MAESTRO_E2E_PASSWORD (ze środowiska procesu, nie z argumentów: tych nie wolno przekazywać przez `-e`).
+# - Cały canary ma 240 s razem ze startem sterownika Maestro i budową paczki. Czekanie `optional` na element zależny od danych
+#   (modal, który pojawia się tylko przy określonym stanie bazy) zużywa swój pełny `timeout` za każdym razem, gdy elementu nie ma:
+#   dawaj mu kilka sekund albo ustaw stan tak, żeby element był zawsze.
 # - Po zmianie: `maestro check-syntax .maestro/_canary.yaml`.
 # - Canary biegnie przed db-sync, więc asercja zależy od sesji, nie od rekordów z seeda: nagłówek z nazwą użytkownika, pasek
 #   zakładek, pusty stan listy.

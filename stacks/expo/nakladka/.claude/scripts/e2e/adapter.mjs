@@ -1,13 +1,13 @@
 // Adapter E2E stacku Expo (Metro, dev-client, Maestro): slot plikowy z rejestru stacks/sloty.json, kontrakt w wariancie web tego pliku
 // i w __tests__/adapter.test.mjs. Logika z promptu env-up starego szablonu mobile, przeniesiona do skryptu. Moduły pomocnicze:
-// expo-env.mjs (D13), expo-urzadzenie.mjs (iOS najpierw, dev-client), expo-canary.mjs (reload, dowód Maestro).
+// expo-env.mjs (D13), expo-urzadzenie.mjs (iOS najpierw, dev-client), expo-canary.mjs (dowód Maestro).
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { PLIK_CANARY, przejdzCanary, wyslijReload } from './expo-canary.mjs'
+import { PLIK_CANARY, przejdzCanary } from './expo-canary.mjs'
 import { cofnijEnvE2e, PLIK_DEV, plikAdaptera, zapiszEnvE2e } from './expo-env.mjs'
 import { uwagaPaczekSdk } from './expo-paczki.mjs'
 import { trasyExpoRouter } from './expo-trasy.mjs'
@@ -105,15 +105,13 @@ export function przedStartem(projekt, env) {
 }
 
 /**
- * Krok po odpowiedzi serwera: reload (docs Expo wymagają go po zmianie env) i dowód canary. Porażka reloadu to tylko uwaga: canary
- * i tak uruchamia aplikację od nowa.
+ * Krok po odpowiedzi serwera: dowód canary. Bez reloadu Metro (pilot run 4, W37): canary sam zatrzymuje aplikację i otwiera ją
+ * od nowa, więc świeży env wchodzi z nową paczką, a reload wysłany tuż przed Maestro wydłużał canary z ~34 s do 133–154 s.
  * @param {string} projekt @param {Record<string, string>} env @param {{ port: number }} konf @returns {Promise<WynikKroku>}
  */
 export async function poStarcie(projekt, env, konf) {
   if (!przygotowane) return { ok: true, detal: '', naprawa: '' }
-  const reload = await wyslijReload(konf.port)
-  const canary = await przejdzCanary(projekt, env, { port: konf.port, ...przygotowane })
-  return reload.ok ? canary : { ...canary, detal: `${canary.detal}; reload: ${reload.detal}` }
+  return przejdzCanary(projekt, env, { port: konf.port, ...przygotowane })
 }
 
 /** @param {string} projekt @returns {{ detal: string }} */

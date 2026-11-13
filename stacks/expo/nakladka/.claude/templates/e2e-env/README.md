@@ -31,7 +31,7 @@ Wszystkie opcjonalne. Wzór: `.claude/templates/e2e-env/.env.e2e.example`.
 
 | Klucz | Domyślnie | Znaczenie |
 |---|---|---|
-| `E2E_URL` | `http://localhost:8081` | adres Metro (sonda zdrowia, port domyślnej komendy, reload) |
+| `E2E_URL` | `http://localhost:8081` | adres Metro (sonda zdrowia, port domyślnej komendy) |
 | `E2E_START` | `env -u CI <pm> expo start --port <port z E2E_URL>` | komenda startu (pm z lockfile); dostaje zmienne z `.env.e2e` w środowisku; wartość ze spacjami w cudzysłowie, bo db-sync wczytuje plik shellem. Własna komenda też musi usuwać `CI`: przy `CI=1` Metro nie obserwuje plików |
 | `E2E_HEALTH` | `<E2E_URL>/status` | adres sondy zdrowia; odpowiedź < 500 = działa |
 | `E2E_HEALTH_TRESC` | — | tekst wymagany w odpowiedzi sondy; dla `/status` Metro: `packager-status:running` |
@@ -54,7 +54,7 @@ przycisk się nie renderuje i każdy flow pada na pierwszym `tapOn`, a start teg
 ## Jak zmienne trafiają do aplikacji
 
 Expo nie ładuje `.env.e2e`, a env procesu Metro przegrywa w trybie dev z plikami. Dlatego `e2e.mjs start` zapisuje linie `EXPO_PUBLIC_*` z
-`.env.e2e` do `.env.development.local` (najwyższy priorytet w dev) i wysyła reload, a `e2e.mjs stop` plik usuwa:
+`.env.e2e` do `.env.development.local` (najwyższy priorytet w dev), a `e2e.mjs stop` plik usuwa (świeże wartości wchodzą z paczką, gdy canary otwiera aplikację od nowa):
 
 - `.env.local` zostaje nietknięty;
 - plik i kopia muszą być w `.gitignore` (`.env*.local` jest w `.gitignore` szablonu Expo), inaczej start się zatrzymuje;
@@ -102,7 +102,7 @@ dopóki pozycja jest nieodhaczona.
 ```
 Bootstrap:    e2e:start  — e2e.mjs start: scenariusze [E2E] i makiety zadania, sprawdzenie .env.e2e, z bazą e2e login kontem
                            E2E_TEST_EMAIL, urządzenie i dev-client, .env.development.local, próbny zrzut, Metro w tle (PID i log w
-                           /tmp/autopilot-e2e-<projekt>.*), reload, canary. Niesprawne środowisko przy [E2E] = STOP przed fazą 1.
+                           /tmp/autopilot-e2e-<projekt>.*), canary. Niesprawne środowisko przy [E2E] = STOP przed fazą 1.
 Per faza:     db-sync    — tylko z bazą e2e: e2e.mjs suma (migrations.sum), supabase db push na bazę e2e, seedy .maestro/*-seed.sql, konto testowe.
 Review:       tester E2E — Maestro na urządzeniu; wpis per scenariusz z przyczyną SKIP. Gdy aplikacja milczy: e2e.mjs stan (czy nasze Metro
                            żyje + ogon logu) — padło z błędem kodu = FAIL do fixa, inaczej SKIP „srodowisko” → [Manual].
