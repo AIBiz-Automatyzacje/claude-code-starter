@@ -803,10 +803,31 @@ const KROK_BEZ_PUSHA = `BEZ PUSHA (decyzja operatora, bo push na glowna to deplo
 function krokiPoCommicie(nr) {
   return bezPusha ? `${nr}. ${KROK_BEZ_PUSHA}` : `${nr}. ${KROK_CI_GLOWNEJ}\n${nr + 1}. ${KROK_PUSH}`
 }
-/** @param {string} nazwaEtapu @param {{ push?: boolean, commit?: string | null } | null} w @returns {boolean} */
-function pushMimoBezPusha(nazwaEtapu, w) {
-  if (!bezPusha || !w || w.push !== true) return false
-  log(`/dev-pr ${nazwaEtapu}: UWAGA — commit ${w.commit} WYPCHNIETY mimo trybu bez pusha (--bez-push); sprawdz origin i CI glownej`)
+// Analiza runu 4 (13.11): samo pole push z wyniku to slowo agenta, ktory pushowal — agent, ktory wypchnie i zwroci push false,
+// przeszedlby bez sladu. Osobny agent pomiaru pyta gita, czy commit jest na zdalnej galezi (push aktualizuje `origin/<galaz>`
+// lokalnie, wiec bez `git fetch`).
+const POMIAR_PUSHA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: { zdalne: { type: 'array', items: { type: 'string' }, description: 'linie wyjscia git branch -r --contains; puste wyjscie = []' } },
+  required: ['zdalne'],
+}
+/** @param {string} nazwaEtapu @param {{ push?: boolean, commit?: string | null } | null} w @returns {Promise<boolean>} */
+async function pushMimoBezPusha(nazwaEtapu, w) {
+  if (!bezPusha || !w) return false
+  /** @type {string[]} */
+  let zdalne = []
+  if (w.commit && /^[0-9a-f]{7,40}$/.test(w.commit)) {
+    const pomiar = await agent(
+      `Uruchom w korzeniu repo dokladnie jedno polecenie: \`git branch -r --contains ${w.commit}\`. zdalne = linie wyjscia bez spacji
+na brzegach; puste wyjscie = []. Niczego nie zmieniaj i nie uruchamiaj \`git fetch\` ani \`git push\`. Zwroc obiekt zgodny ze schematem.`,
+      { schema: POMIAR_PUSHA, agentType: 'klasa-mechaniczny-pomiar', label: `pr:${nazwaEtapu}-pomiar-pusha:${zadanie}` }
+    )
+    if (pomiar) zdalne = pomiar.zdalne
+    else log(`/dev-pr ${nazwaEtapu}: UWAGA — pomiar pushu nie zwrocil wyniku; sprawdz recznie \`git branch -r --contains ${w.commit}\` (puste wyjscie = commit lokalny)`)
+  }
+  if (w.push !== true && !zdalne.length) return false
+  log(`/dev-pr ${nazwaEtapu}: UWAGA — commit ${w.commit} WYPCHNIETY mimo trybu bez pusha (--bez-push)${zdalne.length ? `: jest na ${zdalne.join(', ')}` : ''}; sprawdz origin i CI glownej`)
   return true
 }
 // Etap start: operator swiadomie wiezie niewypchniete commity glownej w tym PR albo idzie bez poprawnego configu bota.
@@ -1437,7 +1458,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (!c || c.pole !== 'uzgodniono') {
     return { status: 'BLAD', etap, powod: `pole claude_md po commicie: ${c ? c.pole : 'brak wyniku agenta'} — sprawdz ${u.plikDecyzji} i \`git log -1\`` }
   }
-  const naruszenie = pushMimoBezPusha('claude-md', c)
+  const naruszenie = await pushMimoBezPusha('claude-md', c)
   if (!c.push) log(`/dev-pr: UWAGA — commit ${c.commit} bez pusha (${c.pushDetal}); pojedzie z nastepna galezia`)
   logCiGlownej('claude-md', c.ciGlownej)
   log(`/dev-pr: CLAUDE.md uzgodniony (${u.znPrzed} -> ${u.znPo} zn), ${u.plikDecyzji}: claude_md: uzgodniono, commit ${c.commit}`)
@@ -1505,7 +1526,7 @@ ${JSON.stringify(odlozone, null, 2)}
    (czesc nieostatnia) = odlozoneZapisane 0 — start kolejnej czesci zbierze je z PR.
 ` : ''}5. Zacommituj artefakty bazy wiedzy jawnym pathspec (docs/solutions/, docs/learned-patterns.md,
    docs/CONCEPTS.md, docs/reviews/propozycje-do-reviewerow.md, docs/completed/${zadanie}/known-issues.md — te, ktore realnie zmieniles), bez \`git add -A\` i \`git add .\`.
-   commit = krotki hash; bez zmian do zacommitowania commit null, push false, pushDetal "brak commita" i pomin pkt 7 (pkt 6 robisz).
+   commit = krotki hash; bez zmian do zacommitowania commit null, push false, pushDetal "brak commita"${bezPusha ? '' : ' i pomin pkt 7 (pkt 6 robisz)'}.
 ${krokiPoCommicie(6)}${bezPusha ? '' : `
    Po merge'u z \`--delete-branch\` biezaca galaz to glowna, wiec push wysyla commit compoundu na glowna — bez niego
    nastepny pull request wiozlby ten commit, a krok CLAUDE.md zatrzymalby sie na rozjechanej galezi glownej.`}
@@ -1523,7 +1544,7 @@ Zwroc obiekt zgodny ze schematem.`,
   if (odlozone.length) log(`/dev-pr compound: watki odlozone ${odlozone.length}, w known-issues.md: ${wynik.odlozoneZapisane || 0}`)
   if (wynik.commit && !wynik.push) log(`/dev-pr compound: UWAGA — commit ${wynik.commit} bez pusha (${wynik.pushDetal}); wypchnij go przed kolejnym PR i krokiem CLAUDE.md`)
   logCiGlownej('compound', wynik.ciGlownej)
-  const naruszenie = pushMimoBezPusha('compound', wynik)
+  const naruszenie = await pushMimoBezPusha('compound', wynik)
   return { status: 'OK', etap, ...wynik, propozycjeBramek: bramki, bramkiWdrozone: wdrozone, uwagaIndeksu: wynik.indeks === 'bramka' ? INDEKS_PELNY : '', pushMimoBezPusha: naruszenie }
 }
 
