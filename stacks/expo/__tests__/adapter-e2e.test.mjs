@@ -275,6 +275,11 @@ test('dowód natywności z dysku: każdy znacznik; pakiet JS = null; brak katalo
   assert.match(dowod(p, 'brak'), /brak node_modules\/brak, potraktowany jak natywny/)
   mkdirSync(join(p, 'node_modules/.pnpm/@s+nat@1.0.0/node_modules/@s/nat/ios'), { recursive: true })
   assert.equal(dowod(p, '@s/nat'), 'ios')
+  // Pilot mobile W24: npm zagnieżdża paczkę pod rodzicem; bez tego `@expo/cli` szedł jako natywny „brak katalogu”.
+  pakiet(p, 'expo/node_modules/@expo/cli', { 'index.js': '' })
+  pakiet(p, '@s/rodzic/node_modules/zag', { 'ios/x.m': '' })
+  assert.equal(dowod(p, '@expo/cli'), null)
+  assert.equal(dowod(p, 'zag'), 'ios')
 })
 
 test('lockfile: pakiety z diffu każdego formatu; nieznany format daje pustą listę', () => {

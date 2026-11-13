@@ -103,9 +103,30 @@ function katalogPakietu(projekt, nazwa) {
   const bezposredni = join(projekt, 'node_modules', nazwa)
   if (existsSync(bezposredni)) return bezposredni
   const pnpm = join(projekt, 'node_modules/.pnpm')
-  if (!existsSync(pnpm)) return null
-  const wpis = readdirSync(pnpm).find((k) => k.startsWith(`${nazwa.replace('/', '+')}@`))
-  return wpis ? join(pnpm, wpis, 'node_modules', nazwa) : null
+  if (existsSync(pnpm)) {
+    const wpis = readdirSync(pnpm).find((k) => k.startsWith(`${nazwa.replace('/', '+')}@`))
+    if (wpis) return join(pnpm, wpis, 'node_modules', nazwa)
+  }
+  return zagniezdzony(join(projekt, 'node_modules'), nazwa)
+}
+
+/**
+ * Pilot mobile W24 (run 2): npm zagnieżdża paczkę w innej wersji pod rodzicem (`node_modules/expo/node_modules/@expo/cli`),
+ * a bramka szukała tylko na najwyższym poziomie i zgłaszała `@expo/cli` i `@expo/router-server` jako natywne „bez katalogu”.
+ * Szuka jeden poziom rodzica w głąb, także pod scope (`node_modules/@scope/rodzic/node_modules/<nazwa>`).
+ * @param {string} korzen katalog node_modules @param {string} nazwa @returns {string | null}
+ */
+function zagniezdzony(korzen, nazwa) {
+  if (!existsSync(korzen)) return null
+  for (const w of readdirSync(korzen, { withFileTypes: true })) {
+    if (!w.isDirectory() || w.name.startsWith('.')) continue
+    const rodzice = w.name.startsWith('@') ? readdirSync(join(korzen, w.name)).map((n) => join(korzen, w.name, n)) : [join(korzen, w.name)]
+    for (const rodzic of rodzice) {
+      const kandydat = join(rodzic, 'node_modules', nazwa)
+      if (existsSync(kandydat)) return kandydat
+    }
+  }
+  return null
 }
 
 /** @param {string} katalog @param {number} glebokosc @returns {boolean} */
