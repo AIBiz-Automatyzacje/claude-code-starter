@@ -95,3 +95,13 @@ test('scribe: linia P3 w known-issues niesie os reviewera ([P3/<os>] z pola _zro
   assert.match(prompt, /- 🟡 \[P3\/<os>\] <plik:linia> — <opis>/)
   assert.match(prompt, /os = pole _zrodlo findingu/)
 })
+
+// Pilot mobile run 5: P3 typu E2E (flow Maestro) byl w raporcie review, a w known-issues nie — znikal z opisu PR i z listy
+// operatora. Wyjatek: przebieg z blokerem srodowiska (stop-rebuild) — jego findingi E2E powtorka review wystawi od nowa.
+test('scribe: P3 typu E2E idzie do known-issues razem z KOD/TEST; przy blokerze stop-rebuild zostaje w raporcie', () => {
+  assert.match(prompt, /2a\. P3 typu KOD\/TEST\/E2E zapisz w docs\/active\/x\/known-issues\.md/)
+  assert.doesNotMatch(prompt, /P3 typu E2E, OPERATOR i DECYZJA obsluguja/)
+  const zBlokerem = scribePrompt('docs/active/x', 4, [], PRZEBIEG, [], true)
+  assert.match(zBlokerem, /2a\. P3 typu KOD\/TEST zapisz/)
+  assert.match(zBlokerem, /P3 typu E2E z tego przebiegu powstaly na srodowisku z blokerem/)
+})

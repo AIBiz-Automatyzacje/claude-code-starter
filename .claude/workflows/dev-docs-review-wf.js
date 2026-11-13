@@ -616,11 +616,13 @@ ${JSON.stringify(obalone || [], null, 2)}
    jeden wiersz na finding: "- [DECYZJA · faza ${faza} · review] <plik:linia> — <opis>". Brak pliku — utworz go; brak sekcji — wstaw ja na poczatku pliku,
    pod naglowkiem pierwszego poziomu (gdy jest), przed pierwsza sekcja "## "; sekcja jest — dopisz brakujace wiersze bez duplikatow
    (ten sam plik:linia i opis = ten sam wiersz), istniejacych nie usuwaj i nie zmieniaj. Naglowek sekcji wystepuje w pliku dokladnie raz.
-2a. P3 typu KOD/TEST zapisz w ${sciezka}/known-issues.md w sekcji "## P3 faza ${faza}", jeden wiersz na finding:
+2a. P3 typu KOD/TEST${bezKsiegowaniaE2e ? '' : '/E2E'} zapisz w ${sciezka}/known-issues.md w sekcji "## P3 faza ${faza}", jeden wiersz na finding:
    "- 🟡 [P3/<os>] <plik:linia> — <opis>", os = pole _zrodlo findingu (/dev-pr pyta przed PR o P3 osi correctness i security). Fix naprawia tylko P1 i P2; P3 z tej sekcji ida do opisu PR i do bota. Brak pliku —
    utworz go; sekcja juz jest (powtorka review po STOP-ie) — dopisz brakujace wiersze bez duplikatow (ten sam plik:linia
    i opis = ten sam wiersz); istniejacych nie usuwaj. Nowa sekcja stoi przed "## Zamkniete" (gdy jest),
-   inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. P3 typu E2E, OPERATOR i DECYZJA obsluguja punkty 2 i 3.
+   inaczej na koncu pliku. Inne sekcje known-issues zostaja bez zmian. ${bezKsiegowaniaE2e
+    ? 'P3 typu E2E z tego przebiegu powstaly na srodowisku z blokerem (powtorka review wystawi nowe) — zostaja tylko w raporcie; OPERATOR i DECYZJA obsluguja punkty 2 i 3.'
+    : 'OPERATOR i DECYZJA obsluguja punkty 2 i 3.'}
 2b. W ${sciezka}/*-kontekst.md dopisz do sekcji \`## Dziennik\` jedna pozycje o tym review: gate, liczniki
    P1/P2/P3/OPERATOR/DECYZJA, sciezka raportu i najwazniejszy wniosek.
 3. Bookkeeping checkboxow fazy ${faza}.
