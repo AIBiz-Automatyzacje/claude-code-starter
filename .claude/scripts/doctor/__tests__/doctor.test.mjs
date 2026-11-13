@@ -334,9 +334,16 @@ function zainstaluj(projekt, nazwa, wersja) {
   writeFileSync(join(projekt, 'node_modules', nazwa, 'package.json'), JSON.stringify({ name: nazwa, version: wersja }))
 }
 
-test('bramki: projekt bez eslint.config.* z szablonu → nie dotyczy (starszy projekt, ESLint = osobne zadanie)', () => zSrodowiskiem((s) => {
-  writeFileSync(join(s.projekt, 'eslint.config.js'), 'export default []\n')
+// Pilot mobile W6: wlasny eslint.config.js projektu dawal „nie dotyczy”, choc bramka ESLint biegla na jego regulach.
+test('bramki: brak eslint.config.* → nie dotyczy; własny bez szablonu → UWAGA z drogą przejścia, bez blokady', () => zSrodowiskiem((s) => {
   assert.equal(wiersz(doctor(s).stdout, 'bramki domknięcia')[1], 'nie dotyczy')
+  writeFileSync(join(s.projekt, 'eslint.config.js'), 'export default []\n')
+  const w = doctor(s)
+  const bramki = wiersz(w.stdout, 'bramki domknięcia')
+  assert.equal(bramki[1], 'UWAGA')
+  assert.match(bramki[2], /^własny eslint\.config\.js bez konfiguracji szablonu/)
+  assert.match(bramki[3], /eslint\.config\.szablon\.ts/)
+  assert.equal(w.status, 0)
 }))
 
 test('bramki: konfiguracja z szablonu bez zaleznosci → UWAGA z komenda instalacji dokladnych wersji; komplet → OK', () => zSrodowiskiem((s) => {
