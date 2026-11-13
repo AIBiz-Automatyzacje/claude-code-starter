@@ -73,9 +73,10 @@ export async function odegrajFlow({ projekt, zadanie, flow, plik = `.maestro/${f
   // Praca poza repo: zabity proces nie zostawia w katalogu zadania pliku z hasłem. `--debug-output` zabiera ten sam zapis z ~/.maestro/tests.
   const robocze = mkdtempSync(join(tmpdir(), 'expo-flow-'))
   try {
-    const { kod, ogon } = await maestro(['--device', c.urzadzenie.id, 'test', '--test-output-dir', join(robocze, 'wynik'), '--debug-output', join(robocze, 'debug'), ...argumenty, plik], projekt, { sekrety, srodowisko }, LIMIT_FLOW_MS)
+    const { kod, ogon, przekroczonyLimitMs } = await maestro(['--device', c.urzadzenie.id, 'test', '--test-output-dir', join(robocze, 'wynik'), '--debug-output', join(robocze, 'debug'), ...argumenty, plik], projekt, { sekrety, srodowisko }, LIMIT_FLOW_MS)
     const status = kod === 0 ? 'ok' : typeof kod === 'number' ? 'porazka' : kod === 'SIGKILL' ? 'zawieszony' : 'blad-maestro'
-    return { status, flow, kod, ogon, urzadzenie: c.urzadzenie.nazwa, katalog: relative(projekt, katalog), zrzuty: przeniesZrzuty(robocze, katalog, projekt) }
+    // limitSek tylko przy limicie skryptu: SIGKILL z zewnątrz (system, operator) też daje `zawieszony`, ale bez tego pola (W36).
+    return { status, flow, kod, ogon, ...(przekroczonyLimitMs ? { limitSek: Math.round(przekroczonyLimitMs / 1000) } : {}), urzadzenie: c.urzadzenie.nazwa, katalog: relative(projekt, katalog), zrzuty: przeniesZrzuty(robocze, katalog, projekt) }
   } finally {
     rmSync(robocze, { recursive: true, force: true })
   }

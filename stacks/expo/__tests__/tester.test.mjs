@@ -190,6 +190,9 @@ test('odegranie: wynik według kodu Maestro; plik podany wprost zamiast domyśln
   const odegraj = (/** @type {number | string | null} */ kod) => flowy.odegrajFlow({ projekt, zadanie: 'z', flow: 'notatki', env: ENV, wykonajKomende: wykonaj, maestro: zKodem(kod) })
   assert.equal((await odegraj(1)).status, 'porazka')
   assert.equal((await odegraj('SIGKILL')).status, 'zawieszony')
+  assert.equal('limitSek' in (await odegraj('SIGKILL')), false, 'SIGKILL z zewnątrz: bez limitu skryptu')
+  const poLimicie = await flowy.odegrajFlow({ projekt, zadanie: 'z', flow: 'notatki', env: ENV, wykonajKomende: wykonaj, maestro: async () => ({ kod: 'SIGKILL', ogon: 'ogon', przekroczonyLimitMs: 480_000 }) })
+  assert.deepEqual([poLimicie.status, poLimicie.limitSek], ['zawieszony', 480])
   assert.equal((await odegraj('spawn maestro ENOENT')).status, 'blad-maestro')
   writeFileSync(join(projekt, 'z/inny.yaml'), 'appId: x\n')
   /** @type {string[]} */
