@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { liczbaTur, ocenaOstatniejTury, ocenaRecenzjiCzubka, odczytajZnacznik, PROG_LINII_TURY, stanWatku, znacznikDecyzji } from '../stan-pr.mjs'
+import { koniecRecenzjiCzubka, LIMIT_CZEKANIA_NA_BOTA_MIN, liczbaTur, ocenaCzekaniaNaBota, ocenaOstatniejTury, ocenaRecenzjiCzubka, odczytajZnacznik, PROG_LINII_TURY, stanWatku, znacznikDecyzji } from '../stan-pr.mjs'
 
 const BOT = { author: { login: 'coderabbitai' }, body: 'Zarzut' }
 /** @param {string} body */
@@ -63,4 +63,30 @@ test('ostatnia tura: duzo kodu albo plik sesji wymaga krotkiego review; testy i 
   assert.equal(ocenaOstatniejTury([{ plik: 'src/a.ts', dodane: PROG_LINII_TURY + 1 }]).wymagaReview, true)
   assert.equal(ocenaOstatniejTury([{ plik: 'src/a.ts', dodane: 5 }, { plik: 'src/a.test.ts', dodane: 900 }, { plik: 'docs/x.md', dodane: 900 }]).wymagaReview, false)
   assert.deepEqual(ocenaOstatniejTury([{ plik: 'src/server/magic-link-session.ts', dodane: 3 }]).ryzykowne, ['src/server/magic-link-session.ts'])
+})
+
+// Punkt 64 (vibersi PR #24): bot odrzucil poprawke 4 min po recenzji czubka, bramka sprawdzala stan chwile pozniej.
+test('ocenaCzekaniaNaBota: czeka do 10 min od recenzji czubka, potem przepuszcza z adnotacja; bez poprawek nie czeka', () => {
+  assert.equal(LIMIT_CZEKANIA_NA_BOTA_MIN, 10)
+  const koniec = '2026-11-14T10:35:00Z'
+  const t = (/** @type {number} */ min) => Date.parse(koniec) + min * 60_000
+  assert.deepEqual(ocenaCzekaniaNaBota({ czekajace: [], koniecRecenzji: koniec, teraz: t(0) }), { czekaj: false, watki: [], resztaMin: 0, poLimicie: false, powod: 'brak poprawek czekajacych na bota' })
+  const w5 = ocenaCzekaniaNaBota({ czekajace: ['a.ts:1'], koniecRecenzji: koniec, teraz: t(5) })
+  assert.deepEqual([w5.czekaj, w5.resztaMin, w5.poLimicie], [true, 5, false])
+  assert.match(w5.powod, /jeszcze 5 min z 10/)
+  assert.deepEqual([ocenaCzekaniaNaBota({ czekajace: ['a.ts:1'], koniecRecenzji: koniec, teraz: t(9.99) }).resztaMin], [1])
+  const w10 = ocenaCzekaniaNaBota({ czekajace: ['a.ts:1'], koniecRecenzji: koniec, teraz: t(10) })
+  assert.deepEqual([w10.czekaj, w10.poLimicie, w10.watki], [false, true, ['a.ts:1']])
+  assert.match(w10.powod, /nie odpowiedzial na poprawke w 10 min/)
+  const brak = ocenaCzekaniaNaBota({ czekajace: ['a.ts:1'], koniecRecenzji: null, teraz: t(60) })
+  assert.deepEqual([brak.czekaj, brak.poLimicie], [true, false])
+})
+
+test('koniecRecenzjiCzubka: najpozniejsza recenzja czubka albo zakonczony check-run; starsze commity i pending pomija', () => {
+  const recenzje = [{ commit_id: 'A', submitted_at: '2026-11-14T10:00:00Z' }, { commit_id: 'B', submitted_at: '2026-11-14T10:35:00Z' }, { commit_id: 'B', submitted_at: '2026-11-14T10:30:00Z' }]
+  assert.equal(koniecRecenzjiCzubka(recenzje, null, 'B'), '2026-11-14T10:35:00Z')
+  const sukces = { context: 'CodeRabbit', state: 'success', description: null, created_at: '2026-11-14T10:40:00Z' }
+  assert.equal(koniecRecenzjiCzubka(recenzje, sukces, 'B'), '2026-11-14T10:40:00Z')
+  assert.equal(koniecRecenzjiCzubka([], { ...sukces, state: 'pending' }, 'B'), null)
+  assert.equal(koniecRecenzjiCzubka(recenzje, null, 'C'), null)
 })

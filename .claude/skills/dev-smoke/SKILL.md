@@ -20,7 +20,9 @@ Czym klikasz i jak uruchamiasz aplikację: `references/stack.md`, sekcje „Narz
 1. Plik smoke'u: argument będący ścieżką albo najnowszy `docs/operator/*-<zadanie>-smoke.md` (`ls -t`). Brak pliku → powiedz,
    że smoke nie powstał, i zakończ.
 2. Gałąź: `feature/<zadanie>`. Inna gałąź i czyste drzewo → `git switch feature/<zadanie>`; brudne drzewo → pokaż pliki
-   i zapytaj operatora, zanim cokolwiek zmienisz.
+   i zapytaj operatora, zanim cokolwiek zmienisz. PR zadania już zmergowany (`gh pr list --state merged --head feature/<zadanie>`
+   niepusty) → **tryb po wdrożeniu**: zostajesz na gałęzi głównej (`git pull --ff-only`), decyzje są już rozstrzygnięte,
+   przechodzisz tylko otwarte pozycje z dopiskiem „(po deployu)” (sekcja 3, punkt 6).
 3. Przeczytaj cały plik smoke'u i `docs/completed/<zadanie>/known-issues.md` (sekcja `## Decyzje operatora`). Pozycje
    odhaczone `[x]` i wiersze decyzji z dopiskiem `→ ROZSTRZYGNIĘTA` pomijasz: sesja mogła być przerwana i wznowiona.
 4. Powiedz operatorowi w dwóch zdaniach: ile decyzji, ile pozycji listy, ile z nich wymaga człowieka.
@@ -96,9 +98,17 @@ Pozostałe pozycje smoke'u przechodzisz po kolei, sam, narzędziem sesji z `refe
    tej sesji) zamiast `D<n>`: `- [ ] [etap: <etykieta>] <zadanie> U<n>: <opis usterki> — \`<plik:linia>\` (smoke <YYYY-MM-DD>)`.
 4. Pozycja z wyjątku dla człowieka → zatrzymaj się i prowadź operatora krok po kroku: co otworzyć, gdzie kliknąć, czego się
    spodziewać. Wynik od operatora wpisz przy pozycji.
-5. Operator może odłożyć pozycję listy (np. sprawdzenie wymaga czegoś, czego jeszcze nie ma). Wtedy wpis w
+5. Operator może odłożyć pozycję listy na inny etap projektu (np. sprawdzenie wymaga funkcji, której jeszcze nie ma). Wtedy wpis w
    `docs/operator/odlozone.md`: `- [ ] [etap: <etykieta>] <zadanie> smoke: <treść pozycji> — \`<plik smoke'u>\` (smoke <YYYY-MM-DD>)`,
    a w pliku smoke'u pozycja `- [x] … → odłożone do <etykieta>`. Etykieta jak w sekcji 1 (brak = „następny etap”).
+6. Pozycja, która czeka na merge albo wdrożenie tego zadania (dopisek „(po deployu)”; bez dopisku: zmienne w ustawieniach
+   deployu, migracje na dev i produkcji, staging, produkcja), nie jest sprawą odłożoną: przed PR jej nie wykonujesz i nie
+   wpisujesz do `docs/operator/odlozone.md`. Zostaje `[ ]`; bez dopisku „(po deployu)” w linii dopisz go. `/dev-pr` nie liczy
+   jej jako otwartej, raport po merge'u ją wypisuje, a po wdrożeniu przechodzi ją `/dev-smoke <zadanie>` w trybie po wdrożeniu.
+   W trybie po wdrożeniu wykonujesz tylko takie pozycje i odhaczasz jak w punkcie 2; wdrożenie i zmiany na produkcji robi
+   operator (sekcja 4).
+   (vibersi audyt-paczki-1-2: 8 takich pozycji poszło do `odlozone.md` z etykietą „po merge'u”, smoke pokazał „0 otwartych”,
+   a nikt nie miał ich potem odhaczyć).
 
 Pozycje „E2E nieuruchomione” i „E2E do odegrania ręcznie” odgrywasz narzędziem sesji jak zwykłe pozycje; tylko przy pozycjach
 z sekcji „E2E przebiegło i padło” najpierw naprawiasz defekt opisany w known-issues.
@@ -120,10 +130,15 @@ Sekretów nie czytasz: wartości z `.env*` nie wczytujesz do kontekstu, w pliku 
 ## 5. Koniec
 
 1. Zacommituj plik smoke'u i dokumenty zmienione w sesji jawnymi ścieżkami, bez `git add -A` (`/dev-pr` wymaga czystego
-   drzewa): `docs(<zadanie>): smoke operatora`. Dokumenty: plik smoke'u, `docs/completed/<zadanie>/known-issues.md`,
+   drzewa): `docs(<zadanie>): smoke operatora` (tryb po wdrożeniu: `docs(<zadanie>): smoke po wdrożeniu` na gałęzi głównej,
+   push tylko po zgodzie operatora, bo push na gałąź główną zwykle uruchamia wdrożenie). Dokumenty: plik smoke'u, `docs/completed/<zadanie>/known-issues.md`,
    plik decyzji zadania, `docs/operator/odlozone.md` — te, które się zmieniły.
 2. Zdanie o otwartych sprawach: pole `zdanie` z `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>` 1:1 (liczy pliki po
    commicie), potem ile poprawek w sesji. Nie piszesz, że wszystko zamknięte, dopóki zdanie nie brzmi „Otwarte: brak …”.
+   Pozycje z pola `smoke.poDeployuLista` wymień krótko jako „Czeka na wdrożenie”: nie blokują PR.
 3. Ostatnia linia: „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”, gdy podsumowanie zadania
    (`docs/completed/<zadanie>/<zadanie>-podsumowanie.md`) ma sekcję „Części PR”; bez niej „Następny krok: /clear, potem
    /dev-pr 3 --bez-merge”. `/dev-pr` w tej sesji nie uruchamiasz: smoke i PR w jednej sesji kosztują kilka razy więcej.
+   Pod linią jedno zdanie po ludzku: `--bez-merge` znaczy, że PR i tury poprawek idą same, a zmiany wejdą do głównej wersji
+   dopiero po „tak” operatora na jedno pytanie (vibersi: operator nie zrozumiał flagi i uruchomił wariant z automatycznym merge'em).
+   Tryb po wdrożeniu kończy zdanie z punktu 2, bez linii o `/dev-pr`.

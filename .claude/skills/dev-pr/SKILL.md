@@ -43,7 +43,8 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | `--bez-bota` (z każdym trybem) | **Projekt bez bota recenzji** (CodeRabbit jest opcjonalny): PR, CI, krótkie review zmian po archiwizacji i merge, bez czekania na bota i bez tur. Przebieg w sekcji „Tryb bez bota”. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
 
-**Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Wyczerpany limit = domknięcie,
+**Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Turę liczy commit
+`fix(pr): tura N`: tura z samymi odpowiedziami w wątkach, bez commita, nie zużywa sufitu, a następny `zbierz` zwraca ten sam numer tury. Wyczerpany limit = domknięcie,
 nawet gdy zostały otwarte wątki. Nie proponuj „jeszcze jednej tury" — zaraportuj, co zostało, i oddaj decyzję operatorowi.
 Wątki otwarte po suficie i wątki odłożone „do części N+1” przekazujesz etapowi `compound` w `odlozone` — trafiają do
 `known-issues.md` zadania z linkiem wątku, a start kolejnej części zbiera nierozwiązane wątki PR poprzednich części.
@@ -90,6 +91,9 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 wątki otwarte, rozstrzygnięte i czekające na bota, recenzję czubka. `tura` = `tury` + 1. `sufit: true` → od razu krok 6, bez nowej tury
 napraw. Przy tabeli części bierzesz `--czesc`, którego PR jest otwarty. Gdy kontekst sesji się kończy, kończysz raportem z gotowym
 poleceniem dla nowej sesji (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `/dev-pr 3 --bez-merge`; stan: `etap stan`), zamiast prowadzić merge ręcznie.
+Przerwanie sesji (Esc, zmiana modelu) nie zatrzymuje etapu, który już działa w tle: zanim uruchomisz go drugi raz, sprawdź
+`gh pr view` i wynik zadania w tle, i nie pisz operatorowi „nic nie trafiło na GitHub” bez tego sprawdzenia (vibersi PR #24:
+pierwszy `start` utworzył PR po przerwaniu, drugi go tylko znalazł).
 Powrót tą komendą do PR bez otwartych wątków (np. po odpowiedzi „Jeszcze nie” albo po zielonym CI) przechodzi kroki 2–3 bez
 tury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge.
 
@@ -253,7 +257,7 @@ Workflow zwraca `rekomendacja`, `token`, `watki[]` (każdy z `klasa`,
 `uzasadnienie`, `wplywNaProjekt`, `klaster`, `token`), `licznik`, `recenzjaAktualna` i `potwierdzone` (wątki naprawione we
 wcześniejszej turze, które bot potwierdził, a nie rozwiązał — workflow rozwiązuje je sam; nie trafiają do `watki[]`, więc nie
 dajesz ich do kolejnej tury; `bledy` pokaż operatorowi). **Pierwszy wiersz** Twojej wiadomości
-o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
+o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / CZEKAJ NA BOTA / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
 
 `recenzjaAktualna: false` przy `recenzja: jest` → recenzja nie dotyczy czubka gałęzi. Wróć do kroku 2 i poczekaj na recenzję
 przyrostową, zamiast naprawiać na podstawie nieaktualnych uwag. Na ten sam czubek wracasz najwyżej raz: gdy skrypt
@@ -279,7 +283,10 @@ a resztę streść jednym zdaniem z liczbami.
 `do-operatora` **zatrzymuje turę** i trafia do raportu — nie zgaduj decyzji produktowej.
 
 **Decyzja operatora o wątku** („zostaje”, „odkładamy”, „nie naprawiamy”) trafia od razu na PR, żeby nie wracała w kolejnych turach ani w nowej sesji:
-`Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "decyzja", zadanie, decyzje: [{id, tresc}]}})`. Nie pytaj drugi raz o wątek, który ma zapisaną decyzję.
+`Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "decyzja", zadanie, decyzje: [{id, tresc, plik, streszczenie}]}})`. Nie pytaj drugi raz o wątek, który ma zapisaną decyzję.
+Uwaga z recenzji ogólnej (`plik` „(recenzja ogolna)”) nie ma wątku: etap zapisuje decyzję komentarzem PR ze znacznikiem, a `zbierz`
+zwraca ją potem w `rozstrzygnieteOgolne`, poza turą. Uwagi ogólne z recenzji starszego commitu, których bot nie powtórzył przy
+czubku, `zbierz` zwraca w `stareOgolne`: nie wracają do tury ani do pytań, wymieniasz je w raporcie jednym zdaniem (punkt 63).
 
 ### 5. Naprawa
 
@@ -308,14 +315,22 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "merge", za
 ```
 
 Pierwsze wywołanie etapu: `auto: true` tylko w trybie autonomicznym **i** bez `--bez-merge`; po odpowiedzi „Merguj” na pytanie
-przy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`. `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze większą z tej i z commitów PR).
+przy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`. `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze liczbę z commitów PR, gdy stan PR jest czytelny).
 Merge wykonuje się wyłącznie przy `rekomendacja: "MERGUJ"`: `mergeable = MERGEABLE`, `mergeStateStatus = CLEAN`, zero otwartych wątków bez naszej decyzji,
 CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury za nami. Liczy to JS ze stanu PR. `informacje` (wątki rozstrzygnięte, `reviewDecision`) pokaż w raporcie: nie blokują.
 
 - `GOTOWY-DO-DECYZJI` → raport z `rekomendacja` i listą `niespelnione` (co nie przeszło, jaka jest aktualna wartość).
+- `rekomendacja` zaczyna się od „CZEKAJ NA BOTA” → nasza poprawka czeka na ocenę bota, a od jego recenzji czubka minęło mniej
+  niż 10 minut (decyzja operatora, punkt 64). Bez pytania: `Monitor` z poleceniem `sleep <resztaMin × 60>; echo koniec`
+  (`resztaMin` z `stan.czekanieNaBota`), potem etap `zbierz` tej samej tury i dalej jak w kroku 3. Bot odrzucił poprawkę →
+  wątek wraca do tury; odpowiedział potwierdzeniem albo milczy → etap `merge` jeszcze raz. Po 10 minutach bez odpowiedzi bramka
+  przepuszcza merge, a `informacje.poLimicieBota` wymieniasz w raporcie w linii `Merge:` („bot nie ocenił poprawki w <plik> w 10 min”).
+  (vibersi PR #24: bot odrzucił poprawkę 4 min po swojej recenzji, bramka sprawdzała stan kilkanaście sekund później).
 - `niespelnione` zawiera krótkie review (pole `krotkieReview`: `commit`, `plikiKodu`) → dwa wywołania `Agent` (`correctness-reviewer`, `security-sentinel`) na `git show <commit> -- <plikiKodu>`, jak w kroku 1.
   P1/P2 → `AskUserQuestion`: naprawa poza turami bota albo decyzja o merge'u mimo to. Potem etap `merge` z `reviewOstatniejTury: true`. Zmiany, których nie dało się sprawdzić testem (współbieżność na prawdziwej bazie, przeglądarka),
   podajesz w raporcie jako gotowe polecenie dla sesji: przejście lokalnie przed merge'em, a nie samą uwagę.
+- `stan.ciTylkoBot: true` → na GitHubie działa tylko check bota recenzji, testów tam nie ma: tak to mówisz operatorowi i w raporcie,
+  nigdy „zielone testy na GitHubie”. Testy uruchamiały tylko tury napraw lokalnie (`walidacjaDetal`).
 - `MERGE-NIEUDANY` → komenda merge'a zawiodła (`merge.detal`): raport z treścią błędu, bez innej strategii. Bramka przeszła, więc to nie jest pytanie o warunki.
 - `GOTOWY-DO-MERGE` (tryb interaktywny i `--bez-merge`) → pokaż warunki i zapytaj przez `AskUserQuestion`: „Wszystkie warunki
   merge'a spełnione. Mergować teraz?” z opcjami „Merguj” (ten sam etap z `auto: true`) i „Jeszcze nie” (raport końcowy; merge
@@ -405,6 +420,7 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
    CI po merge'u: <ciGlownej z compoundu albo kroku CLAUDE.md, 1:1; failure/cancelled = „deploy commitu merge'a niepotwierdzony”>
    CLAUDE.md: <uzgodniony (przed → po zn, commit, push) / STOP: powód / nie dotyczy — PR niezmergowany>
    Otwarte sprawy: <pole `zdanie` z `node .claude/scripts/smoke/otwarte.mjs --zadanie <zadanie>`, 1:1>
+   Po wdrożeniu: <pole `smoke.poDeployuLista` tego skryptu, jedna pozycja na wiersz; puste = „brak”>
 
 <tabela każdej tury z pola `tabela` etapu napraw, w kolejności tur>
 
@@ -427,6 +443,10 @@ Rekomendacja: <rekomendacja z ostatniego etapu zbierz albo merge, 1:1; po merge'
 Przy zmergowanej części nieostatniej raport kończy linia „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc <N+1>”: tury idą same, a merge, czyli
 często deploy, zostaje decyzją operatora. Część albo PR niezmergowany kończy linia z akapitu „Część albo PR niezmergowany”
 (krok 6): ta sama komenda z `--czesc <N>`, która dokończy i zapyta o merge. Tryb interaktywny (`/dev-pr --czesc <N+1>`) wspomnij tylko wtedy, gdy są wątki `do-operatora`.
+
+Zmergowany PR (bez części albo część ostatnia) z niepustą `smoke.poDeployuLista` kończy linia „Następny krok: po wdrożeniu
+/clear, potem /dev-smoke <zadanie>”: sesja smoke'u w trybie po wdrożeniu przechodzi te pozycje i je odhacza. Nie wypisujesz
+ich z `docs/operator/odlozone.md`: tam są sprawy na inny etap projektu, nie sprawdzenia tego zadania.
 
 Linię „Otwarte sprawy” bierzesz ze skryptu, nie z pamięci sesji: dopóki zdanie nie brzmi „Otwarte: brak …”, nie piszesz, że zadanie
 jest zamknięte w całości (punkt 45: raport mówił „zamknięte w całości” przy otwartych pozycjach smoke'u).

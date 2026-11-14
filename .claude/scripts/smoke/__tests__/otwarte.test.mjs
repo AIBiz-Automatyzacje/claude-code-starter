@@ -3,7 +3,7 @@
 // Uruchomienie: node --test .claude/scripts/smoke/__tests__/otwarte.test.mjs
 
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -30,8 +30,8 @@ const SMOKE = `# Smoke\n\n## Decyzje przed PR\n- [x] D1 (faza 2, fix): limit →
 const ODLOZONE = `# Sprawy odłożone\n\nPozycje odłożone w smoke'u.\n\n- [ ] [etap: etap 5] sklep D2: limit koszyka — \`src/k.ts:9\` (smoke 2026-11-11)\n- [x] [etap: etap 4] sklep D1: zrobione w abc\n- [ ] [etap: następny etap] blog D1: pusty stan — \`src/b.ts:1\` (smoke 2026-11-10)\n- [ ] luźna notatka bez etykiety\n`
 
 test('liczSmoke: nieodhaczone checkboxy, osobno „po deployu”; podpunkty i odhaczone pomija', () => {
-  assert.deepEqual(liczSmoke(SMOKE), { otwarte: 3, poDeployu: 1 })
-  assert.deepEqual(liczSmoke(SMOKE.replace(/\n/g, '\r\n')), { otwarte: 3, poDeployu: 1 })
+  assert.deepEqual(liczSmoke(SMOKE), { otwarte: 3, poDeployu: 1, poDeployuLista: ['Sprawdź na produkcji po deployu → strona wstaje'] })
+  assert.deepEqual(liczSmoke(SMOKE.replace(/\n/g, '\r\n')), { otwarte: 3, poDeployu: 1, poDeployuLista: ['Sprawdź na produkcji po deployu → strona wstaje'] })
 })
 
 test('parsujOdlozone: tylko nieodhaczone pozycje z etykietą etapu, z numerem linii', () => {
@@ -68,7 +68,7 @@ test('otwarte + zdanie: liczby z plików; zero mówi wprost „brak”, bez smok
   const k = projekt({ 'docs/operator/2026-11-11-sklep-smoke.md': SMOKE, 'docs/operator/odlozone.md': ODLOZONE })
   try {
     const w = otwarte(k, { zadanie: 'sklep' })
-    assert.deepEqual(w.smoke, { plik: 'docs/operator/2026-11-11-sklep-smoke.md', otwarte: 3, poDeployu: 1 })
+    assert.deepEqual(w.smoke, { plik: 'docs/operator/2026-11-11-sklep-smoke.md', otwarte: 3, poDeployu: 1, poDeployuLista: ['Sprawdź na produkcji po deployu → strona wstaje'] })
     assert.equal(w.odlozone.otwarte.length, 2)
     assert.equal(w.zdanie, 'Otwarte: 3 pozycji smoke\'u (w tym 1 po deployu), 2 odłożonych (docs/operator/odlozone.md).')
     assert.equal(otwarte(k).zdanie, 'Otwarte: 2 odłożonych (docs/operator/odlozone.md).')
@@ -196,7 +196,7 @@ test('liczSmoke: przykladowa pozycja „(po deployu)” z ukladu smoke\'u w /dev
   const skill = readFileSync(resolve(KATALOG, '../../../skills/dev-docs-complete/SKILL.md'), 'utf8')
   const przyklad = skill.split('\n').filter((l) => /^\s*- \[ \] \(po deployu\)/.test(l))
   assert.equal(przyklad.length, 1, 'uklad smoke\'u ma jedna przykladowa pozycje z dopiskiem')
-  assert.deepEqual(liczSmoke(`## 5. Wdrozenie\n${przyklad[0]}\n- [ ] Lokalnie: klik → lista\n`), { otwarte: 2, poDeployu: 1 })
+  assert.deepEqual(liczSmoke(`## 5. Wdrozenie\n${przyklad[0]}\n- [ ] Lokalnie: klik → lista\n`), { otwarte: 2, poDeployu: 1, poDeployuLista: [przyklad[0].replace(/^\s*- \[ \] /, '')] })
 })
 
 test('zdanieOtwartych: pozycje po deployu w nawiasie, tylko gdy są; zdanie zaczyna się od „Otwarte: ”', () => {
@@ -204,4 +204,33 @@ test('zdanieOtwartych: pozycje po deployu w nawiasie, tylko gdy są; zdanie zacz
   assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 2 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u (w tym 2 po deployu), 0 odłożonych (docs/operator/odlozone.md).')
   assert.equal(zdanieOtwartych({ smoke: { otwarte: 3, poDeployu: 0 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u, 0 odłożonych (docs/operator/odlozone.md).')
   assert.equal(zdanieOtwartych({ smoke: { otwarte: 3 }, odlozone: odl }), 'Otwarte: 3 pozycji smoke\'u, 0 odłożonych (docs/operator/odlozone.md).', 'stary ksztalt bez pola')
+})
+
+// Punkt 62 (vibersi audyt-paczki-1-2): /dev-smoke przenosil pozycje czekajace na wdrozenie do odlozone.md z etykieta „po merge'u”,
+// smoke pokazywal „0 otwartych”, a nikt nie mial ich potem odhaczyc. Zostaja otwarte, raport po merge'u je wypisuje.
+test('pozycje po deployu: /dev-smoke zostawia je otwarte i ma tryb po wdrozeniu, /dev-pr wypisuje je po merge\'u', () => {
+  const plaski = (/** @type {string} */ t) => t.replace(/\n\s*/g, ' ')
+  const smoke = plaski(SKILL_SMOKE)
+  assert.match(smoke, /nie jest sprawą odłożoną: przed PR jej nie wykonujesz i nie wpisujesz do `docs\/operator\/odlozone\.md`\. Zostaje `\[ \]`; bez dopisku „\(po deployu\)” w linii dopisz go\./)
+  assert.match(smoke, /PR zadania już zmergowany \(`gh pr list --state merged --head feature\/<zadanie>` niepusty\) → \*\*tryb po wdrożeniu\*\*/)
+  assert.match(smoke, /przechodzisz tylko otwarte pozycje z dopiskiem „\(po deployu\)”/)
+  assert.match(smoke, /`docs\(<zadanie>\): smoke po wdrożeniu` na gałęzi głównej, push tylko po zgodzie operatora/)
+  const pr = plaski(readFileSync(resolve(KATALOG, '../../../skills/dev-pr/SKILL.md'), 'utf8'))
+  assert.match(pr, /Po wdrożeniu: <pole `smoke\.poDeployuLista` tego skryptu, jedna pozycja na wiersz; puste = „brak”>/)
+  assert.match(pr, /„Następny krok: po wdrożeniu \/clear, potem \/dev-smoke <zadanie>”/)
+})
+
+test('liczSmoke: poDeployuLista bez znacznika checkboxa, odhaczone pozycje po deployu pomija', () => {
+  const t = '- [ ] (po deployu) Migracje na dev → lista bez braków\n- [x] (po deployu) Coolify → OK\n  - [ ] Staging po deployu: logowanie → działa\n- [ ] Lokalnie → OK\n'
+  assert.deepEqual(liczSmoke(t), { otwarte: 3, poDeployu: 2, poDeployuLista: ['(po deployu) Migracje na dev → lista bez braków', 'Staging po deployu: logowanie → działa'] })
+})
+
+test('punkt 67: /dev-smoke tłumaczy --bez-merge, /makieta przygotowuje stany z narzędzi programisty sam', () => {
+  const plaski = (/** @type {string} */ t) => t.replace(/\n\s*/g, ' ')
+  assert.match(plaski(SKILL_SMOKE), /`--bez-merge` znaczy, że PR i tury poprawek idą same, a zmiany wejdą do głównej wersji dopiero po „tak” operatora/)
+  // Skill /makieta jest tylko w rdzeniu web; zbudowany wariant Expo go nie ma.
+  const plikMakiety = resolve(KATALOG, '../../../skills/makieta/SKILL.md')
+  if (!existsSync(plikMakiety)) return
+  const makieta = plaski(readFileSync(plikMakiety, 'utf8'))
+  assert.match(makieta, /Punkt, którego stan wymaga narzędzi programisty .* przygotowujesz sam, gdy operator dojdzie do tego punktu/)
 })

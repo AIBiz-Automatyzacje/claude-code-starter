@@ -2,7 +2,7 @@
 // Otwarte sprawy po automacie (punkt 40, krok 6; punkt 45). Raport konczyl sie zdaniem modelu „zamkniete w calosci”, choc smoke
 // mial nieodhaczone pozycje, a sprawy odlozone w smoke'u nie trafialy nigdzie dalej. Skrypt liczy z plikow, nie z pamieci sesji:
 // - pozycje smoke'u zadania: nieodhaczone checkboxy najnowszego `docs/operator/<data>-<zadanie>-smoke.md` (osobno te z dopiskiem
-//   „po deployu”, ktore z definicji czekaja na wdrozenie);
+//   „po deployu”, ktore z definicji czekaja na wdrozenie; ich tresc w `poDeployuLista` dla raportu po merge'u — punkt 62);
 // - sprawy odlozone projektu: nieodhaczone linie `- [ ] [etap: <etykieta>] …` w `docs/operator/odlozone.md` (format skilla /dev-smoke).
 // - decyzje poprzednich zadan bez rozstrzygniecia (weryfikacja partii, punkt 52): wiersze `- [DECYZJA …` sekcji „## Decyzje operatora”
 //   w `docs/completed/*/known-issues.md` bez dopisku „ROZSTRZYGNIĘTA” (smoke pominiety albo przerwany) — tylko bez --zadanie.
@@ -10,7 +10,7 @@
 //
 // Uzycie (z katalogu projektu albo z --projekt <katalog>):
 //   otwarte.mjs [--zadanie <nazwa>]     bez --zadanie: tylko sprawy odlozone
-// Wynik: JSON w jednej linii { ok, smoke: { plik, otwarte, poDeployu } | null, odlozone: { plik, otwarte: [{ linia, etap, tresc }] },
+// Wynik: JSON w jednej linii { ok, smoke: { plik, otwarte, poDeployu, poDeployuLista } | null, odlozone: { plik, otwarte: [{ linia, etap, tresc }] },
 // decyzje?: [{ zadanie, wiersz }] (tylko bez --zadanie), zdanie }. Kod wyjscia: 0 = ok, 2 = zle argumenty, 3 = wyjatek.
 
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
@@ -38,11 +38,13 @@ export function parsujOdlozone(tresc) {
 
 /**
  * @param {string} tresc zawartosc pliku smoke'u
- * @returns {{ otwarte: number, poDeployu: number }} nieodhaczone checkboxy; poDeployu = te z dopiskiem „po deployu”
+ * @returns {{ otwarte: number, poDeployu: number, poDeployuLista: string[] }} nieodhaczone checkboxy; poDeployu = te z dopiskiem
+ *   „po deployu”, poDeployuLista = ich tresc bez znacznika checkboxa (raport /dev-pr po merge'u wypisuje, co czeka na wdrozenie)
  */
 export function liczSmoke(tresc) {
   const linie = tresc.replace(/\r\n/g, '\n').split('\n').filter((l) => /^\s*- \[ \]/.test(l))
-  return { otwarte: linie.length, poDeployu: linie.filter((l) => /po deployu/i.test(l)).length }
+  const poDeployu = linie.filter((l) => /po deployu/i.test(l)).map((l) => l.replace(/^\s*- \[ \]\s*/, '').trim())
+  return { otwarte: linie.length, poDeployu: poDeployu.length, poDeployuLista: poDeployu }
 }
 
 /** @param {string} projekt @param {string} zadanie @returns {string | null} najnowszy plik smoke'u zadania wzgledem projektu */

@@ -36,7 +36,7 @@ function wytnij(kotwica, koniec) {
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const P = new Function(
   `${wytnij('// ── Decyzje dev-pr (P5)', '// ── Koniec decyzji dev-pr')}
-   return { bramkaStartu, watkiPoStanie, turaZeStanu, krotkieReviewTury, odczytStanuPr, warunkiMerge, odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
+   return { czyOgolna, podzialOgolnych, wpisDecyzji, bramkaStartu, watkiPoStanie, turaZeStanu, krotkieReviewTury, odczytStanuPr, warunkiMerge, odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
 )()
 
 // ── Guard uzasadnien odrzucenia ───────────────────────────────────────────
@@ -142,6 +142,17 @@ test('rekomendacja: zero watkow, ale CI czerwone, konflikt albo galaz w tyle = N
 
 // P19 (vibersi PR #2): `zbierz` dal MERGUJ przy watku `odrzuc` bez naszej odpowiedzi, a bramka merge'a policzyla go jako
 // `napraw` — merge odblokowala dopiero tura z sama odpowiedzia. Teraz zbierz rekomenduje te ture wprost.
+// Punkt 64: poprawka czeka na ocene bota do 10 min po recenzji czubka (decyzja operatora); po limicie merge przechodzi.
+test('rekomendacja: poprawka czekajaca na bota = CZEKAJ NA BOTA z reszta minut; po limicie MERGUJ; watki i blokady wygrywaja', () => {
+  const czeka = { czekaj: true, watki: ['a.ts:1'], resztaMin: 6, poLimicie: false, powod: '1 poprawek czeka na odpowiedz bota, jeszcze 6 min z 10' }
+  assert.equal(P.rekomendacja({ ...CZYSTY, czekanieNaBota: czeka }, 1), 'CZEKAJ NA BOTA — 1 poprawek czeka na odpowiedz bota, jeszcze 6 min z 10; po 6 min etap merge jeszcze raz')
+  assert.equal(P.rekomendacja({ ...CZYSTY, czekanieNaBota: { ...czeka, czekaj: false, poLimicie: true } }, 1), 'MERGUJ')
+  assert.match(P.rekomendacja({ ...CZYSTY, watkiNapraw: 1, czekanieNaBota: czeka }, 1), /^KOLEJNA TURA/)
+  assert.match(P.rekomendacja({ ...CZYSTY, ciZielone: false, ciDetal: 'x', czekanieNaBota: czeka }, 1), /^NIE MERGUJ — CI zielone/)
+  const w = P.warunkiMerge({ ...CZYSTY, czekanieNaBota: czeka }).find((/** @type {{nazwa: string}} */ x) => x.nazwa === 'poprawki czekajace na odpowiedz bota')
+  assert.deepEqual([w.ok, w.jest], [false, czeka.powod])
+})
+
 test('rekomendacja: odrzuc bez naszej odpowiedzi = KOLEJNA TURA (tylko odpowiedzi), nie MERGUJ; po sufitcie DECYZJA OPERATORA; napraw i do-operatora wygrywaja', () => {
   const r = P.rekomendacja({ ...CZYSTY, watkiOdrzucBezOdpowiedzi: 1 }, 1)
   assert.equal(r, "KOLEJNA TURA (tylko odpowiedzi) — 1 watkow odrzuc bez naszej odpowiedzi; bramka merge'a liczy je jako napraw (tura 2 z 3)")
@@ -155,7 +166,7 @@ test('rekomendacja: odrzuc bez naszej odpowiedzi = KOLEJNA TURA (tylko odpowiedz
 
 test('zbierz: watkiOdrzucBezOdpowiedzi z pola naszaOdpowiedz watkow odrzuc (po przeklasyfikowaniu bez cytatu); pole wymagane w schemacie', () => {
   const zbierz = wytnij("if (etap === 'zbierz') {", '\n}\n')
-  assert.match(zbierz, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true\)\.length/)
+  assert.match(zbierz, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true && !czyOgolna\(w\)\)\.length/)
   assert.ok(zbierz.indexOf('odrzuconeBezCytatu.length') < zbierz.indexOf('watkiOdrzucBezOdpowiedzi'))
   assert.match(zbierz, /\\`naszaOdpowiedz\\` = true, gdy w watku po pierwszym komentarzu bota jest komentarz autora innego niz bot/)
   assert.match(zrodlo, /required: \['id', 'plik', 'url', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'\]/)
@@ -977,6 +988,10 @@ test('nowa sesja nie zeruje licznika tur: tura z argumentu nie cofa sie ponizej 
   assert.equal(P.turaZeStanu(1, STAN_PR), 4)
   assert.equal(P.turaZeStanu(2, { ...STAN_PR, tury: 1 }), 2)
   assert.equal(P.turaZeStanu(1, null), 1)
+  // Punkt 65: tura z samymi odpowiedziami nie ma commita, wiec nie podbija numeru — skill wolajacy zbierz z tura 3 dostaje 2.
+  assert.equal(P.turaZeStanu(3, { ...STAN_PR, tury: 1 }), 2)
+  assert.match(zrodlo, /const tury = stanPr \? stanPr\.tury : turyWykonane/)
+  assert.match(skillPr.replace(/\n\s*/g, ' '), /tura z samymi odpowiedziami w wątkach, bez commita, nie zużywa sufitu/)
 })
 
 test('piszemy_wirale PR #7: brak recenzji czubka blokuje MERGUJ, a powod trafia do rekomendacji', () => {
@@ -1215,4 +1230,55 @@ test('punkt 55: nieczytelny kontrakt bota = STOP z droga konfigBota (bez przy be
     assert.match(z.wynik.rekomendacja, /^NIE MERGUJ — .*stan PR nieczytelny/, String(stanPr))
   }
   assert.equal((await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, stanPr: STAN_CZUBEK_OK }])).wynik.rekomendacja, 'MERGUJ')
+})
+
+test('skill: CZEKAJ NA BOTA = Monitor z reszta minut, potem zbierz; po limicie adnotacja w linii Merge (punkt 64)', () => {
+  const t = skillPr.replace(/\n\s*/g, ' ')
+  assert.match(t, /`rekomendacja` zaczyna się od „CZEKAJ NA BOTA” → .*`Monitor` z poleceniem `sleep <resztaMin × 60>; echo koniec`/)
+  assert.match(t, /potem etap `zbierz` tej samej tury/)
+  assert.match(t, /`informacje\.poLimicieBota` wymieniasz w raporcie w linii `Merge:`/)
+})
+
+// Punkt 63 (vibersi PR #24): uwaga z recenzji ogolnej bez watku — decyzja padala na NOT_FOUND, pozycja wracala losowo.
+test('uwagi z recenzji ogolnej: starszy commit i decyzja komentarzem poza tura; watki review bez zmian', () => {
+  const watek = { id: 'PRRT_a', plik: 'src/a.ts:1', streszczenie: 'x', commitRecenzji: null }
+  const stara = { id: 'PRR_b', plik: '(recenzja ogolna)', streszczenie: 'atrapa w tescie', commitRecenzji: 'OLD' }
+  const biezaca = { id: 'PRR_c', plik: '(recenzja ogolna)', streszczenie: 'nitpick', commitRecenzji: 'HEAD' }
+  const zDecyzja = { id: '(recenzja ogolna) PRR 2026-11-14', plik: '(recenzja ogolna)', streszczenie: 'atrapa', commitRecenzji: 'HEAD', decyzjaKomentarzem: true }
+  const r = P.podzialOgolnych([watek, stara, biezaca, zDecyzja], 'HEAD')
+  assert.deepEqual(r.zostaja.map((/** @type {{id: string}} */ w) => w.id), ['PRRT_a', 'PRR_c'])
+  assert.deepEqual(r.stareOgolne.map((/** @type {{id: string}} */ w) => w.id), ['PRR_b'])
+  assert.deepEqual(r.rozstrzygnieteOgolne.map((/** @type {{id: string}} */ w) => w.id), ['(recenzja ogolna) PRR 2026-11-14'])
+  assert.deepEqual(P.podzialOgolnych([stara], null).zostaja.map((/** @type {{id: string}} */ w) => w.id), ['PRR_b'], 'bez czubka nie odrzuca')
+  assert.equal(P.czyOgolna({ id: 'PRRT_x', plik: 'a.ts:2' }), false)
+  assert.equal(P.czyOgolna({ id: 'T1' }), false, 'id spoza GraphQL bez pliku ogolnego to watek')
+})
+
+test('wpisDecyzji: watek = odpowiedz w watku, uwaga ogolna = komentarz PR ze znacznikiem ogolna', () => {
+  const w = P.wpisDecyzji({ id: 'PRRT_a', tresc: ' zostaje ' })
+  assert.deepEqual(w, { id: 'PRRT_a', tryb: 'watek', body: 'Decyzja operatora: zostaje\n\n<!-- dev-pr:{"decyzja":"operator"} -->' })
+  const o = P.wpisDecyzji({ id: 'PRR_kwDO', tresc: 'zostaje jak jest', streszczenie: 'atrapa srodowisko() w tescie' })
+  assert.equal(o.tryb, 'komentarz-pr')
+  assert.equal(o.body, 'Decyzja operatora (uwaga z recenzji ogólnej: atrapa srodowisko() w tescie): zostaje jak jest\n\n<!-- dev-pr:{"decyzja":"operator","ogolna":true} -->')
+})
+
+test('rekomendacja w zbierz: uwaga ogolna odrzuc bez odpowiedzi nie daje tury „tylko odpowiedzi” (zrodlo)', () => {
+  assert.match(zrodlo, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true && !czyOgolna\(w\)\)\.length/)
+  assert.match(zrodlo, /const poStanie = watkiPoStanie\(ogolne\.zostaja, stanPr\)/)
+  assert.match(skillPr.replace(/\n\s*/g, ' '), /etap zapisuje decyzję komentarzem PR ze znacznikiem, a `zbierz` zwraca ją potem w `rozstrzygnieteOgolne`/)
+})
+
+test('punkty 66–67: CI z samym botem nazwane wprost, przerwanie sesji nie zatrzymuje etapu, walidacjaDetal po polsku', () => {
+  const w = P.warunkiMerge({ ...CZYSTY, ciDetal: 'CodeRabbit: COMPLETED / SUCCESS', ciTylkoBot: true }).find((/** @type {{nazwa: string}} */ x) => x.nazwa === 'CI zielone')
+  assert.deepEqual([w.ok, w.jest], [true, 'CodeRabbit: COMPLETED / SUCCESS — na GitHubie tylko check bota, bez testow'])
+  assert.equal(P.warunkiMerge(CZYSTY).find((/** @type {{nazwa: string}} */ x) => x.nazwa === 'CI zielone').jest, 'build: SUCCESS')
+  assert.match(zrodlo, /ciBrak: stan\.ciBrak, ciTylkoBot: stan\.ciTylkoBot === true, zgodaBezCi/)
+  assert.match(zrodlo, /walidacjaDetal: \{ type: 'string', description: 'po polsku \(czyta operator\)/)
+  const t = skillPr.replace(/\n\s*/g, ' ')
+  assert.match(t, /`stan\.ciTylkoBot: true` → na GitHubie działa tylko check bota recenzji, testów tam nie ma/)
+  assert.match(t, /Przerwanie sesji \(Esc, zmiana modelu\) nie zatrzymuje etapu, który już działa w tle/)
+})
+
+test('punkt 66: etap merge kaze ustalic ciTylkoBot', () => {
+  assert.match(wytnij("if (etap === 'merge') {", 'Zwroc obiekt zgodny ze schematem.'), /ciTylkoBot = true, gdy jedynym checkiem PR jest check bota recenzji \(CodeRabbit\)/)
 })
