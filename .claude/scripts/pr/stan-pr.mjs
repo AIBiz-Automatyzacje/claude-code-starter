@@ -4,7 +4,8 @@
 // i widzi, czy bot zrecenzowal czubek (piszemy_wirale PR #7: merge poprawki bez recenzji przy „Review rate limited”).
 //
 // Uzycie: node .claude/scripts/pr/stan-pr.mjs [--pr <numer>] [--projekt <katalog>]
-// Wynik: jedna linia JSON { pr, czubek, baza, reviewDecision, tury, ostatniaTura, recenzjaCzubka, watki, liczniki } albo { wyjatek }.
+// Wynik: jedna linia JSON { pr, czubek, baza, reviewDecision, tury, ostatniaTura, recenzjaCzubka, czekanieNaBota, watki, liczniki }
+// albo { wyjatek }.
 // Kod wyjscia: 0 = ok, 2 = zle argumenty, 3 = wyjatek. Tylko odczyt.
 
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -106,6 +107,39 @@ export function ocenaRecenzjiCzubka({ statusy, recenzjaCzubka, plikiPoRecenzji }
   return { ok: false, powod: status ? `status bota dla czubka: ${status.state}` : 'brak recenzji i check-runu bota dla czubka' }
 }
 
+/** Punkt 64 (vibersi PR #24): ile minut po recenzji czubka bramka czeka na odpowiedz bota w watku z nasza poprawka (decyzja operatora). */
+export const LIMIT_CZEKANIA_NA_BOTA_MIN = 10
+
+/**
+ * Czy merge ma czekac na ocene poprawki przez bota. Bot odrzucil poprawke 4 min po swojej recenzji czubka, a bramka sprawdzala stan
+ * kilkanascie sekund pozniej: wczesniej przepuscilaby niepelna poprawke. Czekamy najwyzej limit od konca recenzji czubka, potem
+ * merge idzie z adnotacja w raporcie (bot czasem nie odpowiada wcale: aa-exam PR #48, #51).
+ * @param {{ czekajace: string[], koniecRecenzji: string | null, teraz: number, limitMin?: number }} fakty
+ * @returns {{ czekaj: boolean, watki: string[], resztaMin: number, poLimicie: boolean, powod: string }}
+ */
+export function ocenaCzekaniaNaBota({ czekajace, koniecRecenzji, teraz, limitMin = LIMIT_CZEKANIA_NA_BOTA_MIN }) {
+  if (!czekajace.length) return { czekaj: false, watki: [], resztaMin: 0, poLimicie: false, powod: 'brak poprawek czekajacych na bota' }
+  const koniec = koniecRecenzji ? Date.parse(koniecRecenzji) : NaN
+  if (Number.isNaN(koniec)) return { czekaj: true, watki: czekajace, resztaMin: limitMin, poLimicie: false, powod: 'bot jeszcze nie zrecenzowal czubka z poprawka' }
+  const minelo = (teraz - koniec) / 60_000
+  if (minelo < limitMin) {
+    const reszta = Math.max(1, Math.ceil(limitMin - minelo))
+    return { czekaj: true, watki: czekajace, resztaMin: reszta, poLimicie: false, powod: `${czekajace.length} poprawek czeka na odpowiedz bota, jeszcze ${reszta} min z ${limitMin}` }
+  }
+  return { czekaj: false, watki: czekajace, resztaMin: 0, poLimicie: true, powod: `bot nie odpowiedzial na poprawke w ${limitMin} min od recenzji czubka: ${czekajace.join(', ')}` }
+}
+
+/**
+ * Koniec recenzji czubka: najpozniejsza z recenzji bota dla czubka i zakonczonego check-runu bota (bez uwag recenzji nie ma).
+ * @param {{ submitted_at?: string, commit_id: string }[]} recenzje @param {import('./bot.mjs').Status | null} status @param {string} czubek
+ * @returns {string | null}
+ */
+export function koniecRecenzjiCzubka(recenzje, status, czubek) {
+  const czasy = recenzje.filter((r) => r.commit_id === czubek && r.submitted_at).map((r) => /** @type {string} */ (r.submitted_at))
+  if (status && status.state === 'success' && status.created_at) czasy.push(status.created_at)
+  return czasy.sort().at(-1) ?? null
+}
+
 /**
  * Czy ostatnia tura wymaga krotkiego review przed bramka: duzo kodu poza testami albo pliki dostepu, sesji i migracji.
  * @param {{ plik: string, dodane: number }[]} pliki
@@ -160,11 +194,17 @@ export function stanPr(projekt, numer) {
     id: w.id, plik: `${w.path ?? '(recenzja ogolna)'}${w.line ? `:${w.line}` : ''}`,
     ...stanWatku(w, (sha) => jestPrzodkiemCzubka(projekt, sha, czubek)),
   }))
+  const czekanieNaBota = ocenaCzekaniaNaBota({
+    czekajace: watki.filter((w) => w.stan === 'naprawiony-czeka-na-bota').map((w) => w.plik),
+    koniecRecenzji: koniecRecenzjiCzubka(recenzje, najnowszyStatus(statusy), czubek),
+    teraz: Date.now(),
+  })
   return {
     pr: pr.number, czubek, baza: pr.baseRefName, reviewDecision: pr.reviewDecision ?? null,
     tury: liczbaTur(tematy),
     ostatniaTura: commitTury ? { sha: commitTury.oid, ...ocenaOstatniejTury(plikiCommitu(projekt, commitTury.oid)) } : null,
     recenzjaCzubka: ocenaRecenzjiCzubka({ statusy, recenzjaCzubka: recenzje.some((r) => r.commit_id === czubek), plikiPoRecenzji }),
+    czekanieNaBota,
     watki,
     liczniki: {
       otwarty: watki.filter((w) => w.stan === 'otwarty').length,

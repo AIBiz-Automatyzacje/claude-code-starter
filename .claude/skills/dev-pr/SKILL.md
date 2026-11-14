@@ -253,7 +253,7 @@ Workflow zwraca `rekomendacja`, `token`, `watki[]` (każdy z `klasa`,
 `uzasadnienie`, `wplywNaProjekt`, `klaster`, `token`), `licznik`, `recenzjaAktualna` i `potwierdzone` (wątki naprawione we
 wcześniejszej turze, które bot potwierdził, a nie rozwiązał — workflow rozwiązuje je sam; nie trafiają do `watki[]`, więc nie
 dajesz ich do kolejnej tury; `bledy` pokaż operatorowi). **Pierwszy wiersz** Twojej wiadomości
-o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
+o turze to `rekomendacja` 1:1 (MERGUJ / NIE MERGUJ — warunek / CZEKAJ NA BOTA / KOLEJNA TURA / DECYZJA OPERATORA — liczy ją JS).
 
 `recenzjaAktualna: false` przy `recenzja: jest` → recenzja nie dotyczy czubka gałęzi. Wróć do kroku 2 i poczekaj na recenzję
 przyrostową, zamiast naprawiać na podstawie nieaktualnych uwag. Na ten sam czubek wracasz najwyżej raz: gdy skrypt
@@ -313,6 +313,12 @@ Merge wykonuje się wyłącznie przy `rekomendacja: "MERGUJ"`: `mergeable = MERG
 CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury za nami. Liczy to JS ze stanu PR. `informacje` (wątki rozstrzygnięte, `reviewDecision`) pokaż w raporcie: nie blokują.
 
 - `GOTOWY-DO-DECYZJI` → raport z `rekomendacja` i listą `niespelnione` (co nie przeszło, jaka jest aktualna wartość).
+- `rekomendacja` zaczyna się od „CZEKAJ NA BOTA” → nasza poprawka czeka na ocenę bota, a od jego recenzji czubka minęło mniej
+  niż 10 minut (decyzja operatora, punkt 64). Bez pytania: `Monitor` z poleceniem `sleep <resztaMin × 60>; echo koniec`
+  (`resztaMin` z `stan.czekanieNaBota`), potem etap `zbierz` tej samej tury i dalej jak w kroku 3. Bot odrzucił poprawkę →
+  wątek wraca do tury; odpowiedział potwierdzeniem albo milczy → etap `merge` jeszcze raz. Po 10 minutach bez odpowiedzi bramka
+  przepuszcza merge, a `informacje.poLimicieBota` wymieniasz w raporcie w linii `Merge:` („bot nie ocenił poprawki w <plik> w 10 min”).
+  (vibersi PR #24: bot odrzucił poprawkę 4 min po swojej recenzji, bramka sprawdzała stan kilkanaście sekund później).
 - `niespelnione` zawiera krótkie review (pole `krotkieReview`: `commit`, `plikiKodu`) → dwa wywołania `Agent` (`correctness-reviewer`, `security-sentinel`) na `git show <commit> -- <plikiKodu>`, jak w kroku 1.
   P1/P2 → `AskUserQuestion`: naprawa poza turami bota albo decyzja o merge'u mimo to. Potem etap `merge` z `reviewOstatniejTury: true`. Zmiany, których nie dało się sprawdzić testem (współbieżność na prawdziwej bazie, przeglądarka),
   podajesz w raporcie jako gotowe polecenie dla sesji: przejście lokalnie przed merge'em, a nie samą uwagę.

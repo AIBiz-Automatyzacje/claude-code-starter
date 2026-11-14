@@ -142,6 +142,17 @@ test('rekomendacja: zero watkow, ale CI czerwone, konflikt albo galaz w tyle = N
 
 // P19 (vibersi PR #2): `zbierz` dal MERGUJ przy watku `odrzuc` bez naszej odpowiedzi, a bramka merge'a policzyla go jako
 // `napraw` — merge odblokowala dopiero tura z sama odpowiedzia. Teraz zbierz rekomenduje te ture wprost.
+// Punkt 64: poprawka czeka na ocene bota do 10 min po recenzji czubka (decyzja operatora); po limicie merge przechodzi.
+test('rekomendacja: poprawka czekajaca na bota = CZEKAJ NA BOTA z reszta minut; po limicie MERGUJ; watki i blokady wygrywaja', () => {
+  const czeka = { czekaj: true, watki: ['a.ts:1'], resztaMin: 6, poLimicie: false, powod: '1 poprawek czeka na odpowiedz bota, jeszcze 6 min z 10' }
+  assert.equal(P.rekomendacja({ ...CZYSTY, czekanieNaBota: czeka }, 1), 'CZEKAJ NA BOTA — 1 poprawek czeka na odpowiedz bota, jeszcze 6 min z 10; po 6 min etap merge jeszcze raz')
+  assert.equal(P.rekomendacja({ ...CZYSTY, czekanieNaBota: { ...czeka, czekaj: false, poLimicie: true } }, 1), 'MERGUJ')
+  assert.match(P.rekomendacja({ ...CZYSTY, watkiNapraw: 1, czekanieNaBota: czeka }, 1), /^KOLEJNA TURA/)
+  assert.match(P.rekomendacja({ ...CZYSTY, ciZielone: false, ciDetal: 'x', czekanieNaBota: czeka }, 1), /^NIE MERGUJ — CI zielone/)
+  const w = P.warunkiMerge({ ...CZYSTY, czekanieNaBota: czeka }).find((/** @type {{nazwa: string}} */ x) => x.nazwa === 'poprawki czekajace na odpowiedz bota')
+  assert.deepEqual([w.ok, w.jest], [false, czeka.powod])
+})
+
 test('rekomendacja: odrzuc bez naszej odpowiedzi = KOLEJNA TURA (tylko odpowiedzi), nie MERGUJ; po sufitcie DECYZJA OPERATORA; napraw i do-operatora wygrywaja', () => {
   const r = P.rekomendacja({ ...CZYSTY, watkiOdrzucBezOdpowiedzi: 1 }, 1)
   assert.equal(r, "KOLEJNA TURA (tylko odpowiedzi) — 1 watkow odrzuc bez naszej odpowiedzi; bramka merge'a liczy je jako napraw (tura 2 z 3)")
@@ -1215,4 +1226,11 @@ test('punkt 55: nieczytelny kontrakt bota = STOP z droga konfigBota (bez przy be
     assert.match(z.wynik.rekomendacja, /^NIE MERGUJ — .*stan PR nieczytelny/, String(stanPr))
   }
   assert.equal((await uruchom({ etap: 'zbierz', zadanie: 'x', tura: 2 }, [{ ...zebrane, stanPr: STAN_CZUBEK_OK }])).wynik.rekomendacja, 'MERGUJ')
+})
+
+test('skill: CZEKAJ NA BOTA = Monitor z reszta minut, potem zbierz; po limicie adnotacja w linii Merge (punkt 64)', () => {
+  const t = skillPr.replace(/\n\s*/g, ' ')
+  assert.match(t, /`rekomendacja` zaczyna się od „CZEKAJ NA BOTA” → .*`Monitor` z poleceniem `sleep <resztaMin × 60>; echo koniec`/)
+  assert.match(t, /potem etap `zbierz` tej samej tury/)
+  assert.match(t, /`informacje\.poLimicieBota` wymieniasz w raporcie w linii `Merge:`/)
 })

@@ -519,6 +519,8 @@ function warunkiMerge(stan) {
       ? { nazwa: 'CI istnieje albo zgoda operatora (tryb bez bota)', ok: stan.ciBrak === false || stan.zgodaBezCi === true, jest: stan.ciBrak === false ? 'PR ma checki CI' : stan.zgodaBezCi === true ? 'brak CI, zgoda operatora' : 'brak CI i brak bota — merge wymaga decyzji operatora', watki: false }
       : { nazwa: 'recenzja bota dla czubka', ok: stan.recenzjaCzubka?.ok !== false, jest: stan.recenzjaCzubka?.powod ?? 'nie sprawdzono', watki: false },
     { nazwa: 'krotkie review duzej ostatniej tury', ok: stan.krotkieReview?.wymagane !== true, jest: stan.krotkieReview?.powod ?? 'nie dotyczy', watki: false },
+    // Punkt 64 (vibersi PR #24): poprawka czeka na ocene bota do 10 min po recenzji czubka (decyzja operatora); potem adnotacja.
+    { nazwa: 'poprawki czekajace na odpowiedz bota', ok: stan.czekanieNaBota?.czekaj !== true, jest: stan.czekanieNaBota?.powod ?? 'nie dotyczy', watki: true },
   ]
 }
 
@@ -577,6 +579,7 @@ function rekomendacja(stan, turyWykonane) {
   }
   const blokady = warunkiMerge(stan).filter((w) => !w.ok && !w.watki)
   if (blokady.length) return `NIE MERGUJ — ${blokady.map((w) => `${w.nazwa} (jest: ${w.jest})`).join('; ')}`
+  if (stan.czekanieNaBota?.czekaj === true) return `CZEKAJ NA BOTA — ${stan.czekanieNaBota.powod}; po ${stan.czekanieNaBota.resztaMin} min etap merge jeszcze raz`
   return 'MERGUJ'
 }
 
@@ -1343,12 +1346,14 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     // Nieznany stan nie moze dac MERGUJ: otwarty watek bez naszej decyzji liczy sie jak defekt do naprawy.
     watkiNapraw: stanPr ? stanPr.liczniki.otwarty : 1, watkiDoOperatora: 0,
     recenzjaCzubka: stanPr ? stanPr.recenzjaCzubka : { ok: false, powod: `stan-pr.mjs nieczytelny: ${String(stan.stanPr).slice(0, 200)}` },
+    czekanieNaBota: stanPr?.czekanieNaBota ?? null,
     krotkieReview,
     bezBota, ciBrak: stan.ciBrak, zgodaBezCi,
   }
   const informacje = stanPr ? {
     rozstrzygniete: stanPr.watki.filter((w) => w.stan === 'rozstrzygniety').map((w) => w.plik),
     czekajaNaBota: stanPr.watki.filter((w) => w.stan === 'naprawiony-czeka-na-bota').map((w) => w.plik),
+    poLimicieBota: stanPr.czekanieNaBota?.poLimicie ? stanPr.czekanieNaBota.watki : [],
     reviewDecision: stanPr.reviewDecision,
   } : null
 
