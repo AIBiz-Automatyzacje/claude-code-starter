@@ -269,7 +269,7 @@ const NAPRAWA = {
     odrzucone: { type: 'array', items: { type: 'string' }, description: 'id watkow, na ktore odpowiedzielismy odmowa z cytatem' },
     nieruszone: { type: 'array', items: { type: 'string' }, description: 'id watkow z wyboru, ktorych NIE udalo sie zamknac' },
     walidacja: { type: 'string', enum: ['PASS', 'FAIL', 'BRAK-KOMEND'], description: 'BRAK-KOMEND = package.json nie ma odpowiednich skryptow' },
-    walidacjaDetal: { type: 'string', description: 'ktore komendy uruchomiono i z jakim wynikiem' },
+    walidacjaDetal: { type: 'string', description: 'po polsku (czyta operator): ktore komendy uruchomiono i z jakim wynikiem' },
     odpowiedziWyslane: { type: 'integer', description: 'ile watkow dostalo odpowiedz' },
     commit: { type: ['string', 'null'], description: 'krotki hash commita poprawek albo null' },
     push: { type: 'boolean' },
@@ -287,6 +287,7 @@ const MERGE_STAN = {
     ciZielone: { type: 'boolean', description: 'wszystkie wymagane checki CI zakonczone sukcesem' },
     ciDetal: { type: 'string', description: 'lista checkow z ich stanem (albo "brak CI")' },
     ciBrak: { type: 'boolean', description: 'true, gdy statusCheckRollup jest pusty: PR nie ma zadnego checka' },
+    ciTylkoBot: { type: 'boolean', description: 'true, gdy jedynym checkiem PR jest check bota recenzji (CodeRabbit): na GitHubie nie ma testow' },
     stanPr: { type: 'string', description: 'stdout stan-pr.mjs 1:1 (JSON w jednej linii)' },
   },
   required: ['mergeable', 'mergeStateStatus', 'ciZielone', 'ciDetal', 'ciBrak', 'stanPr'],
@@ -513,7 +514,8 @@ function warunkiMerge(stan) {
     { nazwa: 'mergeStateStatus = CLEAN', ok: stan.mergeStateStatus === 'CLEAN', jest: String(stan.mergeStateStatus), watki: false },
     { nazwa: 'zero nierozwiazanych watkow klasy napraw', ok: stan.watkiNapraw === 0, jest: `${stan.watkiNapraw}`, watki: true },
     { nazwa: 'zero watkow do-operatora', ok: stan.watkiDoOperatora === 0, jest: `${stan.watkiDoOperatora}`, watki: true },
-    { nazwa: 'CI zielone', ok: stan.ciZielone === true, jest: stan.ciDetal, watki: false },
+    // Punkt 66 (vibersi PR #24): sam check bota spelnial „CI zielone”, a sesja pisala operatorowi o zielonych testach na GitHubie.
+    { nazwa: 'CI zielone', ok: stan.ciZielone === true, jest: stan.ciTylkoBot === true ? `${stan.ciDetal} — na GitHubie tylko check bota, bez testow` : stan.ciDetal, watki: false },
     // Bez tego warunku poprawka ostatniej tury przechodzila bez recenzji (piszemy_wirale PR #7: NEUTRAL „Review rate limited” jako zielony).
     // Projekt bez bota recenzji (punkt 39, decyzja operatora: CodeRabbit opcjonalny) nie ma recenzji czubka. Zostaje wtedy jeden
     // sygnal spoza naszego pipeline'u, CI: PR bez zadnego checka nie dostaje MERGUJ, dopoki operator nie zdecyduje o merge'u sam.
@@ -1372,6 +1374,7 @@ if (etap === 'merge') {
 nie zmieniaj kodu i nie odpowiadaj w watkach — masz TYLKO odczytac fakty.
 
 1. Stan PR i CI wg bloku stanu nizej. ciBrak = true, gdy \`statusCheckRollup\` jest pusty (PR nie ma zadnego checka), inaczej false.
+   ciTylkoBot = true, gdy jedynym checkiem PR jest check bota recenzji (CodeRabbit), inaczej false.
 2. stanPr = stdout 1:1 komendy \`${KOMENDA_STANU}\`. Watkow nie liczysz i nie oceniasz: robi to orkiestrator.
 
 Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
@@ -1389,7 +1392,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     recenzjaCzubka: stanPr ? stanPr.recenzjaCzubka : { ok: false, powod: `stan-pr.mjs nieczytelny: ${String(stan.stanPr).slice(0, 200)}` },
     czekanieNaBota: stanPr?.czekanieNaBota ?? null,
     krotkieReview,
-    bezBota, ciBrak: stan.ciBrak, zgodaBezCi,
+    bezBota, ciBrak: stan.ciBrak, ciTylkoBot: stan.ciTylkoBot === true, zgodaBezCi,
   }
   const informacje = stanPr ? {
     rozstrzygniete: stanPr.watki.filter((w) => w.stan === 'rozstrzygniety').map((w) => w.plik),

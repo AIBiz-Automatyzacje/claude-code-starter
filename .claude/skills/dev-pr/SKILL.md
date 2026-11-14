@@ -91,6 +91,9 @@ Ustal `zadanie` (nazwa folderu w `docs/completed/` lub `docs/active/` — z argu
 wątki otwarte, rozstrzygnięte i czekające na bota, recenzję czubka. `tura` = `tury` + 1. `sufit: true` → od razu krok 6, bez nowej tury
 napraw. Przy tabeli części bierzesz `--czesc`, którego PR jest otwarty. Gdy kontekst sesji się kończy, kończysz raportem z gotowym
 poleceniem dla nowej sesji (`/dev-pr 3 --bez-merge --czesc N`, przy jednym PR `/dev-pr 3 --bez-merge`; stan: `etap stan`), zamiast prowadzić merge ręcznie.
+Przerwanie sesji (Esc, zmiana modelu) nie zatrzymuje etapu, który już działa w tle: zanim uruchomisz go drugi raz, sprawdź
+`gh pr view` i wynik zadania w tle, i nie pisz operatorowi „nic nie trafiło na GitHub” bez tego sprawdzenia (vibersi PR #24:
+pierwszy `start` utworzył PR po przerwaniu, drugi go tylko znalazł).
 Powrót tą komendą do PR bez otwartych wątków (np. po odpowiedzi „Jeszcze nie” albo po zielonym CI) przechodzi kroki 2–3 bez
 tury napraw i dochodzi do kroku 6: przy zielonej bramce kończy się tym samym pytaniem o merge.
 
@@ -326,6 +329,8 @@ CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury
 - `niespelnione` zawiera krótkie review (pole `krotkieReview`: `commit`, `plikiKodu`) → dwa wywołania `Agent` (`correctness-reviewer`, `security-sentinel`) na `git show <commit> -- <plikiKodu>`, jak w kroku 1.
   P1/P2 → `AskUserQuestion`: naprawa poza turami bota albo decyzja o merge'u mimo to. Potem etap `merge` z `reviewOstatniejTury: true`. Zmiany, których nie dało się sprawdzić testem (współbieżność na prawdziwej bazie, przeglądarka),
   podajesz w raporcie jako gotowe polecenie dla sesji: przejście lokalnie przed merge'em, a nie samą uwagę.
+- `stan.ciTylkoBot: true` → na GitHubie działa tylko check bota recenzji, testów tam nie ma: tak to mówisz operatorowi i w raporcie,
+  nigdy „zielone testy na GitHubie”. Testy uruchamiały tylko tury napraw lokalnie (`walidacjaDetal`).
 - `MERGE-NIEUDANY` → komenda merge'a zawiodła (`merge.detal`): raport z treścią błędu, bez innej strategii. Bramka przeszła, więc to nie jest pytanie o warunki.
 - `GOTOWY-DO-MERGE` (tryb interaktywny i `--bez-merge`) → pokaż warunki i zapytaj przez `AskUserQuestion`: „Wszystkie warunki
   merge'a spełnione. Mergować teraz?” z opcjami „Merguj” (ten sam etap z `auto: true`) i „Jeszcze nie” (raport końcowy; merge

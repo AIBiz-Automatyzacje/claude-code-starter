@@ -1267,3 +1267,18 @@ test('rekomendacja w zbierz: uwaga ogolna odrzuc bez odpowiedzi nie daje tury �
   assert.match(zrodlo, /const poStanie = watkiPoStanie\(ogolne\.zostaja, stanPr\)/)
   assert.match(skillPr.replace(/\n\s*/g, ' '), /etap zapisuje decyzję komentarzem PR ze znacznikiem, a `zbierz` zwraca ją potem w `rozstrzygnieteOgolne`/)
 })
+
+test('punkty 66–67: CI z samym botem nazwane wprost, przerwanie sesji nie zatrzymuje etapu, walidacjaDetal po polsku', () => {
+  const w = P.warunkiMerge({ ...CZYSTY, ciDetal: 'CodeRabbit: COMPLETED / SUCCESS', ciTylkoBot: true }).find((/** @type {{nazwa: string}} */ x) => x.nazwa === 'CI zielone')
+  assert.deepEqual([w.ok, w.jest], [true, 'CodeRabbit: COMPLETED / SUCCESS — na GitHubie tylko check bota, bez testow'])
+  assert.equal(P.warunkiMerge(CZYSTY).find((/** @type {{nazwa: string}} */ x) => x.nazwa === 'CI zielone').jest, 'build: SUCCESS')
+  assert.match(zrodlo, /ciBrak: stan\.ciBrak, ciTylkoBot: stan\.ciTylkoBot === true, zgodaBezCi/)
+  assert.match(zrodlo, /walidacjaDetal: \{ type: 'string', description: 'po polsku \(czyta operator\)/)
+  const t = skillPr.replace(/\n\s*/g, ' ')
+  assert.match(t, /`stan\.ciTylkoBot: true` → na GitHubie działa tylko check bota recenzji, testów tam nie ma/)
+  assert.match(t, /Przerwanie sesji \(Esc, zmiana modelu\) nie zatrzymuje etapu, który już działa w tle/)
+})
+
+test('punkt 66: etap merge kaze ustalic ciTylkoBot', () => {
+  assert.match(wytnij("if (etap === 'merge') {", 'Zwroc obiekt zgodny ze schematem.'), /ciTylkoBot = true, gdy jedynym checkiem PR jest check bota recenzji \(CodeRabbit\)/)
+})
