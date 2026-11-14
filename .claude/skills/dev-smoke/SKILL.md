@@ -139,4 +139,6 @@ Sekretów nie czytasz: wartości z `.env*` nie wczytujesz do kontekstu, w pliku 
 3. Ostatnia linia: „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”, gdy podsumowanie zadania
    (`docs/completed/<zadanie>/<zadanie>-podsumowanie.md`) ma sekcję „Części PR”; bez niej „Następny krok: /clear, potem
    /dev-pr 3 --bez-merge”. `/dev-pr` w tej sesji nie uruchamiasz: smoke i PR w jednej sesji kosztują kilka razy więcej.
+   Pod linią jedno zdanie po ludzku: `--bez-merge` znaczy, że PR i tury poprawek idą same, a zmiany wejdą do głównej wersji
+   dopiero po „tak” operatora na jedno pytanie (vibersi: operator nie zrozumiał flagi i uruchomił wariant z automatycznym merge'em).
    Tryb po wdrożeniu kończy zdanie z punktu 2, bez linii o `/dev-pr`.

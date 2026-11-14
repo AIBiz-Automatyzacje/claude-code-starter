@@ -3,7 +3,7 @@
 // Uruchomienie: node --test .claude/scripts/smoke/__tests__/otwarte.test.mjs
 
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -223,4 +223,14 @@ test('pozycje po deployu: /dev-smoke zostawia je otwarte i ma tryb po wdrozeniu,
 test('liczSmoke: poDeployuLista bez znacznika checkboxa, odhaczone pozycje po deployu pomija', () => {
   const t = '- [ ] (po deployu) Migracje na dev → lista bez braków\n- [x] (po deployu) Coolify → OK\n  - [ ] Staging po deployu: logowanie → działa\n- [ ] Lokalnie → OK\n'
   assert.deepEqual(liczSmoke(t), { otwarte: 3, poDeployu: 2, poDeployuLista: ['(po deployu) Migracje na dev → lista bez braków', 'Staging po deployu: logowanie → działa'] })
+})
+
+test('punkt 67: /dev-smoke tłumaczy --bez-merge, /makieta przygotowuje stany z narzędzi programisty sam', () => {
+  const plaski = (/** @type {string} */ t) => t.replace(/\n\s*/g, ' ')
+  assert.match(plaski(SKILL_SMOKE), /`--bez-merge` znaczy, że PR i tury poprawek idą same, a zmiany wejdą do głównej wersji dopiero po „tak” operatora/)
+  // Skill /makieta jest tylko w rdzeniu web; zbudowany wariant Expo go nie ma.
+  const plikMakiety = resolve(KATALOG, '../../../skills/makieta/SKILL.md')
+  if (!existsSync(plikMakiety)) return
+  const makieta = plaski(readFileSync(plikMakiety, 'utf8'))
+  assert.match(makieta, /Punkt, którego stan wymaga narzędzi programisty .* przygotowujesz sam, gdy operator dojdzie do tego punktu/)
 })

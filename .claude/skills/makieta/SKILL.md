@@ -32,6 +32,9 @@ Serwer narzędzia działa w tle na `http://127.0.0.1:5180` i jest zarazem proxy 
      `<data>-<zadanie>-smoke.md` albo smoke poza projektem — przekaż operatorowi treść błędu.
    - Kod 2: złe argumenty (komunikat na stderr), np. adres aplikacji spoza localhost.
    - Kod 3: serwer nie wystartował albo wyjątek — przekaż operatorowi `blad` / `wyjatek` ze ścieżką logu serwera.
+   Punkt, którego stan wymaga narzędzi programisty (wyjątek w kodzie, blokada w panelu „Sieć”, spowolnienie CPU), przygotowujesz
+   sam, gdy operator dojdzie do tego punktu: zmiana tymczasowa, po ocenie cofnięta (`git status` bez zmian w kodzie). Operatorowi
+   mówisz tylko, co ma zobaczyć (vibersi: punkt ekranu błędu kazał operatorowi wstawić `throw` w DevTools).
 4. Logowanie: hasłem w dowolnej ramce — jedna sesja obejmuje wszystkie ramki (wspólny origin). Dostawca OAuth: przycisk
    „Otwórz w karcie”, logowanie w karcie, potem „Przeładuj ramki” — kliknięty w ramce dostawca daje „zawartość
    zablokowana”, bo jego strona nie daje się osadzić. OAuth wymaga wpisu `http://127.0.0.1:5180/**` w Redirect URLs

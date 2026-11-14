@@ -24,7 +24,7 @@ import { parseArgs } from 'node:util'
 
 import { hostyDoDopisania } from './hosty.mjs'
 import { LIMIT_CZEKANIA_MIN, czekaj, opisOtwartych } from './kolejka.mjs'
-import { DOMYSLNA_APLIKACJA, DOMYSLNY_PORT, czasStartu, czekajNaOdpowiedz, katalogStanu, odpowiada, procesNaPorcie, zapisSerwera, zapiszSerwer, zatrzymaj, zyjeNasz } from './proces.mjs'
+import { DOMYSLNA_APLIKACJA, DOMYSLNY_PORT, czasStartu, czekajNaOdpowiedz, katalogStanu, odpowiada, opisObcego, procesNaPorcie, zapisSerwera, zapiszSerwer, zatrzymaj, zyjeNasz } from './proces.mjs'
 import { BladProxy, PREFIKS_NARZEDZIA, celLokalny } from './proxy.mjs'
 import { punktyWizualne, sprawdzFormat } from './punkty.mjs'
 import { NAGLOWEK_TOKENU, utworzSerwer } from './serwer.mjs'
@@ -112,8 +112,7 @@ async function start(projekt, o) {
   if (zyjeNasz(zapisSerwera(stan))) await zatrzymaj(stan)
   const obcy = procesNaPorcie(p)
   if (obcy || (obcy === undefined && await odpowiada(`http://127.0.0.1:${p}/`))) {
-    // Sam program i poczatek komendy: argumenty obcego procesu (np. --authtoken) trafilyby przez Monitor do transkryptu.
-    const kto = obcy ? `PID ${obcy.pid}: ${obcy.komenda.split(/\s+/)[0].split('/').pop()}` : 'proces nieznany (brak lsof)'
+    const kto = opisObcego(obcy)
     return wynik({ blad: `port ${p} zajęty — ${kto}. Zatrzymaj go albo podaj --port; adres http://127.0.0.1:${p}/** musi być w Redirect URLs Supabase dla OAuth` }, KOD_PROBLEMU)
   }
   const token = randomBytes(16).toString('hex')

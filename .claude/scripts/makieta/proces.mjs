@@ -25,6 +25,22 @@ const PLIK_SERWERA = 'serwer.json'
 /** @typedef {{ pid: number, uruchomiony: string, port: number, token: string, smoke: string, aplikacja: string, start: string }} ZapisSerwera */
 
 /**
+ * Opis procesu na zajetym porcie bez argumentow komendy (np. --authtoken trafilby przez Monitor do transkryptu). Serwer narzedzia
+ * makiet innego projektu dostaje nazwe tamtego katalogu i komende zatrzymania: w vibersi port blokowal serwer makiet innego
+ * projektu, zywy od 5 dni (punkt 67).
+ * @param {{ pid: number, komenda: string } | null | undefined} obcy
+ * @returns {string}
+ */
+export function opisObcego(obcy) {
+  if (!obcy) return 'proces nieznany (brak lsof)'
+  const makieta = /(\S+)\/\.claude\/scripts\/makieta\/makieta\.mjs\b/.exec(obcy.komenda)
+  if (makieta) {
+    return `PID ${obcy.pid}: serwer narzędzia makiet projektu ${basename(makieta[1] ?? '')}. Zatrzymaj go w tamtym projekcie (node .claude/scripts/makieta/makieta.mjs stop) albo kill ${obcy.pid}`
+  }
+  return `PID ${obcy.pid}: ${obcy.komenda.split(/\s+/)[0]?.split('/').pop() ?? ''}`
+}
+
+/**
  * Katalog stanu instancji projektu. Istniejacy katalog musi nalezec do biezacego uzytkownika i nie byc dowiazaniem — na Linuksie
  * bez TMPDIR `/tmp` jest wspolny, a przez `kolejka.jsonl` obcy tekst trafilby do Monitora sesji.
  * @param {string} projekt
