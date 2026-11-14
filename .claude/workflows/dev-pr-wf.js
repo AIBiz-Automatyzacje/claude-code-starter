@@ -551,8 +551,10 @@ function watkiPoStanie(watki, stan) {
 }
 
 // Licznik tur skilla ginie z sesja (aa-exam PR #51): rzadzi wieksza z wartosci, a tura nie moze sie cofnac ponizej commitow PR.
+// Numer tury liczymy z commitow `fix(pr): tura N`: tura z samymi odpowiedziami (bez commita) nie zuzywa sufitu (punkt 65,
+// vibersi PR #24: tura 2 odpisala w jednym watku, a po turze 3 nie bylo juz zapasu). Bez czytelnego stanu — numer ze skilla.
 function turaZeStanu(tura, stan) {
-  return stan && stan.tury >= tura ? stan.tury + 1 : tura
+  return stan ? stan.tury + 1 : tura
 }
 
 // Duza albo ryzykowna ostatnia tura nie miala naszego review (aa-exam PR #51: +814 linii, cicha utrata odpowiedzi).
@@ -1378,7 +1380,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   if (!stan) return { status: 'BLAD', etap, powod: 'Odczyt stanu PR zwrocil null (agent padl).' }
 
   const stanPr = odczytStanuPr(stan.stanPr)
-  const tury = stanPr ? Math.max(stanPr.tury, turyWykonane) : turyWykonane
+  const tury = stanPr ? stanPr.tury : turyWykonane
   const krotkieReview = krotkieReviewTury(stanPr, reviewOstatniejTury)
   const faktyBramki = {
     mergeable: stan.mergeable, mergeStateStatus: stan.mergeStateStatus, ciZielone: stan.ciZielone, ciDetal: stan.ciDetal,

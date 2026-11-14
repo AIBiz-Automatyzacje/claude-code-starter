@@ -43,7 +43,8 @@ Jeśli limit czasu minie bez recenzji, kończysz raportem „bot nie odpowiedzia
 | `--bez-bota` (z każdym trybem) | **Projekt bez bota recenzji** (CodeRabbit jest opcjonalny): PR, CI, krótkie review zmian po archiwizacji i merge, bez czekania na bota i bez tur. Przebieg w sekcji „Tryb bez bota”. |
 | `/dev-pr --claude-md <zadanie>` | Tylko krok „uzgodnij CLAUDE.md” dla zmergowanego zadania (np. po STOP-ie bootstrapu autopilota). |
 
-**Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Wyczerpany limit = domknięcie,
+**Sufit: 3 tury** w każdym trybie (`/dev-pr 5` = 3). Workflow nie wystartuje czwartej tury napraw. Turę liczy commit
+`fix(pr): tura N`: tura z samymi odpowiedziami w wątkach, bez commita, nie zużywa sufitu, a następny `zbierz` zwraca ten sam numer tury. Wyczerpany limit = domknięcie,
 nawet gdy zostały otwarte wątki. Nie proponuj „jeszcze jednej tury" — zaraportuj, co zostało, i oddaj decyzję operatorowi.
 Wątki otwarte po suficie i wątki odłożone „do części N+1” przekazujesz etapowi `compound` w `odlozone` — trafiają do
 `known-issues.md` zadania z linkiem wątku, a start kolejnej części zbiera nierozwiązane wątki PR poprzednich części.
@@ -311,7 +312,7 @@ Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "merge", za
 ```
 
 Pierwsze wywołanie etapu: `auto: true` tylko w trybie autonomicznym **i** bez `--bez-merge`; po odpowiedzi „Merguj” na pytanie
-przy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`. `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze większą z tej i z commitów PR).
+przy `GOTOWY-DO-MERGE` etap idzie drugi raz z `auto: true`. `turyWykonane` = liczba tur z etapu `zbierz` (workflow bierze liczbę z commitów PR, gdy stan PR jest czytelny).
 Merge wykonuje się wyłącznie przy `rekomendacja: "MERGUJ"`: `mergeable = MERGEABLE`, `mergeStateStatus = CLEAN`, zero otwartych wątków bez naszej decyzji,
 CI zielone, recenzja bota dotyczy czubka i krótkie review dużej ostatniej tury za nami. Liczy to JS ze stanu PR. `informacje` (wątki rozstrzygnięte, `reviewDecision`) pokaż w raporcie: nie blokują.
 

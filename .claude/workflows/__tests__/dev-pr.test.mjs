@@ -988,6 +988,10 @@ test('nowa sesja nie zeruje licznika tur: tura z argumentu nie cofa sie ponizej 
   assert.equal(P.turaZeStanu(1, STAN_PR), 4)
   assert.equal(P.turaZeStanu(2, { ...STAN_PR, tury: 1 }), 2)
   assert.equal(P.turaZeStanu(1, null), 1)
+  // Punkt 65: tura z samymi odpowiedziami nie ma commita, wiec nie podbija numeru — skill wolajacy zbierz z tura 3 dostaje 2.
+  assert.equal(P.turaZeStanu(3, { ...STAN_PR, tury: 1 }), 2)
+  assert.match(zrodlo, /const tury = stanPr \? stanPr\.tury : turyWykonane/)
+  assert.match(skillPr.replace(/\n\s*/g, ' '), /tura z samymi odpowiedziami w wątkach, bez commita, nie zużywa sufitu/)
 })
 
 test('piszemy_wirale PR #7: brak recenzji czubka blokuje MERGUJ, a powod trafia do rekomendacji', () => {
