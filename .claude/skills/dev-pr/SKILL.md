@@ -279,7 +279,10 @@ a resztę streść jednym zdaniem z liczbami.
 `do-operatora` **zatrzymuje turę** i trafia do raportu — nie zgaduj decyzji produktowej.
 
 **Decyzja operatora o wątku** („zostaje”, „odkładamy”, „nie naprawiamy”) trafia od razu na PR, żeby nie wracała w kolejnych turach ani w nowej sesji:
-`Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "decyzja", zadanie, decyzje: [{id, tresc}]}})`. Nie pytaj drugi raz o wątek, który ma zapisaną decyzję.
+`Workflow({scriptPath: ".claude/workflows/dev-pr-wf.js", args: {etap: "decyzja", zadanie, decyzje: [{id, tresc, plik, streszczenie}]}})`. Nie pytaj drugi raz o wątek, który ma zapisaną decyzję.
+Uwaga z recenzji ogólnej (`plik` „(recenzja ogolna)”) nie ma wątku: etap zapisuje decyzję komentarzem PR ze znacznikiem, a `zbierz`
+zwraca ją potem w `rozstrzygnieteOgolne`, poza turą. Uwagi ogólne z recenzji starszego commitu, których bot nie powtórzył przy
+czubku, `zbierz` zwraca w `stareOgolne`: nie wracają do tury ani do pytań, wymieniasz je w raporcie jednym zdaniem (punkt 63).
 
 ### 5. Naprawa
 

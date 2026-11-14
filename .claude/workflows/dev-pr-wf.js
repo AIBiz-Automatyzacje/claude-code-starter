@@ -231,6 +231,8 @@ const ZEBRANE = {
           waga: { type: 'string', enum: WAGI_UWAG, description: 'skutek, gdy defekt zostaje (nie koszt naprawy): P1 bezpieczenstwo/utrata danych/awaria, P2 defekt zachowania, P3 drobny bez skutku dla uzytkownika i danych, 0 nie-defekt' },
           naszaOdpowiedz: { type: 'boolean', description: 'czy w watku jest komentarz autora innego niz bot (nasza odpowiedz) po pierwszym komentarzu bota' },
           nowyZarzut: { type: 'boolean', description: 'true tylko dla watku rozstrzygnietego albo czekajacego na bota, w ktorym bot po naszej odpowiedzi zglosil nowy zarzut' },
+          commitRecenzji: { type: ['string', 'null'], description: 'pozycja "(recenzja ogolna)": commit_id recenzji bota, z ktorej pochodzi (pelny SHA); watek: null' },
+          decyzjaKomentarzem: { type: 'boolean', description: 'pozycja "(recenzja ogolna)": true, gdy na PR jest komentarz ze znacznikiem <!-- dev-pr:{"decyzja":...,"ogolna":true} --> o tej uwadze' },
         },
         required: ['id', 'plik', 'url', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'],
       },
@@ -768,6 +770,36 @@ a w opisie PR sekcja \`## Otwarte wątki poprzednich części\` z linia \`- PR #
 (brak = sekcji nie dodajesz). Watkow nie rozwiazujesz i nie odpowiadasz w nich.\n`
 }
 
+// Punkt 63 (vibersi PR #24): uwaga z recenzji ogolnej bota nie ma watku. Decyzja operatora dla niej padala (mutacja odpowiedzi
+// w watku dla id recenzji = NOT_FOUND), a pozycja wracala losowo: raz pominieta, raz „odrzuc bez odpowiedzi”, ktorej nie da sie spelnic.
+// Id recenzji GraphQL ma prefiks PRR_ (watek: PRRT_); zbierz daje tez id syntetyczne „(recenzja ogolna) …”.
+function czyOgolna(w) {
+  const id = String(w.id || '')
+  return id.startsWith('PRR_') || id.startsWith('(recenzja ogolna)') || String(w.plik || '').startsWith('(recenzja ogolna)')
+}
+
+// Pozycje ogolne poza tura: z recenzji starszego commitu (bot nie powtorzyl ich przy czubku) i z decyzja zapisana komentarzem PR.
+function podzialOgolnych(watki, czubek) {
+  const zostaja = []
+  const stareOgolne = []
+  const rozstrzygnieteOgolne = []
+  for (const w of watki) {
+    if (!czyOgolna(w)) zostaja.push(w)
+    else if (w.decyzjaKomentarzem === true) rozstrzygnieteOgolne.push({ id: w.id, plik: w.plik, streszczenie: w.streszczenie })
+    else if (czubek && w.commitRecenzji && w.commitRecenzji !== czubek) stareOgolne.push({ id: w.id, plik: w.plik, streszczenie: w.streszczenie })
+    else zostaja.push(w)
+  }
+  return { zostaja, stareOgolne, rozstrzygnieteOgolne }
+}
+
+// Decyzja o watku idzie odpowiedzia w watku; o uwadze z recenzji ogolnej — komentarzem PR ze znacznikiem, ktory czyta zbierz.
+function wpisDecyzji(d) {
+  const ogolna = czyOgolna(d)
+  const znacznik = ogolna ? '<!-- dev-pr:{"decyzja":"operator","ogolna":true} -->' : '<!-- dev-pr:{"decyzja":"operator"} -->'
+  const tytul = ogolna ? `Decyzja operatora (uwaga z recenzji ogólnej${d.streszczenie ? `: ${String(d.streszczenie).trim()}` : ''})` : 'Decyzja operatora'
+  return { id: d.id, tryb: ogolna ? 'komentarz-pr' : 'watek', body: `${tytul}: ${String(d.tresc).trim()}\n\n${znacznik}` }
+}
+
 // Krok CLAUDE.md po czesci nieostatniej nie startuje: plik decyzji zadania jedzie w ostatniej czesci (vibersi PR #3: STOP
 // „brak pliku decyzji”).
 function claudeMdCzesci(czesc, czesci) {
@@ -1118,10 +1150,12 @@ if (etap === 'stan') {
 if (etap === 'decyzja') {
   const wpisy = decyzje.filter((d) => d && typeof d.id === 'string' && typeof d.tresc === 'string' && d.tresc.trim())
   if (!wpisy.length) return { status: 'BLAD', etap, powod: 'Brak args.decyzje: [{ id, tresc }]' }
-  const tresci = wpisy.map((d) => ({ id: d.id, body: `Decyzja operatora: ${d.tresc.trim()}\n\n<!-- dev-pr:{"decyzja":"operator"} -->` }))
+  const tresci = wpisy.map(wpisDecyzji)
   const zapis = await agent(
-    `Zapisz decyzje operatora jako odpowiedzi w watkach review. Tresc kazdej odpowiedzi to dokladnie pole body, bez zmian. Dla kazdego wpisu
-mutacja \`addPullRequestReviewThreadReply\` z bloku gh. Nie rozwiazuj watkow i nie zmieniaj kodu. Sukces = id do zapisane, blad = "<id>: <tresc>" do bledy.
+    `Zapisz decyzje operatora na pull requescie zadania "${zadanie}". Tresc kazdego wpisu to dokladnie pole body, bez zmian.
+Wpis z tryb "watek": mutacja \`addPullRequestReviewThreadReply\` z bloku gh (id = id watku). Wpis z tryb "komentarz-pr" (uwaga z recenzji
+ogolnej, nie ma watku): \`gh pr comment --body-file <plik z body>\` na PR biezacej galezi. Nie rozwiazuj watkow i nie zmieniaj kodu.
+Sukces = id do zapisane, blad = "<id>: <tresc>" do bledy.
 Wpisy: ${JSON.stringify(tresci)}
 Zwroc obiekt zgodny ze schematem.${BLOK_GH}`,
     { schema: ZAPIS_DECYZJI, agentType: 'klasa-mechaniczny', label: `pr:decyzja:${zadanie}` }
@@ -1142,7 +1176,9 @@ Czytasz i klasyfikujesz. NIE naprawiasz kodu, NIE odpowiadasz w watkach, NIE com
 1. Ustal numer PR, czubek galezi i liczbe zmienionych plikow (\`gh pr view --json number,headRefOid,changedFiles\` → \`prNumer\`, \`headRefOid\`, \`plikiPr\`)
    i pobierz WSZYSTKIE watki review przez GraphQL
    (zapytanie w bloku gh nizej). Wez tylko te z \`isResolved: false\`. Dolacz tresc recenzji ogolnych
-   (\`gh pr view --json reviews\`) jako pozycje z plikiem "(recenzja ogolna)".
+   (\`gh pr view --json reviews\`) jako pozycje z plikiem "(recenzja ogolna)", id recenzji i \`commitRecenzji\` = commit_id tej recenzji
+   (\`gh api repos/{owner}/{repo}/pulls/<nr>/reviews\`). \`decyzjaKomentarzem\` = true, gdy w komentarzach PR (\`gh pr view --json comments\`)
+   jest komentarz ze znacznikiem \`"ogolna":true\`, ktorego tresc dotyczy tej samej uwagi. Watek review: \`commitRecenzji\` null.
 2. Ustal \`recenzjaAktualna\`: czy najnowsza recenzja bota dotyczy biezacego \`headRefOid\`. Gdy recenzja jest
    starsza od czubka galezi, ustaw false — skill zdecyduje, czy czekac na recenzje przyrostowa.
 3. Dla KAZDEGO watku ustal klase wg rubryki:
@@ -1183,12 +1219,14 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
     { schema: ZEBRANE, agentType: 'klasa-orkiestracyjny', effort: 'medium', label: `pr:zbierz:tura-${tura}` }
   )
   if (!wynik) return { status: 'BLAD', etap, powod: 'Zbieranie watkow zwrocilo null (agent padl).' }
+  const ogolne = podzialOgolnych(wynik.watki || [], wynik.headRefOid)
+  if (ogolne.stareOgolne.length || ogolne.rozstrzygnieteOgolne.length) log(`/dev-pr tura ${tura}: uwagi z recenzji ogolnej poza tura — starszy commit ${ogolne.stareOgolne.length}, z decyzja ${ogolne.rozstrzygnieteOgolne.length}`)
   const potwierdzone = await rozwiazPotwierdzone(wynik.potwierdzone || [])
   const stanPr = odczytStanuPr(wynik.stanPr)
   if (!stanPr) log(`/dev-pr tura ${tura}: UWAGA — stan-pr.mjs nieczytelny; decyzje i licznik tur tylko z argumentow skilla`)
   const turaBiezaca = turaZeStanu(tura, stanPr)
   if (turaBiezaca !== tura) log(`/dev-pr: PR ma juz ${stanPr.tury} tur napraw — tura ${tura} z argumentu zastapiona tura ${turaBiezaca}`)
-  const poStanie = watkiPoStanie(wynik.watki || [], stanPr)
+  const poStanie = watkiPoStanie(ogolne.zostaja, stanPr)
   if (poStanie.rozstrzygniete.length || poStanie.czekajaNaBota.length) log(`/dev-pr tura ${turaBiezaca}: poza tura — rozstrzygniete ${poStanie.rozstrzygniete.length}, poprawki czekajace na bota ${poStanie.czekajaNaBota.length}`)
 
   // Liczniki w JS (Filar 3: agent nigdy nie liczy tego, co JS wie na pewno).
@@ -1213,7 +1251,8 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   const rek = rekomendacja({
     mergeable: wynik.mergeable, mergeStateStatus: wynik.mergeStateStatus, ciZielone: wynik.ciZielone, ciDetal: wynik.ciDetal,
     watkiNapraw: licznik['napraw'] + licznik['napraw-szerzej'], watkiDoOperatora: licznik['do-operatora'],
-    watkiOdrzucBezOdpowiedzi: watki.filter((w) => w.klasa === 'odrzuc' && w.naszaOdpowiedz !== true).length,
+    // Uwaga z recenzji ogolnej nie ma watku, wiec odpowiedzi nie dostanie: nie liczy sie jako „odrzuc bez odpowiedzi” (punkt 63).
+    watkiOdrzucBezOdpowiedzi: watki.filter((w) => w.klasa === 'odrzuc' && w.naszaOdpowiedz !== true && !czyOgolna(w)).length,
     // Punkt 55 (stara dziura): nieczytelny stan-pr dawal recenzjaCzubka: undefined, a `ok !== false` przepuszczal MERGUJ.
     recenzjaCzubka: stanPr ? stanPr.recenzjaCzubka : { ok: false, powod: 'stan PR nieczytelny' },
   }, turaBiezaca - 1)
@@ -1221,7 +1260,7 @@ Zwroc obiekt zgodny ze schematem.${BLOK_STANU_PR}${BLOK_GH}`,
   log(`/dev-pr tura ${turaBiezaca}: ${watki.length} nierozwiazanych watkow (napraw ${licznik['napraw']}, szerzej ${licznik['napraw-szerzej']}, odrzuc ${licznik['odrzuc']}, do-operatora ${licznik['do-operatora']}), klastrow: ${klastry.length}${wynik.recenzjaAktualna ? '' : ' — UWAGA: recenzja NIE dotyczy biezacego czubka galezi'}`)
   // plikiPr i prNumer ida do wyniku runu — z niego telemetria buduje run.pr (miara: P1/P2 bota na 100 plikow PR);
   // headRefOid — czubek, na ktorym telemetria liczy blame linii watku (ucieczki do bota, E5-20).
-  return { status: 'OK', etap, tura: turaBiezaca, rekomendacja: rek, token, watki, licznik, klastry, potwierdzone, rozstrzygniete: poStanie.rozstrzygniete, czekajaNaBota: poStanie.czekajaNaBota, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null, headRefOid: wynik.headRefOid ?? null }
+  return { status: 'OK', etap, tura: turaBiezaca, rekomendacja: rek, token, watki, licznik, klastry, potwierdzone, rozstrzygniete: poStanie.rozstrzygniete, czekajaNaBota: poStanie.czekajaNaBota, stareOgolne: ogolne.stareOgolne, rozstrzygnieteOgolne: ogolne.rozstrzygnieteOgolne, recenzjaAktualna: wynik.recenzjaAktualna, plikiPr: wynik.plikiPr, prNumer: wynik.prNumer ?? null, czesc, uwagi: wynik.uwagi || null, headRefOid: wynik.headRefOid ?? null }
 }
 
 // ── Etap: napraw (Faza 4 — naprawa, odpowiedzi, commit, push) ─────────────

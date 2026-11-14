@@ -36,7 +36,7 @@ function wytnij(kotwica, koniec) {
 // eslint-disable-next-line no-new-func -- ekstrakcja funkcji z pliku workflowu tego repo, nie z inputu
 const P = new Function(
   `${wytnij('// ── Decyzje dev-pr (P5)', '// ── Koniec decyzji dev-pr')}
-   return { bramkaStartu, watkiPoStanie, turaZeStanu, krotkieReviewTury, odczytStanuPr, warunkiMerge, odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
+   return { czyOgolna, podzialOgolnych, wpisDecyzji, bramkaStartu, watkiPoStanie, turaZeStanu, krotkieReviewTury, odczytStanuPr, warunkiMerge, odrzucenieUzasadnione, tokenTury, watkiTury, rekomendacja, SUFIT_TUR, tabelaTury, bramkaClaudeMd, PRZYROST_CLAUDE_MD, komendaUzgodnienia, wagaWatku, KLASY_NIE_DEFEKT, czesciZTabeli, planCzesci, claudeMdCzesci, tylkoPlikiGenerowane }`,
 )()
 
 // ── Guard uzasadnien odrzucenia ───────────────────────────────────────────
@@ -166,7 +166,7 @@ test('rekomendacja: odrzuc bez naszej odpowiedzi = KOLEJNA TURA (tylko odpowiedz
 
 test('zbierz: watkiOdrzucBezOdpowiedzi z pola naszaOdpowiedz watkow odrzuc (po przeklasyfikowaniu bez cytatu); pole wymagane w schemacie', () => {
   const zbierz = wytnij("if (etap === 'zbierz') {", '\n}\n')
-  assert.match(zbierz, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true\)\.length/)
+  assert.match(zbierz, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true && !czyOgolna\(w\)\)\.length/)
   assert.ok(zbierz.indexOf('odrzuconeBezCytatu.length') < zbierz.indexOf('watkiOdrzucBezOdpowiedzi'))
   assert.match(zbierz, /\\`naszaOdpowiedz\\` = true, gdy w watku po pierwszym komentarzu bota jest komentarz autora innego niz bot/)
   assert.match(zrodlo, /required: \['id', 'plik', 'url', 'streszczenie', 'klasa', 'uzasadnienie', 'wplywNaProjekt', 'klasaBledu', 'os', 'waga', 'naszaOdpowiedz'\]/)
@@ -1233,4 +1233,33 @@ test('skill: CZEKAJ NA BOTA = Monitor z reszta minut, potem zbierz; po limicie a
   assert.match(t, /`rekomendacja` zaczyna się od „CZEKAJ NA BOTA” → .*`Monitor` z poleceniem `sleep <resztaMin × 60>; echo koniec`/)
   assert.match(t, /potem etap `zbierz` tej samej tury/)
   assert.match(t, /`informacje\.poLimicieBota` wymieniasz w raporcie w linii `Merge:`/)
+})
+
+// Punkt 63 (vibersi PR #24): uwaga z recenzji ogolnej bez watku — decyzja padala na NOT_FOUND, pozycja wracala losowo.
+test('uwagi z recenzji ogolnej: starszy commit i decyzja komentarzem poza tura; watki review bez zmian', () => {
+  const watek = { id: 'PRRT_a', plik: 'src/a.ts:1', streszczenie: 'x', commitRecenzji: null }
+  const stara = { id: 'PRR_b', plik: '(recenzja ogolna)', streszczenie: 'atrapa w tescie', commitRecenzji: 'OLD' }
+  const biezaca = { id: 'PRR_c', plik: '(recenzja ogolna)', streszczenie: 'nitpick', commitRecenzji: 'HEAD' }
+  const zDecyzja = { id: '(recenzja ogolna) PRR 2026-11-14', plik: '(recenzja ogolna)', streszczenie: 'atrapa', commitRecenzji: 'HEAD', decyzjaKomentarzem: true }
+  const r = P.podzialOgolnych([watek, stara, biezaca, zDecyzja], 'HEAD')
+  assert.deepEqual(r.zostaja.map((/** @type {{id: string}} */ w) => w.id), ['PRRT_a', 'PRR_c'])
+  assert.deepEqual(r.stareOgolne.map((/** @type {{id: string}} */ w) => w.id), ['PRR_b'])
+  assert.deepEqual(r.rozstrzygnieteOgolne.map((/** @type {{id: string}} */ w) => w.id), ['(recenzja ogolna) PRR 2026-11-14'])
+  assert.deepEqual(P.podzialOgolnych([stara], null).zostaja.map((/** @type {{id: string}} */ w) => w.id), ['PRR_b'], 'bez czubka nie odrzuca')
+  assert.equal(P.czyOgolna({ id: 'PRRT_x', plik: 'a.ts:2' }), false)
+  assert.equal(P.czyOgolna({ id: 'T1' }), false, 'id spoza GraphQL bez pliku ogolnego to watek')
+})
+
+test('wpisDecyzji: watek = odpowiedz w watku, uwaga ogolna = komentarz PR ze znacznikiem ogolna', () => {
+  const w = P.wpisDecyzji({ id: 'PRRT_a', tresc: ' zostaje ' })
+  assert.deepEqual(w, { id: 'PRRT_a', tryb: 'watek', body: 'Decyzja operatora: zostaje\n\n<!-- dev-pr:{"decyzja":"operator"} -->' })
+  const o = P.wpisDecyzji({ id: 'PRR_kwDO', tresc: 'zostaje jak jest', streszczenie: 'atrapa srodowisko() w tescie' })
+  assert.equal(o.tryb, 'komentarz-pr')
+  assert.equal(o.body, 'Decyzja operatora (uwaga z recenzji ogólnej: atrapa srodowisko() w tescie): zostaje jak jest\n\n<!-- dev-pr:{"decyzja":"operator","ogolna":true} -->')
+})
+
+test('rekomendacja w zbierz: uwaga ogolna odrzuc bez odpowiedzi nie daje tury „tylko odpowiedzi” (zrodlo)', () => {
+  assert.match(zrodlo, /watkiOdrzucBezOdpowiedzi: watki\.filter\(\(w\) => w\.klasa === 'odrzuc' && w\.naszaOdpowiedz !== true && !czyOgolna\(w\)\)\.length/)
+  assert.match(zrodlo, /const poStanie = watkiPoStanie\(ogolne\.zostaja, stanPr\)/)
+  assert.match(skillPr.replace(/\n\s*/g, ' '), /etap zapisuje decyzję komentarzem PR ze znacznikiem, a `zbierz` zwraca ją potem w `rozstrzygnieteOgolne`/)
 })
