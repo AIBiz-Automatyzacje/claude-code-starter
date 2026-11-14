@@ -95,6 +95,7 @@ Datę do plików bierz z `date +%F`.
    Wejście: <jak tam dojść w aplikacji>.
    - [ ] <Czynność> → <oczekiwany wynik, konkretny>
    - [ ] **[fizyczne urządzenie]** <dotyk / push / safe-area / responsywność>
+   - [ ] (po deployu) <czynność na wdrożonej wersji: migracja na dev i produkcji, zmienna w deployu, staging> → <oczekiwany wynik>
    <zdanie przed punktami z sekcji „Punkty wizualne”>   ← tylko w smoke'u z punktami wizualnymi, przed pierwszym z nich
    - [ ] Telefon: `/p/kawiarnia-u-ani` (slug z seeda) obok `visual-diff/<ekran>-figma.png` (viewport 390×844) → Wejście: <skąd i co kliknąć>. Porównaj: <2–4 elementy z makiety>. Stany: <stan — jak wywołać; „brak”>
 
@@ -108,6 +109,8 @@ Datę do plików bierz z `date +%F`.
    się tylko przy pozycjach dla człowieka. Kończy się linią „Następny krok: /clear, potem /dev-pr 3 --bez-merge --czesc 1”
    (zadanie bez części PR: „Następny krok: /clear, potem /dev-pr 3 --bez-merge”); /dev-pr w sesji smoke'u nie rusza.
    ```
+
+   Pozycja, której nie da się sprawdzić przed wysłaniem PR, bo czeka na merge albo wdrożenie (migracje na dev i produkcji, zmienne w ustawieniach deployu, staging, produkcja), ma w linii checkboxa dopisek „(po deployu)”: skrypt otwartych spraw liczy ją osobno, a /dev-pr nie pyta o nią przed wysłaniem PR.
 
    Reguły: sekrety tylko nazwami zmiennych; pozycje pogrupowane per wymaganie/ekran w kolejności, w jakiej operator przechodzi aplikację (nie per faza autopilota); każdy checkbox ma oczekiwany wynik; nie modyfikuj `*-zadania.md` ani raportów review.
 
