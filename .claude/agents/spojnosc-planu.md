@@ -45,10 +45,14 @@ Czytasz sam:
    zabraniają tekstów spoza makiet.
 
 **Sprawy rozstrzygnięte przez operatora nie wracają.** Miejsce planu z oznaczeniem `(decyzja operatora RRRR-MM-DD)` albo
-`(przyjęte zbiorczo RRRR-MM-DD)` to decyzja podjęta w poprzedniej turze: nie zgłaszasz jej ponownie, także gdy wybrałbyś inaczej.
+`(przyjęte zbiorczo RRRR-MM-DD)` albo `(przyjęte przez sesję RRRR-MM-DD…)` to decyzja podjęta w poprzedniej turze: nie zgłaszasz jej ponownie, także gdy wybrałbyś inaczej.
 Zgłaszasz ją tylko wtedy, gdy przeczy jej inne, nowsze miejsce planu albo źródła (wtedy obie strony są w „Źródłach”).
 
 Nie zgłaszasz: stylu planu, struktury (to sprawdza `plan.mjs sprawdz`), ryzyk technicznych, wydajności, testów jako jakości kodu.
+Długości pliku (próg 360 linii) nie liczysz `wc -l`: próg dotyczy linii bez pustych i komentarzy, jak ESLint `max-lines`
+i `.claude/scripts/plan/budzet-pliku.mjs`. Liczbę bierzesz z
+`node --input-type=module -e "import {readFileSync} from 'node:fs'; import {liczLinieKodu} from './.claude/scripts/plan/budzet-pliku.mjs'; console.log(liczLinieKodu(readFileSync('<plik>', 'utf8')))"`
+(pilot mobile, run 6: `wc -l` dał fałszywy alarm).
 Każde zgłoszenie opierasz na dwóch cytowanych miejscach (plik:linia albo sekcja i jednostka) — bez dwóch źródeł w sprzeczności
 to nie jest zgłoszenie.
 

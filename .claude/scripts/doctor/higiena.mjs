@@ -8,7 +8,8 @@
 //   (piszemy_wirale),
 // - .claude/.backups/ i CLAUDE.md pluginu claude-mem w podkatalogach poza .gitignore (piszemy_wirale),
 // - bajt NUL w wpisie docs/solutions/ — ripgrep pomija plik, agenci go nie znajduja (claude-cron),
-// - .coderabbit.yaml bez pliku albo z odwolaniem do starej bazy wiedzy (claude-cron po konwersji).
+// - .coderabbit.yaml bez pliku albo z odwolaniem do starej bazy wiedzy (claude-cron po konwersji),
+// - wlasny skill synchronizacji projektu obok /sync-template, czesto wskazany w CLAUDE.md (pilot mobile, run 6: sync-claude-template).
 // Wynik: wiersze TSV (element, stan, szczegol, instalacja) jak zapis-hookow.mjs; problem = UWAGA, nic nie blokuje.
 //
 // Uzycie: node higiena.mjs <katalog-projektu>
@@ -212,9 +213,24 @@ export function bibliotekaTestowKomponentow(projekt) {
     : ok
 }
 
+const SKILL_SYNCA = 'sync-template'
+
+/** Drugi skill o roli /sync-template: agent wybiera go z CLAUDE.md albo z opisu i synchronizuje starym sposobem (pilot mobile, run 6). @param {string} projekt @returns {Wiersz} */
+export function wlasnySkillSynca(projekt) {
+  const element = 'skill synchronizacji'
+  const katalog = join(projekt, '.claude/skills')
+  const inne = existsSync(katalog) ? readdirSync(katalog).filter((n) => n !== SKILL_SYNCA && /sync/i.test(n) && statSync(join(katalog, n)).isDirectory()) : []
+  if (!inne.length) return { element, stan: 'OK', szczegol: `tylko /${SKILL_SYNCA}`, instalacja: '—' }
+  const claudeMd = join(projekt, 'CLAUDE.md')
+  const tresc = existsSync(claudeMd) ? readFileSync(claudeMd, 'utf8') : ''
+  const wCLAUDEmd = inne.filter((n) => tresc.includes(n))
+  const dopisek = wCLAUDEmd.length ? `; CLAUDE.md wskazuje: ${wCLAUDEmd.join(', ')}` : ''
+  return { element, stan: 'UWAGA', szczegol: `wlasny skill obok /${SKILL_SYNCA}: ${inne.map((n) => `.claude/skills/${n}/`).join(', ')}${dopisek}`, instalacja: `usun stary skill i odwolania w CLAUDE.md albo zmien je na /${SKILL_SYNCA}` }
+}
+
 /** @param {string} projekt @returns {Wiersz[]} */
 export function higienaProjektu(projekt) {
-  return [wiedzaProjektu, kontekstStartowy, plikiSpozaSzablonu, hookiWUstawieniach, ignorowanePliki, bajtySterujace, konfiguracjaCodeRabbit, dlugieLinieClaudeMd, bibliotekaTestowKomponentow]
+  return [wiedzaProjektu, kontekstStartowy, plikiSpozaSzablonu, hookiWUstawieniach, ignorowanePliki, bajtySterujace, konfiguracjaCodeRabbit, dlugieLinieClaudeMd, bibliotekaTestowKomponentow, wlasnySkillSynca]
     .map((kontrola) => kontrola(projekt))
 }
 

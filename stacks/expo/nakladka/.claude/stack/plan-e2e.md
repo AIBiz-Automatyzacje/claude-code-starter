@@ -11,6 +11,9 @@ w tym stacku wygląda linia scenariusza, gdzie leżą seedy i czego narzędzie j
 - Plik flow jest deliverablem buildera (D17): tester tylko go uruchamia. W tabeli plików IU stoi wiersz `Stwórz (e2e flow)` z
   `.maestro/<flow>.yaml` albo `Modyfikuj (e2e flow)`, gdy scenariusz rozszerza istniejący flow. `plan.mjs sprawdz` odrzuca `[E2E]`, którego
   pliku nie ma w polu Pliki ani w repo; w runie brak pliku daje SKIP `scenariusz-niewykonalny`.
+- `assertVisible` trafia w element widoczny w drzewie dostępności. Tekst wewnątrz kontenera z `accessible` i `accessibilityLabel`
+  (karta, wiersz listy) iOS skleja w jeden element, więc Maestro nie widzi tekstu dzieci: scenariusz asertuje wtedy pełną etykietę
+  kontenera (np. „Wszystkie check-iny: 3”), a Podejście IU podaje jej brzmienie (pilot mobile, run 6).
 - `Weryfikacja: [E2E]` tylko dla runnera `.sh`, który nie jest scenariuszem (np. `.maestro/<etap>-run-all.sh`).
 
 ## Seedy
