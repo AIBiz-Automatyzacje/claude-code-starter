@@ -9,7 +9,7 @@ import assert from 'node:assert/strict'
 
 import {
   bajtySterujace, bibliotekaTestowKomponentow, dlugieLinieClaudeMd, higienaProjektu, hookiWUstawieniach, ignorowanePliki, konfiguracjaCodeRabbit, kontekstStartowy,
-  plikiSpozaSzablonu, PROG_KONTEKSTU_ZN, STARA_WIEDZA, wiedzaProjektu,
+  plikiSpozaSzablonu, PROG_KONTEKSTU_ZN, STARA_WIEDZA, wiedzaProjektu, wlasnySkillSynca,
 } from '../higiena.mjs'
 
 /** @param {(projekt: string, zapisz: (plik: string, tresc: string) => void) => void} cialo */
@@ -99,11 +99,11 @@ test('CodeRabbit: brak pliku = UWAGA z /coderabbit-setup; odwolanie do usunietej
   assert.match(konfiguracjaCodeRabbit(p).szczegol, /niezgodny z kontraktem/, 'plik jest — odwolanie aktualne, ale config nie spelnia kontraktu')
 }))
 
-test('higienaProjektu: dziewiec wierszy w stalej kolejnosci; CLI wypisuje je jako TSV', () => zProjektem((p) => {
+test('higienaProjektu: dziesiec wierszy w stalej kolejnosci; CLI wypisuje je jako TSV', () => zProjektem((p) => {
   const elementy = higienaProjektu(p).map((w) => w.element)
-  assert.deepEqual(elementy, ['wiedza projektu', 'kontekst startowy agenta', 'pliki .claude spoza szablonu', 'hooki w ustawieniach', 'pliki poza .gitignore', 'bajty sterujace w wiedzy', 'CodeRabbit', 'CLAUDE.md: dlugie linie', 'testy komponentow'])
+  assert.deepEqual(elementy, ['wiedza projektu', 'kontekst startowy agenta', 'pliki .claude spoza szablonu', 'hooki w ustawieniach', 'pliki poza .gitignore', 'bajty sterujace w wiedzy', 'CodeRabbit', 'CLAUDE.md: dlugie linie', 'testy komponentow', 'skill synchronizacji'])
   const wyjscie = execFileSync(process.execPath, [join(import.meta.dirname, '../higiena.mjs'), p], { encoding: 'utf8' })
-  assert.deepEqual(wyjscie.trim().split('\n').map((l) => l.split('\t').length), [4, 4, 4, 4, 4, 4, 4, 4, 4])
+  assert.deepEqual(wyjscie.trim().split('\n').map((l) => l.split('\t').length), [4, 4, 4, 4, 4, 4, 4, 4, 4, 4])
 }))
 
 test('CodeRabbit: config spelniajacy kontrakt = OK, odstepstwo = UWAGA z /coderabbit-setup', () => zProjektem((p, zapisz) => {
@@ -139,4 +139,17 @@ test('CLAUDE.md: akapit w jednej linii = UWAGA, tabela nie liczy sie; testy komp
   assert.equal(bibliotekaTestowKomponentow(p).instalacja, 'decyzja operatora')
   zapisz('package.json', '{"dependencies":{"react":"19.0.0"},"devDependencies":{"@testing-library/react":"16.0.0"}}')
   assert.equal(bibliotekaTestowKomponentow(p).stan, 'OK')
+}))
+
+test('skill synchronizacji: wlasny skill obok /sync-template = UWAGA z wskazaniem w CLAUDE.md; sam sync-template i inne skille OK', () => zProjektem((p, zapisz) => {
+  zapisz('.claude/skills/sync-template/SKILL.md', 'x')
+  zapisz('.claude/skills/weryfikacja/SKILL.md', 'x')
+  assert.equal(wlasnySkillSynca(p).stan, 'OK')
+  zapisz('.claude/skills/sync-claude-template/SKILL.md', 'x')
+  assert.deepEqual(wlasnySkillSynca(p), {
+    element: 'skill synchronizacji', stan: 'UWAGA', szczegol: 'wlasny skill obok /sync-template: .claude/skills/sync-claude-template/',
+    instalacja: 'usun stary skill i odwolania w CLAUDE.md albo zmien je na /sync-template',
+  })
+  zapisz('CLAUDE.md', 'Szablon aktualizuj skillem sync-claude-template.\n')
+  assert.match(wlasnySkillSynca(p).szczegol, /; CLAUDE\.md wskazuje: sync-claude-template$/)
 }))

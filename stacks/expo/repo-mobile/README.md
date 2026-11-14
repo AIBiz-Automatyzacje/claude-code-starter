@@ -50,6 +50,13 @@ Testy E2E na symulatorze albo emulatorze (Maestro, dev-client, osobna baza e2e) 
 [`.claude/templates/e2e-env/README.md`](.claude/templates/e2e-env/README.md). Bramki domknięcia faz: wzory w
 `.claude/templates/bramki/`.
 
+### Najpierw iOS
+
+Pipeline (plan, autopilot, testy E2E Maestro, smoke, PR) jest sprawdzony na żywo na symulatorze iOS: pilot na kopii prawdziwej
+aplikacji, sześć runów do zmergowanego PR. Adapter E2E obsługuje też emulator Androida (`E2E_PLATFORMA=android` w `.env.e2e`), ale tej ścieżki
+nikt jeszcze nie przeszedł na żywo. Zacznij od iOS; pierwszy run na Androidzie traktuj jak test i zgłoś każdą usterkę do
+`claude-code-starter`.
+
 ## Aktualizacja
 
 `/sync-template` w projekcie zaciąga najnowszą wersję z tego repo. Adres bierze z `szablon.repo` w

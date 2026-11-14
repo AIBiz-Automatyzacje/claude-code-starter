@@ -43,12 +43,12 @@ tylko za zgodą operatora (od włączenia automatu merge = publikacja do repo mo
 
 ## Co zostało
 
-1. **Run 6 na kopii (rekomendowany jako pierwszy).** `/sync-template` kopii do `e6dfb5d`, jedno małe zadanie z `[E2E]` na iOS
+1. **[ZROBIONE 2026-11-14 — PR #3 na repo testowym, wynik w `2026-11-pilot-nawykometr-wnioski.md`, sekcja „Run 6”, nowe W38–W41]** **Run 6 na kopii.** `/sync-template` kopii do `e6dfb5d`, jedno małe zadanie z `[E2E]` na iOS
    z Maestro 2.12.1. Sprawdza na żywo poprawki, które w runie 5 nie wystąpiły albo przyszły po nim: doctor (tokeny kont, własny
    ESLint, advisors przy bazie lokalnej), smoke z bazą lokalną, P3 E2E w `known-issues`, canary z nowym Maestro (czas w wyniku),
    komunikat STOP-u przy żywym środowisku, bramka natywna z paczkami zagnieżdżonymi. Przed syncem: wypchnąć albo porzucić commit
    `79d3608` w kopii (bramka czystości `/dev-pr` liczy rozjazd z `origin`).
-2. **Decyzja: Android.** Cały pilot na symulatorze iOS. Albo run na emulatorze Androida (adapter wspiera `android`, nigdy nie
+2. **[ZROBIONE 2026-11-14 — „Najpierw iOS” w README repo mobile, `popr/po-runie-6`]** **Decyzja: Android.** Cały pilot na symulatorze iOS. Albo run na emulatorze Androida (adapter wspiera `android`, nigdy nie
    uruchomiony na żywo), albo zapis w README repo mobile „najpierw iOS”.
 3. **Decyzje otwarte z wniosków:** W13 (próg 360 linii w projekcie z już dużymi plikami: tylko nowe pliki albo przyrost),
    W30 (stopka `Co-Authored-By` z modelem agenta workflowu w commitach mechanicznych). W27 bez zmian (decyzja operatora).

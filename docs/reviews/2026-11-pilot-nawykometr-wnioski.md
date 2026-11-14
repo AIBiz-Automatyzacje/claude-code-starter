@@ -52,6 +52,10 @@ w `.claude/`. Etap `/dev-pr` sprawdzamy na kopii z prywatnym repo testowym na Gi
 | W36 | Run 4: start autopilota stanął na STOP-ie bramki E2E „canary na Nawykometr-kopia: kod SIGKILL” ze stosem Maestro (`FileUtils.zipDir` ← `DebugLogStore.finalizeRun`). To własny limit skryptu (`LIMIT_CANARY_MS` 240 s w `expo-canary.mjs`: canary ruszył 22:34:45, zatrzymany ok. 22:38:45), a sesja kopii opisała to jako zabicie przez system. Ręczny canary chwilę później: 34 s, kod 0 (dwa razy). Prawdopodobna przyczyna spowolnienia: bramki szablonu (ok. 3,4 tys. testów) uruchomione przeze mnie równolegle na tym samym Macu. | Nakładka (`expo-canary.mjs`): `uruchomMaestro` zwraca `przekroczonyLimitMs`, gdy SIGKILL dał limit skryptu; STOP mówi „przekroczony limit 240 s — skrypt zatrzymał Maestro”, a naprawa każe zmierzyć czas ręcznie i odróżnia obciążenie maszyny od wiszącego flow. Lekcja pilota: bramek szablonu nie puszczam w trakcie startu E2E kopii. | średni | poprawione (`popr/pilot-run4-kopie-repo-testowe`); niesprawdzone na żywym runie |
 | W37 | Run 4: canary bramki E2E jest niestabilny. Drugi świeży run (Mac bez innego obciążenia) znów STOP „kod SIGKILL” po 240 s; log Maestro: `viewHierarchy` 500 `kAXErrorInvalidUIElement` zaraz po `openLink`, `CommandFailed`, potem zawieszenie do limitu. Ręczne `e2e.mjs start`: raz kod 1 po 32 s (sterownik XCTest: „Failed to connect to /127.0.0.1:7001”, Maestro reinstaluje aplikację przy `clearState`), potem dwa razy „gotowe” po 244 s i 112 s. Sam `maestro test .maestro/_canary.yaml` (także z argumentami skryptu): 3 × kod 0, ok. 34 s. Reload Metro (`wyslijReload`) tuż przed Maestro: 2 × kod 0, ale 133 s i 154 s. Limit 240 s jest więc blisko zwykłego czasu canary po reloadzie. | Do decyzji: po reloadzie czekać na koniec przeładowania aplikacji (albo pomijać reload przy świeżo uruchomionym Metro), wyższy limit canary albo jedno ponowienie canary przed STOP-em. Przyczyna utraty sterownika XCTest niepotwierdzona (log sterownika nadpisany). | średni | otwarty |
 | W34 | Run 3: etykieta agenta rozgrzewki `warmup:vitest` w projekcie na Jest. | Brak: etykieta to klucz telemetrii (`stacks/straznik.json`, świadomy wyjątek). | niski | zamknięty bez zmiany |
+| W38 | Run 6: przegląd spójności w `/dev-plan` każe pytać operatora o każdą pozycję techniczną (AskUserQuestion) i nie ma trybu „rozstrzygaj według rekomendacji”. Sesja kopii prowadzona z sesji nadrzędnej zawisła na oknie wyboru, którego sesja nadrzędna nie może zamknąć ani przerwać (`stop_session` odmawia przy oczekującym pytaniu); operator musiał kliknąć ręcznie mimo polecenia „bez pytań”. | Rdzeń (`dev-plan`, Metoda interakcji i 6.2b): tryb bez pytań — gdy operator oddał decyzje sesji, każda pozycja według rekomendacji z oznaczeniem `(przyjęte przez sesję …, tryb bez pytań)`, widoczne osobno w handoffie, faza zmieniona po czytaniu czytana ponownie; agent `spojnosc-planu` nie zgłasza ponownie decyzji sesji. | średni | poprawione 2026-11-14 (`popr/po-runie-6`) |
+| W39 | Run 6: recenzent spójności planu liczył długość plików przez `wc -l` (wszystkie linie), a plan i skrypt szablonu liczą linie kodu — fałszywy alarm o limicie długości pliku. | Agent `spojnosc-planu`: długość pliku tylko miarą `liczLinieKodu` z `budzet-pliku.mjs` (gotowa komenda w procedurze). | niski | poprawione 2026-11-14 (`popr/po-runie-6`) |
+| W40 | Run 6: plan zakładał asercję Maestro na samą liczbę na karcie, a na iOS kontener z `accessible` skleja zawartość w jeden element dla czytnika ekranu i Maestro nie widzi tekstu dzieci. Autopilot sam przeszedł na asercję po pełnej etykiecie („Wszystkie check-iny: 3”) i zapisał decyzję. | Nakładka expo (`stack/plan-e2e.md`, Linia scenariusza): w kontenerze `accessible` asercja po pełnej etykiecie, brzmienie w Podejściu IU. | niski | poprawione 2026-11-14 (`popr/po-runie-6`) |
+| W41 | Run 6: `/sync-template` nie zauważył, że projekt ma własny, starszy skill synchronizacji (`sync-claude-template`), a `CLAUDE.md` projektu wskazuje go jako właściwy. Agent w projekcie może wybrać zły skill. | Rdzeń (`doctor/higiena.mjs`): kontrola „skill synchronizacji” — własny skill `*sync*` obok `/sync-template` = UWAGA, z dopiskiem, gdy wskazuje go `CLAUDE.md`; widać ją w syncu (linia `HIGIENA:`) i w doctorze. | niski | poprawione 2026-11-14 (`popr/po-runie-6`) |
 
 ## Ustalenia dla projektu Nawykometr (nie dla szablonu)
 
@@ -212,6 +216,28 @@ bez migracji i nowych paczek.
 - **Niesprawdzone:** recenzja z botem (CodeRabbit) — podpięcie do prywatnego repo w organizacji wymaga instalacji aplikacji GitHub przez
   admina organizacji i konta CodeRabbit (warunki cenowe dla repo prywatnych niesprawdzone), czyli poza zakresem pilota; etapy `zbierz`,
   `napraw`, tury i compound PR na żywo; merge z działającym CI.
+
+## Run 6 — `licznik-check-inow` (2026-11-14)
+
+Kopia: `79d3608` wypchnięty na repo testowe (decyzja operatora), potem `/sync-template` do repo mobile `9868752` (rdzeń
+`6246e9b`; commit `a35939c`, 27 plików zmienionych, bez konfliktów, kopia zapasowa w `.claude/.backups/`). Prowadzone z sesji
+w repo szablonu: sync w jednej sesji kopii, zadanie w drugiej (świeże skille po syncu).
+
+- Zadanie: karta „Wszystkie check-iny” na zakładce Postać, liczba z lokalnej bazy w telefonie, seed E2E z 3 check-inami w lokalnym
+  Supabase. Bez migracji i nowych paczek.
+- `/dev-plan`: 1 faza, 3 IU, commit `e4760c8`; przegląd spójności 3 tury (W38, W39), bramka gotowości 9/9 zielona, uwagi: brak
+  skilla weryfikacji, nierozstrzygnięta decyzja z `o-aplikacji-w-ustawieniach`.
+- Autopilot `wf_fb752168-a89`: 1/1 faza bez STOP-u, ok. 25 min, 28 agentów, ok. 1,16 M tokenów; commity `6fe06cd` (kod), `7238b00`
+  (known-issues), `40eb3ac` (archiwum). `[E2E]` PASS, walidacja 1255/1255. Dwie decyzje autopilota (W40 i różne trudności celów,
+  żeby test nie stał na progu etapu) — w smoke'u „zostaw jak jest”.
+- **Sprawdzone na żywo:** doctor (tokeny kont zastąpione w ustawieniach, uwaga o własnym ESLint, advisors „nie dotyczy” przy bazie
+  lokalnej i „pominieta” w raporcie fazy); canary na Maestro 2.12.1 z czasem w wyniku („121 s z 240 s”, W36/W37 nie wystąpiły);
+  P3 trafiło do `known-issues.md`; seed na lokalnym Supabase bez błędów; smoke bez pozycji dla człowieka.
+- `/dev-pr --bez-bota`: PR #3 na repo testowym, squash `f6a5e45`, gałąź usunięta przez workflow, `claude-md` `ca67a23` wypchnięty,
+  `brak-ci`. Zgoda na merge bez CI przekazana z sesji nadrzędnej (jak w runie 4). `tryb-recenzji.mjs` znów `bot` (brak
+  `.claude/projekt.json`), tryb z flagi.
+- **Nie wystąpiły / niesprawdzone:** komunikat STOP-u przy żywym środowisku (brak STOP-u), bramka natywna (brak zmian zależności),
+  advisors na prawdziwej bazie (tylko lokalna), `--bez-push` (W35).
 
 ## Niesprawdzone
 
