@@ -17,6 +17,47 @@ publikacji nie przepuści. Publikuj z czystego `main`.
 Workflow publikuje tylko wtedy, gdy od SHA zapisanego w `.claude/.rdzen-version` repo mobile zmieniło się coś w `.claude/`,
 `output-styles/` albo `stacks/`, i nie nadpisuje nowszej publikacji starszą (`stacks/publikuj-mobile.mjs`).
 
+## Co nie przechodzi do mobile samo
+
+Publikacja niesie do mobile każdą zmianę w rdzeniu (`.claude/`, `output-styles/`) z wyjątkiem plików, które nakładka Expo
+podmienia w całości albo które wariant usuwa. Zmiana logiki w takim pliku rdzenia nie dotrze do mobile: trzeba ją przenieść
+ręcznie do kopii w `stacks/expo/nakladka/` (ta sama ścieżka względna). Żaden test nie wykrywa rozjazdu treści między plikiem
+rdzenia a jego kopią w nakładce, więc przy każdej zmianie pliku z listy poniżej sprawdź kopię mobilną.
+
+**Podmieniane w całości** (zmieniasz plik rdzenia → popraw też `stacks/expo/nakladka/<ta sama ścieżka>`):
+
+- Agenci budujący i tester E2E: `.claude/agents/feature-builder-ui.md`, `feature-builder-ui-figma.md`,
+  `feature-builder-fullstack.md`, `feature-builder-fullstack-figma.md`, `feature-builder-data.md`, `feature-tester-e2e.md`.
+- Agenci researchu: `.claude/agents/best-practices-researcher.md`, `framework-docs-researcher.md`, `repo-research-analyst.md`,
+  `web-research-specialist.md`.
+- Sloty stacku (`stacks/sloty.json`): wszystkie pliki `.claude/stack/` (`buildery.md`, `e2e-srodowisko.md`, `fix-e2e.md`,
+  `plan-e2e.md`, `po-fazie.md`, `profil.json`, `walidacja.md`) oraz `references/stack.md` skilli `dev-compound`,
+  `dev-docs-complete`, `dev-plan`, `dev-prep`, `dev-smoke`, `weryfikacja-setup`.
+- Szablon planu: `.claude/skills/dev-plan/references/szablon-planu.md`.
+- Reguły i skrypty: `.claude/rules/stack.md`, `.claude/scripts/bramki/stack.mjs`, `.claude/scripts/e2e/adapter.mjs`.
+- Skille techniczne: `security` (`SKILL.md` i `resources/`), `sentry-integration/SKILL.md`, `supabase-dev-guidelines`
+  (`SKILL.md` i `resources/`).
+- Szablony: `.claude/templates/bramki/` (`eslint.config.szablon.ts`, `package.json`, `stryker.config.json`),
+  `.claude/templates/e2e-env/` (`.env.e2e.example`, `README.md`), `.claude/templates/smoke-autopilot/` (`README.md`,
+  `przygotuj-kopie.sh` i pliki `*.md`).
+
+**Usuwane z wariantu** (`stacks/expo/usun.txt`; zmiana nie dotyczy mobile): skille `agent-browser`,
+`tailwind-react-guidelines`, `ux-ui-guidelines`, `coolify-manager`, `makieta` ze skryptami `.claude/scripts/makieta/`,
+`sentry-integration/resources/react-sentry-patterns.md`, `templates/bramki/.size-limit.json` i testy szablonów bramek
+oraz smoke'u autopilota. Gdy zmiana dotyczy zachowania, które mobile też potrzebuje, opisz je w odpowiedniku mobilnym
+(np. `mobile-e2e-maestro`, `rn-expo-guidelines`, `ux-ui-guidelines-mobile`).
+
+**`.claude/settings.json`** nie jest podmieniany, tylko scalany z `stacks/expo/settings.patch.json`: nowe hooki i uprawnienia
+rdzenia przechodzą same, ale klucz, który patch nadpisuje albo usuwa (`null`), zostaje w mobile w wersji z patcha.
+
+Lista odzwierciedla stan z 2026-11-15. Aktualne pliki podmieniane wypisze polecenie z katalogu repo:
+
+```bash
+cd stacks/expo/nakladka && find .claude -type f | while read f; do [ -e "../../../$f" ] && echo "$f"; done | sort
+```
+
+Projekty już założone z szablonu mobile dostają opublikowane zmiany dopiero po `/sync-template` w danym projekcie.
+
 ## Deploy key i sekret (jednorazowo, robi operator)
 
 Workflow wchodzi do repo mobile kluczem SSH z prawem zapisu tylko do tego jednego repo. Klucz prywatny leży w sekrecie
