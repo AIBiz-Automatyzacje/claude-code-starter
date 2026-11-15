@@ -60,7 +60,15 @@ tylko za zgodą operatora (od włączenia automatu merge = publikacja do repo mo
 5. **Plugin `expo`:** zostaje na `a9e5bd3` (1.14.3). Upstream 1.15.1 kieruje komendy przez `npx --yes @expo/agent-cli@latest`,
    zablokowane w `permissions.deny`. Wrócić, gdy agent-cli wyjdzie z fazy eksperymentalnej (`node stacks/expo/swiezosc.mjs`).
 6. **Opcjonalnie:** „makieta obok aplikacji” dla mobile (zrzut z symulatora obok makiety; dziś punkty wizualne ręcznie).
-7. **Sprzątanie po pilocie (każde osobno, za zgodą):** repo testowe `nawykometr-kopia-pilot`, `claude plugin marketplace remove
+6a. **README repo mobile przenosisz ręcznie.** Automat publikuje tylko `.claude/` i `output-styles/`; `stacks/expo/repo-mobile/README.md`
+   trafia do repo mobile osobnym commitem (ostatnio `a333148` z 2026-11-14, stan `a812f08`). Do decyzji: dołączyć README do automatu.
+7. **[CZĘŚCIOWO ZROBIONE 2026-11-14]** Usunięte za zgodą operatora: gałęzie `popr/pilot-run4-kopie-repo-testowe`,
+   `popr/pilot-run5-usterki`, `popr/po-pilocie-usterki`, `popr/po-runie-6` i worktree `plan-szablon-mobile`; kontenery, wolumeny
+   i sieć `supabase_*_nawykometr-kopia` (przez Dockera: `npx supabase stop` w nowszym CLI odmawia przy `[inbucket]` w
+   `supabase/config.toml` — „use [local_smtp]”; może dotyczyć prawdziwego Nawykometru); symulator „Nawykometr-kopia”; katalog
+   `../_pilot-mobile` (przeniesiony do Kosza macOS). Zostają z decyzji operatora: repo testowe `nawykometr-kopia-pilot`
+   i marketplace `claude-code-starter`. Opis pierwotny poniżej.
+   **Sprzątanie po pilocie (każde osobno, za zgodą):** repo testowe `nawykometr-kopia-pilot`, `claude plugin marketplace remove
    claude-code-starter` (uwaga: usuwa też plugin `expo` z projektów, które go używają), kontenery i wolumeny
    `supabase_*_nawykometr-kopia`, symulator „Nawykometr-kopia”, katalog `../_pilot-mobile`, gałęzie `popr/pilot-*` i
    `popr/po-pilocie-usterki`, worktree `.claude/worktrees/plan-szablon-mobile`. Sprzątanie po runie 6 i decyzji o Androidzie,
