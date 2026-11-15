@@ -87,7 +87,8 @@ export const naprawaZrzutu = 'Zamknij sesje przegladarki (`agent-browser close -
 export function probnyZrzut() {
   const plik = join(tmpdir(), `autopilot-e2e-proba-${process.pid}.png`)
   const termin = Date.now() + LIMIT_ZRZUTU_SEK * 1000
-  const krok = (/** @type {string[]} */ a) => spawnSync('agent-browser', [...SESJA_PROBY, ...a], { encoding: 'utf8', timeout: Math.max(termin - Date.now(), 1), killSignal: 'SIGKILL' })
+  const krok = (/** @type {string[]} */ a) => // stdio ignore na Windows: demon agent-browser dziedziczy potoki i spawnSync czekalby na nie do limitu
+  spawnSync('agent-browser', [...SESJA_PROBY, ...a], { encoding: 'utf8', stdio: process.platform === 'win32' ? 'ignore' : 'pipe', timeout: Math.max(termin - Date.now(), 1), killSignal: 'SIGKILL' })
   const otwarcie = krok(['open', 'about:blank'])
   const zrzut = otwarcie.status === 0 && !otwarcie.error ? krok(['screenshot', plik]) : otwarcie
   spawnSync('agent-browser', [...SESJA_PROBY, 'close'], { timeout: LIMIT_ZAMKNIECIA_MS, killSignal: 'SIGKILL' })

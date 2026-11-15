@@ -37,6 +37,11 @@ async function atrapa({ konta = {}, status, captcha = false } = {}) {
           ? json(200, { access_token: 'jwt', token_type: 'bearer' })
           : json(400, { code: 'invalid_credentials', error_code: 'invalid_credentials', msg: 'Invalid login credentials' })
       }
+      if (zad.url === '/functions/v1/zaloguj') {
+        return konta[String(cialo.email)] === cialo.haslo
+          ? json(200, { data: { zalogowano: true }, error: null })
+          : json(401, { data: null, error: { code: 'bledne-dane', message: 'Błędny e-mail lub hasło' } })
+      }
       if (zad.url === '/auth/v1/admin/users' && zad.method === 'POST') {
         if (zad.headers.apikey !== SERWIS) return json(401, { msg: 'brak uprawnien' })
         if (String(cialo.email) in konta) return json(422, { code: 'email_exists', error_code: 'email_exists', msg: 'A user with this email address has already been registered' })
@@ -147,6 +152,31 @@ test('legacy klucz klienta z profilu tez wystarcza do logowania', async () => {
     e[legacy] = 'klucz-legacy'
     assert.equal((await loginCanary(e)).status, 'ok')
     assert.equal(a.zadania[0]?.apikey, 'klucz-legacy')
+  } finally {
+    await a.zamknij()
+  }
+})
+
+test('E2E_LOGOWANIE_FUNKCJA: canary loguje przez Edge Function z cialem { email, haslo }, bez password grant', async () => {
+  const a = await atrapa({ konta: { 'e2e@x.pl': HASLO } })
+  try {
+    const w = await loginCanary(env(a.url, { E2E_LOGOWANIE_FUNKCJA: 'zaloguj' }))
+    assert.equal(w.status, 'ok')
+    assert.deepEqual(a.zadania.map((z) => z.sciezka), ['/functions/v1/zaloguj'])
+    assert.deepEqual(a.zadania[0].cialo, { email: 'e2e@x.pl', haslo: HASLO })
+    assert.equal(a.zadania[0].autoryzacja, 'Bearer klucz-klienta')
+  } finally {
+    await a.zamknij()
+  }
+})
+
+test('E2E_LOGOWANIE_FUNKCJA: zle haslo z koperty { error: { code: bledne-dane } } konczy sie bledem z naprawa hasla', async () => {
+  const a = await atrapa({ konta: { 'e2e@x.pl': 'inne-haslo' } })
+  try {
+    const w = await loginCanary(env(a.url, { E2E_LOGOWANIE_FUNKCJA: 'zaloguj' }))
+    assert.equal(w.status, 'blad')
+    assert.match(w.naprawa, /E2E_TEST_PASSWORD/)
+    assert.ok(!a.zadania.some((z) => z.sciezka.startsWith('/auth/v1/token')))
   } finally {
     await a.zamknij()
   }

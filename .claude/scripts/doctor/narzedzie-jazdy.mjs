@@ -16,7 +16,8 @@ const { nazwa, instalacja } = NARZEDZIE_JAZDY
 
 /** @param {string} komenda @returns {string} pierwsza niepusta linia `--version` albo „?” (jak `wersja` w doctor.sh) */
 function wersja(komenda) {
-  const w = spawnSync(komenda, ['--version'], { encoding: 'utf8' })
+  // Na Windows narzędzie z npm -g to plik .cmd, który spawn bez powłoki pomija.
+  const w = spawnSync(komenda, ['--version'], { encoding: 'utf8', shell: process.platform === 'win32' })
   return (w.stdout || '').split('\n').find((l) => l.length > 0) ?? '?'
 }
 
@@ -34,7 +35,9 @@ function wykonywalny(sciezka) {
 
 /** @param {string} projekt @returns {[string, string, string, string]} */
 function wierszNarzedzia(projekt) {
-  if (spawnSync('/bin/sh', ['-c', 'command -v "$1"', 'sh', nazwa]).status === 0) return [nazwa, 'OK', wersja(nazwa), '—']
+  // Na Windows node nie rozwiązuje `/bin/sh` (ENOENT), a `sh` z Git Bash jest w PATH.
+  const powloka = process.platform === 'win32' ? 'sh' : '/bin/sh'
+  if (spawnSync(powloka, ['-c', 'command -v "$1"', 'sh', nazwa]).status === 0) return [nazwa, 'OK', wersja(nazwa), '—']
   const lokalny = join(projekt, 'node_modules', '.bin', nazwa)
   if (wykonywalny(lokalny)) return [nazwa, 'BRAK', `${wersja(lokalny)} tylko w node_modules/.bin — pipeline woła ${nazwa} z PATH`, instalacja]
   return [nazwa, 'BRAK', 'brak w PATH', instalacja]

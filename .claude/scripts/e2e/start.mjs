@@ -35,7 +35,8 @@ import { bledySrodowiska, envE2e, konfiguracja, NARZEDZIA, PLIK_ENV } from './sr
 
 // Komenda startu bez aplikacji: pnpm/npm bez binarki, skryptu albo package.json, powloka bez programu (kod 127).
 const BRAK_APLIKACJI = /Command "[^"]+" not found|command not found|ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND|ERR_PNPM_NO_SCRIPT|Missing script|ENOENT[^\n]*package\.json/i
-const KOD_BRAKU_PROGRAMU = 127
+// 127: powloka POSIX; 9009: cmd.exe („nie rozpoznano polecenia”); 4294963238 (= -4058): npm ENOENT bez package.json (Windows).
+const KODY_BRAKU_PROGRAMU = [127, 9009, 4294963238]
 // Kroki stacku wokol serwera z adaptera; testy rdzenia podstawiaja wlasne.
 const KROKI_STACKU = { przedStartem, poStarcie }
 
@@ -59,7 +60,7 @@ export function projektBezAplikacji(projekt) {
 }
 
 /** @param {string} projekt @param {{ wyjscie?: number | string, ogon?: string }} serwer porazka startu @returns {boolean} */
-const brakAplikacji = (projekt, serwer) => projektBezAplikacji(projekt) && (serwer.wyjscie === KOD_BRAKU_PROGRAMU || BRAK_APLIKACJI.test(serwer.ogon ?? ''))
+const brakAplikacji = (projekt, serwer) => projektBezAplikacji(projekt) && (KODY_BRAKU_PROGRAMU.includes(Number(serwer.wyjscie)) || BRAK_APLIKACJI.test(serwer.ogon ?? ''))
 
 /** @param {string | null} sciezka katalog zadania (null: sprawdzenie bez zadania) @returns {string} */
 export const komendaSprawdzenia = (sciezka) => `node .claude/scripts/e2e/e2e.mjs sprawdz${sciezka ? ` --zadanie ${sciezka}` : ''}`
