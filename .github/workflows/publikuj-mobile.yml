@@ -46,7 +46,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow maszyneria.yml --commit "$SHA" --branch main --event push --status success --limit 1 --json databaseId --jq '.[0].databaseId')"
+          # Wynik biegu sprawdza jq, nie filtr --status success: indeks GitHuba pod tym filtrem potrafi przez kwadrans nie widzieć
+          # świeżo zakończonego biegu (2026-11-16, publikacja fa4c05a), a ten krok startuje kilka sekund po nim.
+          run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow maszyneria.yml --commit "$SHA" --branch main --event push --limit 5 --json databaseId,conclusion --jq 'map(select(.conclusion == "success")) | .[0].databaseId // empty')"
           if [ -z "$run_id" ]; then
             echo "::error::brak zielonego biegu maszyneria (push na main) dla $SHA"
             exit 1
