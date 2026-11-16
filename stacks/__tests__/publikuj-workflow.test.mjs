@@ -34,7 +34,10 @@ test('automat włączony: gałąź workflow_run tylko po zielonym biegu z pusha,
 test('przed buildem: sekret deploy key i zielony job wariant-expo dla publikowanego SHA', () => {
   assert.match(krok('Sekret deploy key')?.run ?? '', /MOBILE_DEPLOY_KEY/)
   const zielony = krok('Zielony wariant-expo dla tego SHA')?.run ?? ''
-  assert.match(zielony, /--workflow maszyneria\.yml --commit "\$SHA" --branch main --event push --status success/)
+  assert.match(zielony, /--workflow maszyneria\.yml --commit "\$SHA" --branch main --event push --limit 5 --json databaseId,conclusion/)
+  assert.match(zielony, /map\(select\(\.conclusion == "success"\)\) \| \.\[0\]\.databaseId \/\/ empty/)
+  // Filtr --status success nie widzi świeżego biegu (indeks GitHuba z opóźnieniem); wynik sprawdza jq.
+  assert.doesNotMatch(zielony, /^[^#\n]*--status success/m)
   assert.match(zielony, /select\(\.name == "wariant-expo"\)/)
   assert.ok(kroki.indexOf(krok('Zielony wariant-expo dla tego SHA') ?? {}) < kroki.indexOf(krok('Decyzja') ?? {}))
 })
