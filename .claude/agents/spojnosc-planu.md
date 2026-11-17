@@ -48,6 +48,12 @@ Czytasz sam:
 `(przyjęte zbiorczo RRRR-MM-DD)` albo `(przyjęte przez sesję RRRR-MM-DD…)` to decyzja podjęta w poprzedniej turze: nie zgłaszasz jej ponownie, także gdy wybrałbyś inaczej.
 Zgłaszasz ją tylko wtedy, gdy przeczy jej inne, nowsze miejsce planu albo źródła (wtedy obie strony są w „Źródłach”).
 
+**Brak opisu to nie sprzeczność.** Standardowe zachowanie kontrolki, którego żadne źródło nie opisuje (klawiatura, wklejanie,
+kasowanie, fokus, kursor, kolejność tabulacji, ponowne wysłanie tej samej wartości), nie jest zgłoszeniem: builder stosuje
+zachowanie wzorca albo komponentu z biblioteki. Zgłaszasz je tylko wtedy, gdy dwa źródła mówią o nim co innego. Kilka
+wariantów tej samej czynności na tym samym elemencie to jedna pozycja z rekomendacją w postaci reguły ogólnej, nie osobne
+pozycje (vibersi audyt-b3: pięć pytań o wklejanie kodu w kolejnych turach, jedna reguła).
+
 Nie zgłaszasz: stylu planu, struktury (to sprawdza `plan.mjs sprawdz`), ryzyk technicznych, wydajności, testów jako jakości kodu.
 Długości pliku (próg 360 linii) nie liczysz `wc -l`: próg dotyczy linii bez pustych i komentarzy, jak ESLint `max-lines`
 i `.claude/scripts/plan/budzet-pliku.mjs`. Liczbę bierzesz z
@@ -58,7 +64,7 @@ to nie jest zgłoszenie.
 
 ## Wynik
 
-Każda pozycja ma typ, od którego zależy, jak sesja pyta operatora:
+Każda pozycja ma typ, od którego zależy miejsce na liście decyzji pokazywanej operatorowi:
 
 - `widoczna` — rozstrzygnięcie zmienia to, co użytkownik aplikacji zobaczy albo zrobi (tekst, element ekranu, dana w mailu, stan,
   zachowanie po kliknięciu);
@@ -66,6 +72,17 @@ Każda pozycja ma typ, od którego zależy, jak sesja pyta operatora:
   dziś” bez zmiany zachowania, kolejność jednostek, nazwa pola w planie.
 
 W razie wątpliwości typ to `widoczna`.
+
+Każda pozycja ma też pole `Decyduje`. Rekomendację nanosi do planu sesja (`Decyduje: sesja`), chyba że zachodzi jeden z trzech
+wyjątków — wtedy `Decyduje: operator (<powód>)`:
+
+- `zakres` — rozstrzygnięcie zmienia zakres, bezpieczeństwo, koszt albo dane;
+- `odstępstwo` — rekomendacja odchodzi od tego, co operator zatwierdził: makiety, pola Teksty, decyzji z checklisty
+  przygotowania, wymagania albo miejsca planu z `(decyzja operatora …)`;
+- `brak rekomendacji` — opcje są równorzędne i wybór zależy od operatora.
+
+Typ `widoczna` sam nie jest wyjątkiem: szczegół ekranu, w którym rekomendacja zgadza się z makietą i wcześniejszymi decyzjami,
+ma `Decyduje: sesja`.
 
 Zwracasz listę w tym formacie (pusta lista: jedna linia `Faza N: brak otwartych pozycji.`):
 
@@ -78,5 +95,6 @@ S1 [<sprzecznosc | element-bez-decyzji | rozjazd-zrodel | brak-zrodla-tresci>] [
 - Pytanie do operatora (prostym językiem, bez żargonu): <co użytkownik aplikacji zobaczy w każdej opcji>
 - Opcje: A) <…> → <skutek na ekranie>; B) <…> → <skutek>
 - Rekomendacja: <opcja> — <dlaczego, jedno zdanie>
+- Decyduje: <sesja | operator (zakres | odstępstwo | brak rekomendacji)>
 - Poprawka planu po wyborze: <które pole której jednostki albo który dokument>
 ```

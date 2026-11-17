@@ -92,7 +92,7 @@ test('fixture po kroku przegladu z przygotuj-kopie.sh przechodzi kontrole spojno
     assert.equal(wynik.status, 0, wynik.stdout + wynik.stderr)
     // Fixture nie ma czytan recenzenta: zapis zamyka fazy bez czytania — start przechodzi z zastrzezeniem (uwaga, nie STOP).
     assert.deepEqual(blokeryZadania(korzen, `docs/active/${NAZWA}`).spojnosc,
-      { ok: true, powod: 'OK z zastrzeżeniem: faza 1 bez czystego czytania, faza 2 bez czystego czytania (decyzja operatora)' })
+      { ok: true, powod: 'OK z zastrzeżeniem: faza 1 bez czystego czytania, faza 2 bez czystego czytania (zamknięta bez czytania)' })
   } finally {
     rmSync(korzen, { recursive: true, force: true })
   }

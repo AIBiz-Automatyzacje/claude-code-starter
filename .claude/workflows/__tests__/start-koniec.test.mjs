@@ -252,7 +252,7 @@ test('punkt 53: zadanie w toku (faza zbudowana albo jednostki zapisane) = tylko 
 
 // Analiza vibersi audyt-paczki-1-2: faza zamknieta bez czytania za zgoda operatora — bramka zielona z zastrzezeniem.
 test('przeglad spojnosci z zastrzezeniem (ok, powod „OK z zastrzezeniem”) = bez STOP, uwaga z powodem; takze w zadaniu w toku', () => {
-  const zastrzezenie = { ok: true, powod: 'OK z zastrzeżeniem: faza 3 zmieniona po ostatnim czytaniu (decyzja operatora)' }
+  const zastrzezenie = { ok: true, powod: 'OK z zastrzeżeniem: faza 3 zmieniona po ostatnim czytaniu (zamknięta bez czytania)' }
   for (const fazy of [SWIEZE, [{ ...SWIEZE[0], execute: 'done' }, SWIEZE[1]]]) {
     assert.deepEqual(A.decyzjaSpojnosci(fazy, zastrzezenie, ZADANIE), { stop: null, uwaga: `przeglad spojnosci planu: ${zastrzezenie.powod}` })
   }

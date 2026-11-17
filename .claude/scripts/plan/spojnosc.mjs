@@ -18,7 +18,7 @@
 // uruchomienie recenzenta fazy zapisuje czytanie (`--faza N --czytanie`: odcisk fazy i odciski jej pol), czysty wynik
 // recenzenta oznacza je jako czyste (`--faza N --czysta`), a koncowy zapis z `--otwarte 0` porownuje biezacy odcisk kazdej
 // fazy z odciskiem jej ostatniego czystego czytania. Faza zmieniona po nim (albo nigdy niezaczytana na czysto) blokuje zapis,
-// chyba ze operator zgodzil sie zamknac ja bez czytania (`--bez-czytania N`): wtedy bramka jest zielona „z zastrzezeniem”.
+// chyba ze sesja zamyka ja bez czytania po limicie tur (`--bez-czytania N`): wtedy bramka jest zielona „z zastrzezeniem”.
 // Odciski pol z dwoch ostatnich czytan daja recenzentowi kolejnej tury liste zmienionych pol (`--faza N --roznica`) zamiast
 // calej fazy od zera. Zapisy sprzed tej zmiany (bez `czytania`) bramka czyta jak dawniej.
 
@@ -250,7 +250,7 @@ function fazyBezCzystegoCzytania(tresc, zapis, fazy) {
 
 /**
  * Koncowy zapis przegladu. Przy `otwarte` 0 kazda faza musi miec czyste czytanie zgodne z obecna trescia; wyjatek to fazy
- * z `bezCzytania` (zgoda operatora) — trafiaja do zapisu jako zastrzezenie. Czytania z poprzednich wywolan zostaja w pliku.
+ * z `bezCzytania` (po limicie tur, dev-plan 6.2b) — trafiaja do zapisu jako zastrzezenie. Czytania z poprzednich wywolan zostaja w pliku.
  * @param {string} projekt
  * @param {string} planRel
  * @param {{ fazy: string[], otwarte: number, data: string, bezCzytania?: string[] }} o
@@ -267,11 +267,11 @@ export function zapiszPrzeglad(projekt, planRel, { fazy, otwarte, data, bezCzyta
   if (zablokowane.length) {
     return { ok: false, plik, odcisk, zastrzezenie: '', bledy: [`fazy ${zablokowane.map((n) => `${n.faza} (${n.powod})`).join(', ')}`
       + ` — przed zapisem z --otwarte 0 przeczytaj je recenzentem (plan.mjs spojnosc ${planRel} --faza N --czytanie, po czystym`
-      + ' wyniku --faza N --czysta); zamknięcie bez czytania tylko za zgodą operatora: --bez-czytania <numery> (dev-plan 6.2b)'] }
+      + ' wyniku --faza N --czysta); zamknięcie bez czytania tylko po trzeciej turze fazy: --bez-czytania <numery> (dev-plan 6.2b)'] }
   }
   const zastrzezenie = nieczytane.map((n) => `faza ${n.faza} ${n.powod}`).join(', ')
   const zapis = { plan: planRel, odcisk, data, fazy: unikalne, otwarte,
-    ...(nieczytane.length ? { bezCzytania: nieczytane.map((n) => n.faza), zastrzezenie: `${zastrzezenie} (decyzja operatora)` } : {}),
+    ...(nieczytane.length ? { bezCzytania: nieczytane.map((n) => n.faza), zastrzezenie: `${zastrzezenie} (zamknięta bez czytania)` } : {}),
     ...(poprzedni.czytania ? { czytania: poprzedni.czytania } : {}) }
   zapiszPlik(projekt, plik, zapis)
   return { ok: true, plik, odcisk, bledy: [], zastrzezenie: zapis.zastrzezenie ?? '' }
@@ -280,7 +280,7 @@ export function zapiszPrzeglad(projekt, planRel, { fazy, otwarte, data, bezCzyta
 /**
  * @typedef {{ ok: boolean, plik: string | null, odcisk: string | null, zapisany: string | null, otwarte: number | null,
  *   fazyBez: string[], zastrzezenie: string, powod: string }} StanPrzegladu  zastrzezenie niepuste = ok z fazami zamknietymi bez
- *   czytania (decyzja operatora); powod mowi wtedy „OK z zastrzezeniem: …”
+ *   czytania (zamknięta bez czytania); powod mowi wtedy „OK z zastrzezeniem: …”
  */
 
 /**
@@ -317,6 +317,6 @@ export function stanPrzegladu(projekt, planRel, fazyPlanu) {
   const bez = Array.isArray(zapis.bezCzytania) ? zapis.bezCzytania.map(String) : []
   const zastrzezenie = powod || !bez.length ? ''
     : typeof zapis.zastrzezenie === 'string' && zapis.zastrzezenie ? zapis.zastrzezenie
-      : `faza ${bez.join(', ')} zamknięta bez czytania (decyzja operatora)`
+      : `faza ${bez.join(', ')} zamknięta bez czytania`
   return { ok: !powod, plik, odcisk, zapisany, otwarte, fazyBez, zastrzezenie, powod: powod || (zastrzezenie ? `OK z zastrzeżeniem: ${zastrzezenie}` : '') }
 }
