@@ -1,7 +1,7 @@
 ---
 name: dev-brainstorm
-description: 'Walidacja i doprecyzowanie pomysłu przed planowaniem. Interaktywny dialog, pressure test, eksploracja podejść, requirements doc. Używaj przy "mam pomysł", "zróbmy brainstorm", "co myślisz o", "pomóż mi przemyśleć", "chcę zbudować", niejasny scope, wiele możliwych rozwiązań.'
-argument-hint: "[pomysł na feature lub problem do zbadania]"
+description: 'Walidacja i doprecyzowanie pomysłu przed planowaniem oraz roast (przesłuchanie) gotowego planu lub decyzji. Interaktywny dialog po każdej gałęzi decyzji, pressure test, eksploracja podejść, requirements doc. Używaj przy "mam pomysł", "zróbmy brainstorm", "co myślisz o", "pomóż mi przemyśleć", "chcę zbudować", niejasny scope, wiele możliwych rozwiązań, a także gdy user prosi o "roast", "zroastuj mnie", "podważ to", "przesłuchaj mnie", chce stress-testować plan albo przegadać temat.'
+argument-hint: "[pomysł na feature, problem do zbadania albo plan do zroastowania]"
 ---
 
 # Brainstorm — walidacja pomysłu
@@ -31,6 +31,19 @@ Brainstorm jest krokiem **opcjonalnym** pipeline'u — dla „pustej kartki", ni
 
 `/dev-plan` umie czytać takie źródła bezpośrednio (sekcja 0.2 tego skilla) — wymuszanie brainstormu na gotowych wymaganiach to ceremonia, która niczego nie dodaje. W razie wątpliwości: jeśli planner nie musiałby *wymyślać* zachowań produktu, brainstorm nie jest potrzebny.
 
+## Tryb roastu
+
+Gdy user prosi o roast, „zroastuj mnie”, „podważ to”, „przesłuchaj mnie” albo chce stress-testować **gotowy** plan, decyzję lub dokument (także plan techniczny, wymagania z gotowego źródła albo pomysł spoza pipeline'u), pracujesz w trybie roastu. Powyższe „pomiń, gdy wymagania istnieją” go nie dotyczy: roast ma właśnie podważyć to, co już jest.
+
+Przesłuchaj usera bezlitośnie o każdym aspekcie planu, aż dojdziecie do wspólnego zrozumienia. Idź po każdej gałęzi drzewa decyzyjnego i rozwiązuj zależności między decyzjami jedna po drugiej (decyzję zależną bierzesz dopiero, gdy ta, od której zależy, jest rozstrzygnięta).
+
+Przebieg w trybie roastu:
+1. **Faza 1.1** w wariancie Standardowym, zawsze z *Przeglądem archiwum decyzji* (bez zewnętrznego researchu, chyba że temat tego wymaga).
+2. **Faza 1.3** (Dialog) ze wszystkimi mechanizmami roastu z sekcji „Mechanizmy przesłuchania”. Product Pressure Test (1.2) i podejścia (Faza 2) stosuj tylko wtedy, gdy roast dotyczy pomysłu na produkt, a nie planu technicznego czy pojedynczej decyzji.
+3. **Bez Fazy 3 domyślnie** — w trybie roastu nie tworzysz dokumentów sam. Na koniec przejdź do **sekcji 4.R** (sugestia utrwalenia).
+
+Gdy w trakcie roastu okaże się, że temat to w rzeczywistości nowy feature bez wymagań, zaproponuj przejście w zwykły brainstorm (Faza 1.2 i dalej, z dokumentem wymagań) — user decyduje.
+
 ## Główne zasady
 
 1. **Najpierw oceń scope** — dopasuj poziom formalności do rozmiaru i niejednoznaczności pracy.
@@ -47,6 +60,8 @@ Brainstorm jest krokiem **opcjonalnym** pipeline'u — dla „pustej kartki", ni
 2. **Preferuj single-select multiple choice** — użyj single-select przy wyborze jednego kierunku, jednego priorytetu lub następnego kroku.
 3. **Multi-select rzadko i świadomie** — używaj tylko dla kompatybilnych zbiorów (cele, ograniczenia, non-goals, kryteria sukcesu). Jeśli priorytetyzacja ma znaczenie, dopytaj który wybrany element jest główny.
 4. **Używaj narzędzia pytań platformy** — preferuj `AskUserQuestion` w Claude Code. W przeciwnym razie prezentuj numerowane opcje w chacie i czekaj na odpowiedź.
+5. **Rekomendacja przy każdym pytaniu** — przy każdym pytaniu podaj swoją rekomendowaną odpowiedź z krótkim uzasadnieniem (w `AskUserQuestion`: rekomendowana opcja pierwsza, z dopiskiem „(Rekomendowane)”, uzasadnienie w opisie opcji). Pytanie bez rekomendacji przerzuca całe myślenie na usera.
+6. **Sprawdź sam, zamiast pytać** — jeśli odpowiedź da się znaleźć w kodzie, w `docs/` albo w plikach projektu, znajdź ją sam. Pytasz tylko o to, czego nie da się ustalić z repo (intencje, priorytety, decyzje produktowe).
 
 ## Wytyczne do outputu
 
@@ -99,15 +114,24 @@ Przeskanuj repo przed merytorycznym brainstormingiem. Dopasuj głębokość do s
 
 **Lekka** — wyszukaj temat, sprawdź czy coś podobnego już istnieje, idź dalej.
 
-**Standardowa i Głęboka** — trzy przejścia:
+**Standardowa i Głęboka** — cztery przejścia:
 
 *Sprawdzenie ograniczeń* — sprawdź pliki instrukcji projektu (`CLAUDE.md`, coding rules) pod kątem ograniczeń workflow, produktu lub scope'u wpływających na brainstorm. Jeśli nic nie wnoszą, idź dalej.
 
-*Skan tematu* — wyszukaj powiązane terminy. Przeczytaj najbardziej relevantny istniejący artefakt (brainstorm, plan, spec, skill, feature doc). Przejrzyj pobliskie przykłady pokrywające podobne zachowanie.
+*Przegląd archiwum decyzji* — zanim zadasz pierwsze pytanie, przeszukaj pod kątem tematu istniejące źródła decyzji, żeby nie pytać o rzeczy już rozstrzygnięte:
+1. `docs/active/` — aktywne zadania z `/dev-plan` (plany, status, learnings). Czy temat nie jest częścią trwającej pracy?
+2. `docs/completed/` — ukończone zadania: decyzje historyczne i ich uzasadnienia („dlaczego zrobiliśmy to tak”).
+3. `docs/solutions/` — baza rozwiązanych problemów z `/dev-compound`; filtruj po frontmatterze i nagłówkach.
+4. `docs/brainstorms/*-requirements.md` — rozstrzygnięte już granice scope'u i kryteria sukcesu.
+5. `docs/CONCEPTS.md` (jeśli istnieje) — kanoniczne znaczenia terminów domenowych.
+
+Brakujący katalog pomijasz bez komentarza. Zapamiętaj znalezione decyzje — w dialogu pilnujesz zgodności z nimi (patrz „Mechanizmy przesłuchania”).
+
+*Skan tematu* — wyszukaj powiązane terminy. Przeczytaj najbardziej relevantny istniejący artefakt (brainstorm, plan, spec, skill, feature doc). Przejrzyj pobliskie przykłady pokrywające podobne zachowanie. Gdy temat dotyczy zachowania istniejącego kodu, zweryfikuj w kodzie, o czym mówisz, zanim o to zapytasz.
 
 *Zewnętrzny research (prior art)* — gdy pomysł dotyka obszaru, gdzie istnieje prior art, konkurencja lub zewnętrzne wzorce rozwiązań, URUCHOM agenta `web-research-specialist` (Agent tool, subagent_type: "web-research-specialist") z pytaniem o prior art i wzorce rozwiązań dla tego obszaru. Wpleć wyniki w Product Pressure Test (1.2) i, jeśli materialnie istotne, w dokument wymagań (Faza 3).
 
-Jeśli nic oczywistego nie pojawi się po krótkim skanie, powiedz o tym i kontynuuj. Nie dryfuj w planowanie techniczne — unikaj inspekcji testów, migracji, deploymentu czy niskopoziomowej architektury, chyba że brainstorm dotyczy decyzji technicznej.
+Jeśli nic oczywistego nie pojawi się po krótkim skanie, powiedz o tym i kontynuuj. Jeśli pomijasz skan (temat mały i izolowany), napisz to wprost, np. „temat na tyle wąski, że pomijam skan archiwum”. Nie dryfuj w planowanie techniczne — unikaj inspekcji testów, migracji, deploymentu czy niskopoziomowej architektury, chyba że brainstorm dotyczy decyzji technicznej.
 
 #### 1.2 Product Pressure Test
 
@@ -156,12 +180,20 @@ Używaj narzędzia pytań platformy gdy dostępne (patrz Zasady interakcji). W p
 - Surfuj zależności lub prerequisites tylko gdy materialnie wpływają na scope
 - Rozstrzygaj decyzje produktowe tutaj; zostaw wybory implementacji technicznych na planowanie
 - Przynoś pomysły, alternatywy i wyzwania zamiast tylko przeprowadzać wywiad
+- Idź po każdej gałęzi drzewa decyzji, nie tylko po głównej ścieżce; decyzje zależne bierz po kolei, po rozstrzygnięciu tych, od których zależą
+
+**Mechanizmy przesłuchania** (zawsze w Standardowej, Głębokiej i w trybie roastu; w Lekkiej, gdy pasują):
+
+- **Sprzeczność z udokumentowaną decyzją** — jeśli to, co mówi user, kłóci się z czymś znalezionym w `docs/`, **zatrzymaj się** i wskaż konkretny dokument: „W `docs/solutions/2026-03-15-rate-limiting.md` zdecydowaliśmy X — teraz proponujesz Y. To świadoma zmiana kierunku, czy ta decyzja umknęła?”. Nie idź dalej, dopóki nie ma jasnej odpowiedzi. Świadomą zmianę zapisz w dokumencie wymagań w „Kluczowych decyzjach” z odwołaniem do starego dokumentu.
+- **Precyzja terminów** — gdy user używa rozmytego lub przeciążonego słowa („kurs” vs „lekcja”, „użytkownik” vs „klient”, „moduł” vs „feature”), zapytaj o kanoniczne znaczenie. Jeśli termin ma już konkretne znaczenie w `docs/` lub w kodzie, **odeślij do tego źródła** zamiast tworzyć nową definicję. Nie twórz w trakcie dialogu plików słownikowych; ustalone znaczenie terminu domenowego (encja, status, nazwany proces) zanotuj jako kandydata do `docs/CONCEPTS.md`.
+- **Konkretne scenariusze** — przy granicach, relacjach między bytami i przypadkach brzegowych wymyśl konkretną sytuację i zapytaj „co się dzieje, gdy…” (np. „klient anuluje zamówienie po wysyłce maila z fakturą — co widzi w panelu?”). Abstrakcyjne deklaracje są tanie; konkretne scenariusze ujawniają niedoprecyzowanie.
+- **Weryfikacja twierdzeń usera w kodzie** — gdy user mówi, jak coś działa w istniejącym systemie, sprawdź to w kodzie, zanim zbudujesz na tym kolejne pytanie. Jeśli kod mówi co innego, wskaż sprzeczność z plikiem i linią.
 
 **Przebudowa istniejących ekranów albo maili:** gdy pomysł zmienia wygląd czegoś, co już działa (redesign, nowy układ strony, nowy szablon maila), zapytaj wprost: „Gdy nowy projekt nie pokaże czegoś, co obecna wersja ma (tekst, dana jak imię albo kwota, stan, zachowanie): znika czy zostaje?”. Opcje: `Znika — nowy projekt jest kompletny` / `Zostają treść i dane, zmienia się wygląd` / `Decyzja przy każdym elemencie podczas planowania`. Odpowiedź zapisz w dokumencie jako wymaganie ze stabilnym ID. Bez niej implementator ma obecny kod jako wzorzec, makietę bez tego elementu i zakaz treści spoza makiet, więc zatrzymuje wykonanie pytaniem (aa-exam E3: imię w mailu logowania).
 
 **Integration check przed wyjściem z dialogu:** zanim uznasz pomysł za jasny, świadomie **połącz** odpowiedzi użytkownika i sonduj nieoczywiste konsekwencje ich kombinacji (np. „jeśli chcemy X i Y, a domyślnie zakładamy Z, to wynika z tego, że...?"). Wyłap konflikty między decyzjami, których użytkownik mógł nie zauważyć, podejmując je osobno. To często ujawnia ukryte wymaganie albo sprzeczność w scope. Parę „przebudowa istniejącego ekranu albo maila” i „teksty tylko z makiet” sprawdzasz zawsze: razem nie mówią, co zrobić z treścią obecnej wersji, której makieta nie ma, dopóki wymagania nie mają zasady z pytania o przebudowę.
 
-**Warunek wyjścia:** Kontynuuj aż pomysł jest jasny LUB użytkownik explicite chce przejść dalej.
+**Warunek wyjścia:** Kontynuuj, aż każda gałąź decyzji istotna dla scope'u jest rozstrzygnięta (albo świadomie odroczona) LUB użytkownik explicite chce przejść dalej.
 
 ### Faza 2: Eksploruj podejścia
 
@@ -262,6 +294,8 @@ Przed finalizacją sprawdź:
 - Czy jakieś wymagania zależą od czegoś uznanego za out of scope?
 - Czy jakieś nierozwiązane elementy to w rzeczywistości decyzje produktowe, nie pytania planistyczne?
 - Przy przebudowie istniejących ekranów albo maili: czy wymagania mówią, co z treścią obecnej wersji, której nowy projekt nie pokaże?
+- Czy któreś wymaganie kłóci się z decyzją z `docs/` bez zapisanej świadomej zmiany kierunku?
+- Czy terminy w wymaganiach mają jedno znaczenie, zgodne z `docs/` i kodem?
 - Czy szczegóły implementacji wkradły się gdy nie powinny?
 - Czy istnieje tania zmiana, która uczyniłaby to materialnie bardziej użytecznym?
 
@@ -313,6 +347,17 @@ Natychmiast uruchom `/dev-plan` w bieżącej sesji. Przekaż ścieżkę do requi
 **Jeśli użytkownik wybiera "Przejrzyj i dopracuj":**
 
 Przeczytaj requirements doc krytycznie, zaproponuj poprawki i zastosuj je po akceptacji użytkownika. Po zakończeniu review, wróć do opcji fazy 4.
+
+#### 4.R Zakończenie trybu roastu — sugestia utrwalenia
+
+W trybie roastu nie przedstawiasz opcji z 4.1. Gdy wyłoniły się decyzje warte zachowania, na końcu sesji zasugeruj **konkretny istniejący skill** do ich utrwalenia — **maksymalnie jedna sugestia na typ artefaktu** w całej sesji:
+
+- **Rozwiązanie konkretnego problemu technicznego** (przyczyna + poprawka) → `/dev-compound`
+- **Rozstrzygnięcie scope'u, kryteriów sukcesu albo zachowań produktu** → przejście w zwykły brainstorm (Faza 3) i zapis dokumentu wymagań
+- **Plan techniczny większej zmiany** → `/dev-plan`
+- **Kanoniczne znaczenie terminu domenowego** → hasło w `docs/CONCEPTS.md` (jedno hasło jako cienki indeks), przez `/dev-compound` (ma krok słownika) albo bezpośredni dopisek
+
+Format: jedna linia na końcu odpowiedzi, np. _„Decyzja o granicy Customer/User warta utrwalenia — zapisać ją jako dokument wymagań?”_. Nie tworzysz tych artefaktów sam: sugerujesz, user decyduje.
 
 #### 4.3 Podsumowanie końcowe
 
