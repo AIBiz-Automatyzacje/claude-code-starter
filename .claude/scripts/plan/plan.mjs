@@ -21,7 +21,7 @@
 //                                                  stan przegladu spojnosci planu (odcisk bez stanu checkboxow); z --zapisz
 //                                                  zapis docs/plans/<plan>.spojnosc.json po przegladzie agentem spojnosc-planu;
 //                                                  --otwarte 0 wymaga czystego czytania kazdej fazy zgodnego z jej obecna trescia,
-//                                                  --bez-czytania = fazy zamykane bez czytania za zgoda operatora (bramka
+//                                                  --bez-czytania = fazy zamykane bez czytania po limicie tur (bramka
 //                                                  „OK z zastrzezeniem”)
 //   plan.mjs spojnosc <plan.md> --faza <N> --czytanie | --czysta | --roznica
 //                                                  czytanie fazy recenzentem: --czytanie przed uruchomieniem agenta (tura, odciski

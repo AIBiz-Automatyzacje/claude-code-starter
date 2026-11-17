@@ -506,15 +506,15 @@ test('spojnosc: --otwarte 0 bez czystego czytania albo po zmianie fazy odmawia; 
 
   // Zgoda operatora: faza 2 zamknieta bez czytania — bramka zielona z zastrzezeniem, autopilot dostaje powod.
   const ok = zapisz(['--bez-czytania', '2'])
-  assert.deepEqual([ok.kod, ok.json.ok, ok.json.zastrzezenie], [0, true, 'faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)'])
+  assert.deepEqual([ok.kod, ok.json.ok, ok.json.zastrzezenie], [0, true, 'faza 2 zmieniona po ostatnim czytaniu (zamknięta bez czytania)'])
   const zapis = JSON.parse(readFileSync(join(k, PLAN.replace(/\.md$/, '.spojnosc.json')), 'utf8'))
   assert.deepEqual([zapis.bezCzytania, Object.keys(zapis.czytania)], [['2'], fazy])
   git(k, ['add', '-A'])
   git(k, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'docs: przeglad'])
   const g = gotowosc(k, ZADANIE, { narzedzia }).spojnosc
-  assert.deepEqual([g.ok, g.zastrzezenie, g.powod], [true, 'faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)',
-    'OK z zastrzeżeniem: faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)'])
-  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.spojnosc, { ok: true, powod: 'OK z zastrzeżeniem: faza 2 zmieniona po ostatnim czytaniu (decyzja operatora)' })
+  assert.deepEqual([g.ok, g.zastrzezenie, g.powod], [true, 'faza 2 zmieniona po ostatnim czytaniu (zamknięta bez czytania)',
+    'OK z zastrzeżeniem: faza 2 zmieniona po ostatnim czytaniu (zamknięta bez czytania)'])
+  assert.deepEqual(cli(k, ['blokery', ZADANIE]).json.spojnosc, { ok: true, powod: 'OK z zastrzeżeniem: faza 2 zmieniona po ostatnim czytaniu (zamknięta bez czytania)' })
 
   // Kolejne czyste czytanie fazy 2 zdejmuje zastrzezenie przy nastepnym zapisie.
   czysteCzytania(k, ['2'])
