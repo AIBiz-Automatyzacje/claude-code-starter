@@ -125,7 +125,7 @@ nie da się wykonać w trakcie runu, trafia do Twojej listy ręcznego sprawdzeni
 
 | Katalog | Zawartość |
 |---|---|
-| `.claude/skills/` | pipeline `dev-*`, skille stacku (React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry) i narzędziowe (`agent-browser`, `makieta`, `coderabbit-setup`, `sync-template`, `weryfikacja-setup`, `zroastuj-mnie`, `coolify-manager`) |
+| `.claude/skills/` | pipeline `dev-*`, skille stacku (React/Tailwind, Supabase, UX/UI, bezpieczeństwo, Sentry) i narzędziowe (`agent-browser`, `makieta`, `coderabbit-setup`, `sync-template`, `weryfikacja-setup`, `coolify-manager`) |
 | `.claude/agents/` | buildery warstw (z wariantami Figma), reviewerzy osi, tester E2E, research i klasy ról pipeline'u |
 | `.claude/workflows/` | orkiestratory `-wf` w JS: autopilot, execute, review, compound, complete, PR |
 | `.claude/scripts/` | logika deterministyczna z testami: doctor, bramki, plan, dossier review, E2E, wiedza, telemetria |
