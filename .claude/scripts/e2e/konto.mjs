@@ -7,10 +7,10 @@ import { PROFIL } from '../stack/profil.mjs'
 
 const LIMIT_MS = 10_000
 const KONTO_ISTNIEJE = new Set(['email_exists', 'user_already_exists'])
-const ZLE_DANE = new Set(['invalid_credentials', 'invalid_grant'])
+const ZLE_DANE = new Set(['invalid_credentials', 'invalid_grant', 'bledne-dane'])
 // Captcha Auth odrzuca logowanie przed sprawdzeniem hasla, wiec canary nic o koncie nie wie: nie blokuje startu i nie zaklada
 // konta. Tokenu nie wysyla — logowanie sprawdza tester w aplikacji, przez widget z kluczem testowym projektu.
-const CAPTCHA = 'captcha_failed'
+const CAPTCHA = new Set(['captcha_failed', 'captcha'])
 
 /** @typedef {{ status: 'ok' | 'utworzone' | 'blad' | 'pominieto', detal: string, naprawa: string }} WynikCanary */
 
@@ -22,7 +22,9 @@ async function wyslij(url, naglowki, cialo, limitMs) {
   try {
     const odp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...naglowki }, body: JSON.stringify(cialo), signal: AbortSignal.timeout(limitMs) })
     const tresc = await odp.json().catch(() => ({}))
-    const kod = tresc && typeof tresc === 'object' ? String(tresc.error_code ?? tresc.code ?? tresc.error ?? '') : ''
+    // Funkcja logowania projektu oddaje koperte `{ error: { code } }`, Auth API plaskie `error_code` albo `error`.
+    const zagniezdzony = tresc && typeof tresc.error === 'object' && tresc.error !== null ? tresc.error.code : undefined
+    const kod = tresc && typeof tresc === 'object' ? String(tresc.error_code ?? tresc.code ?? zagniezdzony ?? tresc.error ?? '') : ''
     return { status: odp.status, kod }
   } catch (e) {
     // Wynik canary, nie awaria skryptu: odmowa polaczenia, DNS albo limit czasu trafiaja do STOP-u z naprawa.
@@ -45,10 +47,16 @@ export async function loginCanary(env, { limitMs = LIMIT_MS } = {}) {
   if (!adres || !klucz || !email || !haslo) return { status: 'pominieto', detal: 'brak adresu, klucza klienta albo konta e2e w .env.e2e', naprawa: '' }
   const baza = adres.replace(/\/+$/, '')
   const naprawaSieci = `Sprawdz ${PROFIL.env.adresSupabase} i klucz klienta w .env.e2e oraz dostep do projektu e2e (Supabase → Authentication).`
-  const login = () => wyslij(`${baza}/auth/v1/token?grant_type=password`, { apikey: klucz }, { email, password: haslo }, limitMs)
+  // E2E_LOGOWANIE_FUNKCJA: projekt loguje haslem wylacznie przez Edge Function (np. `zaloguj` z blokada konta), a hook Auth
+  // blokuje konto przy password grant z pominieciem panelu. Wtedy canary idzie przez te funkcje z cialem { email, haslo }.
+  const funkcja = env.E2E_LOGOWANIE_FUNKCJA
+  const login = () =>
+    funkcja
+      ? wyslij(`${baza}/functions/v1/${funkcja}`, { apikey: klucz, Authorization: `Bearer ${klucz}` }, { email, haslo }, limitMs)
+      : wyslij(`${baza}/auth/v1/token?grant_type=password`, { apikey: klucz }, { email, password: haslo }, limitMs)
   const pierwszy = await login()
   if ('status' in pierwszy && pierwszy.status === 200) return { status: 'ok', detal: `zalogowano kontem ${email}`, naprawa: '' }
-  if ('status' in pierwszy && pierwszy.kod === CAPTCHA) {
+  if ('status' in pierwszy && CAPTCHA.has(pierwszy.kod)) {
     return { status: 'pominieto', detal: `projekt e2e wymaga captchy przy logowaniu — canary nie sprawdzil hasla konta ${email}, sprawdzi je tester`, naprawa: '' }
   }
   if (!('status' in pierwszy) || !ZLE_DANE.has(pierwszy.kod)) {

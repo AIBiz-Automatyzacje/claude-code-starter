@@ -21,6 +21,24 @@ const LINIE_OGONA_LOGU = 20
 const LIMIT_ZATRZYMANIA_MS = 5000
 // Token Management API (advisors) — dostep do calego konta Supabase; procesowi aplikacji niepotrzebny, takze z powloki operatora.
 const KLUCZE_POZA_SERWEREM = ['SUPABASE_ACCESS_TOKEN']
+// Windows: brak `ps -o`, `lsof` i grup procesow — tozsamosc, port i zatrzymanie ida przez PowerShell i `taskkill /T`.
+const JEST_WINDOWS = process.platform === 'win32'
+const LIMIT_POWERSHELL_MS = 15_000
+
+/** @param {string} polecenie @returns {string | null} stdout PowerShella albo null przy bledzie/pustym wyniku */
+function powershell(polecenie) {
+  const w = spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', polecenie], { encoding: 'utf8', timeout: LIMIT_POWERSHELL_MS, windowsHide: true })
+  return w.status === 0 && !w.error && w.stdout.trim() ? w.stdout.trim() : null
+}
+
+/** @param {number} port @returns {{ pid: number, komenda: string } | null} */
+function procesNaPorcieWindows(port) {
+  const wynik = powershell(`$c = Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { $p = Get-CimInstance Win32_Process -Filter "ProcessId=$($c.OwningProcess)"; "$($c.OwningProcess)|$($p.CommandLine)" }`)
+  if (!wynik) return null
+  const [pidTekst, ...reszta] = wynik.split('|')
+  const pid = Number(pidTekst)
+  return Number.isInteger(pid) && pid > 4 ? { pid, komenda: reszta.join('|').trim() || '(komenda nieznana)' } : null
+}
 
 /**
  * @typedef {import('./srodowisko.mjs').Konfiguracja} Konfiguracja
@@ -50,6 +68,7 @@ export async function odpowiada(url, tresc = null) {
  * @returns {{ pid: number, komenda: string } | null | undefined}
  */
 export function procesNaPorcie(port) {
+  if (JEST_WINDOWS) return procesNaPorcieWindows(port)
   const w = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], { encoding: 'utf8' })
   if (w.error) return undefined
   const pid = Number((w.stdout ?? '').trim().split('\n')[0])
@@ -94,6 +113,7 @@ function ogonLogu(plik) {
  * @returns {string | null} czas startu procesu albo null, gdy procesu nie ma
  */
 function czasStartu(pid, env = { ...process.env, LC_ALL: 'C' }) {
+  if (JEST_WINDOWS) return powershell(`(Get-Process -Id ${pid} -ErrorAction SilentlyContinue).StartTime.ToUniversalTime().ToString('o')`)
   const w = spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8', env })
   return w.status === 0 && w.stdout.trim() ? w.stdout.trim() : null
 }
@@ -120,6 +140,11 @@ const zyjeNasz = (z) => z !== null && (czasStartu(z.pid) === z.uruchomiony || cz
 
 /** @param {number} pid @param {NodeJS.Signals} sygnal */
 function sygnalGrupie(pid, sygnal) {
+  if (JEST_WINDOWS) {
+    // Brak sygnalow i grup: SIGTERM/SIGKILL = zabicie drzewa procesu; SIGCONT nic nie znaczy.
+    if (sygnal !== 'SIGCONT') spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true })
+    return
+  }
   for (const cel of [-pid, pid]) {
     try {
       process.kill(cel, sygnal)
@@ -139,6 +164,7 @@ async function zatrzymajProces(z) {
   if (zyjeNasz(z)) sygnalGrupie(z.pid, 'SIGKILL')
   // Potomek, ktory przezyl SIGTERM po smierci rodzica, zostaje w grupie procesu i trzyma port — bez tego restart widzialby go
   // jako obcy serwer. Tylko grupa (-pid): sam PID mogl juz trafic do innego procesu.
+  if (JEST_WINDOWS) return
   try {
     process.kill(-z.pid, 'SIGKILL')
   } catch (blad) {
@@ -210,13 +236,18 @@ export async function uruchomSerwer(projekt, konf, env, { odNowa = false, polity
   const log = openSync(konf.log, 'w')
   const srodowisko = { ...process.env, ...env }
   for (const k of KLUCZE_POZA_SERWEREM) delete srodowisko[k]
-  const dziecko = spawn(konf.start, { cwd: projekt, shell: true, detached: true, stdio: ['ignore', log, log], env: srodowisko })
+  const dziecko = spawn(konf.start, { cwd: projekt, shell: true, detached: true, windowsHide: true, stdio: ['ignore', log, log], env: srodowisko })
   closeSync(log)
   /** @type {number | string | null} */
   let wyjscie = null
   dziecko.on('exit', (kod, sygnal) => { wyjscie = kod ?? sygnal ?? 'nieznany' })
   dziecko.unref()
-  const uruchomiony = dziecko.pid === undefined ? null : czasStartu(dziecko.pid)
+  let uruchomiony = dziecko.pid === undefined ? null : czasStartu(dziecko.pid)
+  if (uruchomiony === null && dziecko.pid !== undefined) {
+    // Polecenie zakonczylo sie, zanim odczytalismy czas startu (spawnSync blokuje zdarzenie exit): to porazka startu z kodem wyjscia, nie brak procesu.
+    await czekaj(ODSTEP_SONDY_MS / 5)
+    if (wyjscie !== null) uruchomiony = 'zakonczony'
+  }
   if (dziecko.pid === undefined || uruchomiony === null) return { serwer: 'brak', blad: `komenda startu nie wystartowala: ${konf.start}. Log ${konf.log}:\n${ogonLogu(konf.log)}` }
   /** @type {ZapisPid} */
   const zapis = { pid: dziecko.pid, start: konf.start, odcisk: konf.odcisk, uruchomiony }
