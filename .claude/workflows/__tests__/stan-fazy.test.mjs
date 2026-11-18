@@ -57,8 +57,25 @@ test('trescStanu: JSON pliku stanu z polami do wznowienia, bez pol bootstrapu', 
     fazy: STAN.fazy,
     zakonczenie: STAN.zakonczenie,
     bazaZielona: null,
+    walidacjaTesty: null,
   })
   assert.equal(JSON.parse(tresc).fazy[0].baza, 'abc1234')
+})
+
+// Smoke operatora (dev-docs-complete-wf) bral liczbe testow z pliku stanu, ale trescStanu jej nie zapisywala:
+// naglowek smoke'u zawsze dostawal „testy zielone wg walidacji koncowej” bez liczby.
+test('trescStanu: wynik testow walidacji koncowej idzie do pliku stanu pod kluczem, ktory czyta smoke', () => {
+  const plik = JSON.parse(wf.trescStanu({ ...STAN, walidacjaTesty: 'PASS 412/412' }))
+  assert.equal(plik.walidacjaTesty, 'PASS 412/412')
+  const smoke = readFileSync(resolve(KATALOG, '../dev-docs-complete-wf.js'), 'utf8')
+  assert.match(smoke, /\.autopilot-state\.json -> pole walidacjaTesty \("PASS X\/Y"\)/)
+  const skill = readFileSync(resolve(KATALOG, '../../skills/dev-docs-complete/SKILL.md'), 'utf8')
+  assert.match(skill, /\.autopilot-state\.json` → pole `walidacjaTesty`/)
+  assert.doesNotMatch(smoke + skill, /walidacjaWynik\.testy/)
+})
+
+test('wiring: walidacja koncowa wpisuje liczbe testow do stanu przed zapisem', () => {
+  assert.match(zrodlo, /stan\.walidacjaWynik = walidacja\n {2}stan\.walidacjaTesty = walidacja\.testy \|\| null\n {2}oznaczStan\(\)/)
 })
 
 test('trescStanu: opis findingu z cudzyslowem daje poprawny JSON', () => {
@@ -209,6 +226,14 @@ const PLAN_STATE = new Function(
    ${wytnij('const PLAN_STATE = {', '\n}')}
    return PLAN_STATE`,
 )()
+
+test('PLAN_STATE: wynik testow walidacji przechodzi przez bootstrap (swiezy run po walidacji nie gubi go przed smoke)', () => {
+  const pole = new Ajv({ strict: false }).compile(PLAN_STATE.properties.walidacjaTesty)
+  assert.equal(pole('PASS 412/412'), true)
+  assert.equal(pole(null), true)
+  assert.ok(!PLAN_STATE.required.includes('walidacjaTesty'), 'starsze pliki stanu nie maja pola')
+  assert.match(wytnij('function bootstrapPrompt(', '\n}'), /Pole "walidacjaTesty" \(jesli obecne i nie null\) przepisz 1:1/)
+})
 
 test('PLAN_STATE: baza fazy przechodzi przez bootstrap (string albo null), stan bez pola — poprawny (starsze zadania)', () => {
   const faza = new Ajv({ strict: false }).compile(PLAN_STATE.properties.fazy.items)

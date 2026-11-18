@@ -259,7 +259,7 @@ Jesli po zastosowaniu hierarchii (1)-(7) nie ma ANI JEDNEJ pozycji — nie tworz
 ostatnia linie stdout \`zmienne.mjs\` z kroku 6.
 
 DANE DO NAGLOWKA I SEKCJI 0 — NIE uruchamiaj testow ani scenariuszy E2E (wynik juz jest w artefaktach):
-- <N> testow: docs/active/${nazwaZadania}/.autopilot-state.json -> walidacjaWynik.testy ("PASS X/Y"); brak -> "testy zielone wg walidacji koncowej" bez liczby.
+- <N> testow: docs/active/${nazwaZadania}/.autopilot-state.json -> pole walidacjaTesty ("PASS X/Y"); brak -> "testy zielone wg walidacji koncowej" bez liczby.
 - <M> scenariuszy E2E: \`grep -hE '^- \\[x\\].*\\[E2E\\]' docs/active/${nazwaZadania}/*-zadania.md | grep -vcE 'Operator:|\\[P[123]\\]'\` (bez kopii "Operator:" i pozycji findingow; brak trafien = 0).
 - marker projektu glownego / ref e2e: TYLKO pierwsze 6 znakow hosta: \`grep -ohE 'SUPABASE_URL=(https://[a-z0-9]{6}|http://(127\\.0\\.0\\.1|localhost))' .env .env.local .env.e2e 2>/dev/null\`.
   Marker pochodzi WYLACZNIE z wyniku tego polecenia. Plik bez trafienia albo brak pliku: wpisz "brak <plik> — ustal projekt przed startem", bez markera.

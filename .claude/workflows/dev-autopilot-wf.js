@@ -209,6 +209,8 @@ const PLAN_STATE = {
       properties: { sha: { type: 'string' }, wynik: { type: 'string', enum: ['PASS'] } },
       required: ['sha', 'wynik'],
     },
+    // Wynik testow z walidacji koncowej z pliku stanu (przepisany 1:1) — smoke operatora czyta go takze po wznowieniu runu.
+    walidacjaTesty: { type: ['string', 'null'], description: 'pole walidacjaTesty z pliku stanu 1:1 ("PASS X/Y"); null = brak pola' },
     zrodloStanu: { type: 'string', enum: ['state-json', 'pierwszy-parse-md'] },
     fazy: {
       type: 'array',
@@ -264,7 +266,15 @@ const ZAPIS_STANU = {
 // (mapa 14 miejsc: HANDOFF 6a pkt 54). Przed pod-workflowem i po niepotwierdzonym zapisie zostaje agent `stan:zapis`.
 function trescStanu(stan) {
   return JSON.stringify(
-    { wersja: 1, zadanie: stan.nazwaZadania, fazy: stan.fazy, zakonczenie: stan.zakonczenie, bazaZielona: stan.bazaZielona || null },
+    {
+      wersja: 1,
+      zadanie: stan.nazwaZadania,
+      fazy: stan.fazy,
+      zakonczenie: stan.zakonczenie,
+      bazaZielona: stan.bazaZielona || null,
+      // Liczba testow z walidacji koncowej ("PASS X/Y") — smoke operatora (dev-docs-complete-wf) czyta ja z pliku do naglowka.
+      walidacjaTesty: stan.walidacjaTesty || null,
+    },
     null,
     2
   )
@@ -513,6 +523,7 @@ Folder zadania: ${sciezka}
       Pole "decyzjeAutopilota" fazy (jesli obecne) przepisz 1:1 — liczba decyzji autopilota tej fazy. Gdy pola nie ma, pomin je.
       Pole "bazaZielona" (jesli obecne i nie null) przepisz 1:1 i ustaw wejscie.kodJakPrzyTescie:
       \`git diff --quiet <bazaZielona.sha> HEAD -- . ':(exclude)docs' && echo TAK || echo NIE\` -> TAK = true, NIE = false.
+      Pole "walidacjaTesty" (jesli obecne i nie null) przepisz 1:1 — wynik testow walidacji koncowej dla smoke'u. Gdy pola nie ma, pomin je.
       zrodloStanu = "state-json". Dodatkowo porownaj informacyjnie z plikami (np. istnieje
       ${sciezka}/review-faza-N.md a stan mowi review=pending) i wpisz różnice do rozbieznosci[]
       (NIE koryguj stanu samodzielnie).
@@ -538,7 +549,7 @@ Folder zadania: ${sciezka}
 3. zakonczenie: przy pierwszym parse ustaw walidacja/complete/compound = "pending"
    (chyba ze zadanie jest juz w docs/completed/ — wtedy "done").
 4. nazwaZadania = ostatni segment sciezki ${sciezka}.
-5. Bez pliku stanu albo bez pola bazaZielona: bazaZielona = null, wejscie.kodJakPrzyTescie = null.
+5. Bez pliku stanu albo bez pola bazaZielona: bazaZielona = null, wejscie.kodJakPrzyTescie = null. Bez pliku stanu: walidacjaTesty = null.
 
 Zwroc obiekt zgodny ze schematem. Nie modyfikuj zadnych plikow — to read-only bootstrap.`
 }
@@ -2337,6 +2348,7 @@ if (stan.zakonczenie.walidacja === 'pending') {
   }
   stan.zakonczenie.walidacja = 'done'
   stan.walidacjaWynik = walidacja
+  stan.walidacjaTesty = walidacja.testy || null
   oznaczStan()
 }
 
