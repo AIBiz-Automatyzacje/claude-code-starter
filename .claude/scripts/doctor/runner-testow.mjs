@@ -84,7 +84,8 @@ function listaRunnera(projekt, runner, argumenty) {
   if (!existsSync(bin)) return { blad: `brak node_modules/.bin/${runner}` }
   const polecenie = runner === 'vitest' ? ['list', '--filesOnly', '--json', ...argumenty] : ['--listTests', '--json', ...argumenty]
   try {
-    const wyjscie = execFileSync(bin, polecenie, { cwd: projekt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: LIMIT_LISTY_MS, maxBuffer: 64 * 1024 * 1024 })
+    // Przez `sh`: node_modules/.bin/<runner> to shim z shebangiem, ktorego node na Windows sam nie uruchomi.
+    const wyjscie = execFileSync('sh', ['-c', '"$@"', 'sh', bin, ...polecenie], { cwd: projekt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: LIMIT_LISTY_MS, maxBuffer: 64 * 1024 * 1024 })
     const json = JSON.parse(wyjscie.slice(wyjscie.indexOf('[')))
     if (!Array.isArray(json)) return { blad: `${runner}: wynik listy nie jest tablicą` }
     return { pliki: json.map((p) => (typeof p === 'string' ? p : String(p?.file ?? ''))) }
