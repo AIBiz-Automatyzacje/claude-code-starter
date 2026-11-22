@@ -14,9 +14,12 @@ import { NARZEDZIE_JAZDY } from '../e2e/adapter.mjs'
 
 const { nazwa, instalacja } = NARZEDZIE_JAZDY
 
+// Komendy ida przez `sh` z PATH, nie `/bin/sh` i nie wprost: na Windows node szuka `/bin/sh` jako C:\bin\sh (ENOENT), a
+// shim npm (`node_modules/.bin/<nazwa>`, globalny `<nazwa>`) to skrypt z shebangiem, ktorego node sam nie uruchomi.
+
 /** @param {string} komenda @returns {string} pierwsza niepusta linia `--version` albo „?” (jak `wersja` w doctor.sh) */
 function wersja(komenda) {
-  const w = spawnSync(komenda, ['--version'], { encoding: 'utf8' })
+  const w = spawnSync('sh', ['-c', '"$1" --version', 'sh', komenda], { encoding: 'utf8' })
   return (w.stdout || '').split('\n').find((l) => l.length > 0) ?? '?'
 }
 
@@ -34,7 +37,7 @@ function wykonywalny(sciezka) {
 
 /** @param {string} projekt @returns {[string, string, string, string]} */
 function wierszNarzedzia(projekt) {
-  if (spawnSync('/bin/sh', ['-c', 'command -v "$1"', 'sh', nazwa]).status === 0) return [nazwa, 'OK', wersja(nazwa), '—']
+  if (spawnSync('sh', ['-c', 'command -v "$1"', 'sh', nazwa]).status === 0) return [nazwa, 'OK', wersja(nazwa), '—']
   const lokalny = join(projekt, 'node_modules', '.bin', nazwa)
   if (wykonywalny(lokalny)) return [nazwa, 'BRAK', `${wersja(lokalny)} tylko w node_modules/.bin — pipeline woła ${nazwa} z PATH`, instalacja]
   return [nazwa, 'BRAK', 'brak w PATH', instalacja]

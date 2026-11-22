@@ -5,7 +5,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { delimiter, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -17,7 +17,16 @@ const SKRYPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'doctor.sh
 const REPO_DOCTORA = dirname(SKRYPT)
 // Adres Supabase klienta z profilu stacku (IU-1.7): test przechodzi na kazdym wariancie profilu.
 const ADRES_SUPABASE = JSON.parse(readFileSync(resolve(dirname(SKRYPT), '..', '..', 'stack', 'profil.json'), 'utf8')).env.adresSupabase
-const NARZEDZIA_SYSTEMOWE = ['cat', 'dirname', 'find', 'grep', 'head', 'tail', 'tr']
+// sh wola sam doctor: narzedzie-jazdy.mjs szuka narzedzia przez `sh -c 'command -v'` z PATH.
+const NARZEDZIA_SYSTEMOWE = ['cat', 'dirname', 'find', 'grep', 'head', 'tail', 'tr', 'sh']
+// Windows (Git for Windows): dowiazanie wymaga uprawnien administratora, a node nie uruchomi skryptu z shebangiem, wiec
+// `sh` dla node musi byc prawdziwym sh.exe z PATH. Dlatego PATH fixture'u to katalog atrap + katalog powloki (usr/bin
+// Gita), z ktorego biora sie tez narzedzia systemowe; nie ma tam zadnego narzedzia, ktore sprawdza doctor.
+const WINDOWS = process.platform === 'win32'
+const KATALOG_POWLOKI = WINDOWS
+  ? execFileSync('sh', ['-c', 'cygpath -w "$(dirname "$(command -v sh)")"'], { encoding: 'utf8' }).trim()
+  : ''
+const BASH = WINDOWS ? join(KATALOG_POWLOKI, 'bash.exe') : '/bin/bash'
 
 /** @typedef {{ katalog: string, projekt: string, dom: string, bin: string }} Srodowisko */
 
@@ -28,10 +37,14 @@ function srodowisko() {
   const dom = join(katalog, 'dom')
   const bin = join(katalog, 'bin')
   for (const k of [projekt, dom, bin]) mkdirSync(k)
-  for (const n of NARZEDZIA_SYSTEMOWE) {
-    symlinkSync(execFileSync('/bin/sh', ['-c', `command -v ${n}`], { encoding: 'utf8' }).trim(), join(bin, n))
+  if (WINDOWS) {
+    atrapa(bin, 'node', `exec '${process.execPath.replaceAll('\\', '/')}' "$@"`)
+  } else {
+    for (const n of NARZEDZIA_SYSTEMOWE) {
+      symlinkSync(execFileSync('sh', ['-c', `command -v ${n}`], { encoding: 'utf8' }).trim(), join(bin, n))
+    }
+    symlinkSync(process.execPath, join(bin, 'node'))
   }
-  symlinkSync(process.execPath, join(bin, 'node'))
   atrapa(bin, 'git', 'echo "git version 2.39.5"')
   atrapa(bin, 'gh', '[ "$1" = auth ] && exit 0; echo "gh version 2.80.0"')
   return { katalog, projekt, dom, bin }
@@ -45,10 +58,15 @@ function atrapa(bin, nazwa, tresc) {
 
 /** @param {Srodowisko} s */
 function doctor(s, dodatkowe = {}) {
-  return spawnSync('/bin/bash', [SKRYPT, s.projekt], {
+  return spawnSync(BASH, [SKRYPT, s.projekt], {
     encoding: 'utf8',
-    env: { PATH: s.bin, HOME: s.dom, ...dodatkowe },
+    env: { PATH: WINDOWS ? `${s.bin}${delimiter}${KATALOG_POWLOKI}` : s.bin, ...domFixture(s), ...dodatkowe },
   })
+}
+
+/** @param {Srodowisko} s HOME fixture'u; os.homedir() na Windows czyta USERPROFILE, nie HOME */
+function domFixture(s) {
+  return WINDOWS ? { HOME: s.dom, USERPROFILE: s.dom } : { HOME: s.dom }
 }
 
 /** @param {string} wyjscie @param {string} element */
@@ -69,7 +87,7 @@ function zSrodowiskiem(cialo) {
 }
 
 test('doctor.sh: skladnia bash poprawna', () => {
-  const wynik = spawnSync('bash', ['-n', SKRYPT], { encoding: 'utf8' })
+  const wynik = spawnSync(BASH, ['-n', SKRYPT], { encoding: 'utf8' })
   assert.equal(wynik.status, 0, wynik.stderr)
 })
 
@@ -317,7 +335,7 @@ test('klucz w transkryptach: trafienie skanu telemetrii → UWAGA z runem, wzorc
   assert.doesNotMatch(w.stdout, /wf_obcy/, 'run innego projektu')
   assert.equal(w.status, 0, 'uwaga o kluczu nie blokuje runu')
 
-  const potwierdzenie = spawnSync(process.execPath, [resolve(REPO_DOCTORA, '..', 'telemetria', 'klucze.mjs'), '--potwierdz', 'wf_2e0ed17c-f7b'], { encoding: 'utf8', env: { HOME: s.dom } })
+  const potwierdzenie = spawnSync(process.execPath, [resolve(REPO_DOCTORA, '..', 'telemetria', 'klucze.mjs'), '--potwierdz', 'wf_2e0ed17c-f7b'], { encoding: 'utf8', env: domFixture(s) })
   assert.equal(potwierdzenie.status, 0, potwierdzenie.stderr)
   assert.doesNotMatch(doctor(s).stdout, /\| klucz w transkryptach \|/, 'po potwierdzeniu uwaga znika')
 }))
@@ -526,7 +544,8 @@ test('runner testow: vitest bez configu i test pod .claude/ → BRAK z gotowym v
   // vitest zainstalowany: werdykt z `vitest list` (atrapa) — lista bez .claude → OK; ostrzezenie na stderr nie psuje wiersza.
   writeFileSync(join(s.projekt, 'vitest.config.ts'), 'export default defineConfig({ test: { include: ["tests/**/*.test.ts"] } })\n')
   mkdirSync(join(s.projekt, 'node_modules', '.bin'), { recursive: true })
-  atrapa(join(s.projekt, 'node_modules', '.bin'), 'vitest', `echo "(!) ostrzezenie vite" >&2; echo '[{"file":"${s.projekt}/tests/a.test.ts"}]'`)
+  // vitest podaje sciezki z `/` takze na Windows; `\` z sciezki Windows rozbilby JSON atrapy.
+  atrapa(join(s.projekt, 'node_modules', '.bin'), 'vitest', `echo "(!) ostrzezenie vite" >&2; echo '[{"file":"${s.projekt.replaceAll('\\', '/')}/tests/a.test.ts"}]'`)
   const ok = doctor(s)
   assert.deepEqual(wiersz(ok.stdout, 'runner testów').slice(1, 3), ['OK', 'vitest: 1 plików testów, 0 z .claude/**'])
   assert.equal(ok.status, 0)

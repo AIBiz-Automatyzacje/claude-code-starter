@@ -38,8 +38,9 @@ function uruchomHook(stdin, przygotuj) {
   zbudujFixture(projekty)
   przygotuj?.(home)
   const hook = komendaHooka()
-  const wynik = spawnSync('/bin/sh', ['-c', hook.command], {
-    input: stdin, encoding: 'utf8', env: { ...process.env, HOME: home, CLAUDE_PROJECT_DIR: REPO },
+  const wynik = spawnSync('sh', ['-c', hook.command], {
+    // os.homedir() na Windows czyta USERPROFILE, nie HOME — bez niego hook pisalby do prawdziwej telemetrii.
+    input: stdin, encoding: 'utf8', env: { ...process.env, HOME: home, USERPROFILE: home, CLAUDE_PROJECT_DIR: REPO },
   })
   return { wynik, home, plik: join(home, '.claude', 'telemetry', 'pipeline.jsonl') }
 }

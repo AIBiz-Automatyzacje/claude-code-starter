@@ -9,7 +9,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { delimiter, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
@@ -238,7 +238,7 @@ function uruchomUzgodnienie(tresc) {
   assert.ok(komenda, 'poprawna sciezka daje komende')
   let kod = 0
   try {
-    execFileSync('/bin/bash', ['-c', komenda], { cwd: katalog, stdio: 'pipe', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+    execFileSync('bash', ['-c', komenda], { cwd: katalog, stdio: 'pipe', env: { ...process.env, PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH}` } })
   } catch (e) {
     kod = /** @type {{ status: number }} */ (e).status
   }
